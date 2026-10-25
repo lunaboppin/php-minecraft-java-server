@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="480" viewBox="0 0 1440 480" role="img" aria-labelledby="title desc">
+<title id="title">Minecraft Java Server in PHP</title>
+<desc id="desc">A block landscape moves from a green Overworld through glowing Nether caverns to floating End islands under a violet sky.</desc>
+<defs>
+<linearGradient id="sky" x2="1" y2="1"><stop stop-color="#0a182b"/><stop offset=".5" stop-color="#17243d"/><stop offset="1" stop-color="#271440"/></linearGradient>
+<linearGradient id="fade" x2="0" y2="1"><stop stop-color="#080f21" stop-opacity="0"/><stop offset="1" stop-color="#080f21" stop-opacity=".95"/></linearGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity=".035"/></pattern>
+</defs>
+<path fill="url(#sky)" d="M0 0h1440v480H0z"/>
+<path fill="url(#grid)" d="M0 0h1440v480H0z"/>
+<g fill="#cce4ff" opacity=".5"><path d="M66 58h3v3h-3zm382 24h3v3h-3zm397-28h3v3h-3zm262 63h3v3h-3zm233-53h3v3h-3zm-108 104h3v3h-3z"/></g>
+<path fill="#1c4747" d="M0 239h48v-32h48v-32h64v32h64v32h64v-16h64v32h64v32h64v193H0z"/>
+<path fill="#315649" d="M0 303h64v-32h64v-32h64v32h96v32h64v32h96v145H0z"/>
+<path fill="#5c9f65" d="M0 303h64v-32h64v-32h64v32h96v32h64v32h96v16h-112v-32h-64v-32h-96v-32h-32v32H80v32H0z"/>
+<g fill="#2e6451"><path d="M64 199h32v64H64zM32 167h96v48H32zM48 135h64v48H48z"/><path d="M306 263h24v56h-24zm-24-32h72v40h-72zm16-24h40v32h-40z"/></g>
+<path fill="#4b283d" d="M480 480V303h48v-48h64v32h64v-32h64v32h64v-32h64v48h64v-32h48v209z"/>
+<path fill="#81404c" d="M480 0h480v64h-48v32h-64V64h-64v32h-64v32h-64V96h-64v32h-64V96h-48z"/>
+<path fill="#e87942" d="M496 351h64v16h80v-16h80v32h64v-16h80v16h96v97H496z"/>
+<path fill="#ffb45e" opacity=".7" d="M496 351h64v8h80v-8h80v8h-80v8h-80v-8h-64zM784 367h80v8h-80zm80 16h96v8h-96z"/>
+<path fill="#3c284e" d="M640 192h16v-16h96v16h16v144H640z"/>
+<path fill="#9d71fa" d="M660 196h88v124h-88z"/>
+<path fill="#d9a0ff" opacity=".4" d="M676 212h16v92h-16zm40-16h16v124h-16z"/>
+<g fill="#c7bd8e"><path d="M1016 255h128v16h-16v16h-32v16h-48v-16h-16v-16h-16z"/><path d="M1192 319h192v16h-16v16h-32v16h-96v-16h-32v-16h-16z"/><path d="M1288 207h96v16h-16v16h-48v-16h-32z"/></g>
+<g fill="#e4dfb3"><path d="M1016 247h128v8h-128zm176 64h192v8h-192zm96-112h96v8h-96z"/></g>
+<path fill="#342743" d="M1240 215h24v96h-24zm64-56h24v152h-24z"/>
+<path fill="#d6a5ff" d="M1308 147h16v12h-16z"/>
+<path fill="url(#fade)" d="M0 180h1440v300H0z"/>
+<rect x="48" y="42" width="188" height="30" rx="15" fill="#73e2bd" fill-opacity=".12" stroke="#73e2bd" stroke-opacity=".35"/>
+<text x="142" y="62" text-anchor="middle" fill="#9df1d1" font-family="Arial,sans-serif" font-weight="700" font-size="12" letter-spacing="2">BUILT WITH PHP</text>
+<text x="48" y="170" fill="#f2f5ff" font-family="Arial,sans-serif" font-size="72" font-weight="800" letter-spacing="-4">PHP × Minecraft</text>
+<text x="51" y="213" fill="#c3d3e8" font-family="Arial,sans-serif" font-size="25">A world of blocks. A different kind of server.</text>
+<text x="48" y="414" fill="#f2f5ff" font-family="Arial,sans-serif" font-size="23" font-weight="700">Minecraft Java 26.3 · Native PHP</text>
+<text x="48" y="446" fill="#9cb1cf" font-family="Arial,sans-serif" font-size="16">Seeded worlds / Survival / Multiplayer / Three dimensions</text>
+<text x="1392" y="443" text-anchor="end" fill="#b4a4d0" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">EXPERIMENTAL · PROTOCOL 777</text>
+</svg>

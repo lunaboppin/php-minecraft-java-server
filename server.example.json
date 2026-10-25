@@ -1,0 +1,15 @@
+{
+  "host": "127.0.0.1",
+  "port": 25676,
+  "motd": "PHP Minecraft 26.3 — three dimensions and survival",
+  "maxPlayers": 20,
+  "viewDistance": 3,
+  "compressionThreshold": 256,
+  "worldPath": "data/world-terrain.sqlite",
+  "generator": "terrain",
+  "seed": 12345,
+  "defaultGameMode": 0,
+  "difficulty": 2,
+  "operators": [],
+  "pvp": true
+}

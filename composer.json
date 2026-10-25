@@ -1,0 +1,23 @@
+{
+  "name": "lunaboppin/php-minecraft-java-server",
+  "description": "Native PHP Minecraft Java Edition 26.3 server with seeded terrain, survival and three dimensions",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-zlib": "*",
+    "ext-iconv": "*",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Jva\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": "php tests/run.php",
+    "start": "php bin/server.php --config=server.json"
+  },
+  "license": "proprietary"
+}

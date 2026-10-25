@@ -1,0 +1,16 @@
+name: Server checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PHP CLI and SQLite
+        run: sudo apt-get update && sudo apt-get install -y php-cli php-sqlite3
+      - name: Check PHP syntax
+        run: find src bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run protocol and gameplay checks
+        run: php tests/run.php

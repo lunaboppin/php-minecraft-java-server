@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+"""Rebuild protocol-777 reference data using Mojang's checksum-pinned 26.3 JAR.
+Requires a Java 25+ JDK and Python 3.11+. Does not start a vanilla game server.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import urllib.request
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+VERSION = '26.3'
+PROTOCOL = 777
+DATA_VERSION = 5023
+SERVER_SHA1 = '33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c'
+VERSION_URL = 'https://piston-meta.mojang.com/v1/packages/61fff1316bd50312624a858bbb5eb18fa45208ed/26.3.json'
+VERSION_SHA1 = '61fff1316bd50312624a858bbb5eb18fa45208ed'
+
+
+def digest(path, algorithm):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, algorithm).hexdigest()
+
+
+def download(url, path, sha1):
+    if not path.exists() or digest(path, 'sha1') != sha1:
+        temporary = path.with_suffix('.download')
+        urllib.request.urlretrieve(url, temporary)
+        if digest(temporary, 'sha1') != sha1:
+            temporary.unlink()
+            raise RuntimeError('Checksum mismatch for ' + url)
+        temporary.replace(path)
+    return path
+
+
+def write_json(path, value):
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n')
+
+
+def generate_tags(inner, registries, dynamic):
+    tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
+              for name, registry in registries.items()}
+    tables.update({name: {key: i for i, key in enumerate(entries)} for name, entries in dynamic.items()})
+    tags = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in archive.namelist():
+            if not name.startswith('data/minecraft/tags/') or not name.endswith('.json'):
+                continue
+            relative = name[len('data/minecraft/tags/'):-5]
+            registry = next((key for key in sorted(tables, key=len, reverse=True) if relative.startswith(key[10:] + '/')), None)
+            if registry:
+                tag_name = 'minecraft:' + relative[len(registry[10:]) + 1:]
+                tags.setdefault(registry, {})[tag_name] = json.loads(archive.read(name))['values']
+    resolved = {}
+    def resolve(registry, name, visiting=frozenset()):
+        key = (registry, name)
+        if key in resolved:
+            return resolved[key]
+        if key in visiting:
+            raise ValueError('Cyclic tag ' + str(key))
+        ids = []
+        for entry in tags[registry][name]:
+            value = entry['id'] if isinstance(entry, dict) else entry
+            required = entry.get('required', True) if isinstance(entry, dict) else True
+            if value.startswith('#'):
+                if value[1:] not in tags[registry]:
+                    if required: raise ValueError('Missing tag ' + value)
+                    continue
+                ids.extend(resolve(registry, value[1:], visiting | {key}))
+            else:
+                if value not in tables[registry]:
+                    if required: raise ValueError('Missing tag element ' + value + ' in ' + registry)
+                    continue
+                ids.append(tables[registry][value])
+        resolved[key] = list(dict.fromkeys(ids))
+        return resolved[key]
+    def vi(n):
+        out = bytearray()
+        while n > 127:
+            out.append((n & 127) | 128); n >>= 7
+        return bytes(out + bytes([n]))
+    def string(value):
+        data = value.encode('utf-8'); return vi(len(data)) + data
+    out = vi(len(tags))
+    for registry, definitions in sorted(tags.items()):
+        out += string(registry) + vi(len(definitions))
+        for name in sorted(definitions):
+            ids = resolve(registry, name)
+            out += string(name) + vi(len(ids)) + b''.join(vi(i) for i in ids)
+    return out
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--capture', type=Path, help='Additionally decode captured PHP packets with official codecs')
+    args = parser.parse_args()
+    capture = args.capture.resolve() if args.capture else None
+    cache = ROOT / 'tools/.cache' / VERSION
+    cache.mkdir(parents=True, exist_ok=True)
+    out = ROOT / 'reference' / VERSION
+    out.mkdir(parents=True, exist_ok=True)
+    java_home = Path(os.environ['JAVA_HOME']) / 'bin' if os.environ.get('JAVA_HOME') else None
+    java = str(java_home / 'java') if java_home else shutil.which('java')
+    javac = str(java_home / 'javac') if java_home else shutil.which('javac')
+    if not java or not javac:
+        raise SystemExit('Java 25+ JDK required; set JAVA_HOME to its installation directory.')
+    metadata = download(VERSION_URL, cache / 'version.json', VERSION_SHA1)
+    meta = json.loads(metadata.read_text())
+    server = meta['downloads']['server']
+    if meta['id'] != VERSION or server['sha1'] != SERVER_SHA1:
+        raise RuntimeError('Unexpected Mojang version metadata')
+    jar = download(server['url'], cache / 'server.jar', SERVER_SHA1)
+    cp_dir = cache / 'classpath'
+    cp_dir.mkdir(exist_ok=True)
+    classpath = []
+    with zipfile.ZipFile(jar) as archive:
+        for name in archive.namelist():
+            if name.endswith('.jar') and name.startswith(('META-INF/libraries/', 'META-INF/versions/')):
+                destination = cp_dir / Path(name).name
+                destination.write_bytes(archive.read(name))
+                classpath.append(destination)
+    inner = cp_dir / ('server-' + VERSION + '.jar')
+    with zipfile.ZipFile(inner) as archive:
+        actual = json.loads(archive.read('version.json'))
+    if (actual['id'], actual['protocol_version'], actual['world_version']) != (VERSION, PROTOCOL, DATA_VERSION):
+        raise RuntimeError('JAR version does not match pinned protocol')
+    cp = os.pathsep.join(str(path) for path in sorted(classpath))
+    generated = cache / 'generated'
+    subprocess.run([java, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
+    classes = cache / 'exporter'
+    classes.mkdir(exist_ok=True)
+    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java')], check=True)
+    cmd = [java, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
+    subprocess.run(cmd, check=True, cwd=cache)
+    reports = generated / 'reports'
+    shutil.copyfile(reports / 'packets.json', out / 'packets.json')
+    registries = json.loads((reports / 'registries.json').read_text())
+    blocks = json.loads((reports / 'blocks.json').read_text())
+    states = {name[10:]: next(s['id'] for s in block['states'] if s.get('default', len(block['states']) == 1))
+              for name, block in blocks.items()}
+    item_ids = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:item']['entries'].items()}
+    names = json.loads((ROOT / 'tools/placement-blocks.json').read_text())
+    placeable = {str(item_ids[name]): states[name] for name in names}
+    data = {'state_count': max(s['id'] for b in blocks.values() for s in b['states']) + 1,
+            'states': states, 'placeable_items': placeable, 'items': item_ids,
+            'player_entity_type': registries['minecraft:entity_type']['entries']['minecraft:player']['protocol_id']}
+    data['argument_string'] = registries['minecraft:command_argument_type']['entries']['brigadier:string']['protocol_id']
+    data['menus'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:menu']['entries'].items()}
+    data['component_damage'] = registries['minecraft:data_component_type']['entries']['minecraft:damage']['protocol_id']
+    data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
+    data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
+    from recipes import compile_recipes
+    write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
+    write_json(out / 'blocks.json', data)
+    gameplay = json.loads((out / 'gameplay.json').read_text())
+    for full_name, block in blocks.items():
+        name = full_name[10:]
+        entries = block['states']
+        default = next(state for state in entries if state['id'] == states[name])
+        properties = {}
+        for prop in block.get('properties', {}):
+            values = list(dict.fromkeys(state['properties'][prop] for state in entries))
+            stride = next((i for i, state in enumerate(entries) if state['properties'][prop] != entries[0]['properties'][prop]), 0)
+            properties[prop] = {'values': values, 'stride': stride, 'default': default['properties'][prop]}
+        first = entries[0]['id']
+        for state in entries:
+            calculated = first + sum(info['values'].index(state['properties'][prop]) * info['stride'] for prop, info in properties.items())
+            if calculated != state['id']: raise RuntimeError('Non-Cartesian state ordering: ' + name)
+        gameplay['blocks'][name].update(first=first, count=len(entries), properties=properties, default=states[name])
+    write_json(out / 'gameplay.json', gameplay)
+
+    shutil.copyfile(metadata, out / 'mojang-version.json')
+    write_json(out / 'version.json', {'name': VERSION, 'protocol': PROTOCOL, 'data_version': DATA_VERSION, 'server_sha1': SERVER_SHA1})
+    (out / 'tags.bin').write_bytes(generate_tags(inner, registries, json.loads((out / 'dynamic-registries.json').read_text())))
+    if capture:
+        subprocess.run(cmd + [str(capture)], check=True, cwd=cache)
+        write_json(out / 'gameplay.json', gameplay)
+    checksums = {str(p.relative_to(out)): digest(p, 'sha256') for p in sorted(out.rglob('*'))
+                 if p.is_file() and p.name != 'checksums.json'}
+    write_json(out / 'checksums.json', checksums)
+    print('Reference data rebuilt from verified official Minecraft ' + VERSION)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,11 @@
+/vendor/
+/data/*
+!/data/.gitkeep
+/server.json
+/tools/.cache/
+
+/logs/
+__pycache__/
+*.pyc
+
+/dist/
