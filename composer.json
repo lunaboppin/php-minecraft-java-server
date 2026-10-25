@@ -3,7 +3,7 @@
   "description": "Native PHP Minecraft Java Edition 26.3 server with seeded terrain, survival and three dimensions",
   "type": "project",
   "require": {
-    "php": ">=8.2",
+    "php": "^8.5.12",
     "ext-json": "*",
     "ext-zlib": "*",
     "ext-iconv": "*",

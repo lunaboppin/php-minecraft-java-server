@@ -3,7 +3,7 @@
 # Minecraft Java Server in PHP
 
 [![Server checks](https://github.com/lunaboppin/php-minecraft-java-server/actions/workflows/test.yml/badge.svg)](https://github.com/lunaboppin/php-minecraft-java-server/actions/workflows/test.yml)
-![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)
+![PHP 8.5.12+](https://img.shields.io/badge/PHP-8.5.12%2B-777BB4?logo=php&logoColor=white)
 ![Minecraft Java 26.3](https://img.shields.io/badge/Minecraft_Java-26.3-62A94B)
 ![Protocol 777](https://img.shields.io/badge/protocol-777-9D71FA)
 
@@ -21,7 +21,7 @@ This remains an experimental implementation, **not full vanilla parity**. Its te
 
 ## Start
 
-Requires **64-bit PHP 8.2+ CLI**, with JSON, zlib, iconv, PDO, and PDO SQLite. Python and Java are not required to run the packaged server. Do not run it through PHP-FPM, Apache, or PHP's HTTP development server.
+Requires **64-bit PHP 8.5.12+ CLI**, with JSON, zlib, iconv, PDO, and PDO SQLite. Python and Java are not required to run the packaged server. Do not run it through PHP-FPM, Apache, or PHP's HTTP development server.
 
 ```sh
 php bin/server.php --config=server.json
@@ -40,6 +40,8 @@ php bin/server.php --config=server.json
 ```
 
 The example binds to loopback. Set `host` to `0.0.0.0` for other machines to connect. Firewall/router configuration is external to this application. Without `--config`, the CLI uses its built-in defaults (loopback, port 25565, terrain seed 12345).
+
+Use the latest stable PHP security release. The minimum is **PHP 8.5.12**, verified against PHP's [official release feed](https://www.php.net/releases/index.php?json&version=8.5) on 25 October 2026; the server refuses older runtimes. Check `php -v` after updating and restart the server so the running process uses the patched executable. PHP is installed separately and is not bundled in the ZIP. GitHub Actions installs the latest stable PHP release with updates enabled and runs the full suite.
 
 Stop with Ctrl+C or SIGTERM. Player data is saved on disconnect and shutdown, with periodic saves while playing. Block and container changes are written to SQLite as they happen.
 

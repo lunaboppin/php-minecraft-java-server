@@ -8,8 +8,18 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Install PHP CLI and SQLite
-        run: sudo apt-get update && sudo apt-get install -y php-cli php-sqlite3
+      - name: Install latest stable PHP security release
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib
+          coverage: none
+        env:
+          update: 'true'
+      - name: Verify patched PHP runtime
+        run: |
+          php -v
+          php -r 'require "src/bootstrap.php";'
       - name: Check PHP syntax
         run: find src bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Run protocol and gameplay checks

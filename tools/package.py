@@ -39,7 +39,7 @@ def main():
             archive.writestr(launcher, '#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nexec php bin/server.php --config=server.json\n')
             archive.writestr(PREFIX + 'start.bat', '@echo off\r\ncd /d "%~dp0"\r\nphp bin\\server.php --config=server.json\r\npause\r\n')
             archive.writestr(PREFIX + 'START-HERE.txt',
-                             'Minecraft Java 26.3 PHP server\n\nRequires 64-bit PHP 8.2+ CLI with JSON, zlib, iconv, PDO and PDO SQLite.\n'
+                             'Minecraft Java 26.3 PHP server\n\nRequires 64-bit PHP 8.5.12+ CLI with JSON, zlib, iconv, PDO and PDO SQLite.\n'
                              'Run start.sh, start.bat, or:\n  php bin/server.php --config=server.json\n\n'
                              'The included server.json sets the TCP port and world. See README.md for features, operator settings and limitations.\n')
         with zipfile.ZipFile(OUTPUT) as archive:

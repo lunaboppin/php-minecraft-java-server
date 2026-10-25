@@ -30,6 +30,7 @@ final class Server
         if ($this->listener === false) { throw new \RuntimeException('Cannot listen: ' . $error); }
         stream_set_blocking($this->listener,false);
         self::log('Listening on ' . stream_socket_get_name($this->listener,false) . ' (Minecraft '.Version::NAME.', protocol '.Version::PROTOCOL.')');
+        self::log('PHP '.PHP_VERSION.' ('.PHP_SAPI.', '.(PHP_INT_SIZE*8).'-bit)');
         self::log('Offline authentication: usernames are unverified. World: '.$this->config->worldPath);
         if (function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
