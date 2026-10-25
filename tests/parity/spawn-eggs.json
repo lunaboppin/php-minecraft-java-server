@@ -4,7 +4,7 @@
   "normalizations": [
     "Compare initial entity type/position and authoritative inventory. Ignore UUIDs, entity IDs, randomized yaw and packet ordering.",
     "Initial creation only: species AI, equipment/variant randomization, progression and boss fights are not covered. Native all-egg tests additionally cover all 88 mappings and restart.",
-    "Disable natural spawning with the official spawn_mobs gamerule before scripted egg use. Retain every observed entity; do not filter unexpected spawns."
+    "Disable natural spawning with the official spawn_mobs gamerule before scripted egg use. Record the first observation per entity UUID and dimension; re-tracking an existing mob is not a new creation. Retain unexpected new entities."
   ],
   "steps": [
     {

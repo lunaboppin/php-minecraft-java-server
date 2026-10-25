@@ -59,6 +59,15 @@ class Probe(wire.Client):
         self.equipment={}
         self.player_metadata={}
         self.entity_spawns=[]
+        self.spawned_profiles=set()
+
+    def observe_spawn(self,payload):
+        entity,off=wire.read_vi(payload);profile=payload[off:off+16];kind,off=wire.read_vi(payload,off+16)
+        self.entities[entity]=kind
+        key=(self.dimension,profile)
+        if key not in self.spawned_profiles:
+            self.spawned_profiles.add(key)
+            self.entity_spawns.append({'type':kind,'position':list(struct.unpack_from('>ddd',payload,off))})
 
     def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
         return super().until(target,predicate,limit,timeout)
@@ -118,9 +127,7 @@ class Probe(wire.Client):
                         if index==meta['skin_index']:self.appearance['skinParts']=value
                         if index==meta['main_hand_index']:self.appearance['mainHand']=value
             elif name=='add_entity':
-                entity,off=wire.read_vi(p);kind,off=wire.read_vi(p,off+16)
-                self.entities[entity]=kind
-                self.entity_spawns.append({'type':kind,'position':list(struct.unpack_from('>ddd',p,off))})
+                self.observe_spawn(p)
             elif name=='remove_entities':
                 count,off=wire.read_vi(p)
                 for _ in range(count):
