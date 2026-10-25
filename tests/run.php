@@ -104,4 +104,5 @@ require __DIR__.'/dimensions-unit.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
 passthru('python3 '.escapeshellarg(__DIR__.'/integration.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/terrain.py'),$code);if($code!==0){exit($code);}
-passthru('python3 '.escapeshellarg(__DIR__.'/dimensions.py'),$code);exit($code);
+passthru('python3 '.escapeshellarg(__DIR__.'/dimensions.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/placement.py'),$code);exit($code);

@@ -1,0 +1,173 @@
+{
+  "name": "obsidian-edge-hit-placement",
+  "normalizations": [
+    "Compare named state checkpoints after game-clock barriers; retain both packet directions.",
+    "Use matching flat terrain and creative mode; ignore clocks and generated entity IDs.",
+    "Treat absent damage and explicit zero damage as equivalent."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:obsidian 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        63,
+        1
+      ],
+      "cursor": [
+        0.5,
+        1.0000001192092896,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        1
+      ],
+      "cursor": [
+        -1e-07,
+        1,
+        1.0000001192092896
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        63,
+        1
+      ],
+      "cursor": [
+        -0.5,
+        1.5,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        63,
+        2
+      ],
+      "cursor": [
+        -0.5000001192092896,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        2
+      ],
+      "cursor": [
+        1.5000001192092896,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        63,
+        2
+      ],
+      "cursor": [
+        "NaN",
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        63,
+        3
+      ],
+      "cursor": [
+        "Infinity",
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        3
+      ],
+      "cursor": [
+        -0.4999,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "edge-placement-and-rejected-hits",
+      "fields": [
+        "blocks",
+        "inventory",
+        "health"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          1
+        ],
+        [
+          2,
+          64,
+          1
+        ],
+        [
+          3,
+          64,
+          1
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          3
+        ],
+        [
+          2,
+          64,
+          3
+        ]
+      ]
+    }
+  ]
+}

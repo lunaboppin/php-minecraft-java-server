@@ -105,7 +105,7 @@ def observe(controller,scenario,output):
             elif action=='dig':
                 probe.send('player_action',wire.vi(step.get('type',0))+wire.block_position(*step['position'])+b'\1'+wire.vi(index+1));probe.barrier()
             elif action=='place':
-                probe.send('use_item_on',b'\0'+wire.block_position(*step['position'])+wire.vi(step.get('face',1))+struct.pack('>fff',.5,1,.5)+b'\0\0'+wire.vi(index+1));probe.barrier()
+                probe.send('use_item_on',b'\0'+wire.block_position(*step['position'])+wire.vi(step.get('face',1))+struct.pack('>fff',*map(float,step.get('cursor',[.5,1,.5])))+b'\0\0'+wire.vi(index+1));probe.barrier()
             elif action=='respawn':
                 probe.send('client_command',b'\0');probe.until('respawn');probe.until('player_position');probe.barrier()
             elif action=='restart':

@@ -33,7 +33,7 @@ The Java verifier decodes every retained packet with official codecs and rejects
 
 ## Coverage and limits
 
-`smoke.json` checks login, registry/chunk delivery, creative mining, block edits, inventory, 2×2 crafting, a summoned entity and save/restart. `lifecycle.json` checks actual item placement, death/respawn, Nether portal travel and dimension persistence after restart. The scenario files enumerate normalizations. Absent damage and explicit zero damage are equivalent. Generated entity IDs are omitted from entity-type observations. Game-clock barriers allow vanilla's tick-end block broadcasts to arrive before comparison.
+`smoke.json` checks login, registry/chunk delivery, creative mining, block edits, inventory, 2×2 crafting, a summoned entity and save/restart. `lifecycle.json` checks actual item placement, death/respawn, Nether portal travel and dimension persistence after restart. `placement.json` exercises obsidian placement with float rounding outside [0,1], the official block-centre bounds, rejected out-of-range/non-finite hits, and continued connection usability. The scenario files enumerate normalizations. Absent damage and explicit zero damage are equivalent. Generated entity IDs are omitted from entity-type observations. Game-clock barriers allow vanilla's tick-end block broadcasts to arrive before comparison.
 
 These are semantic checkpoint comparisons plus independent packet validation. They do **not** assert identical packet ordering, compare every packet field, prove exact terrain generation, test full item components, or cover multiplayer and every entity lifecycle. Issue #2 remains open until those broader comparisons are delivered. A passing scenario establishes only its named observations.
 

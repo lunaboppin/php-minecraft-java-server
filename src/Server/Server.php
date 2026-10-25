@@ -334,9 +334,16 @@ final class Server
     }
     private function place(Client $c,Binary $r): void {
         $hand=$r->varInt();[$x,$y,$z]=$r->position();$face=$r->varInt();$cursor=[$r->float(),$r->float(),$r->float()];
-        foreach($cursor as $value){if(!is_finite($value) || $value<0 || $value>1){throw new ProtocolException('Invalid hit position');}}
         $r->bool();$r->bool();$sequence=$r->varInt();$r->end();
         if($face<0 || $face>5 || $hand<0 || $hand>1 || $sequence<0){throw new ProtocolException('Invalid placement');}
+        // Vanilla measures the hit against the block centre, with a strict 1.0000001 bound.
+        // Valid client edge hits can lie outside [0,1]. Invalid hits are acknowledged and ignored.
+        foreach($cursor as $axis=>$value){
+            $block=[$x,$y,$z][$axis];
+            if(!is_finite($value) || !(abs(($block+$value)-($block+0.5))<1.0000001)){
+                $c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;
+            }
+        }
         $slot=$hand===0?36+$c->heldSlot:45;$stack=$c->inventory[$slot]??null;
         $clicked=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($clicked);
         $within=!$c->dead && ($x+0.5-$c->x)**2+($y+0.5-$c->y-1.62)**2+($z+0.5-$c->z)**2<=64;
