@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary,Packets};
-use Jva\World\World;
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary,Packets};
+use PhpMinecraftJavaServer\World\World;
 
 /** World-scoped simulation contexts are entered for each network action and tick. */
 trait Dimensions
@@ -97,7 +97,7 @@ trait Dimensions
         $catalog=$this->version->catalog;$state=$this->world->get($x,$y,$z);
         if($catalog->blockName($state)!=='end_portal_frame' || $catalog->properties($state)['eye']==='true'){return false;}
         $props=$catalog->properties($state);$props['eye']='true';$this->setBlock($x,$y,$z,$catalog->state('end_portal_frame',$props));
-        if($c->gameMode===0){\Jva\World\Inventory::consume($c->inventory,$slot);$this->syncInventory($c);}
+        if($c->gameMode===0){\PhpMinecraftJavaServer\World\Inventory::consume($c->inventory,$slot);$this->syncInventory($c);}
         for($cx=$x-2;$cx<=$x+2;++$cx){for($cz=$z-2;$cz<=$z+2;++$cz){
             $valid=true;
             foreach([[-2,0,'east'],[2,0,'west'],[0,-2,'south'],[0,2,'north']] as [$dx,$dz,$facing]){

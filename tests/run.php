@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../src/bootstrap.php';
-use Jva\Protocol\{Binary,Framing,Nbt,Packets,ProtocolException,Version};
-use Jva\World\{FlatWorld,Palette};
-use Jva\Server\Config;
+use PhpMinecraftJavaServer\Protocol\{Binary,Framing,Nbt,Packets,ProtocolException,Version};
+use PhpMinecraftJavaServer\World\{FlatWorld,Palette};
+use PhpMinecraftJavaServer\Server\Config;
 $checks=0;
 function check(bool $condition,string $message):void {
     global $checks;++$checks;
@@ -45,7 +45,7 @@ $reference=__DIR__.'/../reference/26.3/';
 foreach(json_decode(file_get_contents($reference.'checksums.json'),true,512,JSON_THROW_ON_ERROR) as $file=>$hash) {
     check(hash_file('sha256',$reference.$file)===$hash,'reference integrity: '.$file);
 }
-$configPath=tempnam(sys_get_temp_dir(),'jva-config-');
+$configPath=tempnam(sys_get_temp_dir(),'php-minecraft-config-');
 try {
     file_put_contents($configPath,'{}');check(Config::load($configPath)->port===25565,'empty config object uses defaults');
     file_put_contents($configPath,'[]');rejects(fn()=>Config::load($configPath),'configuration array rejected');
@@ -84,7 +84,7 @@ check(bin2hex(Binary::offlineUuid('Steve'))===bin2hex($uuid),'offline UUID');
 check($v->id('play','level_chunk_with_light')===46,'generated packet ID');
 rejects(fn()=>$v->name('play',9999),'unknown packet');
 check(count(iterator_to_array($v->registryPackets()))===32,'all synchronized registries');
-$path=sys_get_temp_dir().'/jva-world-'.bin2hex(random_bytes(8)).'.sqlite';
+$path=sys_get_temp_dir().'/php-minecraft-world-'.bin2hex(random_bytes(8)).'.sqlite';
 try {
     $world=new FlatWorld($v,$path);
     check($world->get(-1,63,-1)===$v->blocks['states']['grass_block'],'base terrain');

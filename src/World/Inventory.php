@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\Catalog;
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\Catalog;
 
 final class Inventory
 {

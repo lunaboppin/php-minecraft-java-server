@@ -20,7 +20,7 @@ def main():
         files.extend(path for path in (ROOT / directory).rglob('*') if path.is_file()
                      and not any(part in ('.cache', '__pycache__') for part in path.relative_to(ROOT).parts)
                      and path.suffix != '.pyc')
-    with tempfile.TemporaryDirectory(prefix='jva-distribution-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='php-minecraft-distribution-') as temporary:
         temporary = Path(temporary)
         with zipfile.ZipFile(OUTPUT, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
             for path in sorted(files):

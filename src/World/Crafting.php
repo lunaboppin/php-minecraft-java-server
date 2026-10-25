@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
+namespace PhpMinecraftJavaServer\World;
 
 /** Matches server-owned crafting grids; client result predictions never create items. */
 final class Crafting

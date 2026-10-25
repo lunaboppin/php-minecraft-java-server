@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\Version;
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\Version;
 
 /** Seeded terrain, biome columns, underground features and decorations; algorithm version 1. */
 final class TerrainGenerator

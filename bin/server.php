@@ -2,7 +2,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../src/bootstrap.php';
-use Jva\Server\{Config,Server};
+use PhpMinecraftJavaServer\Server\{Config,Server};
 $options=getopt('', ['config:','host:','port:','max-ticks:','help']);
 if (isset($options['help'])) {
     fwrite(STDOUT,"Usage: php bin/server.php [--config=server.json] [--host=127.0.0.1] [--port=25565]\n");exit(0);

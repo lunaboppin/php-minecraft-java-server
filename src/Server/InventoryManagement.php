@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary,Packets,ProtocolException};
-use Jva\World\{Inventory,Crafting};
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary,Packets,ProtocolException};
+use PhpMinecraftJavaServer\World\{Inventory,Crafting};
 
 trait InventoryManagement
 {
@@ -57,7 +57,7 @@ trait InventoryManagement
         $this->closeWindow($c,true);$c->windowId=1;$c->windowType=$type;$c->windowPosition=$position;
         $menu=match($type){'crafting'=>'crafting','furnace'=>'furnace',default=>'generic_9x3'};
         $title=match($type){'crafting'=>'Crafting','furnace'=>'Furnace',default=>'Chest'};
-        $c->send($this->version,'open_screen',"\1".Binary::writeVarInt($this->version->blocks['menus'][$menu]).\Jva\Protocol\Nbt::text($title));
+        $c->send($this->version,'open_screen',"\1".Binary::writeVarInt($this->version->blocks['menus'][$menu]).\PhpMinecraftJavaServer\Protocol\Nbt::text($title));
         if($type==='furnace'){$this->activeFurnaces[implode(':',$position)]=$position;}
         $this->syncInventory($c);
     }

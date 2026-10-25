@@ -56,7 +56,7 @@ def move(c, xyz, wait=True):
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix='jva-dimensions-') as temp:
+    with tempfile.TemporaryDirectory(prefix='php-minecraft-dimensions-') as temp:
         world = str(Path(temp) / 'world.sqlite')
         config = {'port': 0, 'worldPath': world, 'generator': 'flat', 'seed': 42,
                   'defaultGameMode': 1, 'operators': ['Admin']}
@@ -160,7 +160,7 @@ def main():
                 net.check(a.dimension == 'overworld', 'End exit fountain returns to Overworld')
             finally:
                 a.close()
-    capture = os.environ.get('JVA_CAPTURE')
+    capture = os.environ.get('PHP_MINECRAFT_CAPTURE')
     if capture:
         path = Path(capture)
         previous = json.loads(path.read_text()) if path.exists() else []

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\{Binary,Version};
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\{Binary,Version};
 
 /** Persisted block edits overlay an immutable, seed-specific procedural generator. */
 class World

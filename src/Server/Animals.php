@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary,Packets};
-use Jva\World\Noise;
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary,Packets};
+use PhpMinecraftJavaServer\World\Noise;
 
 /** Small persistent passive-animal simulation; deliberately separate from terrain generation. */
 trait Animals

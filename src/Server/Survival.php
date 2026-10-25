@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary,Packets,Nbt};
-use Jva\World\Inventory;
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary,Packets,Nbt};
+use PhpMinecraftJavaServer\World\Inventory;
 
 trait Survival
 {

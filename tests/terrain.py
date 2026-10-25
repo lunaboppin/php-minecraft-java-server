@@ -53,7 +53,7 @@ def close(c):
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix='jva-progression-') as temp:
+    with tempfile.TemporaryDirectory(prefix='php-minecraft-progression-') as temp:
         world = str(Path(temp) / 'normal.sqlite')
         config = {'port': 0, 'worldPath': world, 'generator': 'terrain', 'seed': 12345,
                   'defaultGameMode': 0, 'operators': ['Admin']}
@@ -225,7 +225,7 @@ def main():
                 net.check(a.inventory[0] is None and a.inventory[1] is None, 'furnace consumed input and fuel persistently')
             finally:
                 a.close()
-    capture = os.environ.get('JVA_CAPTURE')
+    capture = os.environ.get('PHP_MINECRAFT_CAPTURE')
     if capture:
         path = Path(capture)
         prior = json.loads(path.read_text()) if path.exists() else []

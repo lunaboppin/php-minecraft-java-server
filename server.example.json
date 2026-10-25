@@ -1,7 +1,7 @@
 {
   "host": "127.0.0.1",
   "port": 25676,
-  "motd": "PHP Minecraft 26.3 — three dimensions and survival",
+  "motd": "PHP Minecraft Java Server 26.3 — three dimensions and survival",
   "maxPlayers": 20,
   "viewDistance": 3,
   "compressionThreshold": 256,

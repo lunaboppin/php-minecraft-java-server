@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Protocol;
+namespace PhpMinecraftJavaServer\Protocol;
 
 /** Network NBT has an unnamed root (no two-byte root-name prefix). */
 final class Nbt

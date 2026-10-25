@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Protocol;
+namespace PhpMinecraftJavaServer\Protocol;
 
 /** Payloads for protocol 777; packet IDs come from Mojang's generated report. */
 final class Packets

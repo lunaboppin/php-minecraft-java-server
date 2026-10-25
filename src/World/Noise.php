@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
+namespace PhpMinecraftJavaServer\World;
 
 /** Integer hash and smoothly interpolated value noise, stable across chunk boundaries. */
 final class Noise

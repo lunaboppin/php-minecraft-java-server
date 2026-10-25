@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary,Packets,Version};
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary,Packets,Version};
 
 trait Commands
 {
@@ -50,7 +50,7 @@ trait Commands
             switch($name){
                 case 'help':$this->tell($c,'Commands: /'.implode(', /',$this->commandNames($c)));return;
                 case 'list':$this->tell($c,'Players: '.implode(', ',array_map(static fn(Client $p):string=>$p->name,$this->players())));return;
-                case 'version':$this->tell($c,'PHP Minecraft Server — Minecraft '.Version::NAME.' / protocol '.Version::PROTOCOL);return;
+                case 'version':$this->tell($c,'PHP Minecraft Java Server — Minecraft '.Version::NAME.' / protocol '.Version::PROTOCOL);return;
                 case 'spawn':$this->teleport($c);$this->tell($c,'Returned to spawn.');return;
                 case 'me':$this->broadcast('* '.$c->name.' '.implode(' ',$parts));return;
                 case 'tell':case 'msg':

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\{Binary,Catalog};
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\{Binary,Catalog};
 
 final class Lighting
 {

@@ -234,7 +234,7 @@ class Client:
 
 @contextlib.contextmanager
 def server(config):
-    with tempfile.TemporaryDirectory(prefix='jva-server-') as temp:
+    with tempfile.TemporaryDirectory(prefix='php-minecraft-server-') as temp:
         cfg = Path(temp) / 'server.json'
         cfg.write_text(json.dumps(config))
         error = open(Path(temp) / 'stderr.log', 'w+')
@@ -298,7 +298,7 @@ def block_position(x, y, z):
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix='jva-world-test-') as temp:
+    with tempfile.TemporaryDirectory(prefix='php-minecraft-world-test-') as temp:
         world = str(Path(temp) / 'world.sqlite')
         config = {'port': 0, 'worldPath': world, 'maxPlayers': 2, 'generator': 'flat', 'defaultGameMode': 1}
         with server(config) as port:
@@ -370,8 +370,8 @@ def main():
                 c = Client(port).login('Boundary')
                 check(c.threshold == threshold, 'compression mode ' + str(threshold))
                 c.close()
-    if os.environ.get('JVA_CAPTURE'):
-        Path(os.environ['JVA_CAPTURE']).write_text(json.dumps(CAPTURE))
+    if os.environ.get('PHP_MINECRAFT_CAPTURE'):
+        Path(os.environ['PHP_MINECRAFT_CAPTURE']).write_text(json.dumps(CAPTURE))
     print(f'PASS: {CHECKS} independent TCP checks ({len(CAPTURE)} captured server packets)')
 
 

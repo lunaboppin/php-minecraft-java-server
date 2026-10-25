@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="480" viewBox="0 0 1440 480" role="img" aria-labelledby="title desc">
-<title id="title">Minecraft Java Server in PHP</title>
+<title id="title">PHP Minecraft Java Server</title>
 <desc id="desc">A block landscape moves from a green Overworld through glowing Nether caverns to floating End islands under a violet sky.</desc>
 <defs>
 <linearGradient id="sky" x2="1" y2="1"><stop stop-color="#0a182b"/><stop offset=".5" stop-color="#17243d"/><stop offset="1" stop-color="#271440"/></linearGradient>

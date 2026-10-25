@@ -5,7 +5,7 @@
     "update_url": "https://raw.githubusercontent.com/lunaboppin/php-minecraft-java-server/main/deploy/panel/egg-php-minecraft-java-server.json"
   },
   "exported_at": "2026-10-25T00:00:00+00:00",
-  "name": "Minecraft Java 26.3 — PHP Server",
+  "name": "PHP Minecraft Java Server — 26.3",
   "author": "20017802+lunaboppin@users.noreply.github.com",
   "description": "Native PHP Minecraft Java 26.3 server (protocol 777), with survival, terrain, Nether and End. Offline authentication. Downloads from the project GitHub CDN. Builds the latest stable PHP 8.5 security patch from checksum-verified official source on install/reinstall; first install takes several minutes. Allocate at least 1 GiB RAM and 2 GiB disk. Reinstall preserves data/ and server.json. This is an experimental Java Edition server, not PocketMine/Bedrock.",
   "features": [],
@@ -102,7 +102,7 @@
       "name": "Server message",
       "description": "Initial MOTD; edit server.json after the first install.",
       "env_variable": "SERVER_MOTD",
-      "default_value": "PHP Minecraft 26.3 — three dimensions and survival",
+      "default_value": "PHP Minecraft Java Server 26.3 — three dimensions and survival",
       "user_viewable": true,
       "user_editable": true,
       "rules": "required|string|max:1024",

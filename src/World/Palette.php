@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\Binary;
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\Binary;
 
 final class Palette
 {

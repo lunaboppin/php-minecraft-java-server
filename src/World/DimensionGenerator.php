@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Jva\World;
-use Jva\Protocol\Version;
+namespace PhpMinecraftJavaServer\World;
+use PhpMinecraftJavaServer\Protocol\Version;
 
 /** Original seeded Nether caverns and End islands, with vanilla dimension sizes/biome IDs. */
 final class DimensionGenerator

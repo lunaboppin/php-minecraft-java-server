@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
+namespace PhpMinecraftJavaServer\Server;
 
 final class Config
 {
     public function __construct(
         public readonly string $host = '127.0.0.1',
         public readonly int $port = 25565,
-        public readonly string $motd = 'PHP Minecraft 26.3 — terrain and survival',
+        public readonly string $motd = 'PHP Minecraft Java Server 26.3 — terrain and survival',
         public readonly int $maxPlayers = 20,
         public readonly int $viewDistance = 2,
         public readonly int $compressionThreshold = 256,

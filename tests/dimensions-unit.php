@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
-use Jva\World\{DimensionGenerator,TerrainGenerator,World};
+use PhpMinecraftJavaServer\World\{DimensionGenerator,TerrainGenerator,World};
 foreach(['the_nether','the_end'] as $dimension){
     $g=new DimensionGenerator($v,42,$dimension);$chunks=$g->chunk(0,0);
     check(count($chunks)===16 && count($chunks[0])===4096,'dimension has 16 full sections');
     check($chunks===(new DimensionGenerator($v,42,$dimension))->chunk(0,0),'dimension generation deterministic');
-    $path=sys_get_temp_dir().'/jva-dimension-'.bin2hex(random_bytes(8)).'.sqlite';
+    $path=sys_get_temp_dir().'/php-minecraft-dimension-'.bin2hex(random_bytes(8)).'.sqlite';
     try{
         $w=new World($v,$path,'terrain',42,$dimension);
         check($w->minY===0 && $w->height===256,'dimension build limits');
@@ -24,7 +24,7 @@ foreach(['the_nether','the_end'] as $dimension){
         $outer=false;for($x=1024;$x<4096;$x+=64){if($g->column($x,1234)['thickness']>5){$outer=true;break;}}check($outer,'End outer islands');
     }
 }
-$path=sys_get_temp_dir().'/jva-migration-'.bin2hex(random_bytes(8)).'.sqlite';
+$path=sys_get_temp_dir().'/php-minecraft-migration-'.bin2hex(random_bytes(8)).'.sqlite';
 try{
     $w=new World($v,$path,'terrain',42);$w->setting('algorithm','terrain-v1');$w->setting('naturalSpawns',['0:0'=>true]);unset($w);
     $w=new World($v,$path,'terrain',42);check($w->sections(0,0)===(new TerrainGenerator($v,42,false))->chunk(0,0),'migration preserves explored v1 chunks');

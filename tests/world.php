@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-use Jva\World\{TerrainGenerator,World,Inventory,Crafting};
+use PhpMinecraftJavaServer\World\{TerrainGenerator,World,Inventory,Crafting};
 $catalog=$v->catalog;
 foreach(['oak_log'=>['axis'=>'x'],'oak_stairs'=>['facing'=>'east','half'=>'top'],'oak_door'=>['open'=>'true','half'=>'upper'],'water'=>['level'=>'5']] as $name=>$properties){
     $state=$catalog->state($name,$properties);check($catalog->blockName($state)===$name,'state name round trip');foreach($properties as $key=>$value){check($catalog->properties($state)[$key]===$value,'state property round trip');}
@@ -27,12 +27,12 @@ $biomes=[];$heights=[];
 for($x=-1024;$x<=1024;$x+=128){for($z=-1024;$z<=1024;$z+=128){$column=$generator->column($x,$z);$biomes[$column['biome']]=true;$heights[]=$column['height'];}}
 check(count($biomes)>=7 && isset($biomes['ocean'],$biomes['forest'],$biomes['river'],$biomes['desert']),'terrain contains multiple land and water biomes');
 check(max($heights)-min($heights)>60,'terrain has substantial elevation variation');
-$path=sys_get_temp_dir().'/jva-terrain-'.bin2hex(random_bytes(8)).'.sqlite';
+$path=sys_get_temp_dir().'/php-minecraft-terrain-'.bin2hex(random_bytes(8)).'.sqlite';
 try{
-    $world=new World($v,$path,'terrain',12345);check(bin2hex(Jva\Protocol\Binary::writeLong($world->hashedSeed()))===$f['hashed_seed'],'seed hashing matches Mojang');check($world->spawn()===[0.5,65.0,0.5],'safe dry terrain spawn');
+    $world=new World($v,$path,'terrain',12345);check(bin2hex(PhpMinecraftJavaServer\Protocol\Binary::writeLong($world->hashedSeed()))===$f['hashed_seed'],'seed hashing matches Mojang');check($world->spawn()===[0.5,65.0,0.5],'safe dry terrain spawn');
     check($world->get(-1,64,0)===$a[8][15],'world lookup agrees with generated neighbor section');
     $world->set(0,66,0,$catalog->state('torch'));$chunk=$world->chunk(0,0);check(strlen($chunk)>10000,'terrain chunk with lighting encoded');
-    $uuid=Jva\Protocol\Binary::offlineUuid('Persistence');$world->savePlayer($uuid,['inventory'=>[36=>['item'=>1,'count'=>5]],'x'=>3.5]);
+    $uuid=PhpMinecraftJavaServer\Protocol\Binary::offlineUuid('Persistence');$world->savePlayer($uuid,['inventory'=>[36=>['item'=>1,'count'=>5]],'x'=>3.5]);
     $world->container([2,65,0],['slots'=>[0=>['item'=>1,'count'=>10]],'burn'=>100,'cook'=>50,'fuelTotal'=>1600,'position'=>[2,65,0]]);
     unset($world);$world=new World($v,$path,'terrain',12345);
     check($world->get(0,66,0)===$catalog->state('torch'),'terrain edits persist');

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Protocol;
+namespace PhpMinecraftJavaServer\Protocol;
 
 /** State properties and gameplay constants extracted from the pinned Mojang JAR. */
 final class Catalog

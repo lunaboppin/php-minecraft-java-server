@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Jva\Server;
-use Jva\Protocol\{Binary, Framing, Nbt, Packets, ProtocolException, Version};
-use Jva\World\World;
+namespace PhpMinecraftJavaServer\Server;
+use PhpMinecraftJavaServer\Protocol\{Binary, Framing, Nbt, Packets, ProtocolException, Version};
+use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
@@ -20,7 +20,7 @@ final class Server
         $this->worlds['overworld']=$this->world;
         foreach(['the_nether','the_end'] as $dimension){$path=$config->worldPath.'.'.$dimension.'.sqlite';$this->worlds[$dimension]=new World($version,$path,'terrain',$config->seed,$dimension);}
         foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,fn()=>$this->restoreAnimals());}
-        $this->crafting = new \Jva\World\Crafting($version->directory);
+        $this->crafting = new \PhpMinecraftJavaServer\World\Crafting($version->directory);
         foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration'] as $key){$saved=$this->world->setting($key);if($saved!==null){$this->$key=$saved;}}
     }
     public function stop(): void { $this->running = false; }
@@ -171,7 +171,7 @@ final class Server
             $c->send($this->version,'login_finished',Packets::loginFinished($c->uuid,$c->name,random_bytes(16)));
         } elseif ($name === 'login_acknowledged' && $c->loginStarted) {
             $r->end(); $c->state = 'configuration';
-            $c->send($this->version,'custom_payload',Binary::writeString('minecraft:brand').Binary::writeString('PHP Minecraft Server'));
+            $c->send($this->version,'custom_payload',Binary::writeString('minecraft:brand').Binary::writeString('PHP Minecraft Java Server'));
             $c->send($this->version,'update_enabled_features',"\1".Binary::writeString('minecraft:vanilla'));
             // No shared-pack assumption: always send complete NBT from the official codecs.
             $c->send($this->version,'select_known_packs',"\0"); $c->knownPacksRequested = true;
@@ -321,7 +321,7 @@ final class Server
         if($action<0 || $action>8 || $face>5 || $sequence<0){throw new ProtocolException('Invalid digging action');}
         if($action===2){$c->mining=null;}
         elseif($action===6){$c->eating=null;}
-        elseif($action===4 || $action===5){$slot=36+$c->heldSlot;if(isset($c->inventory[$slot]) && $c->gameMode!==3){$stack=$c->inventory[$slot];$count=$action===4?$stack['count']:1;$this->dropStack($c->x,$c->y+0.5,$c->z,array_replace($stack,['count'=>$count]));\Jva\World\Inventory::consume($c->inventory,$slot,$count);$this->syncInventory($c);}}
+        elseif($action===4 || $action===5){$slot=36+$c->heldSlot;if(isset($c->inventory[$slot]) && $c->gameMode!==3){$stack=$c->inventory[$slot];$count=$action===4?$stack['count']:1;$this->dropStack($c->x,$c->y+0.5,$c->z,array_replace($stack,['count'=>$count]));\PhpMinecraftJavaServer\World\Inventory::consume($c->inventory,$slot,$count);$this->syncInventory($c);}}
         elseif($action===7){[$main,$off]=[$c->inventory[36+$c->heldSlot]??null,$c->inventory[45]??null];if($off===null){unset($c->inventory[36+$c->heldSlot]);}else{$c->inventory[36+$c->heldSlot]=$off;}if($main===null){unset($c->inventory[45]);}else{$c->inventory[45]=$main;}$this->syncInventory($c);}
         elseif($action===0 && $this->editable($c,$x,$y,$z)){
             $state=$this->world->get($x,$y,$z);
@@ -376,7 +376,7 @@ final class Server
                 $this->setBlock($tx,$ty,$tz,$this->version->catalog->state($blockName,$properties));
                 if($bed){$head=$properties;$head['part']='head';$this->setBlock($tx+$bedOffset[0],$ty,$tz+$bedOffset[1],$this->version->catalog->state($blockName,$head));}
                 if($door){$properties['half']='upper';$this->setBlock($tx,$ty+1,$tz,$this->version->catalog->state($blockName,$properties));}
-                if($c->gameMode===0){\Jva\World\Inventory::consume($c->inventory,$slot);if(str_ends_with($itemName,'_bucket')){$this->giveStack($c,['item'=>$this->version->blocks['items']['bucket'],'count'=>1]);}$this->syncInventory($c);}
+                if($c->gameMode===0){\PhpMinecraftJavaServer\World\Inventory::consume($c->inventory,$slot);if(str_ends_with($itemName,'_bucket')){$this->giveStack($c,['item'=>$this->version->blocks['items']['bucket'],'count'=>1]);}$this->syncInventory($c);}
             }
         }
         $this->blockUpdate($c,$tx,$ty,$tz);$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));

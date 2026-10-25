@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../../src/bootstrap.php';
-use Jva\Server\Config;
+use PhpMinecraftJavaServer\Server\Config;
 
 // Panel variables seed the first configuration. Reinstall/restart keeps user settings intact.
 if(is_file('server.json')){Config::load('server.json');echo "Keeping existing server.json\n";return;}

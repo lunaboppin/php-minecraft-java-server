@@ -5,7 +5,7 @@ Download [egg-php-minecraft-java-server.json](https://raw.githubusercontent.com/
 ## Create a server
 
 1. In Pelican, open **Admin → Eggs → Import**. In Pterodactyl 1.x, open **Admin → Nests → Import Egg** and select a nest. Pterodactyl 2.x uses **Admin → Eggs → Import Egg**.
-2. Import the JSON and select **Minecraft Java 26.3 — PHP Server** when creating a server.
+2. Import the JSON and select **PHP Minecraft Java Server — 26.3** when creating a server.
 3. Keep the default image, `ghcr.io/pelican-eggs/yolks:debian`. Allocate **at least 1 GiB RAM and 2 GiB disk**; allow several minutes and additional temporary node disk for the initial PHP compilation. The installer uses two compiler jobs by default; set **PHP build jobs** to 1 on a small node.
 4. Give it a primary **TCP** allocation, such as **25676**. The server binds to `0.0.0.0` and uses that allocation automatically on every start. Do not add a separate `SERVER_PORT` egg variable: Wings supplies it.
 5. Set the initial world seed, operators, game mode and other settings, then install and start. Connect with Minecraft Java **26.3** to the allocation's public address and port.

@@ -1,6 +1,6 @@
-![Minecraft Java Server in PHP](docs/assets/banner.svg)
+![PHP Minecraft Java Server](docs/assets/banner.svg)
 
-# Minecraft Java Server in PHP
+# PHP Minecraft Java Server
 
 [![Server checks](https://github.com/lunaboppin/php-minecraft-java-server/actions/workflows/test.yml/badge.svg)](https://github.com/lunaboppin/php-minecraft-java-server/actions/workflows/test.yml)
 ![PHP 8.5.12+](https://img.shields.io/badge/PHP-8.5.12%2B-777BB4?logo=php&logoColor=white)
@@ -164,8 +164,8 @@ The suites exercise TCP fragmentation/compression, login and 26.3 teleport confi
 Reference rebuilding and independent packet decoding require Python **3.11+** and a **Java 25+ JDK**:
 
 ```sh
-JVA_CAPTURE=/tmp/jva-capture.json php tests/run.php
-JAVA_HOME=/path/to/jdk-25 python3 tools/update_reference.py --capture=/tmp/jva-capture.json
+PHP_MINECRAFT_CAPTURE=/tmp/php-minecraft-capture.json php tests/run.php
+JAVA_HOME=/path/to/jdk-25 python3 tools/update_reference.py --capture=/tmp/php-minecraft-capture.json
 ```
 
 The tool verifies Mojang's metadata and JAR checksums, runs the official data generator, exports network registries and gameplay constants, resolves vanilla tags/recipe ingredients, and decodes captured PHP packets with official codecs. It also reconstructs client registries and reads every captured chunk's section, biome, heightmap and lighting data. Downloaded Java tooling stays under ignored `tools/.cache/`; the tool does not start a vanilla game server or change an EULA file.
