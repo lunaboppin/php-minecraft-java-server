@@ -36,6 +36,7 @@ final class Client
     public ?array $windowPosition = null;
     public array $craftGrid = [];
     public array $entities = [];
+    public bool $trackingDirty = true;
     public ?array $personalSpawn = null;
     public string $state = 'handshake';
     public bool $bufferedWork = false;

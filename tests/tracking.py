@@ -52,8 +52,10 @@ def main():
                 a.send('player_command',wire.vi(a.entity_id)+b'\2\0');settle(a,b)
                 assert state(b,a.entity_id)[META['flags_index']]&10==0
                 # Spectators are hidden from non-spectators; spectator observers can see them.
-                command(a,'gamemode spectator');settle(b);assert a.entity_id not in b.entities
-                command(b,'gamemode spectator');settle(a,b);assert a.entity_id in b.entities
+                command(a,'gamemode spectator');settle(b)
+                assert state(b,a.entity_id)[META['flags_index']]&32
+                command(a,'tp @s 16.5 64 .5');settle(b);assert a.entity_id not in b.entities
+                command(b,'gamemode spectator');command(b,'tp @s .5 64 .5');settle(a,b);assert a.entity_id in b.entities
                 command(a,'gamemode creative');command(b,'gamemode creative');settle(a,b)
                 # Unloading a viewer's chunks also removes tracked mobs and items, with no duplicate spawns on return.
                 command(a,'summon pig 1 64 1');settle(b)

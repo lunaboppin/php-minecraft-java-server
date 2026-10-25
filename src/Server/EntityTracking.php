@@ -28,6 +28,8 @@ trait EntityTracking
         if($viewer->dimension!==$this->world->dimension){$this->withDimension($viewer->dimension,fn()=>$this->refreshTracking($viewer));return;}
         $wanted=[];
         foreach($this->players() as $player){
+            // Vanilla rechecks player pairings on movement/chunk events, not every metadata change.
+            if(!$viewer->trackingDirty){if($player->dimension===$viewer->dimension && isset($viewer->entities[$player->entityId])){$wanted[$player->entityId]=true;}continue;}
             if($this->tracksPlayer($viewer,$player)){$wanted[$player->entityId]=true;$this->spawnPlayer($viewer,$player);}
         }
         foreach($this->animals as $animal){
@@ -37,6 +39,7 @@ trait EntityTracking
             if($this->tracksPosition($viewer,$entity['x'],$entity['z'],'item')){$wanted[$entity['id']]=true;$this->showItem($viewer,$entity);}
         }
         foreach(array_keys($viewer->entities) as $id){if(!isset($wanted[$id])){$this->forgetEntity($viewer,$id);}}
+        $viewer->trackingDirty=false;
     }
     private function playerMetadata(Client $player):string {
         $catalog=$this->version->catalog;$tracking=$catalog->tracking;
@@ -54,7 +57,7 @@ trait EntityTracking
         }
     }
     private function broadcastPlayerPosition(Client $player,bool $head=true):void {
-        $this->refreshTracking($player);
+        $player->trackingDirty=true;$this->refreshTracking($player);
         foreach($this->players() as $viewer){
             if($viewer===$player){continue;}$this->updatePlayerTracking($viewer,$player);
             if(!isset($viewer->entities[$player->entityId])){continue;}

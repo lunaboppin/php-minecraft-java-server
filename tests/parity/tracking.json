@@ -117,6 +117,17 @@
     },
     {
       "action": "snapshot",
+      "name": "stationary-spectator-metadata",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 16.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
       "name": "hidden-spectator",
       "fields": [
         "tracked_player"
@@ -125,6 +136,10 @@
     {
       "action": "command",
       "text": "gamemode spectator ParityObserver"
+    },
+    {
+      "action": "command",
+      "text": "tp ParityObserver 0.5 64 0.5"
     },
     {
       "action": "snapshot",

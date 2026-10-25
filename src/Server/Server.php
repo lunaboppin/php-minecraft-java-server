@@ -280,6 +280,7 @@ final class Server
             if (!isset($wanted[$key])) { $c->send($this->version,'forget_level_chunk',pack('NN',$z,$x)); unset($c->loadedChunks[$key]); }
         }
         $c->queuedChunks = $queue;
+        $c->trackingDirty=true;
         $this->refreshTracking($c);
         $c->send($this->version,'set_chunk_cache_center',Binary::writeVarInt($cx).Binary::writeVarInt($cz));
     }
@@ -493,6 +494,7 @@ final class Server
                     foreach (array_slice($c->queuedChunks,0,2,true) as $key=>[$x,$z]) {
                         $c->send($this->version,'level_chunk_with_light',$this->world->chunk($x,$z));
                         $c->loadedChunks[$key]=[$x,$z];$this->naturalAnimals($x,$z);unset($c->queuedChunks[$key]);++$count;
+                        $c->trackingDirty=true;
                     }
                     $c->send($this->version,'chunk_batch_finished',Binary::writeVarInt($count));$c->awaitingBatch=true;$c->batchAt=$now;
                 }
