@@ -1,5 +1,6 @@
 """Version-777 observation helpers. Transport and constants use the existing independent client."""
 from pathlib import Path
+import copy
 import struct
 import json
 import sys
@@ -221,4 +222,4 @@ class Probe(wire.Client):
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
             elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns'):output[field]=getattr(self,field)
             else:raise ValueError('Unknown snapshot field: '+field)
-        return output
+        return copy.deepcopy(output)

@@ -85,7 +85,15 @@ class World
         $q=$this->db->prepare('SELECT data FROM containers WHERE position=?');$q->execute([$key]);$bytes=$q->fetchColumn();return $bytes===false?['slots'=>[],'burn'=>0,'cook'=>0,'fuelTotal'=>0,'position'=>$position]:json_decode($bytes,true,512,JSON_THROW_ON_ERROR);
     }
     public function deleteContainer(array $position):void {unset($this->containerPositions[implode(':',$position)]);$q=$this->db->prepare('DELETE FROM containers WHERE position=?');$q->execute([implode(':',$position)]);}
-    public function transaction(callable $action):void {$this->db->beginTransaction();try{$action();$this->db->commit();}catch(\Throwable $e){$this->db->rollBack();throw $e;}}
+    public function transaction(callable $action):void {
+        $containers=$this->containerPositions;$this->db->beginTransaction();
+        try{$action();$this->db->commit();}
+        catch(\Throwable $e){
+            try{if($this->db->inTransaction()){$this->db->rollBack();}}
+            finally{$this->cache=[];$this->baseCache=[];$this->editCache=[];$this->lightCache=[];$this->generationCache=[];$this->containerPositions=$containers;}
+            throw $e;
+        }
+    }
     public function checkpoint():void {$this->db->exec('PRAGMA wal_checkpoint(PASSIVE)');}
     public function biome(int $x,int $z):int {return $this->generatorFor($x>>4,$z>>4)?->biome($x,$z)??$this->version->registryId('worldgen/biome','plains');}
     public function column(int $x,int $z):array {return $this->generatorFor($x>>4,$z>>4)?->column($x,$z)??['height'=>63,'biome'=>'plains'];}

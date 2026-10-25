@@ -11,6 +11,7 @@ trait Survival
     private bool $daylightCycle=true;
     private bool $keepInventory=false;
     private bool $naturalRegeneration=true;
+    private bool $spawnMobs=true;
     private string $weather='clear';
     private function restorePlayer(Client $c):void {
         $c->gameMode=$this->config->defaultGameMode;[$c->x,$c->y,$c->z]=$this->world->spawn();
@@ -32,7 +33,7 @@ trait Survival
     }
     private function saveWorld():void {
         foreach($this->players() as $player){$this->savePlayer($player);}
-        foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration'] as $key){$this->worlds['overworld']->setting($key,$this->$key);}
+        foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration','spawnMobs'] as $key){$this->worlds['overworld']->setting($key,$this->$key);}
         foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,function():void{
             $this->saveBlockSimulation();$this->world->setting('animals',$this->animals);$this->world->setting('naturalSpawns',$this->naturalSpawns);$this->world->checkpoint();
         });}
