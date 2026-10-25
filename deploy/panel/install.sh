@@ -68,7 +68,7 @@ php_version="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["v
 verify_php() {
     "$1" -n -r '
         if (PHP_VERSION_ID < 80512 || PHP_INT_SIZE !== 8) { exit(1); }
-        foreach (["json","zlib","iconv","PDO","pdo_sqlite","filter","pcntl"] as $extension) {
+        foreach (["json","zlib","iconv","PDO","pdo_sqlite","filter","pcntl","openssl","curl"] as $extension) {
             if (!extension_loaded($extension)) { fwrite(STDERR,"Missing PHP extension: ".$extension."\n"); exit(1); }
         }
         $db=new PDO("sqlite::memory:"); $db->exec("CREATE TABLE test(id INTEGER)");
@@ -81,7 +81,7 @@ if [[ -x "$php_binary" ]] && verify_php "$php_binary" && [[ "$("$php_binary" -n 
 else
     echo "Building PHP ${php_version} with SQLite, zlib, iconv, filter and signal handling (${BUILD_JOBS} jobs)."
     echo 'The first installation can take several minutes.'
-    apt-get install -y --no-install-recommends build-essential pkg-config libsqlite3-dev zlib1g-dev
+    apt-get install -y --no-install-recommends build-essential pkg-config libsqlite3-dev zlib1g-dev libssl-dev libcurl4-openssl-dev
     filename="php-${php_version}.tar.xz"
     fetch "https://www.php.net/distributions/${filename}" "$work/$filename"
     python3 - "$work/php-selected.json" "$work/$filename" <<'PY'
@@ -100,7 +100,7 @@ PY
             --with-config-file-scan-dir=/home/container/.runtime/php/conf.d \
             --disable-all --enable-cli --disable-cgi --disable-phpdbg --without-pear \
             --disable-opcache-jit --enable-filter --enable-ctype --enable-pdo \
-            --with-pdo-sqlite --with-sqlite3 --with-zlib --with-iconv --enable-pcntl
+            --with-pdo-sqlite --with-sqlite3 --with-zlib --with-iconv --enable-pcntl --with-openssl --with-curl
         make -j "$BUILD_JOBS"
     ) > "$work/build.log" 2>&1
     verify_php "$work/php-source/sapi/cli/php"

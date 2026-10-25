@@ -11,5 +11,6 @@
   "defaultGameMode": 0,
   "difficulty": 2,
   "operators": [],
-  "pvp": true
+  "pvp": true,
+  "onlineMode": true
 }

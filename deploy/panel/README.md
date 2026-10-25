@@ -32,7 +32,7 @@ Panel variables initialize `server.json` **only when it does not already exist**
 
 Reinstall replaces application files and preserves `server.json`, `data/`, and the worlds inside it, including Nether/End databases and player inventories. Back up `server.json` and the **entire `data/` directory** before updating. Keep custom world paths inside `data/`; application directories such as `src/` and `reference/` are updated on reinstall. To change a world seed, choose a new `worldPath` and corresponding `seed` in `server.json`; the server rejects changing the seed of an existing world.
 
-The server uses offline authentication: operator names refer to unverified usernames. Its current gameplay limitations are described in the [project README](../../README.md).
+New installations enable online-mode verification. `ONLINE_MODE` initializes that setting only on first install; existing configurations are preserved. Offline usernames remain unverified, and online/offline player inventories use separate save records. See the [authentication coverage](../../docs/authentication.md) before switching an existing server.
 
 ## Maintainer checks
 

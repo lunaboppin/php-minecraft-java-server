@@ -5,7 +5,7 @@ RUN docker-php-ext-install -j2 pcntl \
 WORKDIR /app
 COPY --chown=10001:10001 . /app
 RUN mkdir -p /app/data && chown 10001:10001 /app/data \
-    && php -r 'require "src/bootstrap.php"; foreach (["pdo_sqlite","zlib","iconv","pcntl"] as $extension) { if (!extension_loaded($extension)) exit(1); }'
+    && php -r 'require "src/bootstrap.php"; foreach (["pdo_sqlite","zlib","iconv","pcntl","openssl","curl"] as $extension) { if (!extension_loaded($extension)) exit(1); }'
 USER 10001:10001
 ENV SERVER_PORT=25676 CONFIG_FILE=/app/data/server.json
 VOLUME ["/app/data"]

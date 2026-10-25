@@ -18,6 +18,7 @@ final class Config
         public readonly int $difficulty = 2,
         public readonly array $operators = [],
         public readonly bool $pvp = true,
+        public readonly bool $onlineMode = false,
         public readonly string $logDirectory = 'logs',
         public readonly int $logRetentionDays = 90,
     ) {
@@ -35,7 +36,7 @@ final class Config
             if (!$object instanceof \stdClass) { throw new \InvalidArgumentException('Configuration must be a JSON object'); }
             $values = get_object_vars($object);
         }
-        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','logDirectory','logRetentionDays'];
+        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays'];
         foreach ($values as $key => $_) { if (!in_array($key,$allowed,true)) { throw new \InvalidArgumentException('Unknown configuration option: ' . $key); } }
         return new self(...array_replace($values,$overrides));
     }

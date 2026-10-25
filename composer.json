@@ -8,7 +8,9 @@
     "ext-zlib": "*",
     "ext-iconv": "*",
     "ext-pdo": "*",
-    "ext-pdo_sqlite": "*"
+    "ext-pdo_sqlite": "*",
+    "ext-openssl": "*",
+    "ext-curl": "*"
   },
   "autoload": {
     "psr-4": {

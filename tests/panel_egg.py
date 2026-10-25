@@ -63,7 +63,7 @@ def container():
         temp=Path(temp);server=temp/'server';server.mkdir()
         script=temp/'install.sh';script.write_text(egg['scripts']['installation']['script'])
         variables={v['env_variable']:v['default_value'] for v in egg['variables']}
-        variables.update({'SERVER_REF':source_ref,'WORLD_SEED':'42','VIEW_DISTANCE':'2','OPERATORS':'EggProbe','SERVER_PORT':'25676'})
+        variables.update({'SERVER_REF':source_ref,'WORLD_SEED':'42','VIEW_DISTANCE':'2','OPERATORS':'EggProbe','SERVER_PORT':'25676','ONLINE_MODE':'false'})
         uid,gid=os.getuid(),os.getgid()
         def install(changed=False):
             env={**variables}

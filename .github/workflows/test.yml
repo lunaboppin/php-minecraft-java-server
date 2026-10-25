@@ -12,7 +12,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: latest
-          extensions: iconv, pdo_sqlite, zlib
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
           coverage: none
         env:
           update: 'true'
@@ -35,7 +35,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: latest
-          extensions: iconv, pdo_sqlite, zlib
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
           coverage: none
         env:
           update: 'true'
@@ -51,7 +51,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: latest
-          extensions: iconv, pdo_sqlite, zlib
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
           coverage: none
         env:
           update: 'true'
@@ -104,7 +104,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: latest
-          extensions: iconv, pdo_sqlite, zlib
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
           coverage: none
         env:
           update: 'true'
@@ -140,7 +140,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: latest
-          extensions: iconv, pdo_sqlite, zlib
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
           coverage: none
         env:
           update: 'true'
@@ -173,3 +173,36 @@ jobs:
         run: docker build -t php-minecraft-java-server:gameplay .
       - name: Join, restart, retain saves and deliver the restart reason
         run: python3 tests/docker.py
+
+  authentication-parity:
+    if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
+          coverage: none
+        env:
+          update: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Prepare pinned official reference
+        run: |
+          python3 tools/update_reference.py
+          mkdir -p tools/.cache/parity-consent
+          printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
+      - name: Compare encrypted rejection and validate decrypted packets
+        run: |
+          python3 tools/parity/authentication.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-authentication
+          python3 tools/parity/verify.py tools/.cache/parity-authentication/php-packets.json tools/.cache/parity-authentication/java-packets.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: authentication-parity-evidence
+          path: tools/.cache/parity-authentication/
+          retention-days: 7

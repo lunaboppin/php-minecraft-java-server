@@ -141,7 +141,9 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 
 Coordinates accept `~` relative values. Fill operations are limited to 32,768 blocks. Commands and results are synchronized with the client command tree. The server does not implement vanilla command selectors beyond `@s` where a player argument is accepted.
 
-**Authentication is offline only.** Usernames are not verified with Mojang and transport is not encrypted. Operator names therefore identify unverified usernames; use a trusted network. Changing the bind address does not enable account authentication.
+Set `onlineMode` to `true` for Mojang session verification and encrypted transport. New example, Docker and panel configurations enable it. Older configurations that omit the setting retain offline behavior; add `"onlineMode": true` explicitly to enable verification. In offline mode, names and operator names remain unverified.
+
+Online players use separate `online:<UUID>` save records. Existing offline records and builds are preserved, and switching modes does not copy inventories between identities. Back up your saves before changing modes; an account's first online login starts a separate player profile. Operator name matching happens after successful verification in online mode. Session-service outages reject new online logins and do not fall back to offline access. See [authentication coverage](docs/authentication.md) for the current evidence and remaining parity checks.
 
 The [protocol coverage inventory](docs/protocol-coverage.md) lists every official packet ID and the current source coverage. The [vanilla comparison harness](tools/parity/README.md) runs identical client scripts against isolated PHP and checksum-pinned Java servers, retaining first-divergence reports and bidirectional traces. Its scenarios cover selected gameplay and restart observations; they do not establish full parity.
 
@@ -173,7 +175,7 @@ PUID=$(id -u) PGID=$(id -g) docker compose up -d --build
 docker compose logs -f
 ```
 
-Connect on TCP **25676**. The container runs as your configured non-root UID/GID, uses PHP **8.5.12** with graceful signal handling, and checks health through the Minecraft status protocol. `data/server.json` is created only when absent. Worlds, configuration and 90-day logs live in the bind-mounted `data/` directory. Set `MINECRAFT_OPERATORS` before the first start, or edit `data/server.json` and restart. Existing configuration is preserved. `SERVER_PORT` changes the published host port; the container listens on 25676.
+Connect on TCP **25676**. The container runs as your configured non-root UID/GID, uses PHP **8.5.12** with graceful signal handling, and checks health through the Minecraft status protocol. `data/server.json` is created only when absent. Worlds, configuration and 90-day logs live in the bind-mounted `data/` directory. Set `MINECRAFT_OPERATORS` and, if needed, `MINECRAFT_ONLINE_MODE=true|false` before the first start, or edit `data/server.json` and restart. Existing configuration is preserved. `SERVER_PORT` changes the published host port; the container listens on 25676.
 
 To migrate an existing checkout, stop its PHP process cleanly, back up `data/`, then copy your existing `server.json` to `data/server.json`. Keep its world path under `data/` and set `logDirectory` to `data/logs`. Start Compose after the previous listener releases the port. Never run two processes against the same SQLite worlds. `docker compose stop` saves and sends connected players the restart reason before closing sockets. The image build excludes private configuration, saves, logs, Java caches and ZIP files.
 

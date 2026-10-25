@@ -6,7 +6,7 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
-    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick, EntityTracking, SpawnEggs, MobMovement;
+    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick, EntityTracking, SpawnEggs, MobMovement, Authentication;
     private mixed $listener = null;
     /** @var array<int,Client> */
     private array $clients = [];
@@ -16,8 +16,9 @@ final class Server
     private array $pendingLight=[];
     private World $world;
     private readonly DailyLog $logger;
-    public function __construct(private readonly Config $config, private readonly Version $version = new Version()) {
+    public function __construct(private readonly Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
         $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
+        $this->initializeAuthentication($sessions);
         $this->world = new World($version,$config->worldPath,$config->generator,$config->seed);
         $this->worlds['overworld']=$this->world;
         foreach(['the_nether','the_end'] as $dimension){$path=$config->worldPath.'.'.$dimension.'.sqlite';$this->worlds[$dimension]=new World($version,$path,'terrain',$config->seed,$dimension);}
@@ -33,7 +34,7 @@ final class Server
         stream_set_blocking($this->listener,false);
         $this->log('Listening on ' . stream_socket_get_name($this->listener,false) . ' (Minecraft '.Version::NAME.', protocol '.Version::PROTOCOL.')');
         $this->log('PHP '.PHP_VERSION.' ('.PHP_SAPI.', '.(PHP_INT_SIZE*8).'-bit)');
-        $this->log('Offline authentication: usernames are unverified. World: '.$this->config->worldPath);
+        $this->log(($this->config->onlineMode?'Online authentication: verified Mojang accounts. World: ':'Offline authentication: usernames are unverified. World: ').$this->config->worldPath);
         if (function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGTERM,fn() => $this->stop());
@@ -59,7 +60,7 @@ final class Server
                         $client = $this->clients[$id];
                         $bytes = @fread($socket,65536);
                         if ($bytes === false || ($bytes === '' && feof($socket))) { $this->remove($id); continue; }
-                        $client->input .= $bytes;
+                        $client->input .= $client->decryptor?->transform($bytes)??$bytes;
                         if ($bytes !== '') { $client->lastRead = self::now(); }
                         if (strlen($client->input) > Framing::MAX_PACKET + 65536) { $this->remove($id); }
                     }
@@ -83,6 +84,7 @@ final class Server
                         $this->disconnect($client,'Invalid packet: '.$e->getMessage());
                     }
                 }
+                $this->pollAuthentication();
                 $now = self::now();
                 if ($now >= $nextTick) { $this->tick($now); ++$this->ticks; $nextTick = max($nextTick+0.05,$now); }
             }
@@ -167,17 +169,20 @@ final class Server
             foreach ($this->clients as $other) {
                 if ($other !== $c && !$other->closing && $other->name !== '') {
                     ++$count;
-                    if (strcasecmp($other->name,$username) === 0) { $this->disconnect($c,'That username is already connected'); return; }
+                    if (!$this->config->onlineMode && strcasecmp($other->name,$username) === 0) { $this->disconnect($c,'That username is already connected'); return; }
                 }
             }
             if ($count >= $this->config->maxPlayers) { $this->disconnect($c,'Server is full'); return; }
-            $c->name = $username; $c->uuid = Binary::offlineUuid($username); $c->loginStarted = true;
-            if ($this->config->compressionThreshold >= 0) {
-                $c->send($this->version,'login_compression',Binary::writeVarInt($this->config->compressionThreshold));
-                $c->compression = $this->config->compressionThreshold;
-            }
-            $c->send($this->version,'login_finished',Packets::loginFinished($c->uuid,$c->name,random_bytes(16)));
-        } elseif ($name === 'login_acknowledged' && $c->loginStarted) {
+            $c->name=$username;$c->loginStarted=true;
+            if($this->config->onlineMode){
+                $c->challengeNonce=random_bytes(4);$c->authenticationPhase='key';
+                $c->send($this->version,'hello',$this->challenge->packet($c->challengeNonce));
+            }else{$c->uuid=Binary::offlineUuid($username);$this->finishLogin($c);}
+        } elseif($name==='key' && $c->authenticationPhase==='key'){
+            $secret=$this->challenge->secret($r,$c->challengeNonce);$c->challengeNonce='';
+            $c->encrypt($secret);$c->authenticationPhase='verifying';
+            $this->sessionVerifier->start((int)$c->socket,$c->name,$this->challenge->hash($secret));
+        } elseif ($name === 'login_acknowledged' && $c->authenticationPhase==='ready') {
             $r->end(); $c->state = 'configuration';
             $c->send($this->version,'custom_payload',Binary::writeString('minecraft:brand').Binary::writeString('PHP Minecraft Java Server'));
             $c->send($this->version,'update_enabled_features',"\1".Binary::writeString('minecraft:vanilla'));
@@ -217,9 +222,9 @@ final class Server
         $this->sendWeather($c);
         $this->commands($c);
         foreach ($this->players() as $other) {
-            $c->send($this->version,'player_info_update',Packets::playerInfo($other->uuid,$other->name,$other->gameMode,(($other->information['skinParts']??0)&64)!==0));
+            $c->send($this->version,'player_info_update',Packets::playerInfo($other->uuid,$other->name,$other->gameMode,(($other->information['skinParts']??0)&64)!==0,$other->profileProperties));
             if ($other !== $c) {
-                $other->send($this->version,'player_info_update',Packets::playerInfo($c->uuid,$c->name,$c->gameMode,(($c->information['skinParts']??0)&64)!==0));
+                $other->send($this->version,'player_info_update',Packets::playerInfo($c->uuid,$c->name,$c->gameMode,(($c->information['skinParts']??0)&64)!==0,$c->profileProperties));
                 $this->spawnPlayer($c,$other); $this->spawnPlayer($other,$c);
             }
         }
@@ -520,6 +525,7 @@ final class Server
     }
     private function remove(int $id): void {
         $c=$this->clients[$id]??null;if ($c===null) { return; }
+        $this->sessionVerifier?->cancel($id);
         unset($this->clients[$id]);
         if($c->state==='play'){$this->closeWindow($c);$this->savePlayer($c);}
         fclose($c->socket);
