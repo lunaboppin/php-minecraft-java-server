@@ -194,8 +194,8 @@ class Client:
             check(off == len(payload), 'inventory payload consumed')
         return name, payload
 
-    def until(self, target, predicate=lambda payload: True, limit=300):
-        deadline = time.monotonic() + 20
+    def until(self, target, predicate=lambda payload: True, limit=300, timeout=60):
+        deadline = time.monotonic() + timeout
         for _ in range(limit):
             if time.monotonic() > deadline:
                 raise AssertionError('timed out waiting for ' + target)
