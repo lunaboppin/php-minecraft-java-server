@@ -156,6 +156,7 @@ trait Survival
     }
     private function useHeldItem(Client $c,int $hand):void {
         if($c->dead || $c->gameMode===3){return;}$slot=$hand===0?36+$c->heldSlot:45;$stack=$c->inventory[$slot]??null;if($stack===null){return;}
+        if($this->useSpawnEggInAir($c,$slot)){return;}
         $info=$this->version->catalog->item($stack['item']);
         if(isset($info['nutrition']) && $c->food<20){$c->eating=['slot'=>$slot,'item'=>$stack['item'],'complete'=>$this->ticks+32];return;}
         if($this->version->catalog->itemName($stack['item'])==='bucket'){

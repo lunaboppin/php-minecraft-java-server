@@ -6,7 +6,7 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
-    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick, EntityTracking;
+    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick, EntityTracking, SpawnEggs, MobMovement;
     private mixed $listener = null;
     /** @var array<int,Client> */
     private array $clients = [];
@@ -316,8 +316,13 @@ final class Server
             case 'player_action': $this->dig($c,$r);return;
             case 'use_item_on': $this->place($c,$r);return;
             case 'use_item':
-                $hand=$r->varInt();$sequence=$r->varInt();$r->float();$r->float();$r->end();
+                $hand=$r->varInt();$sequence=$r->varInt();$yaw=$r->float();$pitch=$r->float();$r->end();
                 if ($hand<0 || $hand>1 || $sequence<0) { throw new ProtocolException('Invalid use item'); }
+                if(!isset($c->inventory[$hand===0?36+$c->heldSlot:45])){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
+                if(!is_finite($yaw) || !is_finite($pitch)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
+                $oldYaw=$c->yaw;$oldPitch=$c->pitch;
+                $c->yaw=fmod(fmod($yaw+180,360)+360,360)-180;$c->pitch=max(-90,min(90,fmod(fmod($pitch+180,360)+360,360)-180));
+                if($oldYaw!==$c->yaw || $oldPitch!==$c->pitch){$this->broadcastPlayerPosition($c);}
                 $this->useHeldItem($c,$hand);
                 $c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;
             case 'set_carried_item':
@@ -409,6 +414,7 @@ final class Server
         [$dx,$dy,$dz]=[[0,-1,0],[0,1,0],[0,0,-1],[0,0,1],[-1,0,0],[1,0,0]][$face];
         $replace=$this->version->catalog->blocks[$name]['replaceable'];
         [$tx,$ty,$tz]=$replace?[$x,$y,$z]:[$x+$dx,$y+$dy,$z+$dz];
+        if($this->useSpawnEggOn($c,$slot,$x,$y,$z,$face)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
         $itemName=$stack===null?null:$this->version->catalog->itemName($stack['item']);
         if($itemName==='flint_and_steel' && $this->ignitePortal($c,$tx,$ty,$tz,$slot)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
         if($itemName==='water_bucket' && $c->dimension==='the_nether'){$this->tell($c,'Water evaporates in the Nether.');$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}

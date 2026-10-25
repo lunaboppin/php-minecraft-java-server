@@ -59,8 +59,8 @@ trait Commands
                     $dimension=preg_replace('/^minecraft:/','',$parts[0]??'');
                     $this->changeDimension($c,$dimension);$this->tell($c,'Entered minecraft:'.$dimension);return;
                 case 'summon':
-                    $kind=preg_replace('/^minecraft:/','',array_shift($parts)??'');if(!in_array($kind,['cow','pig','sheep','chicken'],true)){throw new \InvalidArgumentException('Supported animals: cow, pig, sheep, chicken');}
-                    $position=$parts===[]?[$c->x+2,$c->y,$c->z]:$this->coordinates($parts,$c);$id=$this->spawnAnimal($kind,...$position);$this->tell($c,$id===null?'Animal limit reached':'Summoned '.$kind);return;
+                    $kind=preg_replace('/^minecraft:/','',array_shift($parts)??'');if(!isset($this->version->catalog->mobs['entities'][$kind]['attributes']['max_health'])){throw new \InvalidArgumentException('Unknown living entity type');}
+                    $position=$parts===[]?[$c->x+2,$c->y,$c->z]:$this->coordinates($parts,$c);$id=$this->spawnAnimal($kind,...$position);$this->tell($c,$id===null?'Could not summon '.$kind:'Summoned '.$kind);return;
                 case 'seed':$this->tell($c,'Seed: '.$this->world->seed.' ('.$this->world->generator.')');return;
                 case 'gamemode':
                     $mode=$parts[0]??'';$mode=match($mode){'survival','0'=>0,'creative','1'=>1,'adventure','2'=>2,'spectator','3'=>3,default=>throw new \InvalidArgumentException('Usage: /gamemode survival|creative|adventure|spectator [player]')};

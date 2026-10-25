@@ -1,0 +1,187 @@
+{
+  "name": "plain-spawn-eggs",
+  "difficulty": 2,
+  "normalizations": [
+    "Compare initial entity type/position and authoritative inventory. Ignore UUIDs, entity IDs, randomized yaw and packet ordering.",
+    "Initial creation only: species AI, equipment/variant randomization, progression and boss fights are not covered. Native all-egg tests additionally cover all 88 mappings and restart."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403810a0000"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "cow_spawn_egg",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "0024038c0a0000"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        2
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bat_spawn_egg",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403b50a0000"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        2
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "zombie_spawn_egg",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403a60a0000"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        63,
+        2
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "iron_golem_spawn_egg",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 2 minecraft:stone_slab[type=bottom]"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403810a0000"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        2
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "slab-height",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 64 0.5"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 2 minecraft:water"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403960a0000"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00e8070000000042340000"
+    },
+    {
+      "action": "snapshot",
+      "name": "source-fluid-cod",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002403810a0000"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00e90700000000c2b40000"
+    },
+    {
+      "action": "snapshot",
+      "name": "air-use-does-not-spawn",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        63,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "survival-consumption",
+      "fields": [
+        "entity_spawns",
+        "inventory"
+      ]
+    }
+  ]
+}

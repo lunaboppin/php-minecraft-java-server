@@ -39,12 +39,12 @@ def free_port():
 
 
 class Server:
-    def __init__(self,path,kind,java,jar,eula):
+    def __init__(self,path,kind,java,jar,eula,difficulty=0):
         self.path=path;path.mkdir();self.kind=kind;self.java=java;self.jar=jar;self.eula=eula;self.proc=None
         self.port=free_port();self.log=path/'server.log'
         if kind=='php':
             (path/'server.json').write_text(json.dumps({'host':'127.0.0.1','port':self.port,'worldPath':str(path/'world.sqlite'),
-                'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':0,'operators':['ParityProbe']}))
+                'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':difficulty,'operators':['ParityProbe']}))
         else:
             # Copy an existing acknowledgement. This harness never accepts the EULA on the user's behalf.
             shutil.copyfile(eula,path/'eula.txt')
@@ -53,7 +53,7 @@ class Server:
             settings={'layers':[{'height':124,'block':'minecraft:air'},{'height':1,'block':'minecraft:bedrock'},
                 {'height':2,'block':'minecraft:dirt'},{'height':1,'block':'minecraft:grass_block'}],'biome':'minecraft:plains','features':False,'lakes':False}
             props={'server-ip':'127.0.0.1','server-port':self.port,'online-mode':'false','enforce-secure-profile':'false','white-list':'false','max-players':20,
-                'view-distance':2,'simulation-distance':2,'gamemode':'creative','difficulty':'peaceful','spawn-protection':0,
+                'view-distance':2,'simulation-distance':2,'gamemode':'creative','difficulty':['peaceful','easy','normal','hard'][difficulty],'spawn-protection':0,
                 'level-seed':42,'level-type':'minecraft:flat','generator-settings':json.dumps(settings),'generate-structures':'false',
                 'spawn-animals':'false','spawn-monsters':'false','pause-when-empty-seconds':0,'network-compression-threshold':256}
             (path/'server.properties').write_text(''.join(f'{k}={v}\n' for k,v in props.items()))
@@ -160,8 +160,10 @@ def main():
         if not args.jar.is_file() or hashlib.sha1(args.jar.read_bytes()).hexdigest()!=expected:parser.error('Reference JAR checksum mismatch or missing; rebuild reference data first')
     scenario=json.loads(args.scenario.read_text());args.output.mkdir(parents=True,exist_ok=True)
     (args.output/'scenario.json').write_text(json.dumps(scenario,indent=2)+'\n')
-    reference=Server(args.output/'reference','php' if args.self_test else 'java',args.java,args.jar.resolve(),args.eula_file)
-    php=Server(args.output/'php','php',args.java,args.jar.resolve(),args.eula_file)
+    difficulty=scenario.get('difficulty',0)
+    if type(difficulty) is not int or not 0<=difficulty<=3:parser.error('Scenario difficulty must be 0..3')
+    reference=Server(args.output/'reference','php' if args.self_test else 'java',args.java,args.jar.resolve(),args.eula_file,difficulty)
+    php=Server(args.output/'php','php',args.java,args.jar.resolve(),args.eula_file,difficulty)
     report={'scenario':scenario['name'],'reference':'php-self-test' if args.self_test else 'official-java-26.3','normalizations':scenario.get('normalizations',[])}
     try:
         expected=observe(reference,scenario,args.output/'reference-packets.json');report['reference_observations']=expected
