@@ -104,6 +104,7 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 - Saved furnace input/fuel/output, ordinary vanilla smelting recipes, fuel consumption, progress indicators and lit states. Furnaces run while activated near a connected player; offline/unloaded simulation is not implemented.
 - Hunger/exhaustion, food consumption and saturation, natural regeneration, fall/void/fire/lava/drowning/starvation damage, health and oxygen updates, experience progress, death, item drops and respawn.
 - Basic player combat and configurable PvP. Armor mitigation, enchantments, potion effects, projectiles and full combat timing are not implemented.
+- Multiplayer held-item, offhand and armor visibility, including hotbar selection, hand swaps, empty slots, damaged items, late joins and dimension re-entry. Full range/chunk entity tracking and pose parity remain incomplete.
 - Passive cows, pigs, sheep and chickens with basic wandering, combat, loot, natural placement near generated terrain, operator summoning, and saved state. This is not vanilla mob AI, breeding or full collision/pathfinding.
 - Saved world time, daylight-cycle control, visual weather, basic gamerules, multiplayer chat, private messages, player visibility and movement.
 

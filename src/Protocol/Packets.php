@@ -39,6 +39,13 @@ final class Packets
         $out=Binary::writeVarInt($window).Binary::writeVarInt($revision).Binary::writeVarInt(count($items));
         foreach($items as $item){$out.=self::stack($item,$damageComponent);}return $out.self::stack($cursor,$damageComponent);
     }
+    /** EquipmentSlot ordinal with the high bit marking another slot, per the 26.3 codec. */
+    public static function equipment(int $entityId,array $slots,int $damageComponent):string {
+        if($slots===[]){throw new \InvalidArgumentException('Empty equipment update');}
+        $out=Binary::writeVarInt($entityId);$remaining=count($slots);
+        foreach($slots as $slot=>$stack){$out.=chr($slot|(--$remaining>0?128:0)).self::stack($stack,$damageComponent);}
+        return $out;
+    }
     public static function respawn(Version $version,int $mode,bool $flat=true,int $hashedSeed=0,string $dimension='overworld'):string {
         return Binary::writeVarInt($version->registryId('dimension_type',$dimension)).Binary::writeString('minecraft:'.$dimension).pack('J',$hashedSeed).Binary::writeVarInt($mode)."\0\0".chr((int)$flat)."\0\0".Binary::writeVarInt($dimension==='the_nether'?32:($dimension==='the_end'?0:63))."\0";
     }

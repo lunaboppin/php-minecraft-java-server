@@ -235,6 +235,7 @@ final class Server
         $recipient->send($this->version,'add_entity',Packets::addPlayer($player->entityId,$player->uuid,$this->version->blocks['player_entity_type'],$player->x,$player->y,$player->z,$player->yaw,$player->pitch));
         $recipient->send($this->version,'rotate_head',Packets::headRotation($player->entityId,$player->yaw));
         $recipient->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$player->entityId,$player->information['skinParts']??0,$player->information['mainHand']??1));
+        $recipient->send($this->version,'set_equipment',Packets::equipment($player->entityId,$this->playerEquipment($player),$this->version->blocks['component_damage']));
     }
     private function viewDistance(Client $c):int {
         return min($this->config->viewDistance,max(2,min(32,$c->information['viewDistance']??$this->config->viewDistance)));
@@ -475,6 +476,7 @@ final class Server
                 $this->tickPortals($c);
                 if($c->dimension!==$this->world->dimension){return;}
                 $this->tickSurvival($c);
+                $this->syncEquipment($c);
                 if ($this->ticks%20===0) { $this->sendClock($c); }
                 if ($c->queuedChunks!==[] && !$c->awaitingBatch && strlen($c->output)<1048576) {
                     $c->send($this->version,'chunk_batch_start');$count=0;

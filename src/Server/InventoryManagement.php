@@ -9,6 +9,20 @@ trait InventoryManagement
     private Crafting $crafting;
     private array $activeFurnaces=[];
     private function storageSlots():array {return array_merge(range(36,44),range(9,35));}
+    /** Main hand, offhand, feet, legs, chest, head: player menu slots differ from equipment ordinals. */
+    private function playerEquipment(Client $c):array {
+        return array_map(static fn(int $slot):?array=>$c->inventory[$slot]??null,[36+$c->heldSlot,45,8,7,6,5]);
+    }
+    private function syncEquipment(Client $c):void {
+        $equipment=$this->playerEquipment($c);$changed=[];
+        foreach($equipment as $slot=>$stack){
+            $encoded=Packets::stack($stack,$this->version->blocks['component_damage']);
+            if(($c->lastEquipment[$slot]??null)!==$encoded){$changed[$slot]=$stack;$c->lastEquipment[$slot]=$encoded;}
+        }
+        if($changed===[]){return;}
+        $payload=Packets::equipment($c->entityId,$changed,$this->version->blocks['component_damage']);
+        foreach($this->players() as $viewer){if($viewer!==$c && $viewer->dimension===$c->dimension){$viewer->send($this->version,'set_equipment',$payload);}}
+    }
     private function giveStack(Client $c,array $stack):int {return Inventory::add($c->inventory,$stack,$this->version->catalog,$this->storageSlots());}
     private function menuItems(Client $c):array {
         if($c->windowType==='player'){$items=array_fill(0,46,null);foreach($c->inventory as $slot=>$stack){if($slot>0 && $slot<=45){$items[$slot]=$stack;}}}

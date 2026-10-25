@@ -1,0 +1,110 @@
+{
+  "name": "multiplayer-equipment",
+  "observer": true,
+  "normalizations": [
+    "Compare six player equipment slots observed by a second connected client after simulation barriers.",
+    "Treat omitted slots as empty; normalize the vanilla main/offhand swap event to the same slot state. Ignore entity IDs and packet grouping/order."
+  ],
+  "steps": [
+    {
+      "action": "snapshot",
+      "name": "empty",
+      "fields": [
+        "equipment"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "0024019a080000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002d01a60b0000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "000801bf080000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "000701be080000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "000601bd080000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "000501bc080000"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002501010000"
+    },
+    {
+      "action": "snapshot",
+      "name": "all-slots",
+      "fields": [
+        "equipment"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0001"
+    },
+    {
+      "action": "snapshot",
+      "name": "hotbar-selected",
+      "fields": [
+        "equipment"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0700000000000000000000"
+    },
+    {
+      "action": "snapshot",
+      "name": "hands-swapped",
+      "fields": [
+        "equipment"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "002500"
+    },
+    {
+      "action": "packet",
+      "name": "set_creative_mode_slot",
+      "hex": "000500"
+    },
+    {
+      "action": "snapshot",
+      "name": "items-removed",
+      "fields": [
+        "equipment"
+      ]
+    },
+    {
+      "action": "restart"
+    },
+    {
+      "action": "snapshot",
+      "name": "saved-equipment-after-restart",
+      "fields": [
+        "equipment"
+      ]
+    }
+  ]
+}
