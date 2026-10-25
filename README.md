@@ -160,7 +160,7 @@ Water has scheduled downward/sideways flow, decay, draining and two-source regen
 
 Jukeboxes accept vanilla music discs, play and stop songs, eject discs and retain inserted discs through restart. Note blocks tune through 25 notes and select instruments from supporting blocks. Signs support front/back editing and persistent text; full wax/dye/glow and command components are still pending. Normal middle-click block selection works in creative and survival; Ctrl-pick component copying remains incomplete.
 
-Chat, server replies, joins and leaves are appended to UTC daily `logs/server-YYYY-MM-DD.log` files. Retention defaults to **90 days** and can be set from 1 to 90 using `logRetentionDays`; `logDirectory` changes the directory. Only the logger's own expired dated files are removed. Private-message text is included in these server-owner logs.
+Chat, server replies, joins and leaves are appended to UTC daily `logs/server-YYYY-MM-DD.log` files. Retention defaults to **90 days** and can be set from 1 to 90 using `logRetentionDays`; `logDirectory` changes the directory. Logs remain uncompressed plain text: daily rotation and retention never convert them to `.gz`. Only the logger's own expired dated files are removed. Private-message text is included in these server-owner logs.
 
 Client settings are parsed during configuration and play. The server applies requested render distance within its configured limit, synchronizes skin layers/main-hand preference, and anonymizes players who disable server-list listing. Locale, chat and particle preferences are recorded; full chat filtering/moderation behavior remains incomplete.
 
