@@ -9,6 +9,7 @@ class World
     private \PDO $db;
     private array $cache=[];
     private array $baseCache=[];
+    private array $editCache=[];
     private array $generationCache=[];
     private array $lightCache=[];
     private array $blockEntityMap=[];
@@ -101,10 +102,17 @@ class World
     }
     public function get(int $x,int $y,int $z):int {
         if($y<$this->minY || $y>=$this->minY+$this->height){return 0;}
-        $q=$this->db->prepare('SELECT state FROM blocks WHERE x=? AND y=? AND z=?');$q->execute([$x,$y,$z]);$state=$q->fetchColumn();
-        if($state!==false){return (int)$state;}
+        $edits=$this->chunkEdits($x>>4,$z>>4);$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);
+        if(isset($edits[$index])){return $edits[$index];}
         if($this->terrain===null){return $this->base($y);}
         $sections=$this->baseSections($x>>4,$z>>4);return $sections[($y-$this->minY)>>4][(($y&15)<<8)|(($z&15)<<4)|($x&15)];
+    }
+    private function chunkEdits(int $cx,int $cz):array {
+        $key=$cx.':'.$cz;if(isset($this->editCache[$key])){return $this->editCache[$key];}
+        $q=$this->db->prepare('SELECT x,y,z,state FROM blocks WHERE x BETWEEN ? AND ? AND z BETWEEN ? AND ?');$q->execute([$cx*16,$cx*16+15,$cz*16,$cz*16+15]);$edits=[];
+        while($edit=$q->fetch(\PDO::FETCH_ASSOC)){$index=(((int)$edit['y']-$this->minY)<<8)|(((int)$edit['z']&15)<<4)|((int)$edit['x']&15);$edits[$index]=(int)$edit['state'];}
+        if(count($this->editCache)>=32){array_shift($this->editCache);}
+        return $this->editCache[$key]=$edits;
     }
     public function set(int $x,int $y,int $z,int $state):void {
         if($y<$this->minY || $y>=$this->minY+$this->height || abs($x)>29999984 || abs($z)>29999984 || $state<0 || $state>=$this->version->blocks['state_count']){throw new \InvalidArgumentException('Invalid block');}
@@ -113,10 +121,11 @@ class World
         if($state===$base){$q=$this->db->prepare('DELETE FROM blocks WHERE x=? AND y=? AND z=?');$q->execute([$x,$y,$z]);}
         else{$q=$this->db->prepare('INSERT INTO blocks(x,y,z,state) VALUES(?,?,?,?) ON CONFLICT(x,y,z) DO UPDATE SET state=excluded.state');$q->execute([$x,$y,$z,$state]);}
         $key=($x>>4).':'.($z>>4);unset($this->cache[$key],$this->lightCache[$key]);
+        if(isset($this->editCache[$key])){$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);if($state===$base){unset($this->editCache[$key][$index]);}else{$this->editCache[$key][$index]=$state;}}
     }
     public function sections(int $cx,int $cz):array {
-        $sections=$this->baseSections($cx,$cz);$q=$this->db->prepare('SELECT x,y,z,state FROM blocks WHERE x BETWEEN ? AND ? AND z BETWEEN ? AND ?');$q->execute([$cx*16,$cx*16+15,$cz*16,$cz*16+15]);
-        while($edit=$q->fetch(\PDO::FETCH_ASSOC)){$y=(int)$edit['y'];$sections[($y-$this->minY)>>4][(($y&15)<<8)|(((int)$edit['z']&15)<<4)|((int)$edit['x']&15)]=(int)$edit['state'];}
+        $sections=$this->baseSections($cx,$cz);
+        foreach($this->chunkEdits($cx,$cz) as $index=>$state){$sections[$index>>12][$index&4095]=$state;}
         return $sections;
     }
     public function chunk(int $cx,int $cz):string {

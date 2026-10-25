@@ -84,6 +84,7 @@ $fixtures['inventory_empty']=Packets::inventory(0,1,array_fill(0,46,null),null,$
 $fixtures['open_chest']="\1".Binary::writeVarInt($v->blocks['menus']['generic_9x3']).Nbt::text('Chest');
 $fixtures['item_metadata']="\2".chr($v->catalog->itemMetadataIndex).Binary::writeVarInt($v->catalog->itemMetadataSerializer).Packets::stack(['item'=>$v->blocks['items']['stone'],'count'=>1],$v->blocks['component_damage'])."\xff";
 $fixtures['damaged_pickaxe']=Packets::stack(['item'=>$v->blocks['items']['iron_pickaxe'],'count'=>1,'damage'=>7],$v->blocks['component_damage']);
+$fixtures['mob_attributes']=Packets::attributes($v->catalog,1,['max_health'=>10.0]);
 $states=array_fill(0,4096,0);
 for($y=0;$y<4;$y++){for($i=0;$i<256;$i++){$states[$y*256+$i]=$v->blocks['states'][$y===0?'bedrock':($y===3?'grass_block':'dirt')];}}
 $fixtures['flat_section']=Palette::section($states,$v->registryId('worldgen/biome','plains'),16);
@@ -108,6 +109,7 @@ rejects(fn()=>new Config(port:65536),'invalid port');rejects(fn()=>new Config(vi
 check((new Config())->host==='127.0.0.1','loopback default');
 echo 'PASS: '.$checks.' PHP checks, including '.count($fixtures)." Mojang codec fixtures\n";
 require __DIR__.'/world.php';
+require __DIR__.'/collision.php';
 require __DIR__.'/dimensions-unit.php';
 require __DIR__.'/logging.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
@@ -119,5 +121,7 @@ passthru('python3 '.escapeshellarg(__DIR__.'/settings.py'),$code);if($code!==0){
 passthru('python3 '.escapeshellarg(__DIR__.'/multiplayer.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/equipment.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/tracking.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/spawn-eggs.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/mob-movement.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/signs-pick.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/simulation.py'),$code);exit($code);

@@ -110,6 +110,38 @@ public class ExportReference {
         tracking.addProperty("pose_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.POSE));
         tracking.add("ranges",ranges);tracking.add("poses",poses);
         Files.writeString(out.resolve("tracking.json"),gson.toJson(tracking)+"\n");
+        var mobs=new JsonObject();var mobTypes=new JsonObject();var eggs=new JsonObject();var attributeIds=new JsonObject();var syncAttributes=new JsonArray();
+        for(var attribute:BuiltInRegistries.ATTRIBUTE){var name=BuiltInRegistries.ATTRIBUTE.getKey(attribute).getPath();attributeIds.addProperty(name,BuiltInRegistries.ATTRIBUTE.getId(attribute));if(attribute.isClientSyncable())syncAttributes.add(name);}
+        for(var type:BuiltInRegistries.ENTITY_TYPE){
+            var info=new JsonObject();info.addProperty("id",BuiltInRegistries.ENTITY_TYPE.getId(type));info.addProperty("width",type.getWidth());info.addProperty("height",type.getHeight());info.addProperty("eye_height",type.getDimensions().eyeHeight());
+            info.addProperty("category",type.getCategory().getName());info.addProperty("fire_immune",type.fireImmune());info.addProperty("summonable",type.canSummon());
+            info.addProperty("peaceful",type.isAllowedInPeaceful());info.addProperty("enabled",type.isEnabled(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+            var stats=new JsonObject();
+            if(net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier(type)){
+                var attributes=net.minecraft.world.entity.ai.attributes.DefaultAttributes.getSupplier((EntityType<? extends LivingEntity>)type);
+                for(var attribute:BuiltInRegistries.ATTRIBUTE.listElements().toList())if(attributes.hasAttribute(attribute))stats.addProperty(BuiltInRegistries.ATTRIBUTE.getKey(attribute.value()).getPath(),attributes.getBaseValue(attribute));
+            }
+            info.add("attributes",stats);mobTypes.add(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath(),info);
+        }
+        for(var item:BuiltInRegistries.ITEM)if(item instanceof net.minecraft.world.item.SpawnEggItem)eggs.addProperty(BuiltInRegistries.ITEM.getKey(item).getPath(),BuiltInRegistries.ENTITY_TYPE.getKey(net.minecraft.world.item.SpawnEggItem.getType(new net.minecraft.world.item.ItemStack(item))).getPath());
+        var healthField=LivingEntity.class.getDeclaredField("DATA_HEALTH_ID");healthField.setAccessible(true);
+        mobs.addProperty("health_index",((net.minecraft.network.syncher.EntityDataAccessor<?>)healthField.get(null)).id());
+        mobs.addProperty("float_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.FLOAT));
+        mobs.add("entities",mobTypes);mobs.add("spawn_eggs",eggs);mobs.add("attribute_ids",attributeIds);mobs.add("sync_attributes",syncAttributes);
+        Files.writeString(out.resolve("mobs.json"),gson.toJson(mobs)+"\n");
+        var collision=new JsonObject();var shapes=new JsonArray();var shapeStates=new JsonArray();var outlineStates=new JsonArray();var shapeIds=new LinkedHashMap<String,Integer>();
+        for(var state:net.minecraft.world.level.block.Block.BLOCK_STATE_REGISTRY){
+          for(int mode=0;mode<2;++mode){
+            var boxes=new JsonArray();
+            var voxel=mode==0?state.getCollisionShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE,BlockPos.ZERO):state.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE,BlockPos.ZERO);
+            for(var box:voxel.toAabbs()){
+                var bounds=new JsonArray();for(double value:new double[]{box.minX,box.minY,box.minZ,box.maxX,box.maxY,box.maxZ})bounds.add(value);boxes.add(bounds);
+            }
+            var key=boxes.toString();var shape=shapeIds.get(key);if(shape==null){shape=shapes.size();shapeIds.put(key,shape);shapes.add(boxes);}(mode==0?shapeStates:outlineStates).add(shape);
+          }
+        }
+        collision.add("shapes",shapes);collision.add("states",shapeStates);collision.add("outline_states",outlineStates);
+        Files.writeString(out.resolve("collision.json"),gson.toJson(collision)+"\n");
         var itemField=net.minecraft.world.entity.item.ItemEntity.class.getDeclaredField("DATA_ITEM");itemField.setAccessible(true);
         var itemAccessor=(net.minecraft.network.syncher.EntityDataAccessor<?>)itemField.get(null);
         gameplay.addProperty("item_metadata_index",itemAccessor.id());
@@ -130,6 +162,8 @@ public class ExportReference {
         gameplay.add("flags",flags);gameplay.add("blocks",blockInfo);gameplay.add("items",items);
         Files.writeString(out.resolve("gameplay.json"),gson.toJson(gameplay)+"\n");
         var uuid=UUID.fromString("5627dd98-e6be-3c21-b8a8-e92344183641");
+        var mobAttribute=new net.minecraft.world.entity.ai.attributes.AttributeInstance(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,a->{});mobAttribute.setBaseValue(10);
+        fixture("mob_attributes",ClientboundUpdateAttributesPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundUpdateAttributesPacket(1,List.of(mobAttribute)));
         fixture("login_finished",ClientboundLoginFinishedPacket.STREAM_CODEC,Unpooled.buffer(),new ClientboundLoginFinishedPacket(new GameProfile(uuid,"Steve"),new UUID(0,1)));
         var spawn = new CommonPlayerSpawnInfo(access.lookupOrThrow(Registries.DIMENSION_TYPE).get(Identifier.withDefaultNamespace("overworld")).orElseThrow(),Level.OVERWORLD,0L,GameType.CREATIVE,Optional.empty(),false,true,Optional.empty(),0,63);
         fixture("play_login",ClientboundLoginPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundLoginPacket(1,false,Set.of(Level.OVERWORLD),20,2,2,false,true,false,spawn,false,false));

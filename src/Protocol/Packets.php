@@ -39,6 +39,14 @@ final class Packets
         $out=Binary::writeVarInt($window).Binary::writeVarInt($revision).Binary::writeVarInt(count($items));
         foreach($items as $item){$out.=self::stack($item,$damageComponent);}return $out.self::stack($cursor,$damageComponent);
     }
+    public static function mobHealth(Catalog $catalog,int $entityId,float $health):string {
+        return Binary::writeVarInt($entityId).chr($catalog->mobs['health_index']).Binary::writeVarInt($catalog->mobs['float_serializer']).pack('G',$health)."\xff";
+    }
+    public static function attributes(Catalog $catalog,int $entityId,array $attributes):string {
+        $out=Binary::writeVarInt($entityId).Binary::writeVarInt(count($attributes));
+        foreach($attributes as $name=>$value){$out.=Binary::writeVarInt($catalog->mobs['attribute_ids'][$name]).pack('E',$value)."\0";}
+        return $out;
+    }
     /** EquipmentSlot ordinal with the high bit marking another slot, per the 26.3 codec. */
     public static function equipment(int $entityId,array $slots,int $damageComponent):string {
         if($slots===[]){throw new \InvalidArgumentException('Empty equipment update');}

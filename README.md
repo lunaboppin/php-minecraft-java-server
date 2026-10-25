@@ -107,7 +107,8 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 - Hunger/exhaustion, food consumption and saturation, natural regeneration, fall/void/fire/lava/drowning/starvation damage, health and oxygen updates, experience progress, death, item drops and respawn.
 - Basic player combat and configurable PvP. Armor mitigation, enchantments, potion effects, projectiles and full combat timing are not implemented.
 - Multiplayer held-item, offhand and armor visibility, including hotbar selection, hand swaps, empty slots, damaged items, late joins and dimension re-entry. Player, supported mob and item visibility follows sent chunks and horizontal tracking range; spectators are hidden from ordinary players. Crouching/sprinting metadata and standing/crouching/death poses synchronize. Spectator camera targets, riding and complete pose/collision behavior remain incomplete.
-- Passive cows, pigs, sheep and chickens with basic wandering, combat, loot, natural placement near generated terrain, operator summoning, and saved state. This is not vanilla mob AI, breeding or full collision/pathfinding.
+- All 88 plain vanilla spawn eggs map to their official entity types, with block/face placement, source-fluid use, creative/survival consumption, synchronized base health/attributes and saved mob state. `/summon` accepts the registered mob types. [Mob coverage](docs/mob-coverage.md) separates tested creation from incomplete species behavior.
+- Shared ground, swimming and flying movement uses exported block collision shapes, including local cave floors and roofs. Cows, pigs, sheep and chickens retain basic combat, loot and natural placement. Full species AI, hostile/ranged combat, spawn variants, breeding/taming and boss fights remain incomplete.
 - Saved world time, daylight-cycle control, visual weather, basic gamerules, multiplayer chat, private messages, player visibility and movement.
 
 ## Commands and operators
@@ -150,7 +151,7 @@ The target is **1:1 parity with the official Minecraft Java 26.3 server**. The [
 
 ## Remaining differences from vanilla
 
-There are no villages/strongholds/fortresses/End cities, vanilla noise-router terrain, full aquifer simulation, full biome population, hostile mobs, complete redstone machinery, automated farms, complete fluid shape/mixing rules, falling-block physics, crop/sapling growth, leaf decay, entity breeding, enchanting, brewing, trading, advancements, full loot tables, or multiplayer sleep simulation. Block-specific placement and neighbor updates are partial; fences, rails and other connected/stateful blocks do not have their full vanilla behavior.
+There are no villages/strongholds/fortresses/End cities, vanilla noise-router terrain, full aquifer simulation, full biome population, complete hostile AI/combat, complete redstone machinery, automated farms, complete fluid shape/mixing rules, falling-block physics, crop/sapling growth, leaf decay, entity breeding, enchanting, brewing, trading, advancements, full loot tables, or multiplayer sleep simulation. Block-specific placement and neighbor updates are partial; fences, rails and other connected/stateful blocks do not have their full vanilla behavior.
 
 Lighting is computed per chunk with direct vertical skylight; horizontal skylight propagation and light crossing a chunk edge are incomplete. Weather does not drive world simulation. Animal movement is simple and local; dropped items are temporary and not saved across restarts. Mob and item counts are bounded. General custom component patches are rejected in creative inventory. Special menus and special recipe types are unsupported. Items and animals do not implement every vanilla effect or interaction.
 

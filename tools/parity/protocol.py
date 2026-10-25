@@ -57,6 +57,7 @@ class Probe(wire.Client):
         self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
         self.equipment={}
         self.player_metadata={}
+        self.entity_spawns=[]
 
     def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
         return super().until(target,predicate,limit,timeout)
@@ -118,6 +119,7 @@ class Probe(wire.Client):
             elif name=='add_entity':
                 entity,off=wire.read_vi(p);kind,off=wire.read_vi(p,off+16)
                 self.entities[entity]=kind
+                self.entity_spawns.append({'type':kind,'position':list(struct.unpack_from('>ddd',p,off))})
             elif name=='remove_entities':
                 count,off=wire.read_vi(p)
                 for _ in range(count):
@@ -217,6 +219,6 @@ class Probe(wire.Client):
             elif field=='entities':output[field]=sorted(self.entities.values())
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
-            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records'):output[field]=getattr(self,field)
+            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns'):output[field]=getattr(self,field)
             else:raise ValueError('Unknown snapshot field: '+field)
         return output
