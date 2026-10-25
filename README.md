@@ -147,13 +147,31 @@ The target is **1:1 parity with the official Minecraft Java 26.3 server**. The [
 
 ## Remaining differences from vanilla
 
-There are no villages/strongholds/fortresses/End cities, vanilla noise-router terrain, full aquifer simulation, full biome population, hostile mobs, redstone circuits, automated farms, fluid spreading, falling-block physics, crop/sapling growth, leaf decay, entity breeding, enchanting, brewing, trading, advancements, full loot tables, or multiplayer sleep simulation. Block-specific placement and neighbor updates are partial; fences, rails and other connected/stateful blocks do not have their full vanilla behavior.
+There are no villages/strongholds/fortresses/End cities, vanilla noise-router terrain, full aquifer simulation, full biome population, hostile mobs, complete redstone machinery, automated farms, complete fluid shape/mixing rules, falling-block physics, crop/sapling growth, leaf decay, entity breeding, enchanting, brewing, trading, advancements, full loot tables, or multiplayer sleep simulation. Block-specific placement and neighbor updates are partial; fences, rails and other connected/stateful blocks do not have their full vanilla behavior.
 
 Lighting is computed per chunk with direct vertical skylight; horizontal skylight propagation and light crossing a chunk edge are incomplete. Weather does not drive world simulation. Animal movement is simple and local; dropped items are temporary and not saved across restarts. Mob and item counts are bounded. General custom component patches are rejected in creative inventory. Special menus and special recipe types are unsupported. Items and animals do not implement every vanilla effect or interaction.
 
 This server has automated wire/progression checks, but the full graphical client feature set has not been interactively verified. It is not a production-ready public replacement for Mojang/Paper.
 
+Water has scheduled downward/sideways flow, decay, draining and two-source regeneration. The initial redstone implementation supports lever/button power, flat dust lines, lamps, basic repeaters/comparators and powered doors/note blocks. Exact update order, pistons, observers, torch burnout, full support/connection shapes, quasi-connectivity, waterlogging and fluid mixing remain incomplete. Scheduled updates are saved per dimension and processed with a per-tick work budget.
+
+Jukeboxes accept vanilla music discs, play and stop songs, eject discs and retain inserted discs through restart. Note blocks tune through 25 notes and select instruments from supporting blocks. Signs support front/back editing and persistent text; full wax/dye/glow and command components are still pending. Normal middle-click block selection works in creative and survival; Ctrl-pick component copying remains incomplete.
+
+Chat, server replies, joins and leaves are appended to UTC daily `logs/server-YYYY-MM-DD.log` files. Retention defaults to **90 days** and can be set from 1 to 90 using `logRetentionDays`; `logDirectory` changes the directory. Only the logger's own expired dated files are removed. Private-message text is included in these server-owner logs.
+
 Client settings are parsed during configuration and play. The server applies requested render distance within its configured limit, synchronizes skin layers/main-hand preference, and anonymizes players who disable server-list listing. Locale, chat and particle preferences are recorded; full chat filtering/moderation behavior remains incomplete.
+
+## Docker
+
+```sh
+mkdir -p data
+PUID=$(id -u) PGID=$(id -g) docker compose up -d --build
+docker compose logs -f
+```
+
+Connect on TCP **25676**. The container runs as your configured non-root UID/GID, uses PHP **8.5.12** with graceful signal handling, and checks health through the Minecraft status protocol. `data/server.json` is created only when absent. Worlds, configuration and 90-day logs live in the bind-mounted `data/` directory. Set `MINECRAFT_OPERATORS` before the first start, or edit `data/server.json` and restart. Existing configuration is preserved. `SERVER_PORT` changes the published host port; the container listens on 25676.
+
+To migrate an existing checkout, stop its PHP process cleanly, back up `data/`, then copy your existing `server.json` to `data/server.json`. Keep its world path under `data/` and set `logDirectory` to `data/logs`. Start Compose after the previous listener releases the port. Never run two processes against the same SQLite worlds. `docker compose stop` saves and sends connected players the restart reason before closing sockets. The image build excludes private configuration, saves, logs, Java caches and ZIP files.
 
 ## Validation and reference data
 

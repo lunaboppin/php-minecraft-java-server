@@ -7,6 +7,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'tests'))
 import integration as wire
+SIMULATION=json.loads((ROOT/'reference/26.3/simulation.json').read_text())
 METADATA=json.loads((ROOT/'reference/26.3/gameplay.json').read_text())['entity_metadata']
 
 
@@ -52,7 +53,10 @@ class Probe(wire.Client):
         super().__init__(port,terrain=True)
         self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={}
         self.health=20.;self.food=20;self.mode=None;self.position=None;self.deaths=0
-        self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
+        self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
+
+    def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
+        return super().until(target,predicate,limit,timeout)
 
     def send(self,name,payload=b''):
         (self._automatic if self._receiving else self.trace).append({'state':self.state,'direction':'serverbound','hex':(wire.vi(wire.packet_id(self.state,'serverbound',name))+payload).hex(),
@@ -87,6 +91,14 @@ class Probe(wire.Client):
             elif name=='game_event' and p[0]==3:self.mode=int(struct.unpack_from('>f',p,1)[0])
             elif name=='player_position':
                 _,off=wire.read_vi(p);self.position=list(struct.unpack_from('>ddd',p,off))
+            elif name=='level_event':
+                event=struct.unpack_from('>i',p)[0]
+                if event in (1010,1011):self.records.append({'event':event,'position':list(block_pos(struct.unpack_from('>q',p,4)[0])),'data':struct.unpack_from('>i',p,12)[0]})
+            elif name=='sound':
+                sound,off=wire.read_vi(p)
+                if sound-1 in {v['sound'] for v in SIMULATION['instruments'].values()}:
+                    category,off=wire.read_vi(p,off);x,y,z,volume,pitch=struct.unpack_from('>iiiff',p,off)
+                    self.notes.append({'sound':sound-1,'category':category,'position':[x,y,z],'volume':volume,'pitch':pitch})
             elif name=='set_entity_data':
                 entity,off=wire.read_vi(p)
                 if entity==getattr(self,'entity_id',None):
@@ -166,6 +178,12 @@ class Probe(wire.Client):
         self.until('set_time',lambda p:struct.unpack_from('>q',p)[0]>previous+20)
         self.barrier()
 
+    def refresh_inventory(self):
+        # A no-op slot (-1) with a stale state ID requests the server's full menu state.
+        # Vanilla can omit an empty cursor update when it matches a client's predicted hash.
+        self.send('container_click',wire.vi(self.window)+wire.vi(2147483647)+struct.pack('>hB',-1,0)+b'\0\0\0')
+        self.until('container_set_content')
+
     def block(self,pos):
         key=tuple(pos)
         if key in self.blocks:return self.blocks[key]
@@ -183,6 +201,6 @@ class Probe(wire.Client):
             elif field=='entities':output[field]=sorted(self.entities.values())
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
-            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance'):output[field]=getattr(self,field)
+            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records'):output[field]=getattr(self,field)
             else:raise ValueError('Unknown snapshot field: '+field)
         return output

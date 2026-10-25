@@ -1,7 +1,7 @@
 {
   "blocks.json": "8992dc7e0fb0234ba05bb34793c29d3ca131af278ce67103c74907d2a2051a49",
   "dynamic-registries.json": "3b716ea38d7495343a09026c9f6c8b3e432a5bee0331e8c577127195ed838307",
-  "fixtures.json": "42daf252310520e25f600570b11b49d383d988f1f91cbcfb807c60f63c615826",
+  "fixtures.json": "b65a3a04a2caeb1eff0b4c95e44238926674c5a7e7399a2db5b62421e147614f",
   "gameplay.json": "37b61e4ba8c0a3681d57b5eab6612e42bcfcdaa85e90c28a13ec5b7c73503ad1",
   "mojang-version.json": "d2cf8f0192f03a01bb48f2ff2d6dc1ba389ce9768499945417102202158c108f",
   "packets.json": "2f0486311f18b7d3ec232028f3bff82c657d2f0240d2d65a3df40408db926886",
@@ -39,5 +39,6 @@
   "registries/worldgen_block_state_provider.bin": "3a2fc3f31e55f94e603a8257980ba8b72e4bbf2231be2fd3452915065282fb61",
   "registries/zombie_nautilus_variant.bin": "716aefa57cf1562444c4a605267ad2f06d5afb36060e271b8a4f5476315b452f",
   "tags.bin": "3dafc430f7d0bbd542e33cd82a4412837308dac23877c6e7fcdb394ec6ff0458",
-  "version.json": "ee14b61c5c6363885efad2a01ee0fc30f551bf56ad6b1d30e1af4203f6c70943"
+  "version.json": "ee14b61c5c6363885efad2a01ee0fc30f551bf56ad6b1d30e1af4203f6c70943",
+  "simulation.json": "cd23420f9c9332ecc70cc5d9b64d62b3f16b9100d7219230b9d2cecac982ff3b"
 }

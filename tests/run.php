@@ -75,6 +75,7 @@ $fixtures=[
     'light'=>FlatWorld::light(),
     'empty_section'=>Palette::section(array_fill(0,4096,0),$v->registryId('worldgen/biome','plains'),16),
 ];
+$fixtures['head_rotation']=Packets::headRotation(1,90);
 $fixtures['player_appearance']=Packets::playerAppearance($v->catalog,1,127,0);
 $fixtures['vitals']=Packets::vitals($v->catalog,1,150,1);
 $fixtures['respawn_survival']=Packets::respawn($v,0);
@@ -108,9 +109,13 @@ check((new Config())->host==='127.0.0.1','loopback default');
 echo 'PASS: '.$checks.' PHP checks, including '.count($fixtures)." Mojang codec fixtures\n";
 require __DIR__.'/world.php';
 require __DIR__.'/dimensions-unit.php';
+require __DIR__.'/logging.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
 passthru('python3 '.escapeshellarg(__DIR__.'/integration.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/terrain.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/dimensions.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/placement.py'),$code);if($code!==0){exit($code);}
-passthru('python3 '.escapeshellarg(__DIR__.'/settings.py'),$code);exit($code);
+passthru('python3 '.escapeshellarg(__DIR__.'/settings.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/multiplayer.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/signs-pick.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/simulation.py'),$code);exit($code);

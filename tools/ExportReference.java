@@ -91,6 +91,17 @@ public class ExportReference {
             if(food!=null) {info.addProperty("nutrition",food.nutrition());info.addProperty("saturation",food.saturation());}
             items.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);
         }
+        var simulation=new JsonObject();var pickItems=new JsonObject();for(var block:BuiltInRegistries.BLOCK){pickItems.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),BuiltInRegistries.ITEM.getId(block.asItem()));}simulation.add("pick_items",pickItems);var instruments=new JsonObject();var blockInstruments=new JsonObject();var songs=new JsonObject();
+        for(var instrument:net.minecraft.world.level.block.state.properties.NoteBlockInstrument.values()) {
+            var info=new JsonObject();info.addProperty("sound",BuiltInRegistries.SOUND_EVENT.getId(instrument.getSoundEvent().value()));
+            info.addProperty("tunable",instrument.isTunable());info.addProperty("above",instrument.worksAboveNoteBlock());info.addProperty("custom",instrument.hasCustomSound());
+            instruments.add(instrument.getSerializedName(),info);
+        }
+        for(var block:BuiltInRegistries.BLOCK){var instrument=block.defaultBlockState().instrument();if(instrument!=net.minecraft.world.level.block.state.properties.NoteBlockInstrument.HARP)blockInstruments.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),instrument.getSerializedName());}
+        for(var item:BuiltInRegistries.ITEM){var playable=new net.minecraft.world.item.ItemStack(item).get(net.minecraft.core.component.DataComponents.JUKEBOX_PLAYABLE);
+            if(playable!=null){var info=new JsonObject();info.addProperty("song",playable.song().unwrapKey().orElseThrow().identifier().getPath());info.addProperty("ticks",playable.song().value().lengthInTicks()+20);info.addProperty("comparator",playable.song().value().comparatorOutput());songs.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);}}
+        simulation.add("instruments",instruments);simulation.add("block_instruments",blockInstruments);simulation.add("songs",songs);simulation.addProperty("note_block_id",BuiltInRegistries.BLOCK.getId(Blocks.NOTE_BLOCK));
+        Files.writeString(out.resolve("simulation.json"),gson.toJson(simulation)+"\n");
         var itemField=net.minecraft.world.entity.item.ItemEntity.class.getDeclaredField("DATA_ITEM");itemField.setAccessible(true);
         var itemAccessor=(net.minecraft.network.syncher.EntityDataAccessor<?>)itemField.get(null);
         gameplay.addProperty("item_metadata_index",itemAccessor.id());
@@ -151,6 +162,11 @@ public class ExportReference {
         fixture("player_appearance",ClientboundSetEntityDataPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundSetEntityDataPacket(1,List.of(
             new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(skinAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.BYTE,(byte)127),
             new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(armAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.HUMANOID_ARM,net.minecraft.world.entity.HumanoidArm.LEFT))));
+        fixture("head_rotation",ClientboundRotateHeadPacket.STREAM_CODEC,new FriendlyByteBuf(Unpooled.buffer()),ClientboundRotateHeadPacket.STREAM_CODEC.decode(new FriendlyByteBuf(Unpooled.wrappedBuffer(new byte[]{1,64}))));
+        fixture("note_event",ClientboundBlockEventPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundBlockEventPacket(new BlockPos(1,64,1),Blocks.NOTE_BLOCK,0,0));
+        fixture("record_start",ClientboundLevelEventPacket.STREAM_CODEC,new FriendlyByteBuf(Unpooled.buffer()),new ClientboundLevelEventPacket(1010,new BlockPos(1,64,1),0,false));
+        fixture("sign_edit",ClientboundOpenSignEditorPacket.STREAM_CODEC,Unpooled.buffer(),new ClientboundOpenSignEditorPacket(new BlockPos(1,64,1),net.minecraft.world.level.block.entity.SignTextSlot.FRONT));
+        fixture("sign_update",ServerboundSignUpdatePacket.STREAM_CODEC,Unpooled.buffer(),new ServerboundSignUpdatePacket(new BlockPos(1,64,1),List.of("Hello","world","",""),net.minecraft.world.level.block.entity.SignTextSlot.FRONT));
         if(args.length>1) verify(Path.of(args[1]),access);
         Files.writeString(out.resolve("fixtures.json"),gson.toJson(fixtures)+"\n");
         System.out.println("Exported "+ids.size()+" registries and "+fixtures.size()+" wire fixtures");
@@ -188,6 +204,10 @@ public class ExportReference {
                 };
                 var packet=codec.decode(buf);
                 if(buf.isReadable())throw new IllegalStateException("Unread bytes: "+buf.readableBytes());
+                if(packet instanceof ClientboundBlockEntityDataPacket entity && BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(entity.getType()).getPath().endsWith("sign")) {
+                    var tag=entity.getTag();
+                    if(tag.contains("front_text")){net.minecraft.world.level.block.entity.SignText.CODEC.parse(NbtOps.INSTANCE,tag.getCompoundOrEmpty("front_text")).getOrThrow();net.minecraft.world.level.block.entity.SignText.CODEC.parse(NbtOps.INSTANCE,tag.getCompoundOrEmpty("back_text")).getOrThrow();}
+                }
                 if(packet instanceof ClientboundRegistryDataPacket registry) {
                     networked.put(registry.registry(),new RegistryDataLoader.NetworkedRegistryData(registry.entries(),net.minecraft.tags.TagNetworkSerialization.NetworkPayload.EMPTY));
                 }

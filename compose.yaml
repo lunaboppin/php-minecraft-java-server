@@ -1,0 +1,21 @@
+services:
+  minecraft:
+    build: .
+    image: php-minecraft-java-server:local
+    user: "${PUID:-1000}:${PGID:-1000}"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 45s
+    ports:
+      - "${SERVER_PORT:-25676}:25676/tcp"
+    environment:
+      SERVER_PORT: "25676"
+      CONFIG_FILE: /app/data/server.json
+      MINECRAFT_OPERATORS: "${MINECRAFT_OPERATORS:-}"
+    volumes:
+      - ./data:/app/data
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g

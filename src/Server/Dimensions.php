@@ -9,7 +9,7 @@ trait Dimensions
 {
     private array $worlds=[];
     private array $dimensionState=[];
-    private const LOCAL_STATE=['animals','naturalSpawns','itemEntities','activeFurnaces','pendingLight'];
+    private const LOCAL_STATE=['animals','naturalSpawns','itemEntities','activeFurnaces','pendingLight','blockTicks','jukeboxes'];
     private function withDimension(string $dimension,callable $action):mixed {
         $previous=$this->world->dimension;
         if($previous===$dimension){return $action();}
@@ -25,7 +25,7 @@ trait Dimensions
     private function localPlayers():array {return array_filter($this->players(),fn(Client $c):bool=>$c->dimension===$this->world->dimension);}
     private function tickDimensions():void {
         foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,function():void {
-            $this->tickItems();$this->tickFurnaces();$this->tickAnimals();
+            $this->tickBlocks();$this->tickItems();$this->tickFurnaces();$this->tickAnimals();
             foreach(array_slice($this->pendingLight,0,1,true) as $key=>[$cx,$cz]){
                 $payload=Binary::writeVarInt($cx).Binary::writeVarInt($cz).$this->world->chunkLight($cx,$cz);
                 foreach($this->localPlayers() as $p){if(isset($p->loadedChunks[$key])){$p->send($this->version,'light_update',$payload);}}unset($this->pendingLight[$key]);

@@ -34,7 +34,7 @@ trait Survival
         foreach($this->players() as $player){$this->savePlayer($player);}
         foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration'] as $key){$this->worlds['overworld']->setting($key,$this->$key);}
         foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,function():void{
-            $this->world->setting('animals',$this->animals);$this->world->setting('naturalSpawns',$this->naturalSpawns);$this->world->checkpoint();
+            $this->saveBlockSimulation();$this->world->setting('animals',$this->animals);$this->world->setting('naturalSpawns',$this->naturalSpawns);$this->world->checkpoint();
         });}
     }
     private function health(Client $c):void {

@@ -26,5 +26,10 @@
   "vitals": "0101019601000001ff",
   "hashed_seed": "04139124513554e1",
   "client_information": "05656e5f67620400017f00000100",
-  "player_appearance": "0110007f0f2a00ff"
+  "player_appearance": "0110007f0f2a00ff",
+  "head_rotation": "0140",
+  "note_event": "0000004000001040000076",
+  "record_start": "000003f200000040000010400000000000",
+  "sign_edit": "000000400000104001",
+  "sign_update": "00000040000010400548656c6c6f05776f726c64000001"
 }

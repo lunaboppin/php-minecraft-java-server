@@ -80,6 +80,9 @@ final class Packets
         // ADD_PLAYER | UPDATE_GAME_MODE | UPDATE_LISTED | UPDATE_LATENCY | UPDATE_HAT
         return "\x9d\1" . $uuid . Binary::writeString($name,16) . "\0" . Binary::writeVarInt($gameMode) . "\1\0".chr((int)$hat);
     }
+    public static function headRotation(int $entityId,float $yaw):string {
+        return Binary::writeVarInt($entityId).chr(((int)floor(fmod($yaw,360)*256/360))&255);
+    }
     public static function teleportEntity(int $id, float $x, float $y, float $z, float $yaw, float $pitch, bool $ground): string {
         return Binary::writeVarInt($id) . self::moveRotation($x, $y, $z, $yaw, $pitch) . pack('N', 0) . chr((int)$ground);
     }

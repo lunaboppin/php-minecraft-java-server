@@ -44,7 +44,7 @@ class Server:
         self.port=free_port();self.log=path/'server.log'
         if kind=='php':
             (path/'server.json').write_text(json.dumps({'host':'127.0.0.1','port':self.port,'worldPath':str(path/'world.sqlite'),
-                'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':0,'operators':['ParityProbe']}))
+                'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':0,'operators':['ParityProbe']}))
         else:
             # Copy an existing acknowledgement. This harness never accepts the EULA on the user's behalf.
             shutil.copyfile(eula,path/'eula.txt')
@@ -111,7 +111,9 @@ def observe(controller,scenario,output):
             elif action=='restart':
                 traces+=probe.trace;probe.close();probe=None;controller.stop();controller.start();probe=Probe(controller.port,controller.kind).login()
             elif action=='snapshot':
-                probe.tick_barrier();results.append({'name':step['name'],'state':probe.snapshot(step['fields'],step.get('positions',[]))})
+                probe.tick_barrier()
+                if any(field in step['fields'] for field in ('inventory','cursor')):probe.refresh_inventory()
+                results.append({'name':step['name'],'state':probe.snapshot(step['fields'],step.get('positions',[]))})
             else:raise ValueError('Unknown scenario action: '+action)
         return results
     except Exception as e:

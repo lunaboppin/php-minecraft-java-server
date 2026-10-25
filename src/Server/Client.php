@@ -5,6 +5,7 @@ use PhpMinecraftJavaServer\Protocol\{Framing, Version};
 
 final class Client
 {
+    public ?array $editingSign=null;
     public ?array $information=null;
     public string $dimension='overworld';
     public int $portalTicks=0;
