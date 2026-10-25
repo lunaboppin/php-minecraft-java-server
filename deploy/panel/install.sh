@@ -118,6 +118,7 @@ done
 for file in README.md NOTICE.md composer.json server.example.json server-flat.example.json; do
     cp "$work/app/$file" /mnt/server/
 done
+if [[ -f "$work/app/ROADMAP.md" ]]; then cp "$work/app/ROADMAP.md" /mnt/server/; fi
 mkdir -p /mnt/server/data
 chmod +x /mnt/server/deploy/panel/start.sh
 cd /mnt/server

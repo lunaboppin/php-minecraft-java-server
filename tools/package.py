@@ -14,7 +14,7 @@ PREFIX = 'minecraft-26.3-php-server/'
 
 def main():
     OUTPUT.parent.mkdir(exist_ok=True)
-    files = [ROOT / name for name in ['README.md', 'NOTICE.md', 'composer.json', 'server.json',
+    files = [ROOT / name for name in ['README.md', 'ROADMAP.md', 'NOTICE.md', 'composer.json', 'server.json',
                                      'server.example.json', 'server-flat.example.json', '.gitignore']]
     for directory in ['src', 'bin', 'reference', 'tests', 'tools', 'docs', 'deploy']:
         files.extend(path for path in (ROOT / directory).rglob('*') if path.is_file()

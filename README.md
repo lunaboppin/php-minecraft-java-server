@@ -139,6 +139,10 @@ Coordinates accept `~` relative values. Fill operations are limited to 32,768 bl
 
 **Authentication is offline only.** Usernames are not verified with Mojang and transport is not encrypted. Operator names therefore identify unverified usernames; use a trusted network. Changing the bind address does not enable account authentication.
 
+## Roadmap
+
+The target is **1:1 parity with the official Minecraft Java 26.3 server**. The [roadmap](ROADMAP.md) indexes 55 implementation/cleanup issues across four milestones, including the required project-identity cleanup. Each issue has acceptance criteria, validation expectations and prerequisites. The [tracking issue](https://github.com/lunaboppin/php-minecraft-java-server/issues/1) follows progress; current functionality remains experimental.
+
 ## Remaining differences from vanilla
 
 There are no villages/strongholds/fortresses/End cities, vanilla noise-router terrain, full aquifer simulation, full biome population, hostile mobs, redstone circuits, automated farms, fluid spreading, falling-block physics, crop/sapling growth, leaf decay, entity breeding, enchanting, brewing, trading, advancements, full loot tables, or multiplayer sleep simulation. Block-specific placement and neighbor updates are partial; fences, rails and other connected/stateful blocks do not have their full vanilla behavior.
