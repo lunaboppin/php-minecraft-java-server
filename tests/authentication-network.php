@@ -17,6 +17,7 @@ try {
             $probe->configure();if($mode==='verified'){$probe->send('chat_command',Binary::writeString('give @s minecraft:diamond 2'));}
             // A clock update fences the simulation after the operator command.
             $probe->until('set_time');$probe->until('set_time');file_put_contents(sys_get_temp_dir().'/php-minecraft-auth-'.$mode.'-packets.json',json_encode($probe->capture,JSON_PRETTY_PRINT));$probe->close();usleep(100000);
+            $early=new AuthProbe($port);$early->send('intention',Binary::writeVarInt(777).Binary::writeString('localhost').pack('n',25565)."\2");$early->state='login';$early->send('hello',Binary::writeString('ParityProbe').str_repeat("\x44",16));$early->until('hello');$early->send('login_acknowledged');$early->until('login_disconnect');$early->close();
             $bad=new AuthProbe($port);$bad->challenge(true);$bad->until('login_disconnect');$bad->close();
             $replay=new AuthProbe($port);$replay->challenge(replayed:$response);$replay->until('login_disconnect');$replay->close();
         }else{$probe->until('login_disconnect');$probe->close();}

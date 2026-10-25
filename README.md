@@ -23,7 +23,7 @@ This remains an experimental implementation, **not full vanilla parity**. Its te
 
 ## Start
 
-Requires **64-bit PHP 8.5.12+ CLI**, with JSON, zlib, iconv, PDO, and PDO SQLite. Python and Java are not required to run the packaged server. Do not run it through PHP-FPM, Apache, or PHP's HTTP development server.
+Requires **64-bit PHP 8.5.12+ CLI**, with JSON, zlib, iconv, PDO, and PDO SQLite. Online mode additionally requires OpenSSL and cURL with asynchronous DNS. Python and Java are not required to run the packaged server. Do not run it through PHP-FPM, Apache, or PHP's HTTP development server.
 
 ```sh
 php bin/server.php --config=server.json
