@@ -27,6 +27,8 @@ JAVA_HOME=/path/to/jdk25 python3 tools/parity/verify.py \
 
 Each output directory must be empty. Both processes bind only to loopback on unused ports. Each owns separate world files, logs and configuration; the hosted server and its saves are never used. Restart steps retain those test saves. Process shutdown is attempted even after startup or scenario failure. The codec verifier extracts the checksum-pinned JAR into scratch space and leaves production reference files unchanged.
 
+PHP and Java reference logs stay readable plain text. The harness derives Java's Log4j configuration from the pinned distribution and changes its archive suffix from `.log.gz` to `.log`; restart/daily rotation does not compress them.
+
 `report.json` contains both checkpoint sequences and the first differing JSON path, reference value and PHP value, or an execution error. `*-packets.json` retains uncompressed packet bodies in both directions, protocol state, scenario step and dimension. `scenario.json`, process logs and test world files remain beside the report. Do not publish a test directory containing private player data. These scenarios use a synthetic offline account.
 
 The Java verifier decodes every retained packet with official codecs and rejects trailing bytes. It also checks complete chunk sections, biome resolution, heightmaps, registry loading and light masks. Serverbound decoding currently uses a creative/operator context, matching the bundled scenarios. It is not a general survival packet oracle.
