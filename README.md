@@ -198,6 +198,6 @@ The tool verifies Mojang's metadata and JAR checksums, runs the official data ge
 python3 tools/package.py  # Build a ZIP with source, reference data and local SQLite backups
 ```
 
-The public repository excludes runtime configuration, player records, world databases, logs and downloaded Java tooling. `tools/package.py` includes local saves by default when building a personal backup; keep those archives private if they contain player/world data. On a fresh checkout it falls back to `server.example.json` for the packaged configuration.
+The public repository excludes runtime configuration, player records, world databases, logs and downloaded Java tooling. `tools/package.py` includes local saves by default when building a personal backup; keep those archives private if they contain player/world data. The archive includes Docker/Compose files and copies the active `data/server.json` configuration for both native and Docker startup, falling back to root `server.json` and then `server.example.json` on a fresh checkout. Logs and Java caches are excluded.
 
 The reference source is Mojang's [official 26.3 metadata](https://piston-meta.mojang.com/v1/packages/61fff1316bd50312624a858bbb5eb18fa45208ed/26.3.json). Protocol is `777`, data version is `5023`, and the official server JAR SHA-1 is `33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c`. The originally requested [historical wiki revision](https://minecraft.wiki/w/Protocol?oldid=2772350) was inaccessible and was not copied. See `NOTICE.md` for ownership and provenance.
