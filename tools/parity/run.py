@@ -3,6 +3,7 @@
 import argparse
 import contextlib
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -14,6 +15,7 @@ import subprocess
 import sys
 import time
 import uuid
+import zipfile
 
 from protocol import Probe,ROOT,wire
 
@@ -38,6 +40,16 @@ def free_port():
     with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
 
 
+def plain_reference_logging(jar,output):
+    # Preserve Mojang's logging setup, changing only its gzip archive suffix.
+    with zipfile.ZipFile(jar) as outer:
+        library=next(name for name in outer.namelist() if name.startswith('META-INF/libraries/') and Path(name).name.startswith('logging-') and name.endswith('.jar'))
+        with zipfile.ZipFile(io.BytesIO(outer.read(library))) as logging:
+            config=logging.read('log4j2.xml').decode('utf-8')
+    if '.log.gz' not in config:raise ValueError('Pinned reference logging format changed')
+    output.write_text(config.replace('.log.gz','.log'))
+
+
 class Server:
     def __init__(self,path,kind,java,jar,eula,difficulty=0):
         self.path=path;path.mkdir();self.kind=kind;self.java=java;self.jar=jar;self.eula=eula;self.proc=None
@@ -46,6 +58,7 @@ class Server:
             (path/'server.json').write_text(json.dumps({'host':'127.0.0.1','port':self.port,'worldPath':str(path/'world.sqlite'),
                 'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':difficulty,'operators':['ParityProbe']}))
         else:
+            plain_reference_logging(jar,path/'log4j2-plain.xml')
             # Copy an existing acknowledgement. This harness never accepts the EULA on the user's behalf.
             shutil.copyfile(eula,path/'eula.txt')
             profile=bytearray(hashlib.md5(b'OfflinePlayer:ParityProbe').digest());profile[6]=(profile[6]&15)|48;profile[8]=(profile[8]&63)|128
@@ -59,7 +72,7 @@ class Server:
             (path/'server.properties').write_text(''.join(f'{k}={v}\n' for k,v in props.items()))
 
     def start(self):
-        command=['php',str(ROOT/'bin/server.php'),'--config='+str(self.path/'server.json')] if self.kind=='php' else [self.java,'-Xms256M','-Xmx1024M','-jar',str(self.jar),'nogui']
+        command=['php',str(ROOT/'bin/server.php'),'--config='+str(self.path/'server.json')] if self.kind=='php' else [self.java,'-Xms256M','-Xmx1024M','-Dlog4j.configurationFile='+str(self.path/'log4j2-plain.xml'),'-jar',str(self.jar),'nogui']
         self.output=self.log.open('a')
         self.proc=subprocess.Popen(command,cwd=self.path,stdin=subprocess.PIPE,stdout=self.output,stderr=subprocess.STDOUT,text=True)
         deadline=time.monotonic()+120
@@ -85,6 +98,8 @@ class Server:
                     self.proc.kill();self.proc.wait();raise RuntimeError('Server failed graceful shutdown')
         finally:
             self.proc.stdin.close();self.output.close();self.proc=None
+        if self.kind=='java' and any((self.path/'logs').glob('*.gz')):
+            raise RuntimeError('Reference logs must remain uncompressed plain text')
 
 
 def observe(controller,scenario,output):

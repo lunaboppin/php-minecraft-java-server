@@ -24,6 +24,7 @@ def main():
         with wire.server(cfg) as port:
             a=Probe(port,'egg-user').login();b=Probe(port,'egg-observer').login('Observer')
             try:
+                command(a,'gamerule minecraft:spawn_mobs false')
                 for index,(egg,kind) in enumerate(MOBS['spawn_eggs'].items()):
                     edit(a,egg);use(a,[2,63,0],500+index)
                     assert MOBS['entities'][kind]['id'] in a.entities.values(),(egg,kind)
@@ -58,6 +59,8 @@ def main():
                 # Offhand survival consumes exactly one; creative main-hand preserves it.
                 edit(a,'pig_spawn_egg',3,45);command(a,'gamemode survival');use(a,[1,63,0],702,hand=1);a.refresh_inventory();assert a.inventory[45]['count']==2
                 command(a,'gamemode creative');command(a,'save-all')
+                with sqlite3.connect(world) as db:
+                    assert json.loads(db.execute("SELECT value FROM metadata WHERE key='spawnMobs'").fetchone()[0]) is False
                 # Existing IDs must not collide with client-created Ender Dragon parts.
                 dragon=next(m for m in saved(world) if m['kind']=='ender_dragon')
                 ids={m['id'] for m in saved(world)}
@@ -67,6 +70,9 @@ def main():
             c=Probe(port,'egg-restart').login()
             try:
                 c.tick_barrier();assert expected<=set(c.entities.values()),'egg types missing after restart'
+                command(c,'save-all')
+                with sqlite3.connect(world) as db:
+                    assert json.loads(db.execute("SELECT value FROM metadata WHERE key='spawnMobs'").fetchone()[0]) is False,'spawn rule missing after restart'
                 skeleton=next(i for i,kind in c.entities.items() if kind==MOBS['entities']['skeleton']['id'])
                 assert c.equipment[skeleton][0]['item']==wire.BLOCKS['items']['bow'],'saved mob equipment missing'
                 # Peaceful behavior is tested in its own world below.

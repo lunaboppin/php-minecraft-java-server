@@ -25,5 +25,14 @@ try {
     for($i=-40;$i<40;++$i){check($w->get($i*16,63,0)===0,'air overlay survives eviction');$w->set($i*16,63,0,$v->catalog->state('grass_block'));check($w->get($i*16,63,0)===$v->catalog->state('grass_block'),'reverted overlay uses procedural base');}
     unset($w);$w=new \PhpMinecraftJavaServer\World\World($v,$path,'flat');
     check($w->get(1,64,0)===$v->catalog->state('stone'),'cached writes persist after reopen');
+    $before=$w->chunk(0,0);$w->get(2,64,2);
+    try{$w->transaction(function()use($w,$v):void{$w->set(2,64,2,$v->catalog->state('diamond_block'));$w->chunk(0,0);throw new RuntimeException('injected rollback');});}
+    catch(RuntimeException $e){check($e->getMessage()==='injected rollback','expected injected rollback');}
+    check($w->get(2,64,2)===0 && $w->chunk(0,0)===$before,'rollback clears uncommitted block and packet caches');
+    $w->set(3,64,3,$v->catalog->state('chest'));$w->container([3,64,3],['slots'=>[0=>['item'=>$v->blocks['items']['diamond'],'count'=>1]]]);
+    try{$w->transaction(function()use($w):void{$w->set(3,64,3,0);throw new RuntimeException('container rollback');});}
+    catch(RuntimeException $e){check($e->getMessage()==='container rollback','expected container rollback');}
+    check($w->container([3,64,3])['slots'][0]['count']===1,'rolled-back chest inventory restored');
+    $w->set(3,64,3,0);check($w->container([3,64,3])['slots']===[],'container index restored before subsequent removal');
     echo "PASS: voxel collision, slab/fence spawn height, swept movement and cached block-overlay lifecycle\n";
 } finally {unset($w);foreach(glob($path.'*') as $file){unlink($file);}}

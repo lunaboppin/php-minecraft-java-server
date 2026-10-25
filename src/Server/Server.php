@@ -23,7 +23,7 @@ final class Server
         foreach(['the_nether','the_end'] as $dimension){$path=$config->worldPath.'.'.$dimension.'.sqlite';$this->worlds[$dimension]=new World($version,$path,'terrain',$config->seed,$dimension);}
         foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,function():void{$this->restoreAnimals();$this->restoreBlockSimulation();});}
         $this->crafting = new \PhpMinecraftJavaServer\World\Crafting($version->directory);
-        foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration'] as $key){$saved=$this->world->setting($key);if($saved!==null){$this->$key=$saved;}}
+        foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration','spawnMobs'] as $key){$saved=$this->world->setting($key);if($saved!==null){$this->$key=$saved;}}
     }
     public function stop(): void { $this->running = false; }
     public function run(?int $maxTicks = null): void {

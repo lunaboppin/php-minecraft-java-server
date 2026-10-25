@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'tools/parity'))
 from run import difference,observe
-from protocol import block_pos,palette,wire
+from protocol import Probe,block_pos,palette,wire
 
 
 class HarnessTests(unittest.TestCase):
@@ -42,6 +42,23 @@ class HarnessTests(unittest.TestCase):
     def test_signed_world_coordinates(self):
         for position in [(-17,-64,-33),(0,319,0),(29999999,255,-29999999)]:
             self.assertEqual(block_pos(struct.unpack('>q',wire.block_position(*position))[0]),position)
+
+    def test_checkpoints_do_not_change_when_later_packets_arrive(self):
+        probe=Probe.__new__(Probe);probe.entity_spawns=[{'type':30,'position':[2.5,64,.5]}];probe.notes=[]
+        first=probe.snapshot(['entity_spawns','notes'])
+        probe.entity_spawns[0]['position'][0]=20.5
+        probe.entity_spawns.append({'type':10,'position':[2.5,64,2.5]});probe.notes.append({'pitch':1.0})
+        self.assertEqual(first,{'entity_spawns':[{'type':30,'position':[2.5,64,.5]}],'notes':[]})
+
+    def test_retracking_keeps_initial_spawn_without_hiding_new_entities(self):
+        probe=Probe.__new__(Probe);probe.dimension='overworld';probe.entities={};probe.spawned_profiles=set();probe.entity_spawns=[]
+        def packet(entity,profile,x):return wire.vi(entity)+bytes([profile])*16+wire.vi(10)+struct.pack('>ddd',x,64,2.5)
+        probe.observe_spawn(packet(3,1,2.5));probe.entities.pop(3)
+        probe.observe_spawn(packet(3,1,32.5))
+        self.assertEqual(probe.entity_spawns,[{'type':10,'position':[2.5,64,2.5]}])
+        self.assertEqual(probe.entities,{3:10})
+        probe.observe_spawn(packet(4,2,2.5))
+        self.assertEqual(len(probe.entity_spawns),2)
 
 
 if __name__=='__main__':unittest.main()

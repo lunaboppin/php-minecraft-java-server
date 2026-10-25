@@ -84,7 +84,7 @@ trait Commands
                 case 'weather':
                     $weather=$parts[0]??'';if(!in_array($weather,['clear','rain','thunder'],true)){throw new \InvalidArgumentException('Usage: /weather clear|rain|thunder');}$this->weather=$weather;foreach($this->players() as $p){$this->sendWeather($p);}$this->tell($c,'Weather changed to '.$weather);return;
                 case 'gamerule':
-                    $map=['doDaylightCycle'=>'daylightCycle','keepInventory'=>'keepInventory','naturalRegeneration'=>'naturalRegeneration'];$field=$map[$parts[0]??'']??throw new \InvalidArgumentException('Supported gamerules: '.implode(', ',array_keys($map)));
+                    $map=['doDaylightCycle'=>'daylightCycle','keepInventory'=>'keepInventory','naturalRegeneration'=>'naturalRegeneration','spawn_mobs'=>'spawnMobs','minecraft:spawn_mobs'=>'spawnMobs','doMobSpawning'=>'spawnMobs'];$field=$map[$parts[0]??'']??throw new \InvalidArgumentException('Supported gamerules: '.implode(', ',array_keys($map)));
                     if(!isset($parts[1])){$this->tell($c,$parts[0].' = '.($this->$field?'true':'false'));return;}
                     if(!in_array($parts[1],['true','false'],true)){throw new \InvalidArgumentException('Expected true or false');}$this->$field=$parts[1]==='true';$this->saveWorld();foreach($this->players() as $p){$this->sendClock($p);}$this->tell($c,$parts[0].' = '.$parts[1]);return;
                 case 'heal':$target=isset($parts[0])?$this->playerByName($parts[0],$c):$c;if($target->dead){$this->respawnPlayer($target);}$target->health=20;$target->food=20;$target->saturation=20;$this->health($target);$this->tell($c,'Healed '.$target->name);return;

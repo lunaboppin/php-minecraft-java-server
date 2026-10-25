@@ -34,7 +34,7 @@ trait Animals
         foreach($this->localPlayers() as $p){$this->showAnimal($p,$this->animals[$id]);}return $id;
     }
     private function naturalAnimals(int $cx,int $cz):void {
-        if($this->world->generator!=='terrain'){return;}$key=$cx.':'.$cz;if(isset($this->naturalSpawns[$key])){return;}$this->naturalSpawns[$key]=true;
+        if(!$this->spawnMobs || $this->world->generator!=='terrain'){return;}$key=$cx.':'.$cz;if(isset($this->naturalSpawns[$key])){return;}$this->naturalSpawns[$key]=true;
         $noise=new Noise($this->world->seed);$hash=$noise->hash($cx,0,$cz,120);
         if($hash%6!==0){return;}$x=$cx*16+4+$hash%8;$z=$cz*16+4+intdiv($hash,11)%8;$column=$this->world->column($x,$z);
         if(!in_array($column['biome'],['plains','forest','taiga','meadow'],true) || $column['height']<64 || !$this->version->catalog->blocks[$this->version->catalog->blockName($this->world->get($x,$column['height']+1,$z))]['replaceable']){return;}
