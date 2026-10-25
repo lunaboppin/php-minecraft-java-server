@@ -40,9 +40,7 @@ trait Survival
     private function health(Client $c):void {
         if($c->dimension!==$this->world->dimension){$this->withDimension($c->dimension,fn()=>$this->health($c));return;}
         $c->send($this->version,'set_health',pack('G',$c->health).Binary::writeVarInt($c->food).pack('G',$c->saturation));
-        $flags=($c->fireTicks>0?1:0)|($c->sneaking?2:0)|($c->sprinting?8:0)|($c->gameMode===3?32:0);
-        $payload=Packets::vitals($this->version->catalog,$c->entityId,max(0,$c->air),$flags);
-        if($c->lastEntityFlags!==$flags){foreach($this->localPlayers() as $p){$p->send($this->version,'set_entity_data',$payload);}$c->lastEntityFlags=$flags;}else{$c->send($this->version,'set_entity_data',$payload);}
+        $this->syncPlayerMetadata($c);
         $remaining=$c->experience;$level=0;
         while(true){$needed=$level<15?2*$level+7:($level<30?5*$level-38:9*$level-158);if($remaining<$needed){break;}$remaining-=$needed;++$level;}
         $c->send($this->version,'set_experience',pack('G',$remaining/$needed).Binary::writeVarInt($level).Binary::writeVarInt($c->experience));
@@ -56,14 +54,15 @@ trait Survival
         if($c->dimension!==$this->world->dimension){$this->withDimension($c->dimension,fn()=>$this->setGameMode($c,$mode));return;}
         $c->gameMode=$mode;$c->flying=$mode===3;$c->fallDistance=0;$c->mining=null;$this->abilities($c);
         $c->send($this->version,'game_event',"\3".pack('G',$mode));
-        foreach($this->localPlayers() as $p){$p->send($this->version,'player_info_update',"\4\1".$c->uuid.Binary::writeVarInt($mode));}
+        foreach($this->players() as $p){$p->send($this->version,'player_info_update',"\4\1".$c->uuid.Binary::writeVarInt($mode));$this->refreshTracking($p);}
+        $this->syncPlayerMetadata($c);
         $this->savePlayer($c);
     }
     private function damage(Client $c,float $amount,string $reason,bool $force=false):void {
         if($c->dimension!==$this->world->dimension){$this->withDimension($c->dimension,fn()=>$this->damage($c,$amount,$reason,$force));return;}
         if($c->dead || (!$force && (in_array($c->gameMode,[1,3],true) || $this->ticks-$c->lastDamageTick<10))){return;}
         $c->lastDamageTick=$this->ticks;$c->health=max(0,$c->health-$amount);$this->health($c);
-        foreach($this->localPlayers() as $p){$p->send($this->version,'entity_event',pack('N',$c->entityId).chr($c->health<=0?3:2));}
+        foreach($this->localPlayers() as $p){if($p===$c || isset($p->entities[$c->entityId])){$p->send($this->version,'entity_event',pack('N',$c->entityId).chr($c->health<=0?3:2));}}
         if($c->health<=0){
             $c->dead=true;$c->mining=null;$c->eating=null;$this->closeWindow($c,true);
             if(!$this->keepInventory){foreach($c->inventory as $slot=>$stack){$this->dropStack($c->x,$c->y+0.5,$c->z,$stack);}$c->inventory=[];$c->experience=0;}

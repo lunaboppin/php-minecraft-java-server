@@ -118,5 +118,6 @@ passthru('python3 '.escapeshellarg(__DIR__.'/placement.py'),$code);if($code!==0)
 passthru('python3 '.escapeshellarg(__DIR__.'/settings.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/multiplayer.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/equipment.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/tracking.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/signs-pick.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/simulation.py'),$code);exit($code);

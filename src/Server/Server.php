@@ -6,7 +6,7 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
-    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick;
+    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick, EntityTracking;
     private mixed $listener = null;
     /** @var array<int,Client> */
     private array $clients = [];
@@ -231,11 +231,13 @@ final class Server
         $this->log($c->name.' joined from '.$c->peer);
     }
     private function spawnPlayer(Client $recipient, Client $player): void {
-        if($recipient->dimension!==$player->dimension){return;}
+        if(isset($recipient->entities[$player->entityId]) || !$this->tracksPlayer($recipient,$player)){return;}
         $recipient->send($this->version,'add_entity',Packets::addPlayer($player->entityId,$player->uuid,$this->version->blocks['player_entity_type'],$player->x,$player->y,$player->z,$player->yaw,$player->pitch));
         $recipient->send($this->version,'rotate_head',Packets::headRotation($player->entityId,$player->yaw));
         $recipient->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$player->entityId,$player->information['skinParts']??0,$player->information['mainHand']??1));
         $recipient->send($this->version,'set_equipment',Packets::equipment($player->entityId,$this->playerEquipment($player),$this->version->blocks['component_damage']));
+        $recipient->send($this->version,'set_entity_data',$this->playerMetadata($player));
+        $recipient->entities[$player->entityId]=true;
     }
     private function viewDistance(Client $c):int {
         return min($this->config->viewDistance,max(2,min(32,$c->information['viewDistance']??$this->config->viewDistance)));
@@ -248,7 +250,7 @@ final class Server
             if((($previous['skinParts']??0)&64)!==($c->information['skinParts']&64)){
                 $player->send($this->version,'player_info_update',"\x80\1".$c->uuid.chr((int)(($c->information['skinParts']&64)!==0)));
             }
-            if($player->dimension===$c->dimension && (($previous['skinParts']??0)!==$c->information['skinParts'] || ($previous['mainHand']??1)!==$c->information['mainHand'])){
+            if(($player===$c || isset($player->entities[$c->entityId])) && (($previous['skinParts']??0)!==$c->information['skinParts'] || ($previous['mainHand']??1)!==$c->information['mainHand'])){
                 $player->send($this->version,'set_entity_data',$appearance);
             }
         }
@@ -263,6 +265,7 @@ final class Server
         $c->teleport = ++$c->teleportCounter; $c->teleportAt = self::now();
         $c->send($this->version,'player_position',Packets::position($c->teleport,$c->x,$c->y,$c->z,$c->yaw,$c->pitch));
         $this->scheduleChunks($c);
+        $this->broadcastPlayerPosition($c);
     }
     private function scheduleChunks(Client $c): void {
         $cx = (int)floor($c->x/16); $cz = (int)floor($c->z/16);
@@ -277,6 +280,8 @@ final class Server
             if (!isset($wanted[$key])) { $c->send($this->version,'forget_level_chunk',pack('NN',$z,$x)); unset($c->loadedChunks[$key]); }
         }
         $c->queuedChunks = $queue;
+        $c->trackingDirty=true;
+        $this->refreshTracking($c);
         $c->send($this->version,'set_chunk_cache_center',Binary::writeVarInt($cx).Binary::writeVarInt($cz));
     }
     private function play(Client $c, string $name, Binary $r): void {
@@ -323,7 +328,12 @@ final class Server
             case 'client_command': $action=$r->varInt();$r->end();if($action===0){$this->respawnPlayer($c);}return;
             case 'container_click': $this->inventoryClick($c,$r);return;
             case 'container_close': $window=$r->varInt();$r->end();if($window===$c->windowId){$this->closeWindow($c);$this->syncInventory($c);}return;
-            case 'player_input': $flags=$r->byte();$r->end();$c->sprinting=($flags&64)!==0;$c->sneaking=($flags&32)!==0;return;
+            case 'player_loaded':$r->end();$c->playerLoaded=true;return;
+            case 'player_input': $flags=$r->byte();$r->end();if($c->playerLoaded){$c->sneaking=($flags&32)!==0;}return;
+            case 'player_command':
+                $r->varInt();$action=$r->varInt();$r->varInt();$r->end();
+                if($action<0 || $action>6){throw new ProtocolException('Invalid player command');}
+                if($c->playerLoaded && in_array($action,[1,2],true)){$c->sprinting=$action===1;}return;
             case 'attack': $id=$r->varInt();$r->end();$this->attackEntity($c,$id);return;
             default:
                 // Optional client telemetry and unsupported interactions have no world effects.
@@ -345,7 +355,7 @@ final class Server
         $this->survivalMovement($c,$oldY,$distance);
         if ($y < -80 && in_array($c->gameMode,[1,3],true)) { $this->teleport($c); }
         if ((int)floor($c->x/16)!==$c->chunkX || (int)floor($c->z/16)!==$c->chunkZ) { $this->scheduleChunks($c); }
-        foreach ($this->players() as $other) { if ($other!==$c && $other->dimension===$c->dimension) { $other->send($this->version,'teleport_entity',Packets::teleportEntity($c->entityId,$c->x,$c->y,$c->z,$c->yaw,$c->pitch,$c->ground));if($oldYaw!==$c->yaw){$other->send($this->version,'rotate_head',Packets::headRotation($c->entityId,$c->yaw));} } }
+        $this->broadcastPlayerPosition($c,$oldYaw!==$c->yaw);
     }
     private function editable(Client $c,int $x,int $y,int $z): bool {
         return !$c->dead && in_array($c->gameMode,[0,1],true) && $c->teleport===null && $y>=$this->world->minY && $y<$this->world->minY+$this->world->height && isset($c->loadedChunks[($x>>4).':'.($z>>4)])
@@ -477,15 +487,18 @@ final class Server
                 if($c->dimension!==$this->world->dimension){return;}
                 $this->tickSurvival($c);
                 $this->syncEquipment($c);
+                $this->syncPlayerMetadata($c);
                 if ($this->ticks%20===0) { $this->sendClock($c); }
                 if ($c->queuedChunks!==[] && !$c->awaitingBatch && strlen($c->output)<1048576) {
                     $c->send($this->version,'chunk_batch_start');$count=0;
                     foreach (array_slice($c->queuedChunks,0,2,true) as $key=>[$x,$z]) {
                         $c->send($this->version,'level_chunk_with_light',$this->world->chunk($x,$z));
                         $c->loadedChunks[$key]=[$x,$z];$this->naturalAnimals($x,$z);unset($c->queuedChunks[$key]);++$count;
+                        $c->trackingDirty=true;
                     }
                     $c->send($this->version,'chunk_batch_finished',Binary::writeVarInt($count));$c->awaitingBatch=true;$c->batchAt=$now;
                 }
+                $this->refreshTracking($c);
                 });
             } catch (ProtocolException $e) { $this->disconnect($c,$e->getMessage()); }
         }
@@ -507,7 +520,7 @@ final class Server
         if ($c->state==='play') {
             foreach ($this->players() as $other) {
                 try {
-                    $other->send($this->version,'remove_entities',"\1".Binary::writeVarInt($c->entityId));
+                    $this->forgetEntity($other,$c->entityId);
                     $other->send($this->version,'player_info_remove',"\1".$c->uuid);
                 } catch (ProtocolException) { $this->closeAfterWrite($other); }
             }

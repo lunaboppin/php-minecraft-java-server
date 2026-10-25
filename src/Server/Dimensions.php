@@ -37,12 +37,13 @@ trait Dimensions
         if($c->dimension===$dimension && !$force){$this->teleport($c,$position);return;}
         $this->withDimension($c->dimension,function()use($c):void{
             $this->closeWindow($c,true);
-            foreach($this->localPlayers() as $other){if($other!==$c){$other->send($this->version,'remove_entities',"\1".Binary::writeVarInt($c->entityId));}}
+            foreach($this->localPlayers() as $other){if($other!==$c){$this->forgetEntity($other,$c->entityId);}}
         });
         // Respawning after death must allow immediate portal entry, as the vanilla lifecycle probe verifies.
         $c->dimension=$dimension;$c->portalTicks=0;$c->portalCooldown=$force?0:$this->ticks+100;
         $this->withDimension($dimension,function()use($c,$position):void{
             $c->loadedChunks=[];$c->queuedChunks=[];$c->entities=[];$c->awaitingBatch=false;$c->mining=null;$c->eating=null;
+            $c->playerLoaded=false;
             $c->send($this->version,'respawn',Packets::respawn($this->version,$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension));
             $this->abilities($c);$this->health($c);$this->syncInventory($c);$this->sendClock($c);$this->sendWeather($c);
             $c->send($this->version,'set_default_spawn_position',Packets::spawn($this->worlds['overworld']->spawn()));

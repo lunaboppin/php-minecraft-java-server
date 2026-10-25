@@ -27,8 +27,8 @@ trait Animals
         $kind=['cow','pig','sheep','chicken'][intdiv($hash,19)%4];$this->spawnAnimal($kind,$x+0.5,$column['height']+1,$z+0.5);$this->spawnAnimal($kind,$x+1.5,$column['height']+1,$z+0.5);
     }
     private function showAnimal(Client $c,array $animal):void {
-        $id=$animal['id'];$key=((int)floor($animal['x']/16)).':'.((int)floor($animal['z']/16));
-        if(isset($c->entities[$id]) || !isset($c->loadedChunks[$key])){return;}
+        $id=$animal['id'];
+        if(isset($c->entities[$id]) || !$this->tracksPosition($c,$animal['x'],$animal['z'],$animal['kind'])){return;}
         $c->send($this->version,'add_entity',Packets::addPlayer($id,hex2bin($animal['uuid']),$this->version->blocks['entity_types'][$animal['kind']],$animal['x'],$animal['y'],$animal['z'],$animal['yaw'],0));$c->entities[$id]=true;
     }
     private function removeAnimal(int $id):void {

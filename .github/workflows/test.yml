@@ -80,8 +80,6 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/settings.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-settings
           python3 tools/parity/run.py --scenario tests/parity/music-redstone.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-music
           python3 tools/parity/run.py --scenario tests/parity/water.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-water
-          python3 tools/parity/run.py --scenario tests/parity/equipment.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-equipment
-          python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json
           python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -95,7 +93,42 @@ jobs:
             tools/.cache/parity-settings/
             tools/.cache/parity-music/
             tools/.cache/parity-water/
+          retention-days: 7
+
+  multiplayer-parity:
+    if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib
+          coverage: none
+        env:
+          update: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Prepare pinned official reference
+        run: |
+          python3 tools/update_reference.py
+          mkdir -p tools/.cache/parity-consent
+          printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
+      - name: Compare multiplayer equipment and tracking with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/equipment.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-equipment
+          python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
+          python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multiplayer-parity-evidence
+          path: |
             tools/.cache/parity-equipment/
+            tools/.cache/parity-tracking/
           retention-days: 7
 
   docker:

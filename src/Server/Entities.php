@@ -17,7 +17,7 @@ trait Entities
     }
     private function showItem(Client $c,array $entity):void {
         $id=$entity['id'];
-        if(isset($c->entities[$id]) || !isset($c->loadedChunks[((int)floor($entity['x']/16)).':'.((int)floor($entity['z']/16))])){return;}
+        if(isset($c->entities[$id]) || !$this->tracksPosition($c,$entity['x'],$entity['z'],'item')){return;}
         $c->send($this->version,'add_entity',Packets::addPlayer($id,$entity['uuid'],$this->version->blocks['entity_types']['item'],$entity['x'],$entity['y'],$entity['z'],0,0));
         $c->send($this->version,'set_entity_data',$this->itemMetadata($entity));$c->entities[$id]=true;
     }

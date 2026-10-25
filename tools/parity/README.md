@@ -37,6 +37,8 @@ The Java verifier decodes every retained packet with official codecs and rejects
 
 `equipment.json` connects a second observer and compares all six equipment slots, hotbar selection, main/offhand swaps, removals and save/restart. Missing equipment slots start empty; vanilla's hand-swap event is applied to the observed slot state. Native multiplayer tests additionally exercise dimension isolation/re-entry, late joins and damaged saved tools.
 
+`tracking.json` compares circular horizontal range boundaries, viewer unload/re-entry, standing/crouching metadata, sprint command semantics and spectator visibility with a second client. It uses explicit player teleports to test tracking independently of authoritative collision/movement. Native tests additionally exercise supported mobs/items, repeated dimension travel and reconnect. Full spectator camera, riding, swimming/fall-flight poses and collision-constrained crawling remain outside this scenario. Multiplayer comparisons run in a separate CI job from the six existing single-player scenarios.
+
 These are semantic checkpoint comparisons plus independent packet validation. They do **not** assert identical packet ordering, compare every packet field, prove exact terrain generation, test full item components, or cover every multiplayer/entity lifecycle. Issue #2 remains open until those broader comparisons are delivered. A passing scenario establishes only its named observations.
 
 CI always runs harness unit checks and PHP replay. Official comparisons additionally require the repository Actions variable `MINECRAFT_EULA_ACCEPTED=true`, set only after the repository owner accepts the EULA for these tests. The workflow retains diagnostic artifacts for seven days, including failures.

@@ -17,7 +17,6 @@ final class Client
     public float $exhaustion = 0;
     public float $fallDistance = 0;
     public int $air = 300;
-    public ?int $lastEntityFlags = null;
     public int $fireTicks = 0;
     public bool $dead = false;
     public bool $flying = false;
@@ -37,6 +36,7 @@ final class Client
     public ?array $windowPosition = null;
     public array $craftGrid = [];
     public array $entities = [];
+    public bool $trackingDirty = true;
     public ?array $personalSpawn = null;
     public string $state = 'handshake';
     public bool $bufferedWork = false;
@@ -53,6 +53,7 @@ final class Client
     public string $uuid = '';
     public bool $loginStarted = false;
     public bool $registriesSent = false;
+    public bool $playerLoaded = false;
     public bool $knownPacksRequested = false;
     public int $entityId = 0;
     public float $x = 0.5;
@@ -73,6 +74,7 @@ final class Client
     public int $heldSlot = 0;
     public array $inventory = [];
     public array $lastEquipment = [];
+    public ?string $lastPlayerMetadata = null;
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;
     public float $packetWindow;

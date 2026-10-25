@@ -102,6 +102,14 @@ public class ExportReference {
             if(playable!=null){var info=new JsonObject();info.addProperty("song",playable.song().unwrapKey().orElseThrow().identifier().getPath());info.addProperty("ticks",playable.song().value().lengthInTicks()+20);info.addProperty("comparator",playable.song().value().comparatorOutput());songs.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);}}
         simulation.add("instruments",instruments);simulation.add("block_instruments",blockInstruments);simulation.add("songs",songs);simulation.addProperty("note_block_id",BuiltInRegistries.BLOCK.getId(Blocks.NOTE_BLOCK));
         Files.writeString(out.resolve("simulation.json"),gson.toJson(simulation)+"\n");
+        var tracking=new JsonObject();var ranges=new JsonObject();var poses=new JsonObject();
+        for(var type:BuiltInRegistries.ENTITY_TYPE)ranges.addProperty(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath(),type.clientTrackingRange()*16);
+        for(var pose:net.minecraft.world.entity.Pose.values())poses.addProperty(pose.name().toLowerCase(Locale.ROOT),pose.ordinal());
+        var poseField=net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_POSE");poseField.setAccessible(true);
+        tracking.addProperty("pose_index",((net.minecraft.network.syncher.EntityDataAccessor<?>)poseField.get(null)).id());
+        tracking.addProperty("pose_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.POSE));
+        tracking.add("ranges",ranges);tracking.add("poses",poses);
+        Files.writeString(out.resolve("tracking.json"),gson.toJson(tracking)+"\n");
         var itemField=net.minecraft.world.entity.item.ItemEntity.class.getDeclaredField("DATA_ITEM");itemField.setAccessible(true);
         var itemAccessor=(net.minecraft.network.syncher.EntityDataAccessor<?>)itemField.get(null);
         gameplay.addProperty("item_metadata_index",itemAccessor.id());
