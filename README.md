@@ -45,6 +45,12 @@ Use the latest stable PHP security release. The minimum is **PHP 8.5.12**, verif
 
 Stop with Ctrl+C or SIGTERM. Player data is saved on disconnect and shutdown, with periodic saves while playing. Block and container changes are written to SQLite as they happen.
 
+## Pelican / Pterodactyl
+
+Import the [server egg](https://raw.githubusercontent.com/lunaboppin/php-minecraft-java-server/main/deploy/panel/egg-php-minecraft-java-server.json) to install directly from this GitHub repository. It builds the latest stable PHP 8.5 patch from checksum-verified official source, uses the primary panel allocation, and saves cleanly on Stop. Reinstall updates application files/PHP while preserving `server.json` and `data/`.
+
+The initial PHP build takes several minutes. Use the supplied Debian yolk and allocate at least 1 GiB RAM and 2 GiB disk. See the [panel setup guide](deploy/panel/README.md) for import steps, settings, updates and backups.
+
 ## World generation
 
 Set `generator` to `terrain` and choose an integer `seed` in the signed 32-bit range. Generation includes:

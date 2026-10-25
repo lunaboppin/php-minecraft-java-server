@@ -16,7 +16,7 @@ def main():
     OUTPUT.parent.mkdir(exist_ok=True)
     files = [ROOT / name for name in ['README.md', 'NOTICE.md', 'composer.json', 'server.json',
                                      'server.example.json', 'server-flat.example.json', '.gitignore']]
-    for directory in ['src', 'bin', 'reference', 'tests', 'tools', 'docs']:
+    for directory in ['src', 'bin', 'reference', 'tests', 'tools', 'docs', 'deploy']:
         files.extend(path for path in (ROOT / directory).rglob('*') if path.is_file()
                      and not any(part in ('.cache', '__pycache__') for part in path.relative_to(ROOT).parts)
                      and path.suffix != '.pyc')

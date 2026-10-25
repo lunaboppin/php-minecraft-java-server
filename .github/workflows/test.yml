@@ -22,5 +22,24 @@ jobs:
           php -r 'require "src/bootstrap.php";'
       - name: Check PHP syntax
         run: find src bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Validate panel egg
+        run: python3 tests/panel_egg.py
       - name: Run protocol and gameplay checks
         run: php tests/run.php
+  panel-egg:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest stable PHP for configuration checks
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib
+          coverage: none
+        env:
+          update: 'true'
+      - name: Install and run the egg, then reinstall without losing saves
+        env:
+          PANEL_TEST_REF: ${{ github.sha }}
+        run: python3 tests/panel_egg.py --container
