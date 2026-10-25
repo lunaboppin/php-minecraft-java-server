@@ -153,6 +153,8 @@ Lighting is computed per chunk with direct vertical skylight; horizontal skyligh
 
 This server has automated wire/progression checks, but the full graphical client feature set has not been interactively verified. It is not a production-ready public replacement for Mojang/Paper.
 
+Client settings are parsed during configuration and play. The server applies requested render distance within its configured limit, synchronizes skin layers/main-hand preference, and anonymizes players who disable server-list listing. Locale, chat and particle preferences are recorded; full chat filtering/moderation behavior remains incomplete.
+
 ## Validation and reference data
 
 ```sh

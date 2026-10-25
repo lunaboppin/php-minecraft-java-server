@@ -24,5 +24,7 @@
   "damaged_pickaxe": "01970801000307",
   "click_empty": "0001002400000000",
   "vitals": "0101019601000001ff",
-  "hashed_seed": "04139124513554e1"
+  "hashed_seed": "04139124513554e1",
+  "client_information": "05656e5f67620400017f00000100",
+  "player_appearance": "0110007f0f2a00ff"
 }

@@ -143,8 +143,8 @@ final class Server
     private function status(Client $c, string $name, Binary $r): void {
         if ($name === 'status_request') {
             $r->end(); $sample = [];
-            foreach ($this->players() as $player) { $sample[] = ['name'=>$player->name,'id'=>Binary::formatUuid($player->uuid)]; }
-            $json = json_encode(['version'=>['name'=>Version::NAME,'protocol'=>Version::PROTOCOL],'players'=>['max'=>$this->config->maxPlayers,'online'=>count($sample),'sample'=>array_slice($sample,0,12)],'description'=>['text'=>$this->config->motd],'enforcesSecureChat'=>false],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);
+            foreach ($this->players() as $player) { $sample[] = ($player->information['allowsListing']??false)?['name'=>$player->name,'id'=>Binary::formatUuid($player->uuid)]:['name'=>'Anonymous Player','id'=>'00000000-0000-0000-0000-000000000000']; }
+            $json = json_encode(['version'=>['name'=>Version::NAME,'protocol'=>Version::PROTOCOL],'players'=>['max'=>$this->config->maxPlayers,'online'=>count($this->players()),'sample'=>array_slice($sample,0,12)],'description'=>['text'=>$this->config->motd],'enforcesSecureChat'=>false],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);
             $c->send($this->version,'status_response',Binary::writeString($json));
         } elseif ($name === 'ping_request') {
             $payload = $r->bytes(8); $r->end();
@@ -178,6 +178,7 @@ final class Server
         } else { throw new ProtocolException('Unexpected login packet'); }
     }
     private function configuration(Client $c, string $name, Binary $r): void {
+        if($name==='client_information'){$this->clientInformation($c,$r);return;}
         if ($name === 'select_known_packs') {
             if (!$c->knownPacksRequested || $c->registriesSent || $r->varInt() !== 0) { throw new ProtocolException('Unexpected known packs response'); }
             $r->end();
@@ -186,7 +187,7 @@ final class Server
             $c->send($this->version,'finish_configuration'); $c->registriesSent = true;
         } elseif ($name === 'finish_configuration' && $c->registriesSent) {
             $r->end(); $c->state = 'play'; $this->join($c);
-        } elseif (!in_array($name,['client_information','custom_payload','resource_pack'],true)) { throw new ProtocolException('Unexpected configuration packet'); }
+        } elseif (!in_array($name,['custom_payload','resource_pack'],true)) { throw new ProtocolException('Unexpected configuration packet'); }
     }
     /** @return array<int,Client> */
     private function players(): array { return array_filter($this->clients,static fn(Client $c): bool => $c->state === 'play' && !$c->closing); }
@@ -196,7 +197,8 @@ final class Server
         $this->withDimension($c->dimension,fn()=>$this->joinWorld($c));
     }
     private function joinWorld(Client $c):void {
-        $c->send($this->version,'login',Packets::playLogin($this->version,$c->entityId,$this->config->maxPlayers,$this->config->viewDistance,$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension,array_keys($this->worlds)));
+        $c->send($this->version,'login',Packets::playLogin($this->version,$c->entityId,$this->config->maxPlayers,$this->viewDistance($c),$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension,array_keys($this->worlds),$this->config->viewDistance));
+        $c->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$c->entityId,$c->information['skinParts']??0,$c->information['mainHand']??1));
         $c->send($this->version,'change_difficulty',chr($this->config->difficulty)."\1");
         $this->abilities($c);
         $c->send($this->version,'set_default_spawn_position',Packets::spawn($this->worlds['overworld']->spawn()));
@@ -207,9 +209,9 @@ final class Server
         $this->sendWeather($c);
         $this->commands($c);
         foreach ($this->players() as $other) {
-            $c->send($this->version,'player_info_update',Packets::playerInfo($other->uuid,$other->name,$other->gameMode));
+            $c->send($this->version,'player_info_update',Packets::playerInfo($other->uuid,$other->name,$other->gameMode,(($other->information['skinParts']??0)&64)!==0));
             if ($other !== $c) {
-                $other->send($this->version,'player_info_update',Packets::playerInfo($c->uuid,$c->name,$c->gameMode));
+                $other->send($this->version,'player_info_update',Packets::playerInfo($c->uuid,$c->name,$c->gameMode,(($c->information['skinParts']??0)&64)!==0));
                 $this->spawnPlayer($c,$other); $this->spawnPlayer($other,$c);
             }
         }
@@ -223,6 +225,26 @@ final class Server
     private function spawnPlayer(Client $recipient, Client $player): void {
         if($recipient->dimension!==$player->dimension){return;}
         $recipient->send($this->version,'add_entity',Packets::addPlayer($player->entityId,$player->uuid,$this->version->blocks['player_entity_type'],$player->x,$player->y,$player->z,$player->yaw,$player->pitch));
+        $recipient->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$player->entityId,$player->information['skinParts']??0,$player->information['mainHand']??1));
+    }
+    private function viewDistance(Client $c):int {
+        return min($this->config->viewDistance,max(2,min(32,$c->information['viewDistance']??$this->config->viewDistance)));
+    }
+    private function clientInformation(Client $c,Binary $r):void {
+        $oldView=$this->viewDistance($c);$previous=$c->information;$c->information=Packets::readClientInformation($r);
+        if($c->state!=='play'){return;}
+        $appearance=Packets::playerAppearance($this->version->catalog,$c->entityId,$c->information['skinParts'],$c->information['mainHand']);
+        foreach($this->players() as $player){
+            if((($previous['skinParts']??0)&64)!==($c->information['skinParts']&64)){
+                $player->send($this->version,'player_info_update',"\x80\1".$c->uuid.chr((int)(($c->information['skinParts']&64)!==0)));
+            }
+            if($player->dimension===$c->dimension && (($previous['skinParts']??0)!==$c->information['skinParts'] || ($previous['mainHand']??1)!==$c->information['mainHand'])){
+                $player->send($this->version,'set_entity_data',$appearance);
+            }
+        }
+        if($oldView!==$this->viewDistance($c)){
+            $c->send($this->version,'set_chunk_cache_radius',Binary::writeVarInt($this->viewDistance($c)));$this->scheduleChunks($c);
+        }
     }
     private function teleport(Client $c,?array $position=null): void {
         if($c->dimension!==$this->world->dimension){$this->withDimension($c->dimension,fn()=>$this->teleport($c,$position));return;}
@@ -235,7 +257,7 @@ final class Server
     private function scheduleChunks(Client $c): void {
         $cx = (int)floor($c->x/16); $cz = (int)floor($c->z/16);
         $c->chunkX = $cx; $c->chunkZ = $cz; $wanted = []; $queue = [];
-        $view = $this->config->viewDistance;
+        $view = $this->viewDistance($c);
         for ($z=$cz-$view;$z<=$cz+$view;++$z) { for ($x=$cx-$view;$x<=$cx+$view;++$x) {
             $key=$x.':'.$z; $wanted[$key]=true;
             if (!isset($c->loadedChunks[$key])) { $queue[$key]=[$x,$z]; }
@@ -249,6 +271,7 @@ final class Server
     }
     private function play(Client $c, string $name, Binary $r): void {
         switch ($name) {
+            case 'client_information':$this->clientInformation($c,$r);return;
             case 'accept_teleportation':
                 $confirmation=Packets::readTeleportConfirmation($r);$id=$confirmation['id'];
                 if ($c->teleport === null || $id !== $c->teleport) { throw new ProtocolException('Invalid teleport confirmation'); }

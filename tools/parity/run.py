@@ -95,17 +95,17 @@ def observe(controller,scenario,output):
         for index,step in enumerate(scenario['steps']):
             probe.step=f'{index}:{step["action"]}'
             action=step['action']
-            if action=='command':probe.send('chat_command',wire.string(step['text']));probe.barrier()
+            if action=='command':probe.send('chat_command',wire.string(step['text']));probe.tick_barrier()
             elif action=='wait':
                 deadline=time.monotonic()+step['seconds']
                 while time.monotonic()<deadline:probe.barrier();time.sleep(.05)
-            elif action=='packet':probe.send(step['name'],bytes.fromhex(step['hex']));probe.barrier()
+            elif action=='packet':probe.send(step['name'],bytes.fromhex(step['hex']));probe.tick_barrier()
             elif action=='click':
-                probe.send('container_click',wire.vi(probe.window)+wire.vi(probe.revision)+struct.pack('>hB',step['slot'],step.get('button',0))+wire.vi(step.get('mode',0))+b'\0\0');probe.barrier()
+                probe.send('container_click',wire.vi(probe.window)+wire.vi(probe.revision)+struct.pack('>hB',step['slot'],step.get('button',0))+wire.vi(step.get('mode',0))+b'\0\0');probe.tick_barrier()
             elif action=='dig':
-                probe.send('player_action',wire.vi(step.get('type',0))+wire.block_position(*step['position'])+b'\1'+wire.vi(index+1));probe.barrier()
+                probe.send('player_action',wire.vi(step.get('type',0))+wire.block_position(*step['position'])+b'\1'+wire.vi(index+1));probe.until('block_changed_ack',lambda p:wire.read_vi(p)[0]>=index+1)
             elif action=='place':
-                probe.send('use_item_on',b'\0'+wire.block_position(*step['position'])+wire.vi(step.get('face',1))+struct.pack('>fff',*map(float,step.get('cursor',[.5,1,.5])))+b'\0\0'+wire.vi(index+1));probe.barrier()
+                probe.send('use_item_on',b'\0'+wire.block_position(*step['position'])+wire.vi(step.get('face',1))+struct.pack('>fff',*map(float,step.get('cursor',[.5,1,.5])))+b'\0\0'+wire.vi(index+1));probe.until('block_changed_ack',lambda p:wire.read_vi(p)[0]>=index+1)
             elif action=='respawn':
                 probe.send('client_command',b'\0');probe.until('respawn');probe.until('player_position');probe.barrier()
             elif action=='restart':

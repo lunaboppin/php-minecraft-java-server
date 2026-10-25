@@ -5,7 +5,10 @@
     "air_index": 1,
     "flags_index": 0,
     "int_serializer": 1,
-    "byte_serializer": 0
+    "byte_serializer": 0,
+    "skin_index": 16,
+    "main_hand_index": 15,
+    "main_hand_serializer": 42
   },
   "flags": [
     1,

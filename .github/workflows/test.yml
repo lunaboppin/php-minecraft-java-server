@@ -77,7 +77,8 @@ jobs:
           python3 tools/parity/run.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-java
           python3 tools/parity/run.py --scenario tests/parity/lifecycle.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lifecycle
           python3 tools/parity/run.py --scenario tests/parity/placement.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-placement
-          python3 tools/parity/verify.py tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
+          python3 tools/parity/run.py --scenario tests/parity/settings.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-settings
+          python3 tools/parity/verify.py tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -87,4 +88,5 @@ jobs:
             tools/.cache/parity-java/
             tools/.cache/parity-lifecycle/
             tools/.cache/parity-placement/
+            tools/.cache/parity-settings/
           retention-days: 7

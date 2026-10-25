@@ -52,6 +52,12 @@ try {
     file_put_contents($configPath,'{"onlineMode":true}');rejects(fn()=>Config::load($configPath),'unsupported configuration rejected');
 }finally{unlink($configPath);}
 $v=new Version();$f=json_decode(file_get_contents(__DIR__.'/../reference/26.3/fixtures.json'),true,512,JSON_THROW_ON_ERROR);
+$settingsBytes=hex2bin($f['client_information']);
+check(Packets::readClientInformation(new Binary($settingsBytes))===['language'=>'en_gb','viewDistance'=>4,'chatVisibility'=>0,'chatColors'=>true,'skinParts'=>127,'mainHand'=>0,'textFiltering'=>false,'allowsListing'=>true,'particles'=>0],'official client information fixture');
+rejects(fn()=>Packets::readClientInformation(new Binary(substr($settingsBytes,0,-1))),'truncated settings rejected');
+rejects(fn()=>Packets::readClientInformation(new Binary($settingsBytes."\0")),'trailing settings data rejected');
+$wrapped=Packets::readClientInformation(new Binary(Binary::writeString('en_us')."\xff".Binary::writeVarInt(-1)."\2\0".Binary::writeVarInt(5)."\0\1".Binary::writeVarInt(4)));
+check($wrapped['viewDistance']===-1 && $wrapped['chatVisibility']===2 && $wrapped['mainHand']===0 && $wrapped['particles']===1 && $wrapped['chatColors']===true,'official signed distance, wrapped enums, zero fallback arm and nonzero boolean');
 $confirmationBytes=hex2bin($f['client_teleport_confirmation']);
 check(Packets::readTeleportConfirmation(new Binary($confirmationBytes))===['id'=>1,'x'=>0.5,'y'=>64.0,'z'=>0.5,'yaw'=>0.0,'pitch'=>0.0],'official teleport confirmation including position and rotation');
 rejects(fn()=>Packets::readTeleportConfirmation(new Binary("\1")),'legacy ID-only teleport confirmation rejected');
@@ -69,6 +75,7 @@ $fixtures=[
     'light'=>FlatWorld::light(),
     'empty_section'=>Palette::section(array_fill(0,4096,0),$v->registryId('worldgen/biome','plains'),16),
 ];
+$fixtures['player_appearance']=Packets::playerAppearance($v->catalog,1,127,0);
 $fixtures['vitals']=Packets::vitals($v->catalog,1,150,1);
 $fixtures['respawn_survival']=Packets::respawn($v,0);
 $fixtures['death']=Binary::writeVarInt(1).Nbt::text('Steve died');
@@ -98,11 +105,12 @@ try {
 }finally{foreach(glob($path.'*') as $file){unlink($file);}}
 rejects(fn()=>new Config(port:65536),'invalid port');rejects(fn()=>new Config(viewDistance:1),'invalid view distance');
 check((new Config())->host==='127.0.0.1','loopback default');
-echo 'PASS: '.$checks." PHP checks, including 20 Mojang codec fixtures\n";
+echo 'PASS: '.$checks.' PHP checks, including '.count($fixtures)." Mojang codec fixtures\n";
 require __DIR__.'/world.php';
 require __DIR__.'/dimensions-unit.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
 passthru('python3 '.escapeshellarg(__DIR__.'/integration.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/terrain.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/dimensions.py'),$code);if($code!==0){exit($code);}
-passthru('python3 '.escapeshellarg(__DIR__.'/placement.py'),$code);exit($code);
+passthru('python3 '.escapeshellarg(__DIR__.'/placement.py'),$code);if($code!==0){exit($code);}
+passthru('python3 '.escapeshellarg(__DIR__.'/settings.py'),$code);exit($code);

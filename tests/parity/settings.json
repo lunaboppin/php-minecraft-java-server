@@ -1,0 +1,33 @@
+{
+  "name": "client-settings-appearance",
+  "normalizations": [
+    "Compare requested skin layers and main hand at semantic checkpoints after game-clock barriers.",
+    "Ignore clocks and generated entity IDs. This scenario does not compare text filtering services, chat moderation or every metadata field."
+  ],
+  "steps": [
+    {
+      "action": "packet",
+      "name": "client_information",
+      "hex": "05656e5f67620400017f00000100"
+    },
+    {
+      "action": "snapshot",
+      "name": "left-handed-full-skin",
+      "fields": [
+        "appearance"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "client_information",
+      "hex": "05656e5f67620200010101000000"
+    },
+    {
+      "action": "snapshot",
+      "name": "right-handed-cape-only",
+      "fields": [
+        "appearance"
+      ]
+    }
+  ]
+}

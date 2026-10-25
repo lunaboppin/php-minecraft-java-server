@@ -5,12 +5,26 @@ namespace PhpMinecraftJavaServer\Protocol;
 /** Payloads for protocol 777; packet IDs come from Mojang's generated report. */
 final class Packets
 {
+    /** ClientInformation uses signed view distance, wrapped enum IDs and nine fields in 26.3. */
+    public static function readClientInformation(Binary $r):array {
+        $language=$r->string(16);$view=$r->byte();if($view>=128){$view-=256;}
+        $chat=$r->varInt();$colors=$r->byte()!==0;$skin=$r->byte();$arm=$r->varInt();
+        $filter=$r->byte()!==0;$listing=$r->byte()!==0;$particles=$r->varInt();$r->end();
+        return ['language'=>$language,'viewDistance'=>$view,'chatVisibility'=>(($chat%3)+3)%3,
+            'chatColors'=>$colors,'skinParts'=>$skin,'mainHand'=>$arm===1?1:0,
+            'textFiltering'=>$filter,'allowsListing'=>$listing,'particles'=>(($particles%3)+3)%3];
+    }
+    public static function playerAppearance(Catalog $catalog,int $entityId,int $skinParts,int $mainHand):string {
+        $meta=$catalog->entityMetadata;
+        return Binary::writeVarInt($entityId).chr($meta['skin_index']).Binary::writeVarInt($meta['byte_serializer']).chr($skinParts)
+            .chr($meta['main_hand_index']).Binary::writeVarInt($meta['main_hand_serializer']).Binary::writeVarInt($mainHand)."\xff";
+    }
     public static function loginFinished(string $uuid, string $name, string $session): string {
         return $uuid . Binary::writeString($name, 16) . "\0" . $session;
     }
-    public static function playLogin(Version $v, int $entityId, int $maxPlayers, int $view, int $gameMode = 1, bool $flat = true, int $hashedSeed = 0, string $dimension = 'overworld',array $levels=['overworld']): string {
+    public static function playLogin(Version $v, int $entityId, int $maxPlayers, int $view, int $gameMode = 1, bool $flat = true, int $hashedSeed = 0, string $dimension = 'overworld',array $levels=['overworld'],?int $simulation=null): string {
         return pack('N', $entityId) . "\0" . Binary::writeVarInt(count($levels)).implode('',array_map(static fn(string $key):string=>Binary::writeString('minecraft:'.$key),$levels))
-            . Binary::writeVarInt($maxPlayers) . Binary::writeVarInt($view) . Binary::writeVarInt($view)
+            . Binary::writeVarInt($maxPlayers) . Binary::writeVarInt($view) . Binary::writeVarInt($simulation??$view)
             . "\0\1\0" . Binary::writeVarInt($v->registryId('dimension_type', $dimension))
             . Binary::writeString('minecraft:'.$dimension) . pack('J', $hashedSeed)
             . Binary::writeVarInt($gameMode) . "\0\0" . chr((int)$flat) . "\0\0" . Binary::writeVarInt($dimension==='the_nether'?32:($dimension==='the_end'?0:63)) . "\0\0";
@@ -62,9 +76,9 @@ final class Packets
         return pack('J',$ticks) . "\1" . Binary::writeVarInt($version->registryId('world_clock','overworld'))
             . Binary::writeVarLong($dayTime??($ticks+6000)) . pack('GG',0,$advancing?1:0);
     }
-    public static function playerInfo(string $uuid, string $name, int $gameMode = 1): string {
+    public static function playerInfo(string $uuid, string $name, int $gameMode = 1,bool $hat=true): string {
         // ADD_PLAYER | UPDATE_GAME_MODE | UPDATE_LISTED | UPDATE_LATENCY | UPDATE_HAT
-        return "\x9d\1" . $uuid . Binary::writeString($name,16) . "\0" . Binary::writeVarInt($gameMode) . "\1\0\1";
+        return "\x9d\1" . $uuid . Binary::writeString($name,16) . "\0" . Binary::writeVarInt($gameMode) . "\1\0".chr((int)$hat);
     }
     public static function teleportEntity(int $id, float $x, float $y, float $z, float $yaw, float $pitch, bool $ground): string {
         return Binary::writeVarInt($id) . self::moveRotation($x, $y, $z, $yaw, $pitch) . pack('N', 0) . chr((int)$ground);

@@ -102,6 +102,12 @@ public class ExportReference {
         var entityMetadata=new JsonObject();entityMetadata.addProperty("air_index",airAccessor.id());entityMetadata.addProperty("flags_index",flagsAccessor.id());
         entityMetadata.addProperty("int_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.INT));
         entityMetadata.addProperty("byte_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.BYTE));gameplay.add("entity_metadata",entityMetadata);
+        var skinField=net.minecraft.world.entity.Avatar.class.getDeclaredField("DATA_PLAYER_MODE_CUSTOMISATION");skinField.setAccessible(true);
+        var skinAccessor=(net.minecraft.network.syncher.EntityDataAccessor<Byte>)skinField.get(null);
+        var armField=net.minecraft.world.entity.Avatar.class.getDeclaredField("DATA_PLAYER_MAIN_HAND");armField.setAccessible(true);
+        var armAccessor=(net.minecraft.network.syncher.EntityDataAccessor<net.minecraft.world.entity.HumanoidArm>)armField.get(null);
+        entityMetadata.addProperty("skin_index",skinAccessor.id());entityMetadata.addProperty("main_hand_index",armAccessor.id());
+        entityMetadata.addProperty("main_hand_serializer",net.minecraft.network.syncher.EntityDataSerializers.getSerializedId(net.minecraft.network.syncher.EntityDataSerializers.HUMANOID_ARM));
         gameplay.add("flags",flags);gameplay.add("blocks",blockInfo);gameplay.add("items",items);
         Files.writeString(out.resolve("gameplay.json"),gson.toJson(gameplay)+"\n");
         var uuid=UUID.fromString("5627dd98-e6be-3c21-b8a8-e92344183641");
@@ -140,6 +146,11 @@ public class ExportReference {
         fixture("click_empty",ServerboundContainerClickPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ServerboundContainerClickPacket(0,1,(short)36,(byte)0,net.minecraft.world.inventory.ContainerInput.PICKUP,new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(),net.minecraft.network.HashedStack.EMPTY));
         fixture("vitals",ClientboundSetEntityDataPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundSetEntityDataPacket(1,List.of(new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(airAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.INT,150),new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(flagsAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.BYTE,(byte)1))));
         fixture("hashed_seed",net.minecraft.network.codec.ByteBufCodecs.LONG,Unpooled.buffer(),net.minecraft.world.level.biome.BiomeManager.obfuscateSeed(12345L));
+        var settings=new net.minecraft.server.level.ClientInformation("en_gb",4,net.minecraft.world.entity.player.ChatVisiblity.FULL,true,127,net.minecraft.world.entity.HumanoidArm.LEFT,false,true,net.minecraft.server.level.ParticleStatus.ALL);
+        fixture("client_information",net.minecraft.network.protocol.common.ServerboundClientInformationPacket.STREAM_CODEC,new FriendlyByteBuf(Unpooled.buffer()),new net.minecraft.network.protocol.common.ServerboundClientInformationPacket(settings));
+        fixture("player_appearance",ClientboundSetEntityDataPacket.STREAM_CODEC,new RegistryFriendlyByteBuf(Unpooled.buffer(),access),new ClientboundSetEntityDataPacket(1,List.of(
+            new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(skinAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.BYTE,(byte)127),
+            new net.minecraft.network.syncher.SynchedEntityData.DataValue<>(armAccessor.id(),net.minecraft.network.syncher.EntityDataSerializers.HUMANOID_ARM,net.minecraft.world.entity.HumanoidArm.LEFT))));
         if(args.length>1) verify(Path.of(args[1]),access);
         Files.writeString(out.resolve("fixtures.json"),gson.toJson(fixtures)+"\n");
         System.out.println("Exported "+ids.size()+" registries and "+fixtures.size()+" wire fixtures");
