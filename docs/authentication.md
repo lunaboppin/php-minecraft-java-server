@@ -10,7 +10,7 @@ New example and installer configurations enable online mode. To preserve existin
 
 - `tools/ExportAuthentication.java` uses the checksum-pinned official JAR's `Crypt`, encryption-request and key-response codecs to export RSA/AES/hash fixtures. The bundled private key is **test-only**; every production process generates a fresh key with OpenSSL's CSPRNG.
 - `tests/authentication.php` checks official codec bytes, the server digest, fragmented continuous cipher streams, malformed/wrong challenges, authenticated profile parsing, already-buffered ciphertext and independent persisted identities.
-- `tests/authentication-network.php` uses an isolated fixture verifier to exercise encrypted login/configuration, profile properties, operator commands, restart persistence, invalid/replayed challenges and unavailable verification. The production entrypoint cannot enable this fixture service.
+- `tests/authentication-network.php` uses an isolated fixture verifier to exercise encrypted login/configuration, profile properties, operator commands, duplicate-session replacement and restart persistence, invalid/replayed challenges and unavailable verification. The production entrypoint cannot enable this fixture service.
 - `tools/parity/authentication.py` connects an unjoined synthetic session to both PHP and the pinned Java server. It checks encrypted rejection and retains decrypted packet bodies for official codec validation. It requires an existing EULA acknowledgement and uses isolated worlds. It makes no account login request or acceptance on your behalf.
 
 ## Remaining acceptance

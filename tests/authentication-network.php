@@ -16,7 +16,12 @@ try {
             $r=new Binary($probe->until('login_finished'));authNetworkCheck(bin2hex($r->bytes(16))==='112233445566778899aabbccddeeff00','Ignore spoofed hello UUID');authNetworkCheck($r->string()==='ParityProbe','Verified name');authNetworkCheck($r->varInt()===1 && $r->string()==='textures' && $r->string()==='fixture-value' && $r->bool() && $r->string()==='fixture-signature','Verified profile properties');$r->bytes(16);$r->end();
             $probe->configure();if($mode==='verified'){$probe->send('chat_command',Binary::writeString('give @s minecraft:diamond 2'));}
             // A clock update fences the simulation after the operator command.
-            $probe->until('set_time');$probe->until('set_time');file_put_contents(sys_get_temp_dir().'/php-minecraft-auth-'.$mode.'-packets.json',json_encode($probe->capture,JSON_PRETTY_PRINT));$probe->close();usleep(100000);
+            $probe->until('set_time');$probe->until('set_time');
+            if($mode==='verified'){
+                $replacement=new AuthProbe($port);$replacement->challenge();$replacement->until('login_finished');
+                $probe->until('disconnect');$probe->close();$probe=$replacement;$probe->configure();$probe->until('set_time');$probe->until('set_time');
+            }
+            file_put_contents(sys_get_temp_dir().'/php-minecraft-auth-'.$mode.'-packets.json',json_encode($probe->capture,JSON_PRETTY_PRINT));$probe->close();usleep(100000);
             $early=new AuthProbe($port);$early->send('intention',Binary::writeVarInt(777).Binary::writeString('localhost').pack('n',25565)."\2");$early->state='login';$early->send('hello',Binary::writeString('ParityProbe').str_repeat("\x44",16));$early->until('hello');$early->send('login_acknowledged');$early->until('login_disconnect');$early->close();
             $bad=new AuthProbe($port);$bad->challenge(true);$bad->until('login_disconnect');$bad->close();
             $replay=new AuthProbe($port);$replay->challenge(replayed:$response);$replay->until('login_disconnect');$replay->close();
@@ -24,5 +29,5 @@ try {
         proc_terminate($process);proc_close($process);$process=null;
     }
     $db=new PDO('sqlite:'.$world);$rows=$db->query('SELECT uuid,data FROM players')->fetchAll(PDO::FETCH_ASSOC);authNetworkCheck(count($rows)===1 && $rows[0]['uuid']==='online:112233445566778899aabbccddeeff00','Persist only verified identity');$data=json_decode($rows[0]['data'],true);$found=false;foreach($data['inventory'] as $stack){if(($stack['count']??0)===2){$found=true;}}authNetworkCheck($found,'Verified operator command persisted');
-    echo "PASS: encrypted login/configuration, verified identity/properties/operator, invalid/replayed challenge rejection and unavailable service\n";
+    echo "PASS: encrypted login/configuration, verified identity/properties/operator, duplicate-session inventory preservation, invalid/replayed challenge rejection and unavailable service\n";
 }finally{if(is_resource($process)){proc_terminate($process);proc_close($process);}/* Retain isolated logs/evidence for failed runs. */}
