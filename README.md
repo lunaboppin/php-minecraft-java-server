@@ -139,6 +139,8 @@ Coordinates accept `~` relative values. Fill operations are limited to 32,768 bl
 
 **Authentication is offline only.** Usernames are not verified with Mojang and transport is not encrypted. Operator names therefore identify unverified usernames; use a trusted network. Changing the bind address does not enable account authentication.
 
+The [protocol coverage inventory](docs/protocol-coverage.md) lists every official packet ID and the current source coverage. The [vanilla comparison harness](tools/parity/README.md) runs identical client scripts against isolated PHP and checksum-pinned Java servers, retaining first-divergence reports and bidirectional traces. Its scenarios cover selected gameplay and restart observations; they do not establish full parity.
+
 ## Roadmap
 
 The target is **1:1 parity with the official Minecraft Java 26.3 server**. The [roadmap](ROADMAP.md) indexes 55 implementation/cleanup issues across four milestones, including the required project-identity cleanup. Each issue has acceptance criteria, validation expectations and prerequisites. The [tracking issue](https://github.com/lunaboppin/php-minecraft-java-server/issues/1) follows progress; current functionality remains experimental.
@@ -157,6 +159,7 @@ This server has automated wire/progression checks, but the full graphical client
 php tests/run.php --unit  # PHP primitives, official bytes, terrain, recipes and storage
 php tests/run.php         # Also independent TCP multiplayer/progression suites; Python 3 required
 composer test            # Equivalent when Composer is installed
+python3 tests/parity/harness.py  # Differential comparison mechanics
 ```
 
 The suites exercise TCP fragmentation/compression, login and 26.3 teleport confirmations, multiplayer, malformed input, chunk movement, keep-alives, terrain determinism, biome/height variation, ore/cave generation, inventory conservation, 2×2/3×3 crafting, shared chests, furnace smelting, survival mining, durability, food, combat, animal loot, death/respawn, commands and restart persistence. The full suite also checks dimension travel, separation of world edits/player visibility, Nether frame ignition and collapse, End portal activation, death across dimensions, and dimension persistence after restart. Allow a few minutes while chunks generate.

@@ -1,0 +1,150 @@
+{
+  "name": "login-build-craft-save-restart",
+  "normalizations": [
+    "Compare named semantic checkpoints after a causal game-clock barrier rather than wall-clock packet ordering; full bidirectional traces are retained.",
+    "Exclude generated session/entity IDs, command feedback text and clocks from these explicit checkpoints; do not normalize inventory, blocks, mode, health or dimension.",
+    "Use a flat test world with bedrock at Y=60, two dirt layers and grass at Y=63 on both servers.",
+    "Treat an absent item damage component and explicit zero damage as equivalent."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "login",
+      "fields": [
+        "mode",
+        "health",
+        "food",
+        "dimension",
+        "registries",
+        "chunk_sections",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 1 minecraft:stone"
+    },
+    {
+      "action": "snapshot",
+      "name": "placed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          1
+        ]
+      ]
+    },
+    {
+      "action": "dig",
+      "position": [
+        1,
+        64,
+        1
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 0.2
+    },
+    {
+      "action": "snapshot",
+      "name": "mined",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          1
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:oak_log 1"
+    },
+    {
+      "action": "snapshot",
+      "name": "given",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "click",
+      "slot": 36
+    },
+    {
+      "action": "click",
+      "slot": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "craft-result",
+      "fields": [
+        "inventory",
+        "cursor"
+      ]
+    },
+    {
+      "action": "click",
+      "slot": 0
+    },
+    {
+      "action": "click",
+      "slot": 36
+    },
+    {
+      "action": "snapshot",
+      "name": "crafted",
+      "fields": [
+        "inventory",
+        "cursor"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 1 minecraft:diamond_block"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:cow 3 64 3"
+    },
+    {
+      "action": "snapshot",
+      "name": "summoned",
+      "fields": [
+        "entities"
+      ]
+    },
+    {
+      "action": "restart"
+    },
+    {
+      "action": "snapshot",
+      "name": "persisted",
+      "fields": [
+        "inventory",
+        "blocks",
+        "dimension",
+        "entities"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          1
+        ]
+      ]
+    }
+  ]
+}

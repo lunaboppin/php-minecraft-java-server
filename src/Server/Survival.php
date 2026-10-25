@@ -22,11 +22,13 @@ trait Survival
         $c->health=max(0,min(20,(float)($data['health']??20)));$c->food=max(0,min(20,(int)($data['food']??20)));$c->saturation=max(0,min($c->food,(float)($data['saturation']??5)));
         $c->experience=max(0,(int)($data['experience']??0));$c->heldSlot=max(0,min(8,(int)($data['heldSlot']??0)));$c->dead=(bool)($data['dead']??false);
         $c->personalSpawn=$data['personalSpawn']??null;
+        // Persist a duration, since the process tick counter restarts from zero.
+        $c->portalCooldown=$this->ticks+max(0,min(300,(int)($data['portalCooldown']??0)));
         foreach($data['inventory']??[] as $slot=>$stack){$item=$this->version->catalog->item((int)($stack['item']??-1));if($slot>=1 && $slot<=45 && $item!==null && ($stack['count']??0)>0){$c->inventory[(int)$slot]=['item'=>(int)$stack['item'],'count'=>min($item['max_stack'],(int)$stack['count']),'damage'=>max(0,min($item['durability'],(int)($stack['damage']??0)))];}}
     }
     private function savePlayer(Client $c):void {
         if($c->uuid==='' || $c->entityId===0){return;}
-        $this->worlds['overworld']->savePlayer($c->uuid,['dimension'=>$c->dimension,'gameMode'=>$c->gameMode,'x'=>$c->x,'y'=>$c->y,'z'=>$c->z,'yaw'=>$c->yaw,'pitch'=>$c->pitch,'health'=>$c->health,'food'=>$c->food,'saturation'=>$c->saturation,'experience'=>$c->experience,'inventory'=>$c->inventory,'heldSlot'=>$c->heldSlot,'dead'=>$c->dead,'personalSpawn'=>$c->personalSpawn]);
+        $this->worlds['overworld']->savePlayer($c->uuid,['dimension'=>$c->dimension,'gameMode'=>$c->gameMode,'x'=>$c->x,'y'=>$c->y,'z'=>$c->z,'yaw'=>$c->yaw,'pitch'=>$c->pitch,'health'=>$c->health,'food'=>$c->food,'saturation'=>$c->saturation,'experience'=>$c->experience,'inventory'=>$c->inventory,'heldSlot'=>$c->heldSlot,'dead'=>$c->dead,'personalSpawn'=>$c->personalSpawn,'portalCooldown'=>max(0,$c->portalCooldown-$this->ticks)]);
     }
     private function saveWorld():void {
         foreach($this->players() as $player){$this->savePlayer($player);}

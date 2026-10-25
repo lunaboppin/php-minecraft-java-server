@@ -39,7 +39,8 @@ trait Dimensions
             $this->closeWindow($c,true);
             foreach($this->localPlayers() as $other){if($other!==$c){$other->send($this->version,'remove_entities',"\1".Binary::writeVarInt($c->entityId));}}
         });
-        $c->dimension=$dimension;$c->portalTicks=0;$c->portalCooldown=$this->ticks+100;
+        // Respawning after death must allow immediate portal entry, as the vanilla lifecycle probe verifies.
+        $c->dimension=$dimension;$c->portalTicks=0;$c->portalCooldown=$force?0:$this->ticks+100;
         $this->withDimension($dimension,function()use($c,$position):void{
             $c->loadedChunks=[];$c->queuedChunks=[];$c->entities=[];$c->awaitingBatch=false;$c->mining=null;$c->eating=null;
             $c->send($this->version,'respawn',Packets::respawn($this->version,$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension));

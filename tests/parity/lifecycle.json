@@ -1,0 +1,103 @@
+{
+  "name": "placement-death-dimension-restart",
+  "normalizations": [
+    "Compare named semantic checkpoints after game-clock barriers; retain complete bidirectional packet traces.",
+    "Ignore generated entity/session IDs, command feedback, world clocks and terrain outside explicitly checked blocks.",
+    "Treat an absent item damage component and explicit zero damage as equivalent.",
+    "Dimension tests compare lifecycle state, not terrain or portal coordinates: PHP terrain is not vanilla terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "command",
+      "text": "spawnpoint"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:stone 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        63,
+        1
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "placed-by-player",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          1
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @s"
+    },
+    {
+      "action": "snapshot",
+      "name": "dead",
+      "fields": [
+        "health",
+        "deaths"
+      ]
+    },
+    {
+      "action": "respawn"
+    },
+    {
+      "action": "snapshot",
+      "name": "respawned",
+      "fields": [
+        "health",
+        "food",
+        "dimension",
+        "mode",
+        "chunk_sections"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock ~ ~ ~ minecraft:nether_portal"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "nether",
+      "fields": [
+        "dimension",
+        "mode",
+        "health",
+        "chunk_sections"
+      ]
+    },
+    {
+      "action": "restart"
+    },
+    {
+      "action": "snapshot",
+      "name": "nether-saved",
+      "fields": [
+        "dimension",
+        "mode",
+        "health",
+        "chunk_sections"
+      ]
+    }
+  ]
+}

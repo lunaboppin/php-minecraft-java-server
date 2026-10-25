@@ -148,6 +148,10 @@ public class ExportReference {
     static void verify(Path capture, RegistryAccess access) throws Exception {
         JsonArray frames=JsonParser.parseString(Files.readString(capture)).getAsJsonArray();
         var play=GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(access));
+        var serverbound=GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(access), new GameProtocols.Context() {
+            public boolean hasInfiniteMaterials() { return true; }
+            public boolean canUseCommandBlocks() { return true; }
+        });
         int chunks=0;int loadedRegistries=0;
         Map<ResourceKey<? extends Registry<?>>,RegistryDataLoader.NetworkedRegistryData> networked=new HashMap<>();
         List<HolderLookup.RegistryLookup<?>> context=RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY).listRegistries().toList();
@@ -156,7 +160,15 @@ public class ExportReference {
             byte[] bytes=HexFormat.of().parseHex(obj.get("hex").getAsString());
             var buf=Unpooled.wrappedBuffer(bytes);
             try {
-                var codec=switch(state) {
+                boolean inbound=obj.has("direction") && obj.get("direction").getAsString().equals("serverbound");
+                var codec=inbound ? switch(state) {
+                    case "handshake" -> net.minecraft.network.protocol.handshake.HandshakeProtocols.SERVERBOUND.codec();
+                    case "play" -> serverbound.codec();
+                    case "configuration" -> ConfigurationProtocols.SERVERBOUND.codec();
+                    case "login" -> LoginProtocols.SERVERBOUND.codec();
+                    case "status" -> net.minecraft.network.protocol.status.StatusProtocols.SERVERBOUND.codec();
+                    default -> throw new IllegalArgumentException(state);
+                } : switch(state) {
                     case "play" -> play.codec();
                     case "configuration" -> ConfigurationProtocols.CLIENTBOUND.codec();
                     case "login" -> LoginProtocols.CLIENTBOUND.codec();
@@ -195,10 +207,10 @@ public class ExportReference {
                     chunks++;
                 }
             } catch(Throwable e) {
-                throw new IllegalStateException("Invalid "+state+" packet ID "+(bytes[0]&255)+", bytes "+bytes.length,e);
+                throw new IllegalStateException("Invalid "+(obj.has("direction")?obj.get("direction").getAsString():"clientbound")+" "+state+" packet ID "+(bytes[0]&255)+", bytes "+bytes.length,e);
             } finally {buf.release();}
         }
-        System.out.println("Official codecs decoded "+frames.size()+" PHP packets, including "+chunks+" complete chunks and "+loadedRegistries+" loaded registries");
+        System.out.println("Official codecs decoded "+frames.size()+" captured packets, including "+chunks+" complete chunks and "+loadedRegistries+" loaded registries");
     }
 
 }
