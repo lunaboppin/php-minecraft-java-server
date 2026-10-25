@@ -101,6 +101,9 @@ def observe(controller,scenario,output):
                 deadline=time.monotonic()+step['seconds']
                 while time.monotonic()<deadline:probe.barrier();time.sleep(.05)
             elif action=='packet':probe.send(step['name'],bytes.fromhex(step['hex']));probe.tick_barrier()
+            elif action=='observer_packet':
+                if observer is None:raise ValueError('Observer packet requires an observer')
+                observer.send(step['name'],bytes.fromhex(step['hex']));observer.tick_barrier()
             elif action=='click':
                 probe.send('container_click',wire.vi(probe.window)+wire.vi(probe.revision)+struct.pack('>hB',step['slot'],step.get('button',0))+wire.vi(step.get('mode',0))+b'\0\0');probe.tick_barrier()
             elif action=='dig':
@@ -116,12 +119,18 @@ def observe(controller,scenario,output):
             elif action=='snapshot':
                 probe.tick_barrier()
                 if any(field in step['fields'] for field in ('inventory','cursor')):probe.refresh_inventory()
-                fields=[field for field in step['fields'] if field!='equipment']
+                fields=[field for field in step['fields'] if field not in ('equipment','tracked_player')]
                 state=probe.snapshot(fields,step.get('positions',[]))
                 if 'equipment' in step['fields']:
                     if observer is None:raise ValueError('Equipment snapshots require an observer')
                     observer.step=probe.step;observer.tick_barrier()
                     state['equipment']=[observer.equipment.get(probe.entity_id,{}).get(slot) for slot in range(6)]
+                if 'tracked_player' in step['fields']:
+                    if observer is None:raise ValueError('Player tracking snapshots require an observer')
+                    observer.step=probe.step;observer.tick_barrier()
+                    visible=probe.entity_id in observer.entities
+                    values=observer.player_metadata.get(probe.entity_id,{})
+                    state['tracked_player']={'visible':visible,'flags':values.get('flags',0) if visible else None,'pose':values.get('pose',0) if visible else None}
                 results.append({'name':step['name'],'state':state})
             else:raise ValueError('Unknown scenario action: '+action)
         return results

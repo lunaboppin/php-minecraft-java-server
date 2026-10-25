@@ -1,0 +1,174 @@
+{
+  "name": "player-tracking",
+  "observer": true,
+  "normalizations": [
+    "Compare tracked subject visibility, shared flags and pose after game-clock barriers; ignore generated IDs and packet ordering.",
+    "Normalize absent default metadata to standing pose and zero flags. Cover the circular view-distance boundary with sent chunks and self-camera spectators; spectator camera targets remain unimplemented."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp ParityObserver 0.5 64 0.5"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "nearby",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 32.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "range-32.5-0.5",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 32.501 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "range-32.501-0.5",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 31.5 64 31.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "range-31.5-31.5",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "range-0.5-0.5",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "40"
+    },
+    {
+      "action": "snapshot",
+      "name": "sprint-input-is-not-sprint-command",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_command",
+      "hex": "000100"
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "60"
+    },
+    {
+      "action": "snapshot",
+      "name": "crouching-sprinting",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "00"
+    },
+    {
+      "action": "packet",
+      "name": "player_command",
+      "hex": "000200"
+    },
+    {
+      "action": "snapshot",
+      "name": "standing",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode spectator"
+    },
+    {
+      "action": "snapshot",
+      "name": "hidden-spectator",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode spectator ParityObserver"
+    },
+    {
+      "action": "snapshot",
+      "name": "spectator-observer",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative"
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative ParityObserver"
+    },
+    {
+      "action": "snapshot",
+      "name": "visible-again",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp ParityObserver 200 64 200"
+    },
+    {
+      "action": "snapshot",
+      "name": "viewer-unloaded",
+      "fields": [
+        "tracked_player"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp ParityObserver 0.5 64 0.5"
+    },
+    {
+      "action": "snapshot",
+      "name": "viewer-returned",
+      "fields": [
+        "tracked_player"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ sys.path.insert(0,str(ROOT/'tests'))
 import integration as wire
 SIMULATION=json.loads((ROOT/'reference/26.3/simulation.json').read_text())
 METADATA=json.loads((ROOT/'reference/26.3/gameplay.json').read_text())['entity_metadata']
+TRACKING=json.loads((ROOT/'reference/26.3/tracking.json').read_text())
 
 
 def palette(data, off, count, local_max):
@@ -55,6 +56,7 @@ class Probe(wire.Client):
         self.health=20.;self.food=20;self.mode=None;self.position=None;self.deaths=0
         self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
         self.equipment={}
+        self.player_metadata={}
 
     def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
         return super().until(target,predicate,limit,timeout)
@@ -88,7 +90,7 @@ class Probe(wire.Client):
                 self.mode,_=wire.read_vi(p,off+8)
             elif name=='respawn':
                 _,off=wire.read_vi(p);_,off=wire.read_string(p,off);self.mode,_=wire.read_vi(p,off+8)
-                self.chunks={};self.blocks={};self.entities={};self.equipment={};self.loaded=False
+                self.chunks={};self.blocks={};self.entities={};self.equipment={};self.player_metadata={};self.loaded=False
             elif name=='game_event' and p[0]==3:self.mode=int(struct.unpack_from('>f',p,1)[0])
             elif name=='player_position':
                 _,off=wire.read_vi(p);self.position=list(struct.unpack_from('>ddd',p,off))
@@ -102,13 +104,15 @@ class Probe(wire.Client):
                     self.notes.append({'sound':sound-1,'category':category,'position':[x,y,z],'volume':volume,'pitch':pitch})
             elif name=='set_entity_data':
                 entity,off=wire.read_vi(p)
-                if entity==getattr(self,'entity_id',None):
-                    meta=METADATA
-                    while p[off]!=255:
-                        index=p[off];serializer,off=wire.read_vi(p,off+1)
-                        if serializer==meta['byte_serializer']:value=p[off];off+=1
-                        elif serializer in (meta['int_serializer'],meta['main_hand_serializer']):value,off=wire.read_vi(p,off)
-                        else:break  # Other metadata remains in the trace for the official codec verifier.
+                meta=METADATA;values=self.player_metadata.setdefault(entity,{})
+                while p[off]!=255:
+                    index=p[off];serializer,off=wire.read_vi(p,off+1)
+                    if serializer==meta['byte_serializer']:value=p[off];off+=1
+                    elif serializer in (meta['int_serializer'],meta['main_hand_serializer'],TRACKING['pose_serializer']):value,off=wire.read_vi(p,off)
+                    else:break  # Other metadata remains in the trace for the official codec verifier.
+                    if index==meta['flags_index']:values['flags']=value
+                    if index==TRACKING['pose_index']:values['pose']=value
+                    if entity==getattr(self,'entity_id',None):
                         if index==meta['skin_index']:self.appearance['skinParts']=value
                         if index==meta['main_hand_index']:self.appearance['mainHand']=value
             elif name=='add_entity':
@@ -117,7 +121,7 @@ class Probe(wire.Client):
             elif name=='remove_entities':
                 count,off=wire.read_vi(p)
                 for _ in range(count):
-                    entity,off=wire.read_vi(p,off);self.entities.pop(entity,None);self.equipment.pop(entity,None)
+                    entity,off=wire.read_vi(p,off);self.entities.pop(entity,None);self.equipment.pop(entity,None);self.player_metadata.pop(entity,None)
             elif name=='set_time':self.game_time=struct.unpack_from('>q',p)[0]
             elif name=='chunk_batch_finished' and not self.loaded:
                 self.send('player_loaded');self.loaded=True

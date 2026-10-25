@@ -21,7 +21,7 @@ trait InventoryManagement
         }
         if($changed===[]){return;}
         $payload=Packets::equipment($c->entityId,$changed,$this->version->blocks['component_damage']);
-        foreach($this->players() as $viewer){if($viewer!==$c && $viewer->dimension===$c->dimension){$viewer->send($this->version,'set_equipment',$payload);}}
+        foreach($this->players() as $viewer){if(isset($viewer->entities[$c->entityId])){$viewer->send($this->version,'set_equipment',$payload);}}
     }
     private function giveStack(Client $c,array $stack):int {return Inventory::add($c->inventory,$stack,$this->version->catalog,$this->storageSlots());}
     private function menuItems(Client $c):array {
