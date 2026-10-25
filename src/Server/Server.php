@@ -6,7 +6,7 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
-    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions;
+    use InventoryManagement, Entities, Survival, Commands, Animals, Dimensions, BlockSimulation, SignAndPick;
     private mixed $listener = null;
     /** @var array<int,Client> */
     private array $clients = [];
@@ -15,11 +15,13 @@ final class Server
     private int $ticks = 0;
     private array $pendingLight=[];
     private World $world;
+    private readonly DailyLog $logger;
     public function __construct(private readonly Config $config, private readonly Version $version = new Version()) {
+        $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
         $this->world = new World($version,$config->worldPath,$config->generator,$config->seed);
         $this->worlds['overworld']=$this->world;
         foreach(['the_nether','the_end'] as $dimension){$path=$config->worldPath.'.'.$dimension.'.sqlite';$this->worlds[$dimension]=new World($version,$path,'terrain',$config->seed,$dimension);}
-        foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,fn()=>$this->restoreAnimals());}
+        foreach(array_keys($this->worlds) as $dimension){$this->withDimension($dimension,function():void{$this->restoreAnimals();$this->restoreBlockSimulation();});}
         $this->crafting = new \PhpMinecraftJavaServer\World\Crafting($version->directory);
         foreach(['worldAge','dayTime','daylightCycle','weather','keepInventory','naturalRegeneration'] as $key){$saved=$this->world->setting($key);if($saved!==null){$this->$key=$saved;}}
     }
@@ -29,9 +31,9 @@ final class Server
         $this->listener = @stream_socket_server('tcp://'.$host.':'.$this->config->port,$errno,$error);
         if ($this->listener === false) { throw new \RuntimeException('Cannot listen: ' . $error); }
         stream_set_blocking($this->listener,false);
-        self::log('Listening on ' . stream_socket_get_name($this->listener,false) . ' (Minecraft '.Version::NAME.', protocol '.Version::PROTOCOL.')');
-        self::log('PHP '.PHP_VERSION.' ('.PHP_SAPI.', '.(PHP_INT_SIZE*8).'-bit)');
-        self::log('Offline authentication: usernames are unverified. World: '.$this->config->worldPath);
+        $this->log('Listening on ' . stream_socket_get_name($this->listener,false) . ' (Minecraft '.Version::NAME.', protocol '.Version::PROTOCOL.')');
+        $this->log('PHP '.PHP_VERSION.' ('.PHP_SAPI.', '.(PHP_INT_SIZE*8).'-bit)');
+        $this->log('Offline authentication: usernames are unverified. World: '.$this->config->worldPath);
         if (function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGTERM,fn() => $this->stop());
@@ -77,7 +79,7 @@ final class Server
                         }
                         $client->bufferedWork = $i === 128 && $client->input !== '';
                     } catch (ProtocolException|\InvalidArgumentException $e) {
-                        self::log('Protocol error from '.$client->peer.': '.$e->getMessage());
+                        $this->log('Protocol error from '.$client->peer.': '.$e->getMessage());
                         $this->disconnect($client,'Invalid packet: '.$e->getMessage());
                     }
                 }
@@ -86,19 +88,25 @@ final class Server
             }
         } finally {
             foreach ($this->clients as $client) {
-                if($client->state==='play'){$this->closeWindow($client);$this->savePlayer($client);}
-                $this->disconnect($client,'Server shutting down');
-                $this->flush($client);
-                if (is_resource($client->socket)) { fclose($client->socket); }
+                if($client->state==='play'){$this->closeWindow($client);$this->savePlayer($client);$this->log($client->name.' disconnected (server shutdown)');}
+                $this->disconnect($client,'Server restarting. Please reconnect shortly.');
             }
+            // Drain queued frames and the restart reason before closing healthy connections.
+            $deadline=self::now()+2;
+            do{
+                $pending=false;
+                foreach($this->clients as $client){if(is_resource($client->socket) && $client->output!==''){$this->flush($client);$pending=$pending || $client->output!=='';}}
+                if($pending){usleep(1000);}
+            }while($pending && self::now()<$deadline);
+            foreach($this->clients as $client){if(is_resource($client->socket)){fclose($client->socket);}}
             $this->clients = [];
             $this->saveWorld();
             fclose($this->listener);
-            self::log('Server stopped');
+            $this->log('Server stopped');
         }
     }
     private static function now(): float { return hrtime(true)/1e9; }
-    private static function log(string $text): void { fwrite(STDOUT,'['.gmdate('H:i:s').'] '.$text.PHP_EOL); }
+    private function log(string $text): void { $this->logger->write($text);fwrite(STDOUT,'['.gmdate('H:i:s').'] '.$text.PHP_EOL); }
     private function accept(): void {
         for ($i=0;$i<16;++$i) {
             $socket = @stream_socket_accept($this->listener,0,$peer);
@@ -220,11 +228,12 @@ final class Server
         if($c->dead){$c->send($this->version,'player_combat_kill',Binary::writeVarInt($c->entityId).Nbt::text($c->name.' died'));}
         $this->broadcast($c->name.' joined the game');
         $c->send($this->version,'system_chat',Packets::chat('Use /help. Your progress and block edits are saved.'));
-        self::log($c->name.' joined from '.$c->peer);
+        $this->log($c->name.' joined from '.$c->peer);
     }
     private function spawnPlayer(Client $recipient, Client $player): void {
         if($recipient->dimension!==$player->dimension){return;}
         $recipient->send($this->version,'add_entity',Packets::addPlayer($player->entityId,$player->uuid,$this->version->blocks['player_entity_type'],$player->x,$player->y,$player->z,$player->yaw,$player->pitch));
+        $recipient->send($this->version,'rotate_head',Packets::headRotation($player->entityId,$player->yaw));
         $recipient->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$player->entityId,$player->information['skinParts']??0,$player->information['mainHand']??1));
     }
     private function viewDistance(Client $c):int {
@@ -271,6 +280,8 @@ final class Server
     }
     private function play(Client $c, string $name, Binary $r): void {
         switch ($name) {
+            case 'sign_update':$this->updateSign($c,$r);return;
+            case 'pick_item_from_block':$this->pickBlock($c,$r);return;
             case 'client_information':$this->clientInformation($c,$r);return;
             case 'accept_teleportation':
                 $confirmation=Packets::readTeleportConfirmation($r);$id=$confirmation['id'];
@@ -328,12 +339,12 @@ final class Server
         if ($c->teleport!==null) { return; }
         if (($x-$c->x)**2+($y-$c->y)**2+($z-$c->z)**2>256**2) { $this->teleport($c);return; }
         if($c->dead){return;}
-        $oldY=$c->y;$distance=sqrt(($x-$c->x)**2+($z-$c->z)**2);
+        $oldYaw=$c->yaw;$oldY=$c->y;$distance=sqrt(($x-$c->x)**2+($z-$c->z)**2);
         $c->x=$x;$c->y=$y;$c->z=$z;$c->yaw=$yaw;$c->pitch=$pitch;$c->ground=($flags&1)!==0;
         $this->survivalMovement($c,$oldY,$distance);
         if ($y < -80 && in_array($c->gameMode,[1,3],true)) { $this->teleport($c); }
         if ((int)floor($c->x/16)!==$c->chunkX || (int)floor($c->z/16)!==$c->chunkZ) { $this->scheduleChunks($c); }
-        foreach ($this->players() as $other) { if ($other!==$c && $other->dimension===$c->dimension) { $other->send($this->version,'teleport_entity',Packets::teleportEntity($c->entityId,$c->x,$c->y,$c->z,$c->yaw,$c->pitch,$c->ground)); } }
+        foreach ($this->players() as $other) { if ($other!==$c && $other->dimension===$c->dimension) { $other->send($this->version,'teleport_entity',Packets::teleportEntity($c->entityId,$c->x,$c->y,$c->z,$c->yaw,$c->pitch,$c->ground));if($oldYaw!==$c->yaw){$other->send($this->version,'rotate_head',Packets::headRotation($c->entityId,$c->yaw));} } }
     }
     private function editable(Client $c,int $x,int $y,int $z): bool {
         return !$c->dead && in_array($c->gameMode,[0,1],true) && $c->teleport===null && $y>=$this->world->minY && $y<$this->world->minY+$this->world->height && isset($c->loadedChunks[($x>>4).':'.($z>>4)])
@@ -348,6 +359,7 @@ final class Server
         elseif($action===7){[$main,$off]=[$c->inventory[36+$c->heldSlot]??null,$c->inventory[45]??null];if($off===null){unset($c->inventory[36+$c->heldSlot]);}else{$c->inventory[36+$c->heldSlot]=$off;}if($main===null){unset($c->inventory[45]);}else{$c->inventory[45]=$main;}$this->syncInventory($c);}
         elseif($action===0 && $this->editable($c,$x,$y,$z)){
             $state=$this->world->get($x,$y,$z);
+            if($this->version->catalog->blockName($state)==='note_block'){$this->playNote($x,$y,$z);}
             if($c->gameMode===1){$this->breakBlock($c,$x,$y,$z);}
             elseif(!$this->version->catalog->air($state)){$c->mining=['position'=>[$x,$y,$z],'state'=>$state,'started'=>$this->ticks,'duration'=>$this->miningTicks($c,$state)];}
         }
@@ -371,6 +383,7 @@ final class Server
         $clicked=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($clicked);
         $within=!$c->dead && ($x+0.5-$c->x)**2+($y+0.5-$c->y-1.62)**2+($z+0.5-$c->z)**2<=64;
         if($within && $name==='end_portal_frame' && $stack!==null && $this->version->catalog->itemName($stack['item'])==='ender_eye' && $this->insertEndEye($c,$x,$y,$z,$slot)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
+        if($within && !$c->sneaking && $this->useSpecialBlock($c,$x,$y,$z,$slot)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
         if($within && !$c->sneaking && $c->gameMode!==3){
             $type=match($name){'crafting_table'=>'crafting','furnace'=>'furnace','chest','barrel'=>'chest',default=>null};
             if($type!==null){$this->openWindow($c,$type,[$x,$y,$z]);$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
@@ -388,10 +401,13 @@ final class Server
         $itemName=$stack===null?null:$this->version->catalog->itemName($stack['item']);
         if($itemName==='flint_and_steel' && $this->ignitePortal($c,$tx,$ty,$tz,$slot)){$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
         if($itemName==='water_bucket' && $c->dimension==='the_nether'){$this->tell($c,'Water evaporates in the Nether.');$c->send($this->version,'block_changed_ack',Binary::writeVarInt($sequence));return;}
-        $blockName=match($itemName){'water_bucket'=>'water','lava_bucket'=>'lava',default=>$itemName};
+        $blockName=match($itemName){'redstone'=>'redstone_wire','water_bucket'=>'water','lava_bucket'=>'lava',default=>$itemName};
+        if($blockName!==null && str_ends_with($blockName,'_sign') && $face>=2){$wall=str_replace('_sign','_wall_sign',$blockName);if(isset($this->version->catalog->blocks[$wall])){$blockName=$wall;}}
         $block=$this->version->catalog->blocks[$blockName??'']??null;
         if($block!==null && $stack!==null && $this->editable($c,$tx,$ty,$tz) && $this->version->catalog->blocks[$this->version->catalog->blockName($this->world->get($tx,$ty,$tz))]['replaceable']){
             $properties=[];$facing=['south','west','north','east'][((int)floor($c->yaw/90+0.5))&3];
+            if(str_ends_with($blockName,'_wall_sign')){$facing=[2=>'north',3=>'south',4=>'west',5=>'east'][$face];}
+            if(isset($block['properties']['rotation'])){$properties['rotation']=(string)(((int)floor(($c->yaw+180)*16/360+.5))&15);}
             if(isset($block['properties']['axis'])){$properties['axis']=$face<2?'y':($face<4?'z':'x');}
             if(isset($block['properties']['facing']) && in_array($facing,$block['properties']['facing']['values'],true)){$properties['facing']=$facing;}
             if(isset($block['properties']['half']) && in_array('top',$block['properties']['half']['values'],true)){$properties['half']=$face===0 || ($face>1 && $cursor[1]>0.5)?'top':'bottom';}
@@ -404,6 +420,7 @@ final class Server
             $door=str_ends_with($blockName,'_door');if($door && ($ty>=$this->world->minY+$this->world->height-1 || !$this->version->catalog->air($this->world->get($tx,$ty+1,$tz)))){$blocked=true;}
             if(!$blocked){
                 $this->setBlock($tx,$ty,$tz,$this->version->catalog->state($blockName,$properties));
+                if(str_ends_with($blockName,'_sign')){$this->openSign($c,$tx,$ty,$tz,1);}
                 if($bed){$head=$properties;$head['part']='head';$this->setBlock($tx+$bedOffset[0],$ty,$tz+$bedOffset[1],$this->version->catalog->state($blockName,$head));}
                 if($door){$properties['half']='upper';$this->setBlock($tx,$ty+1,$tz,$this->version->catalog->state($blockName,$properties));}
                 if($c->gameMode===0){\PhpMinecraftJavaServer\World\Inventory::consume($c->inventory,$slot);if(str_ends_with($itemName,'_bucket')){$this->giveStack($c,['item'=>$this->version->blocks['items']['bucket'],'count'=>1]);}$this->syncInventory($c);}
@@ -422,16 +439,20 @@ final class Server
         if(!$accepted){$this->tell($c,'Custom component patches are not supported in creative inventory.');}
     }
     private function setBlock(int $x,int $y,int $z,int $state): void {
+        $previous=$this->world->get($x,$y,$z);if($previous===$state){return;}
+        if($this->version->catalog->blockName($previous)==='jukebox' && $this->version->catalog->blockName($state)!=='jukebox'){$this->ejectJukebox([$x,$y,$z],false);}
         $this->world->set($x,$y,$z,$state);
+        $this->changedSimulation($x,$y,$z);
         if($this->world->generator==='terrain'){$this->pendingLight[($x>>4).':'.($z>>4)]=[$x>>4,$z>>4];}
         foreach ($this->localPlayers() as $player) { if (isset($player->loadedChunks[($x>>4).':'.($z>>4)])) { $this->blockUpdate($player,$x,$y,$z); } }
     }
     private function blockUpdate(Client $c,int $x,int $y,int $z): void {
         $c->send($this->version,'block_update',Binary::writePosition($x,$y,$z).Binary::writeVarInt($this->world->get($x,$y,$z)));
         $type=$this->world->blockEntityType($this->world->get($x,$y,$z));
-        if($type!==null){$c->send($this->version,'block_entity_data',Binary::writePosition($x,$y,$z).Binary::writeVarInt($type)."\x0a\0");}
+        if($type!==null){$c->send($this->version,'block_entity_data',Binary::writePosition($x,$y,$z).Binary::writeVarInt($type).$this->world->blockEntityNbt($x,$y,$z));}
     }
     private function broadcast(string $message): void {
+        $this->log('[CHAT] '.$message);
         foreach ($this->players() as $player) { $player->send($this->version,'system_chat',Packets::chat($message)); }
     }
     private function tick(float $now): void {
@@ -488,7 +509,7 @@ final class Server
                     $other->send($this->version,'player_info_remove',"\1".$c->uuid);
                 } catch (ProtocolException) { $this->closeAfterWrite($other); }
             }
-            $this->broadcast($c->name.' left the game');self::log($c->name.' disconnected');
+            $this->broadcast($c->name.' left the game');$this->log($c->name.' disconnected');
         }
     }
 }

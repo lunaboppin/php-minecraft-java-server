@@ -5,6 +5,7 @@ namespace PhpMinecraftJavaServer\Protocol;
 /** State properties and gameplay constants extracted from the pinned Mojang JAR. */
 final class Catalog
 {
+    public readonly array $simulation;
     public readonly array $blocks;
     public readonly array $items;
     public readonly array $flags;
@@ -17,6 +18,7 @@ final class Catalog
         $bytes = file_get_contents($directory.'/gameplay.json');
         if ($bytes === false) { throw new \RuntimeException('Missing gameplay reference data'); }
         $data = json_decode($bytes,true,512,JSON_THROW_ON_ERROR);
+        $this->simulation=json_decode(file_get_contents($directory.'/simulation.json'),true,512,JSON_THROW_ON_ERROR);
         $this->entityMetadata=$data['entity_metadata'];
         $this->itemMetadataIndex=$data['item_metadata_index'];$this->itemMetadataSerializer=$data['item_metadata_serializer'];
         $this->blocks=$data['blocks'];$this->items=$data['items'];$this->flags=$data['flags'];

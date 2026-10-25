@@ -96,6 +96,7 @@ trait InventoryManagement
             if($c->cursor!==null){$n=$button===1?1:$c->cursor['count'];$this->dropStack($c->x,$c->y+0.5,$c->z,array_replace($c->cursor,['count'=>$n]));$c->cursor['count']-=$n;if($c->cursor['count']===0){$c->cursor=null;}}
             $this->syncInventory($c);return;
         }
+        if($slot===-1 && $mode===0){$this->syncInventory($c);return;}
         if($slot<0 || $slot>=$count || $mode<0 || $mode>6){throw new ProtocolException('Invalid inventory click');}
         $crafting=in_array($c->windowType,['player','crafting'],true);
         if($crafting && $slot===0){$this->takeCraftResult($c,$items,$mode===1);$this->writeMenu($c,$items);$this->syncInventory($c);return;}

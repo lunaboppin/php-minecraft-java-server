@@ -11,6 +11,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import zlib
 
@@ -236,10 +237,11 @@ class Client:
 def server(config):
     with tempfile.TemporaryDirectory(prefix='php-minecraft-server-') as temp:
         cfg = Path(temp) / 'server.json'
-        cfg.write_text(json.dumps(config))
+        cfg.write_text(json.dumps({'logDirectory':str(Path(temp)/'logs'),**config}))
         error = open(Path(temp) / 'stderr.log', 'w+')
         proc = subprocess.Popen(['php', str(ROOT / 'bin/server.php'), '--config=' + str(cfg)], cwd=ROOT,
                                 stdout=subprocess.PIPE, stderr=error, text=True)
+        reader=None;drained=[]
         try:
             ready, _, _ = select.select([proc.stdout], [], [], 10)
             if not ready:
@@ -249,14 +251,17 @@ def server(config):
                 error.seek(0)
                 raise RuntimeError('server startup failed: ' + line + error.read())
             port = int(line.split('Listening on ')[1].split(' ')[0].rsplit(':', 1)[1])
+            reader=threading.Thread(target=lambda:drained.append(proc.stdout.read()),daemon=True);reader.start()
             yield port
         finally:
             proc.terminate()
             try:
-                output, _ = proc.communicate(timeout=5)
+                if reader is None:output,_=proc.communicate(timeout=5)
+                else:proc.wait(timeout=5);reader.join(timeout=2);output=''.join(drained)
             except subprocess.TimeoutExpired:
                 proc.kill()
-                output, _ = proc.communicate()
+                if reader is None:output,_=proc.communicate()
+                else:proc.wait();reader.join(timeout=2);output=''.join(drained)
             error.seek(0)
             errors = error.read()
             error.close()

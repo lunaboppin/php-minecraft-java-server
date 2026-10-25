@@ -9,6 +9,15 @@ final class Nbt
         if (preg_match('//u', $text) !== 1) { throw new \InvalidArgumentException('Invalid UTF-8'); }
         return "\x08" . self::string($text);
     }
+    public static function sign(array $data):string {
+        $out="\x0a";
+        foreach(['front','back'] as $side){
+            $out.="\x0a".self::string($side.'_text')."\x09".self::string('messages')."\x08".pack('N',4);
+            foreach($data[$side]??['','','',''] as $line){$out.=self::string($line);}
+            $out.="\x08".self::string('color').self::string('black')."\x01".self::string('has_glowing_text')."\0\0";
+        }
+        return $out."\x01".self::string('is_waxed')."\0\0";
+    }
     // NBT uses Java modified UTF-8, including surrogate pairs for supplementary characters.
     private static function string(string $value): string {
         $utf16 = iconv('UTF-8', 'UTF-16BE', $value);

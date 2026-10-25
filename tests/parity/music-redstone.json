@@ -1,0 +1,168 @@
+{
+  "name": "jukebox-note-and-simple-circuit",
+  "normalizations": [
+    "Compare explicit block states, inventory and music/sound events after game-clock barriers.",
+    "Ignore random sound seeds, clock values, generated entity IDs, unrelated ambient/block sounds and command feedback.",
+    "Only the core circuit in these steps is covered; this does not establish full redstone parity."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 1 minecraft:note_block"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        1
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "tuned-note",
+      "fields": [
+        "blocks",
+        "notes"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          1
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 3 minecraft:jukebox"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:music_disc_cat 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        3
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "record-inserted",
+      "fields": [
+        "blocks",
+        "records",
+        "inventory"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          3
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        3
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "record-ejected",
+      "fields": [
+        "blocks",
+        "records"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          3
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 1 minecraft:redstone_wire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 1 minecraft:redstone_wire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 1 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 1 minecraft:redstone_block"
+    },
+    {
+      "action": "snapshot",
+      "name": "wire-powered",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          4,
+          64,
+          1
+        ],
+        [
+          5,
+          64,
+          1
+        ],
+        [
+          6,
+          64,
+          1
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 1 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "wire-unpowered",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          4,
+          64,
+          1
+        ],
+        [
+          5,
+          64,
+          1
+        ],
+        [
+          6,
+          64,
+          1
+        ]
+      ]
+    }
+  ]
+}

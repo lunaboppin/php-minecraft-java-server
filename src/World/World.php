@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace PhpMinecraftJavaServer\World;
-use PhpMinecraftJavaServer\Protocol\{Binary,Version};
+use PhpMinecraftJavaServer\Protocol\{Binary,Version,Nbt};
 
 /** Persisted block edits overlay an immutable, seed-specific procedural generator. */
 class World
@@ -80,7 +80,7 @@ class World
     }
     public function container(array $position,?array $data=null):array {
         $key=implode(':',$position);
-        if($data!==null){$this->containerPositions[$key]=true;$q=$this->db->prepare('INSERT INTO containers(position,data) VALUES(?,?) ON CONFLICT(position) DO UPDATE SET data=excluded.data');$q->execute([$key,json_encode($data,JSON_THROW_ON_ERROR)]);return $data;}
+        if($data!==null){unset($this->cache[($position[0]>>4).':'.($position[2]>>4)]);$this->containerPositions[$key]=true;$q=$this->db->prepare('INSERT INTO containers(position,data) VALUES(?,?) ON CONFLICT(position) DO UPDATE SET data=excluded.data');$q->execute([$key,json_encode($data,JSON_THROW_ON_ERROR)]);return $data;}
         $q=$this->db->prepare('SELECT data FROM containers WHERE position=?');$q->execute([$key]);$bytes=$q->fetchColumn();return $bytes===false?['slots'=>[],'burn'=>0,'cook'=>0,'fuelTotal'=>0,'position'=>$position]:json_decode($bytes,true,512,JSON_THROW_ON_ERROR);
     }
     public function deleteContainer(array $position):void {unset($this->containerPositions[implode(':',$position)]);$q=$this->db->prepare('DELETE FROM containers WHERE position=?');$q->execute([implode(':',$position)]);}
@@ -129,7 +129,7 @@ class World
             $count=0;$fluids=0;
             foreach($states as $index=>$state){
                 if($catalog->air($state)){continue;}++$count;if($catalog->fluid($state)){++$fluids;}
-                if(isset($this->blockEntityMap[$state])){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state])."\x0a\0";}
+                if(isset($this->blockEntityMap[$state])){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state]).$this->blockEntityNbt($cx*16+($index&15),$section*16+$this->minY+($index>>8),$cz*16+(($index>>4)&15));}
                 $column=$index&255;$height=$section*16+($index>>8)+1;
                 $surface[$column]=max($surface[$column],$height);
                 if($catalog->motionBlocking($state)){$motion[$column]=max($motion[$column],$height);}
@@ -142,6 +142,10 @@ class World
         $payload=pack('NN',$cx,$cz).$heightmaps.Binary::writeVarInt(strlen($bytes)).$bytes.Binary::writeVarInt(count($entities)).implode('',$entities).$light;
         if(count($this->cache)>=64){$first=array_key_first($this->cache);unset($this->cache[$first],$this->lightCache[$first]);}
         $this->lightCache[$key]=$light;return $this->cache[$key]=$payload;
+    }
+    public function blockEntityNbt(int $x,int $y,int $z):string {
+        $name=$this->version->catalog->blockName($this->get($x,$y,$z));
+        return str_ends_with($name,'_sign')?Nbt::sign($this->container([$x,$y,$z])):"\x0a\0";
     }
     public function blockEntityType(int $state):?int {return $this->blockEntityMap[$state]??null;}
     public function chunkLight(int $cx,int $cz):string {$key=$cx.':'.$cz;if(!isset($this->lightCache[$key])){$this->chunk($cx,$cz);}return $this->lightCache[$key];}

@@ -6,7 +6,7 @@ use PhpMinecraftJavaServer\Protocol\{Binary,Packets,Version};
 trait Commands
 {
     private function operator(Client $c):bool {foreach($this->config->operators as $name){if(strcasecmp($name,$c->name)===0){return true;}}return false;}
-    private function tell(Client $c,string $text):void {$c->send($this->version,'system_chat',Packets::chat($text));}
+    private function tell(Client $c,string $text):void {$this->log('[Server -> '.$c->name.'] '.$text);$c->send($this->version,'system_chat',Packets::chat($text));}
     private function playerByName(string $name,Client $sender):Client {
         if($name==='@s'){$name=$sender->name;}
         foreach($this->players() as $player){if(strcasecmp($player->name,$name)===0){return $player;}}

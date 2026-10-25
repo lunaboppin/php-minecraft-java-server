@@ -1,0 +1,130 @@
+{
+  "name": "water-fall-spread-drain-sources",
+  "normalizations": [
+    "Compare explicit settled water block states after simulation-clock barriers and settling intervals.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "This scenario covers open water on full-block floors, not waterlogging, shape occlusion, mixing or exact tick ordering."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "setblock -3 67 -3 minecraft:water"
+    },
+    {
+      "action": "wait",
+      "seconds": 4
+    },
+    {
+      "action": "snapshot",
+      "name": "fall-and-spread",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -3,
+          66,
+          -3
+        ],
+        [
+          -3,
+          64,
+          -3
+        ],
+        [
+          -2,
+          64,
+          -3
+        ],
+        [
+          -1,
+          64,
+          -3
+        ],
+        [
+          4,
+          64,
+          -3
+        ],
+        [
+          5,
+          64,
+          -3
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -3 67 -3 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 5
+    },
+    {
+      "action": "snapshot",
+      "name": "drained",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -3,
+          66,
+          -3
+        ],
+        [
+          -3,
+          64,
+          -3
+        ],
+        [
+          -2,
+          64,
+          -3
+        ],
+        [
+          4,
+          64,
+          -3
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -3 64 -3 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 64 -3 minecraft:water"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "source-regeneration",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -3,
+          64,
+          -3
+        ],
+        [
+          -2,
+          64,
+          -3
+        ],
+        [
+          -1,
+          64,
+          -3
+        ]
+      ]
+    }
+  ]
+}

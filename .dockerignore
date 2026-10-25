@@ -1,0 +1,9 @@
+.git
+.github
+data
+logs
+dist
+server.json
+tools/.cache
+**/__pycache__
+**/*.pyc
