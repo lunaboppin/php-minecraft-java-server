@@ -16,7 +16,7 @@ try {
             $r=new Binary($probe->until('login_finished'));authNetworkCheck(bin2hex($r->bytes(16))==='112233445566778899aabbccddeeff00','Ignore spoofed hello UUID');authNetworkCheck($r->string()==='ParityProbe','Verified name');authNetworkCheck($r->varInt()===1 && $r->string()==='textures' && $r->string()==='fixture-value' && $r->bool() && $r->string()==='fixture-signature','Verified profile properties');$r->bytes(16);$r->end();
             $probe->configure();if($mode==='verified'){$probe->send('chat_command',Binary::writeString('give @s minecraft:diamond 2'));}
             // A clock update fences the simulation after the operator command.
-            $probe->until('set_time');$probe->until('set_time');$probe->close();usleep(100000);
+            $probe->until('set_time');$probe->until('set_time');file_put_contents(sys_get_temp_dir().'/php-minecraft-auth-'.$mode.'-packets.json',json_encode($probe->capture,JSON_PRETTY_PRINT));$probe->close();usleep(100000);
             $bad=new AuthProbe($port);$bad->challenge(true);$bad->until('login_disconnect');$bad->close();
             $replay=new AuthProbe($port);$replay->challenge(replayed:$response);$replay->until('login_disconnect');$replay->close();
         }else{$probe->until('login_disconnect');$probe->close();}
