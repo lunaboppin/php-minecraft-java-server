@@ -54,6 +54,7 @@ class Probe(wire.Client):
         self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={}
         self.health=20.;self.food=20;self.mode=None;self.position=None;self.deaths=0
         self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
+        self.equipment={}
 
     def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
         return super().until(target,predicate,limit,timeout)
@@ -87,7 +88,7 @@ class Probe(wire.Client):
                 self.mode,_=wire.read_vi(p,off+8)
             elif name=='respawn':
                 _,off=wire.read_vi(p);_,off=wire.read_string(p,off);self.mode,_=wire.read_vi(p,off+8)
-                self.chunks={};self.blocks={};self.entities={};self.loaded=False
+                self.chunks={};self.blocks={};self.entities={};self.equipment={};self.loaded=False
             elif name=='game_event' and p[0]==3:self.mode=int(struct.unpack_from('>f',p,1)[0])
             elif name=='player_position':
                 _,off=wire.read_vi(p);self.position=list(struct.unpack_from('>ddd',p,off))
@@ -116,7 +117,7 @@ class Probe(wire.Client):
             elif name=='remove_entities':
                 count,off=wire.read_vi(p)
                 for _ in range(count):
-                    entity,off=wire.read_vi(p,off);self.entities.pop(entity,None)
+                    entity,off=wire.read_vi(p,off);self.entities.pop(entity,None);self.equipment.pop(entity,None)
             elif name=='set_time':self.game_time=struct.unpack_from('>q',p)[0]
             elif name=='chunk_batch_finished' and not self.loaded:
                 self.send('player_loaded');self.loaded=True
@@ -148,6 +149,17 @@ class Probe(wire.Client):
                 window,off=wire.read_vi(p);self.revision,off=wire.read_vi(p,off)
                 slot=struct.unpack_from('>h',p,off)[0];stack,off=wire.read_stack(p,off+2)
                 if window==self.window and 0<=slot<len(self.inventory):self.inventory[slot]=stack
+            elif name=='set_equipment':
+                entity,off=wire.read_vi(p);slots=self.equipment.setdefault(entity,{})
+                while True:
+                    slot=p[off];off+=1
+                    stack,off=wire.read_stack(p,off);slots[slot&127]=stack
+                    if not slot&128:break
+                if off!=len(p):raise ValueError('Trailing equipment bytes')
+            elif name=='entity_event' and p[4]==55:
+                # Vanilla compresses a main/offhand swap into this event.
+                entity=struct.unpack_from('>i',p)[0];slots=self.equipment.setdefault(entity,{})
+                slots[0],slots[1]=slots.get(1),slots.get(0)
             elif name=='set_cursor_item':self.cursor,_=wire.read_stack(p,0)
             elif name=='set_player_inventory':
                 slot,off=wire.read_vi(p);stack,_=wire.read_stack(p,off)

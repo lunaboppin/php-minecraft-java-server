@@ -52,7 +52,7 @@ class Server:
             (path/'ops.json').write_text(json.dumps([{'uuid':str(uuid.UUID(bytes=bytes(profile))),'name':'ParityProbe','level':4,'bypassesPlayerLimit':True}]))
             settings={'layers':[{'height':124,'block':'minecraft:air'},{'height':1,'block':'minecraft:bedrock'},
                 {'height':2,'block':'minecraft:dirt'},{'height':1,'block':'minecraft:grass_block'}],'biome':'minecraft:plains','features':False,'lakes':False}
-            props={'server-ip':'127.0.0.1','server-port':self.port,'online-mode':'false','enforce-secure-profile':'false','max-players':20,
+            props={'server-ip':'127.0.0.1','server-port':self.port,'online-mode':'false','enforce-secure-profile':'false','white-list':'false','max-players':20,
                 'view-distance':2,'simulation-distance':2,'gamemode':'creative','difficulty':'peaceful','spawn-protection':0,
                 'level-seed':42,'level-type':'minecraft:flat','generator-settings':json.dumps(settings),'generate-structures':'false',
                 'spawn-animals':'false','spawn-monsters':'false','pause-when-empty-seconds':0,'network-compression-threshold':256}
@@ -88,10 +88,11 @@ class Server:
 
 
 def observe(controller,scenario,output):
-    results=[];traces=[];probe=None
+    results=[];traces=[];probe=None;observer=None
     try:
         controller.start()
         probe=Probe(controller.port,controller.kind).login()
+        if scenario.get('observer'):observer=Probe(controller.port,controller.kind+'-observer').login('ParityObserver')
         for index,step in enumerate(scenario['steps']):
             probe.step=f'{index}:{step["action"]}'
             action=step['action']
@@ -109,17 +110,26 @@ def observe(controller,scenario,output):
             elif action=='respawn':
                 probe.send('client_command',b'\0');probe.until('respawn');probe.until('player_position');probe.barrier()
             elif action=='restart':
+                if observer is not None:traces+=observer.trace;observer.close();observer=None
                 traces+=probe.trace;probe.close();probe=None;controller.stop();controller.start();probe=Probe(controller.port,controller.kind).login()
+                if scenario.get('observer'):observer=Probe(controller.port,controller.kind+'-observer').login('ParityObserver')
             elif action=='snapshot':
                 probe.tick_barrier()
                 if any(field in step['fields'] for field in ('inventory','cursor')):probe.refresh_inventory()
-                results.append({'name':step['name'],'state':probe.snapshot(step['fields'],step.get('positions',[]))})
+                fields=[field for field in step['fields'] if field!='equipment']
+                state=probe.snapshot(fields,step.get('positions',[]))
+                if 'equipment' in step['fields']:
+                    if observer is None:raise ValueError('Equipment snapshots require an observer')
+                    observer.step=probe.step;observer.tick_barrier()
+                    state['equipment']=[observer.equipment.get(probe.entity_id,{}).get(slot) for slot in range(6)]
+                results.append({'name':step['name'],'state':state})
             else:raise ValueError('Unknown scenario action: '+action)
         return results
     except Exception as e:
         raise RuntimeError(f'{controller.kind} at {probe.step if probe else "startup/restart"}: {e}') from e
     finally:
         if probe is not None:traces+=probe.trace;probe.close()
+        if observer is not None:traces+=observer.trace;observer.close()
         try:controller.stop()
         finally:output.write_text(json.dumps(traces,indent=2)+'\n')
 

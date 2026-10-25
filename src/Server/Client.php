@@ -72,6 +72,7 @@ final class Client
     public float $batchAt = 0;
     public int $heldSlot = 0;
     public array $inventory = [];
+    public array $lastEquipment = [];
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;
     public float $packetWindow;
