@@ -14,8 +14,10 @@ PREFIX = 'minecraft-26.3-php-server/'
 
 def main():
     OUTPUT.parent.mkdir(exist_ok=True)
-    files = [ROOT / name for name in ['README.md', 'ROADMAP.md', 'NOTICE.md', 'composer.json', 'server.json',
-                                     'server.example.json', 'server-flat.example.json', '.gitignore']]
+    files = [ROOT / name for name in ['README.md', 'ROADMAP.md', 'NOTICE.md', 'composer.json',
+                                     'server.example.json', 'server-flat.example.json', '.gitignore',
+                                     'Dockerfile', 'compose.yaml', '.dockerignore']]
+    config=next(path for path in [ROOT/'data/server.json',ROOT/'server.json',ROOT/'server.example.json'] if path.is_file())
     for directory in ['src', 'bin', 'reference', 'tests', 'tools', 'docs', 'deploy']:
         files.extend(path for path in (ROOT / directory).rglob('*') if path.is_file()
                      and not any(part in ('.cache', '__pycache__') for part in path.relative_to(ROOT).parts)
@@ -26,8 +28,10 @@ def main():
             for path in sorted(files):
                 if path.exists():
                     archive.write(path, PREFIX + str(path.relative_to(ROOT)))
-            if not (ROOT / 'server.json').exists():
-                archive.write(ROOT / 'server.example.json', PREFIX + 'server.json')
+            # Native launchers and Compose must restore the same active configuration.
+            configuration=config.read_bytes()
+            archive.writestr(PREFIX+'server.json',configuration)
+            archive.writestr(PREFIX+'data/server.json',configuration)
             for path in sorted((ROOT / 'data').glob('*.sqlite')):
                 backup = temporary / path.name
                 with sqlite3.connect(path) as source, sqlite3.connect(backup) as target:
@@ -41,10 +45,16 @@ def main():
             archive.writestr(PREFIX + 'START-HERE.txt',
                              'Minecraft Java 26.3 PHP server\n\nRequires 64-bit PHP 8.5.12+ CLI with JSON, zlib, iconv, PDO and PDO SQLite.\n'
                              'Run start.sh, start.bat, or:\n  php bin/server.php --config=server.json\n\n'
+                             'For Docker/Compose, run:\n  docker compose up -d --build\n\n'
                              'The included server.json sets the TCP port and world. See README.md for features, operator settings and limitations.\n')
         with zipfile.ZipFile(OUTPUT) as archive:
             if archive.testzip() is not None:
                 raise RuntimeError('ZIP integrity check failed')
+            required=['Dockerfile','compose.yaml','.dockerignore','deploy/docker/entrypoint.sh','server.json','data/server.json']
+            for name in required:
+                if PREFIX+name not in archive.namelist():raise RuntimeError('Missing deployment file: '+name)
+            if archive.read(PREFIX+'server.json')!=archive.read(PREFIX+'data/server.json'):
+                raise RuntimeError('Native and Docker configuration differ')
             archive.extractall(temporary / 'verify')
             extracted = temporary / 'verify' / PREFIX
             subprocess.run(['php', 'tests/run.php', '--unit'], cwd=extracted, check=True)
