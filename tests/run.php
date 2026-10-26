@@ -116,6 +116,7 @@ require __DIR__.'/logging.php';
 require __DIR__.'/restart-notice.php';
 require __DIR__.'/authentication.php';
 require __DIR__.'/worldgen-noise.php';
+require __DIR__.'/worldgen-density.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
 passthru(escapeshellarg(PHP_BINARY).' '.escapeshellarg(__DIR__.'/authentication-network.php'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/integration.py'),$code);if($code!==0){exit($code);}

@@ -69,6 +69,8 @@ jobs:
         if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
         run: |
           python3 tools/update_reference.py
+          php tests/worldgen-noise.php
+          php tests/worldgen-density.php
           mkdir -p tools/.cache/parity-consent
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare vanilla gameplay and validate both wire directions
@@ -115,6 +117,8 @@ jobs:
       - name: Prepare pinned official reference
         run: |
           python3 tools/update_reference.py
+          php tests/worldgen-noise.php
+          php tests/worldgen-density.php
           mkdir -p tools/.cache/parity-consent
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare multiplayer equipment and tracking with vanilla
@@ -151,6 +155,8 @@ jobs:
       - name: Prepare pinned official reference
         run: |
           python3 tools/update_reference.py
+          php tests/worldgen-noise.php
+          php tests/worldgen-density.php
           mkdir -p tools/.cache/parity-consent
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare spawn egg creation and consumption with vanilla
@@ -194,6 +200,8 @@ jobs:
       - name: Prepare pinned official reference
         run: |
           python3 tools/update_reference.py
+          php tests/worldgen-noise.php
+          php tests/worldgen-density.php
           mkdir -p tools/.cache/parity-consent
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare encrypted rejection and validate decrypted packets
