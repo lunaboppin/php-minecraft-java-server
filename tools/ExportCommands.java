@@ -13,6 +13,14 @@ import net.minecraft.server.permissions.*;
 
 /** Export actual dedicated-server registration; no command is executed. */
 public class ExportCommands {
+ static List<CommandNode<CommandSourceStack>> children(CommandNode<CommandSourceStack> node){
+  var children=new ArrayList<>(node.getChildren());
+  // Literal keys are unambiguous, but gamerule registration iterates an
+  // unordered set. Canonicalize only literal-only sibling sets. Preserve all
+  // argument sibling priority and mixed-node ordering exactly as registered.
+  if(children.stream().allMatch(child->child instanceof LiteralCommandNode))children.sort(Comparator.comparing(CommandNode::getName));
+  return children;
+ }
  @SuppressWarnings({"rawtypes","unchecked"})
  public static void main(String[] args)throws Exception {
   if(args.length<1||args.length>2||(args.length==2&&!args[1].equals("--all-features")))throw new IllegalArgumentException("Expected output path and optional --all-features");
@@ -24,15 +32,16 @@ public class ExportCommands {
   var root=commands.getDispatcher().getRoot();var nodes=new ArrayList<CommandNode<CommandSourceStack>>();var ids=new IdentityHashMap<CommandNode<CommandSourceStack>,Integer>();
   nodes.add(root);ids.put(root,0);
   for(int i=0;i<nodes.size();++i){
-   var node=nodes.get(i);var connected=new ArrayList<>(node.getChildren());if(node.getRedirect()!=null)connected.add(node.getRedirect());
+   var node=nodes.get(i);var connected=children(node);if(node.getRedirect()!=null)connected.add(node.getRedirect());
    for(var child:connected)if(!ids.containsKey(child)){ids.put(child,nodes.size());nodes.add(child);}
   }
   var output=new JsonObject();output.addProperty("scope","Official Java 26.3 dedicated dispatcher; no runtime command execution");
   output.addProperty("version",SharedConstants.getCurrentVersion().id());output.addProperty("protocol",SharedConstants.getCurrentVersion().protocolVersion());output.addProperty("null_permission_result","The predicate requires a runtime source context; not accepted as verified permission behavior");
+  output.addProperty("literal_sibling_order","Canonical name order only for literal-only sibling sets; argument priority and mixed sibling order preserved");
   var featureNames=new JsonArray();for(var feature:FeatureFlags.REGISTRY.toNames(features).stream().sorted(Comparator.comparing(Object::toString)).toList())featureNames.add(feature.toString());output.add("features",featureNames);var rows=new JsonArray();
   for(var node:nodes){
    var row=new JsonObject();row.addProperty("name",node.getName());row.addProperty("kind",node instanceof RootCommandNode?"root":node instanceof LiteralCommandNode?"literal":"argument");row.addProperty("executable",node.getCommand()!=null);row.addProperty("fork",node.isFork());
-   var children=new JsonArray();for(var child:node.getChildren())children.add(ids.get(child));row.add("children",children);if(node.getRedirect()!=null)row.addProperty("redirect",ids.get(node.getRedirect()));
+   var childIds=new JsonArray();for(var child:children(node))childIds.add(ids.get(child));row.add("children",childIds);if(node.getRedirect()!=null)row.addProperty("redirect",ids.get(node.getRedirect()));
    var permissions=new JsonObject();
    for(var level:PermissionLevel.values()){
     try{permissions.addProperty(Integer.toString(level.id()),node.canUse(Commands.createCompilationContext(LevelBasedPermissionSet.forLevel(level))));}

@@ -6,6 +6,8 @@ The exported dispatcher has **92 roots/aliases** across the default and all-regi
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
+Literal-only sibling sets use canonical name order because gamerule registration iterates an unordered set. Argument sibling priority and mixed-node ordering are retained. Unknown permission queries are recorded as null, never as successful checks.
+
 | Reference profile | Flags | Graph nodes |
 | --- | --- | ---: |
 | [commands.json](../reference/26.3/commands.json) | minecraft:vanilla | 2467 |
