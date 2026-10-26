@@ -136,7 +136,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
     classes = cache / 'exporter'
     classes.mkdir(exist_ok=True)
-    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java'), str(ROOT / 'tools/ExportWorldgenNoise.java'), str(ROOT / 'tools/ExportWorldgenDensity.java'), str(ROOT / 'tools/ExportMobCombat.java'), str(ROOT / 'tools/ExportMobSounds.java'), str(ROOT / 'tools/ExportCommands.java'), str(ROOT / 'tools/ExportMobPhysics.java'), str(ROOT / 'tools/ExportMobTracking.java'), str(ROOT / 'tools/ReferenceWorldData.java'), str(ROOT / 'tools/ExportMobInitialization.java')], check=True)
+    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java'), str(ROOT / 'tools/ExportWorldgenNoise.java'), str(ROOT / 'tools/ExportWorldgenDensity.java'), str(ROOT / 'tools/ExportMobCombat.java'), str(ROOT / 'tools/ExportMobSounds.java'), str(ROOT / 'tools/ExportCommands.java'), str(ROOT / 'tools/ExportMobPhysics.java'), str(ROOT / 'tools/ExportMobTracking.java'), str(ROOT / 'tools/ReferenceWorldData.java'), str(ROOT / 'tools/ExportMobInitialization.java'), str(ROOT / 'tools/ExportZombieSpawnGroups.java')], check=True)
     cmd = [java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
     subprocess.run(cmd, check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportAuthentication', str(out / 'authentication.json')], check=True, cwd=cache)
@@ -149,6 +149,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobPhysics', str(out / 'mob-physics.json'), str(ROOT / 'tools/mob-classes.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobTracking', str(out / 'mob-tracking.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobInitialization', str(out / 'mob-initialization.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportZombieSpawnGroups', str(out / 'zombie-spawn-groups.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())

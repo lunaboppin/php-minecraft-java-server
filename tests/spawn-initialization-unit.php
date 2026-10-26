@@ -102,3 +102,4 @@ if (count($spawnReference['attribute_phases']) !== 1920) {
     throw new RuntimeException('The complete five-family initialization phase matrix is required');
 }
 echo 'PASS: ' . $spawnChecks . " actual Java long-cast, regional difficulty, modifier-map and zombie attribute-phase checks\n";
+unset($spawnReference);

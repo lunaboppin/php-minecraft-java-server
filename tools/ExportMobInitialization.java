@@ -207,6 +207,23 @@ public class ExportMobInitialization {
         result.add("attribute_cases", attributeCases);
     }
 
+    static ProbeLevel createLevel(RegistryAccess.Frozen access) throws Exception {
+        var unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        var unsafe = (sun.misc.Unsafe) unsafeField.get(null);
+        var server = (net.minecraft.server.dedicated.DedicatedServer) unsafe.allocateInstance(net.minecraft.server.dedicated.DedicatedServer.class);
+        ExportMobPhysics.field(server, net.minecraft.server.MinecraftServer.class, "debugSubscribers", new net.minecraft.util.debug.ServerDebugSubscribers(server));
+        var level = (ProbeLevel) unsafe.allocateInstance(ProbeLevel.class);
+        level.rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+        level.biome = access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
+        level.difficulty = new DifficultyInstance(Difficulty.NORMAL, 18000, 0, 1);
+        ExportMobPhysics.field(level, ServerLevel.class, "server", server);
+        ExportMobPhysics.field(level, Level.class, "registryAccess", access);
+        ExportMobPhysics.field(level, Level.class, "dimension", Level.OVERWORLD);
+        ExportMobPhysics.field(level, Level.class, "dimensionTypeRegistration", access.lookupOrThrow(Registries.DIMENSION_TYPE).getOrThrow(ResourceKey.create(Registries.DIMENSION_TYPE, Identifier.withDefaultNamespace("overworld"))));
+        return level;
+    }
+
     public static void main(String[] args) throws Throwable {
         if (args.length != 1) throw new IllegalArgumentException("Expected output fixture path");
         SharedConstants.tryDetectVersion();
@@ -217,19 +234,7 @@ public class ExportMobInitialization {
         exportMath(result);
         try (var data = ReferenceWorldData.load()) {
             var access = data.access();
-            var unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            unsafeField.setAccessible(true);
-            var unsafe = (sun.misc.Unsafe) unsafeField.get(null);
-            var server = (net.minecraft.server.dedicated.DedicatedServer) unsafe.allocateInstance(net.minecraft.server.dedicated.DedicatedServer.class);
-            ExportMobPhysics.field(server, net.minecraft.server.MinecraftServer.class, "debugSubscribers", new net.minecraft.util.debug.ServerDebugSubscribers(server));
-            var level = (ProbeLevel) unsafe.allocateInstance(ProbeLevel.class);
-            level.rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
-            level.biome = access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
-            level.difficulty = new DifficultyInstance(Difficulty.NORMAL, 18000, 0, 1);
-            ExportMobPhysics.field(level, ServerLevel.class, "server", server);
-            ExportMobPhysics.field(level, Level.class, "registryAccess", access);
-            ExportMobPhysics.field(level, Level.class, "dimension", Level.OVERWORLD);
-            ExportMobPhysics.field(level, Level.class, "dimensionTypeRegistration", access.lookupOrThrow(Registries.DIMENSION_TYPE).getOrThrow(ResourceKey.create(Registries.DIMENSION_TYPE, Identifier.withDefaultNamespace("overworld"))));
+            var level = createLevel(access);
             var commonMethod = Mob.class.getDeclaredMethod("finalizeSpawn", ServerLevelAccessor.class, DifficultyInstance.class, EntitySpawnReason.class, SpawnGroupData.class);
             var common = MethodHandles.privateLookupIn(Mob.class, MethodHandles.lookup()).unreflectSpecial(commonMethod, Mob.class);
             var handleAttributes = Zombie.class.getDeclaredMethod("handleAttributes", float.class, EntitySpawnReason.class);

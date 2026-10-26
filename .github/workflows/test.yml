@@ -31,7 +31,7 @@ jobs:
       - name: Check complete native command inventory
         run: python3 tools/command_coverage.py --check
       - name: Check spawn initialization PHP formatting
-        run: python3 tools/php_style.py --check src/World/Spawning src/World/Generation/Float32.php tests/spawn-initialization-unit.php
+        run: python3 tools/php_style.py --check src/World/Spawning src/World/Generation/Float32.php tests/spawn-initialization-unit.php tests/spawn-groups-unit.php
       - name: Validate panel egg
         run: python3 tests/panel_egg.py
       - name: Run protocol and gameplay checks
