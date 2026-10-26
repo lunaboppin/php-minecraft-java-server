@@ -144,7 +144,7 @@ Coordinates accept `~` relative values. Fill operations are limited to 32,768 bl
 
 Command handlers are organized as [individual PHP modules](docs/COMMANDS.md) under `src/Server/Commands/`, with shared registration, aliases, permissions and argument helpers. Use `python3 tools/php_style.py --check` to check their formatting; complete native command behavior remains tracked in issue #10.
 
-The [mob movement reference](docs/MOB-MOVEMENT.md) documents exact official motion codecs, knockback arithmetic and tick-by-tick world trajectories, with the remaining live integration tracked in #86/#87.
+The [mob movement reference](docs/MOB-MOVEMENT.md) documents exact official motion codecs, knockback arithmetic and tick-by-tick world trajectories, with the remaining live integration tracked in #86/#87. See [entity movement tracking](docs/ENTITY-TRACKING.md) for native relative/stepped packet delivery and late-viewer verification.
 
 Set `onlineMode` to `true` for Mojang session verification and encrypted transport. New example, Docker and panel configurations enable it. Older configurations that omit the setting retain offline behavior; add `"onlineMode": true` explicitly to enable verification. In offline mode, names and operator names remain unverified.
 

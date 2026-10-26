@@ -18,6 +18,11 @@ def render():
     emitted=set()
     for path in sorted((ROOT/'src').rglob('*.php')):
         emitted.update(re.findall(r"->send\(\$this->version,\s*'([^']+)'",path.read_text()))
+    # Ordinary movement is emitted through a bounded tracker adapter rather
+    # than individual literal send calls. Its packet builder names every type.
+    tracker = ROOT/'src/Server/Tracking/EntityMovementTracker.php'
+    if tracker.is_file():
+        emitted.update(re.findall(r"\$this->packet\(\s*'([^']+)'", tracker.read_text()))
     optional={'client_tick_end','debug_subscription_request','pong'}
     ignored_config={'client_information','custom_payload','resource_pack'}
     lines=['# Protocol coverage inventory','',

@@ -112,7 +112,11 @@ trait Animals
         if (isset($c->entities[$id]) || !$this->tracksPosition($c, $animal['x'], $animal['z'], $animal['kind'])) {
             return;
         }
-        $c->send($this->version, 'add_entity', Packets::addPlayer($id, hex2bin($animal['uuid']), $this->version->blocks['entity_types'][$animal['kind']], $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0, $animal['velocity'] ?? [0.0, 0.0, 0.0]));
+        $type = $this->version->blocks['entity_types'][$animal['kind']];
+        $spawn = $this->ordinaryMobTravel($animal)
+            ? $this->mobMotionTracker($animal)->spawnPacket(hex2bin($animal['uuid']), $type)
+            : Packets::addPlayer($id, hex2bin($animal['uuid']), $type, $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0, $animal['velocity'] ?? [0.0, 0.0, 0.0]);
+        $c->send($this->version, 'add_entity', $spawn);
         $c->entities[$id] = true;
         $c->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $animal['health']));
         if (isset($animal['soundVariant'])) {
@@ -127,7 +131,7 @@ trait Animals
 
     private function removeAnimal(int $id): void
     {
-        unset($this->mobRandomSources[$id], $this->mobLastSent[$id], $this->mobTrackingTicks[$id], $this->mobLastSentVelocity[$id]);
+        unset($this->mobRandomSources[$id], $this->mobMovementTrackers[$id]);
         unset($this->animals[$id]);
         foreach ($this->localPlayers() as $p) {
             if (isset($p->entities[$id])) {

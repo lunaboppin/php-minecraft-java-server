@@ -34,6 +34,7 @@ trait MobMovement
     private function moveMob(array &$mob, Noise $noise): void
     {
         if (!$this->ordinaryMobTravel($mob)) {
+            unset($this->mobMovementTrackers[$mob['id']]);
             if ($this->ticks % 4 === 0) {
                 $this->moveLegacyMob($mob, $noise);
             }

@@ -24,6 +24,10 @@ jobs:
         run: find src bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Check modular command PHP formatting
         run: python3 tools/php_style.py --check
+      - name: Check entity tracking PHP formatting and independent position reconstruction
+        run: |
+          python3 tools/php_style.py --check src/Server/Tracking src/Protocol/PositionPath.php src/Protocol/RelativePositionCodec.php src/Server/MobMotion.php tests/mob-tracking-unit.php
+          python3 tests/parity/entity-motion.py
       - name: Check complete native command inventory
         run: python3 tools/command_coverage.py --check
       - name: Validate panel egg
@@ -212,6 +216,8 @@ jobs:
           python3 tools/parity/mob_motion.py --jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/motion-java --compare reference/26.3/mob-motion-trajectories.json
           php tests/mob-physics-unit.php
           php tests/mob-motion-unit.php
+          php tests/mob-tracking-unit.php
+          python3 tests/parity/entity-motion.py
           python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
           python3 tests/mob-knockback.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/knockback-java
           python3 tools/parity/verify.py tools/.cache/knockback-java/php-packets.json tools/.cache/knockback-java/java-packets.json
