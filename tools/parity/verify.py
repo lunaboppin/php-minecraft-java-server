@@ -7,10 +7,13 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools'))
+from java_logging import plain_reference_logging
 
 
 def main():
@@ -32,10 +35,11 @@ def main():
             for name in archive.namelist():
                 if name.endswith('.jar') and name.startswith(('META-INF/libraries/','META-INF/versions/')):
                     (libraries/Path(name).name).write_bytes(archive.read(name))
+        logging_option=plain_reference_logging(jar,tmp/'log4j2-plain.xml')
         cp=str(libraries/'*')
         subprocess.run([javac,'-cp',cp,'-d',str(classes),str(ROOT/'tools/ExportReference.java')],check=True)
         for capture in args.captures:
-            subprocess.run([java,'-cp',str(classes)+os.pathsep+cp,'ExportReference',str(tmp/'generated'),str(capture.resolve())],check=True,cwd=tmp)
+            subprocess.run([java,logging_option,'-cp',str(classes)+os.pathsep+cp,'ExportReference',str(tmp/'generated'),str(capture.resolve())],check=True,cwd=tmp)
 
 
 if __name__=='__main__':main()
