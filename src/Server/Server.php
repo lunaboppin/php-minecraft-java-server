@@ -16,8 +16,10 @@ final class Server
     private array $pendingLight=[];
     private World $world;
     private readonly DailyLog $logger;
+    private readonly Announcements $announcements;
     public function __construct(private readonly Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
         $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
+        $this->announcements=new Announcements($config->worldPath);
         $this->initializeAuthentication($sessions);
         $this->world = new World($version,$config->worldPath,$config->generator,$config->seed);
         $this->worlds['overworld']=$this->world;
@@ -89,9 +91,10 @@ final class Server
                 if ($now >= $nextTick) { $this->tick($now); ++$this->ticks; $nextTick = max($nextTick+0.05,$now); }
             }
         } finally {
+            $restartReason=RestartNotice::consume($this->config->worldPath);
             foreach ($this->clients as $client) {
                 if($client->state==='play'){$this->closeWindow($client);$this->savePlayer($client);$this->log($client->name.' disconnected (server shutdown)');}
-                $this->disconnect($client,'Server restarting. Please reconnect shortly.');
+                $this->disconnect($client,$restartReason);
             }
             // Drain queued frames and the restart reason before closing healthy connections.
             $deadline=self::now()+2;
@@ -478,6 +481,7 @@ final class Server
         foreach ($this->players() as $player) { $player->send($this->version,'system_chat',Packets::chat($message)); }
     }
     private function tick(float $now): void {
+        if(($announcement=$this->announcements->poll($this->players()!==[]))!==null){$this->broadcast($announcement);}
         ++$this->worldAge;if($this->daylightCycle){++$this->dayTime;}
         $this->tickDimensions();
         if($this->ticks%200===0){$this->saveWorld();}
