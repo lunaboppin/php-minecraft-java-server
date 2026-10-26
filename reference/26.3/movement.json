@@ -33,541 +33,811 @@
       "update_interval": 2,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.allay.Allay",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "armadillo": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "axolotl": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "bat": {
       "update_interval": 3,
       "track_deltas": false,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "bee": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.animal.bee.Bee"
+      "omnidirectional_owner": "net.minecraft.world.entity.animal.bee.Bee",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "blaze": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "bogged": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "breeze": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "camel": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.camel.Camel",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "camel_husk": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.camel.Camel",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "cat": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "cave_spider": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "chicken": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "cod": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "copper_golem": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "cow": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "creaking": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "creeper": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "dolphin": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "donkey": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "drowned": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "elder_guardian": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "enderman": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "endermite": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "ender_dragon": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "evoker": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "fox": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "frog": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "ghast": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.monster.Ghast",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "happy_ghast": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.happyghast.HappyGhast",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "giant": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "glow_squid": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.squid.Squid",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "goat": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "guardian": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "hoglin": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "horse": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "husk": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "illusioner": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "iron_golem": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "llama": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "magma_cube": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "mooshroom": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "mule": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "nautilus": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "ocelot": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "panda": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "parched": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "parrot": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.animal.parrot.Parrot"
+      "omnidirectional_owner": "net.minecraft.world.entity.animal.parrot.Parrot",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "phantom": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.monster.Phantom",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "pig": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "piglin": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "piglin_brute": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "pillager": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "polar_bear": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "pufferfish": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "rabbit": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "ravager": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "salmon": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "sheep": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "shulker": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "none",
+      "velocity": "zero",
+      "spawn_data": "none"
     },
     "silverfish": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "skeleton": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "skeleton_horse": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "slime": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "sniffer": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "snow_golem": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "spider": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "squid": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.animal.squid.Squid",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "stray": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "strider": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "sulfur_cube": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.monster.cubemob.SulfurCube"
+      "omnidirectional_owner": "net.minecraft.world.entity.monster.cubemob.SulfurCube",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "tadpole": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "trader_llama": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "tropical_fish": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "turtle": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "vex": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "villager": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "vindicator": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "wandering_trader": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "warden": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "warden_pose"
     },
     "witch": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "wither": {
       "update_interval": 3,
       "track_deltas": false,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "wither_skeleton": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "wolf": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zoglin": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zombie": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zombie_horse": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zombie_nautilus": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zombie_villager": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     },
     "zombified_piglin": {
       "update_interval": 3,
       "track_deltas": true,
       "travel_owner": "net.minecraft.world.entity.LivingEntity",
-      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity",
+      "interpolation": "stepped",
+      "velocity": "normal",
+      "spawn_data": "none"
     }
   }
 }

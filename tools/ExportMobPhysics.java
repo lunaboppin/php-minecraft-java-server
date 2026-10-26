@@ -86,7 +86,21 @@ public class ExportMobPhysics {
    var clazz=Class.forName(entry.getValue().getAsString());var type=BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("minecraft:"+entry.getKey()));var profile=new JsonObject();profile.addProperty("update_interval",type.updateInterval());profile.addProperty("track_deltas",type.trackDeltas());profile.addProperty("travel_owner",clazz.getMethod("travel",Vec3.class).getDeclaringClass().getName());
    for(Class<?> owner=clazz;owner!=null;owner=owner.getSuperclass()){
     try{owner.getDeclaredMethod("omnidirectionalAirMover");profile.addProperty("omnidirectional_owner",owner.getName());break;}catch(NoSuchMethodException ignored){}
-   }profiles.add(entry.getKey(),profile);
+   }
+   Class<?> interpolationOwner=null;
+   for(Class<?> owner=clazz;owner!=null;owner=owner.getSuperclass()){
+    try{owner.getDeclaredMethod("createInterpolationHandler");interpolationOwner=owner;break;}catch(NoSuchMethodException ignored){}
+   }
+   if(interpolationOwner!=LivingEntity.class && interpolationOwner!=net.minecraft.world.entity.monster.Shulker.class)throw new IllegalStateException("Unknown mob interpolation owner: "+entry.getKey());
+   profile.addProperty("interpolation",interpolationOwner==LivingEntity.class?"stepped":"none");
+   var velocityOwner=clazz.getMethod("getDeltaMovement").getDeclaringClass();
+   var setterOwner=clazz.getMethod("setDeltaMovement",Vec3.class).getDeclaringClass();
+   if((velocityOwner!=Entity.class || setterOwner!=Entity.class) && (velocityOwner!=net.minecraft.world.entity.monster.Shulker.class || setterOwner!=net.minecraft.world.entity.monster.Shulker.class))throw new IllegalStateException("Unknown mob velocity override: "+entry.getKey());
+   profile.addProperty("velocity",velocityOwner==Entity.class?"normal":"zero");
+   var spawnOwner=clazz.getMethod("getAddEntityPacket",net.minecraft.server.level.ServerEntity.class).getDeclaringClass();
+   if(spawnOwner!=Entity.class && spawnOwner!=net.minecraft.world.entity.monster.warden.Warden.class)throw new IllegalStateException("Unknown mob spawn packet owner: "+entry.getKey());
+   profile.addProperty("spawn_data",spawnOwner==Entity.class?"none":"warden_pose");
+   profiles.add(entry.getKey(),profile);
    for(double[] position:new double[][]{{.5,64,.5},{-17.125,-63.5,32.75},{29999999,255,-29999999}}){
     var box=type.getDimensions().makeBoundingBox(position[0],position[1],position[2]);var row=new JsonObject();row.addProperty("kind",entry.getKey());row.add("position_bits",bits(position));row.add("expected_bits",bits(box.minX,box.minY,box.minZ,box.maxX,box.maxY,box.maxZ));bounds.add(row);
    }

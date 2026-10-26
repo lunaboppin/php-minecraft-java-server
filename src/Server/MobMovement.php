@@ -28,15 +28,24 @@ trait MobMovement
             || in_array($kind, self::SWIMMING_MOBS, true)) {
             return false;
         }
-        return !$this->version->catalog->fluid($this->world->get((int) floor($mob['x']), (int) floor($mob['y']), (int) floor($mob['z'])));
+        return $profile['velocity'] === 'zero' || !$this->version->catalog->fluid($this->world->get((int) floor($mob['x']), (int) floor($mob['y']), (int) floor($mob['z'])));
     }
 
     private function moveMob(array &$mob, Noise $noise): void
     {
         if (!$this->ordinaryMobTravel($mob)) {
+            unset($this->mobMovementTrackers[$mob['id']]);
             if ($this->ticks % 4 === 0) {
                 $this->moveLegacyMob($mob, $noise);
             }
+            return;
+        }
+        if ($this->version->catalog->movement['profiles'][$mob['kind']]['velocity'] === 'zero') {
+            // Shulkers' actual velocity getter always returns zero and their
+            // setter ignores impulses; ordinary travel cannot move them.
+            $mob['velocity'] = [0.0, 0.0, 0.0];
+            $mob['ground'] = false;
+            $this->synchronizeMobMotion($mob);
             return;
         }
         $definition = $this->version->catalog->mobs['entities'][$mob['kind']];
