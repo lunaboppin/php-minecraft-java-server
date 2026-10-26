@@ -45,5 +45,6 @@
   "tags.bin": "3dafc430f7d0bbd542e33cd82a4412837308dac23877c6e7fcdb394ec6ff0458",
   "tracking.json": "2de762599c12c711142bb692db6a474ad9c424c9550186b3e7a1817a276b8c12",
   "version.json": "ee14b61c5c6363885efad2a01ee0fc30f551bf56ad6b1d30e1af4203f6c70943",
+  "worldgen-density.json": "d63a8e60fc804a9d4a4809365d8e0f50dc998c27fc5c063bff1837fa14bb5c01",
   "worldgen-noise.json": "e4645f0e1f984697d05fa6c4dcae6a2afc35f3497db7130eb0b64d1aee10ff52"
 }
