@@ -43,7 +43,13 @@ public class ExportMobPhysics {
   for(var vector:vectors){
    var row=new JsonObject();row.add("input_bits",bits(vector.x,vector.y,vector.z));var buffer=Unpooled.buffer();LpVec3.write(buffer,vector);
    var bytes=new byte[buffer.readableBytes()];buffer.getBytes(0,bytes);row.addProperty("hex",HexFormat.of().formatHex(bytes));var decoded=LpVec3.read(buffer);if(buffer.isReadable())throw new IllegalStateException("Trailing LpVec3 bytes");buffer.release();row.add("decoded_bits",bits(decoded.x,decoded.y,decoded.z));
-   buffer=Unpooled.buffer();ClientboundSetEntityMotionPacket.STREAM_CODEC.encode(buffer,new ClientboundSetEntityMotionPacket(17,vector));bytes=new byte[buffer.readableBytes()];buffer.readBytes(bytes);buffer.release();row.addProperty("motion_hex",HexFormat.of().formatHex(bytes));rows.add(row);
+   buffer=Unpooled.buffer();ClientboundSetEntityMotionPacket.STREAM_CODEC.encode(buffer,new ClientboundSetEntityMotionPacket(17,vector));bytes=new byte[buffer.readableBytes()];buffer.readBytes(bytes);buffer.release();row.addProperty("motion_hex",HexFormat.of().formatHex(bytes));
+   var teleportBuffer=new net.minecraft.network.FriendlyByteBuf(Unpooled.buffer());
+   net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket.STREAM_CODEC.encode(teleportBuffer,new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(17,new net.minecraft.world.entity.PositionMoveRotation(new Vec3(.5,64,.5),vector,22.5F,-45F),Set.of(),true));
+   bytes=new byte[teleportBuffer.readableBytes()];teleportBuffer.readBytes(bytes);teleportBuffer.release();row.addProperty("teleport_hex",HexFormat.of().formatHex(bytes));
+   var spawnBuffer=new net.minecraft.network.RegistryFriendlyByteBuf(Unpooled.buffer(),net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+   net.minecraft.network.protocol.game.ClientboundAddEntityPacket.STREAM_CODEC.encode(spawnBuffer,new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(17,UUID.fromString("00010203-0405-0607-0809-0a0b0c0d0e0f"),.5,64,.5,-45F,22.5F,EntityTypes.GIANT,0,vector,22.5D));
+   bytes=new byte[spawnBuffer.readableBytes()];spawnBuffer.readBytes(bytes);spawnBuffer.release();row.addProperty("spawn_hex",HexFormat.of().formatHex(bytes));rows.add(row);
   }
   root.add("vectors",rows);
   var provider=VanillaRegistries.createWorldLookup();
@@ -77,7 +83,7 @@ public class ExportMobPhysics {
   field(probe,Entity.class,"position",Vec3.ZERO);probe.setDeltaMovement(Vec3.ZERO);field(probe,Entity.class,"onGround",true);probe.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0);probe.dealDefaultKnockback(new DamageSource(provider.lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(DamageTypes.GENERIC),new Vec3(1,0,0)),1F,false);constants.addProperty("default_knockback_strength",-probe.getDeltaMovement().x);
   var mapping=JsonParser.parseString(Files.readString(Path.of(args[1]))).getAsJsonObject();var profiles=new JsonObject();var bounds=new JsonArray();
   for(var entry:mapping.entrySet()){
-   var clazz=Class.forName(entry.getValue().getAsString());var type=BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("minecraft:"+entry.getKey()));var profile=new JsonObject();profile.addProperty("update_interval",type.updateInterval());profile.addProperty("travel_owner",clazz.getMethod("travel",Vec3.class).getDeclaringClass().getName());
+   var clazz=Class.forName(entry.getValue().getAsString());var type=BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("minecraft:"+entry.getKey()));var profile=new JsonObject();profile.addProperty("update_interval",type.updateInterval());profile.addProperty("track_deltas",type.trackDeltas());profile.addProperty("travel_owner",clazz.getMethod("travel",Vec3.class).getDeclaringClass().getName());
    for(Class<?> owner=clazz;owner!=null;owner=owner.getSuperclass()){
     try{owner.getDeclaredMethod("omnidirectionalAirMover");profile.addProperty("omnidirectional_owner",owner.getName());break;}catch(NoSuchMethodException ignored){}
    }profiles.add(entry.getKey(),profile);
