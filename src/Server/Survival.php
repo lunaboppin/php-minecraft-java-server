@@ -15,7 +15,7 @@ trait Survival
     private string $weather='clear';
     private function restorePlayer(Client $c):void {
         $c->gameMode=$this->config->defaultGameMode;[$c->x,$c->y,$c->z]=$this->world->spawn();
-        $data=$this->worlds['overworld']->loadPlayer($c->uuid);if($data===null){return;}
+        $data=$this->worlds['overworld']->loadPlayer($c->uuid,$c->authenticated);if($data===null){return;}
         $c->dimension=in_array($data['dimension']??'overworld',array_keys($this->worlds),true)?($data['dimension']??'overworld'):'overworld';
         $c->gameMode=max(0,min(3,(int)($data['gameMode']??$c->gameMode)));
         foreach(['x','y','z','yaw','pitch'] as $field){if(isset($data[$field]) && is_numeric($data[$field]) && is_finite((float)$data[$field])){$c->$field=(float)$data[$field];}}
@@ -29,7 +29,7 @@ trait Survival
     }
     private function savePlayer(Client $c):void {
         if($c->uuid==='' || $c->entityId===0){return;}
-        $this->worlds['overworld']->savePlayer($c->uuid,['dimension'=>$c->dimension,'gameMode'=>$c->gameMode,'x'=>$c->x,'y'=>$c->y,'z'=>$c->z,'yaw'=>$c->yaw,'pitch'=>$c->pitch,'health'=>$c->health,'food'=>$c->food,'saturation'=>$c->saturation,'experience'=>$c->experience,'inventory'=>$c->inventory,'heldSlot'=>$c->heldSlot,'dead'=>$c->dead,'personalSpawn'=>$c->personalSpawn,'portalCooldown'=>max(0,$c->portalCooldown-$this->ticks)]);
+        $this->worlds['overworld']->savePlayer($c->uuid,['dimension'=>$c->dimension,'gameMode'=>$c->gameMode,'x'=>$c->x,'y'=>$c->y,'z'=>$c->z,'yaw'=>$c->yaw,'pitch'=>$c->pitch,'health'=>$c->health,'food'=>$c->food,'saturation'=>$c->saturation,'experience'=>$c->experience,'inventory'=>$c->inventory,'heldSlot'=>$c->heldSlot,'dead'=>$c->dead,'personalSpawn'=>$c->personalSpawn,'portalCooldown'=>max(0,$c->portalCooldown-$this->ticks)],$c->authenticated);
     }
     private function saveWorld():void {
         foreach($this->players() as $player){$this->savePlayer($player);}

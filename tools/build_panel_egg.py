@@ -20,7 +20,7 @@ def render():
         'exported_at':'2026-10-25T00:00:00+00:00',
         'name':'PHP Minecraft Java Server — 26.3',
         'author':'20017802+lunaboppin@users.noreply.github.com',
-        'description':'Native PHP Minecraft Java 26.3 server (protocol 777), with survival, terrain, Nether and End. Offline authentication. Downloads from the project GitHub CDN. Builds the latest stable PHP 8.5 security patch from checksum-verified official source on install/reinstall; first install takes several minutes. Allocate at least 1 GiB RAM and 2 GiB disk. Reinstall preserves data/ and server.json. This is an experimental Java Edition server, not PocketMine/Bedrock.',
+        'description':'Native PHP Minecraft Java 26.3 server (protocol 777), with survival, terrain, Nether and End. Online-mode account verification by default for new installations. Downloads from the project GitHub CDN. Builds the latest stable PHP 8.5 security patch from checksum-verified official source on install/reinstall; first install takes several minutes. Allocate at least 1 GiB RAM and 2 GiB disk. Reinstall preserves data/ and server.json. This is an experimental Java Edition server, not PocketMine/Bedrock.',
         'features':[],
         'docker_images':{'Debian — Pelican/Pterodactyl':'ghcr.io/pelican-eggs/yolks:debian'},
         'file_denylist':[],
@@ -36,6 +36,7 @@ def render():
             variable('Default game mode','GAME_MODE',0,'required|integer|in:0,1,2,3','Initial mode: 0 survival, 1 creative, 2 adventure, 3 spectator. Edit server.json after first install.'),
             variable('Difficulty','DIFFICULTY',2,'required|integer|in:0,1,2,3','Initial difficulty: 0 peaceful, 1 easy, 2 normal, 3 hard. Edit server.json after first install.'),
             variable('Server message','SERVER_MOTD','PHP Minecraft Java Server 26.3 — three dimensions and survival','required|string|max:1024','Initial MOTD; edit server.json after the first install.'),
+            variable('Verify Minecraft accounts','ONLINE_MODE','true','required|in:true,false','Initial configuration only. Online mode verifies Mojang sessions. Offline mode uses unverified names and separate inventories.'),
             variable('Operator usernames','OPERATORS','','nullable|string|max:1024|regex:/^[A-Za-z0-9_, ]*$/','Initial comma-separated operator names. Offline usernames are unverified. Edit server.json after first install.'),
         ]
     },indent=2,ensure_ascii=False)+'\n'

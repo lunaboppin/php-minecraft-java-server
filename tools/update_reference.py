@@ -133,9 +133,10 @@ def main():
     subprocess.run([java, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
     classes = cache / 'exporter'
     classes.mkdir(exist_ok=True)
-    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java')], check=True)
+    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java')], check=True)
     cmd = [java, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
     subprocess.run(cmd, check=True, cwd=cache)
+    subprocess.run([java, '-cp', str(classes) + os.pathsep + cp, 'ExportAuthentication', str(out / 'authentication.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())

@@ -19,8 +19,13 @@ final class Packets
         return Binary::writeVarInt($entityId).chr($meta['skin_index']).Binary::writeVarInt($meta['byte_serializer']).chr($skinParts)
             .chr($meta['main_hand_index']).Binary::writeVarInt($meta['main_hand_serializer']).Binary::writeVarInt($mainHand)."\xff";
     }
-    public static function loginFinished(string $uuid, string $name, string $session): string {
-        return $uuid . Binary::writeString($name, 16) . "\0" . $session;
+    public static function profileProperties(array $properties):string {
+        $out=Binary::writeVarInt(count($properties));
+        foreach($properties as $p){$out.=Binary::writeString($p['name']).Binary::writeString($p['value']).chr((int)isset($p['signature']));if(isset($p['signature'])){$out.=Binary::writeString($p['signature']);}}
+        return $out;
+    }
+    public static function loginFinished(string $uuid, string $name, string $session,array $properties=[]): string {
+        return $uuid . Binary::writeString($name, 16) . self::profileProperties($properties) . $session;
     }
     public static function playLogin(Version $v, int $entityId, int $maxPlayers, int $view, int $gameMode = 1, bool $flat = true, int $hashedSeed = 0, string $dimension = 'overworld',array $levels=['overworld'],?int $simulation=null): string {
         return pack('N', $entityId) . "\0" . Binary::writeVarInt(count($levels)).implode('',array_map(static fn(string $key):string=>Binary::writeString('minecraft:'.$key),$levels))
@@ -91,9 +96,9 @@ final class Packets
         return pack('J',$ticks) . "\1" . Binary::writeVarInt($version->registryId('world_clock','overworld'))
             . Binary::writeVarLong($dayTime??($ticks+6000)) . pack('GG',0,$advancing?1:0);
     }
-    public static function playerInfo(string $uuid, string $name, int $gameMode = 1,bool $hat=true): string {
+    public static function playerInfo(string $uuid, string $name, int $gameMode = 1,bool $hat=true,array $properties=[]): string {
         // ADD_PLAYER | UPDATE_GAME_MODE | UPDATE_LISTED | UPDATE_LATENCY | UPDATE_HAT
-        return "\x9d\1" . $uuid . Binary::writeString($name,16) . "\0" . Binary::writeVarInt($gameMode) . "\1\0".chr((int)$hat);
+        return "\x9d\1" . $uuid . Binary::writeString($name,16) . self::profileProperties($properties) . Binary::writeVarInt($gameMode) . "\1\0".chr((int)$hat);
     }
     public static function headRotation(int $entityId,float $yaw):string {
         return Binary::writeVarInt($entityId).chr(((int)floor(fmod($yaw,360)*256/360))&255);

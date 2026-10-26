@@ -49,8 +49,9 @@ $configPath=tempnam(sys_get_temp_dir(),'php-minecraft-config-');
 try {
     file_put_contents($configPath,'{}');check(Config::load($configPath)->port===25565,'empty config object uses defaults');
     file_put_contents($configPath,'[]');rejects(fn()=>Config::load($configPath),'configuration array rejected');
-    file_put_contents($configPath,'{"onlineMode":true}');rejects(fn()=>Config::load($configPath),'unsupported configuration rejected');
+    file_put_contents($configPath,'{"unknownOption":true}');rejects(fn()=>Config::load($configPath),'unsupported configuration rejected');
 }finally{unlink($configPath);}
+check(Config::load(null,['onlineMode'=>true])->onlineMode,'explicit online mode');
 $v=new Version();$f=json_decode(file_get_contents(__DIR__.'/../reference/26.3/fixtures.json'),true,512,JSON_THROW_ON_ERROR);
 $settingsBytes=hex2bin($f['client_information']);
 check(Packets::readClientInformation(new Binary($settingsBytes))===['language'=>'en_gb','viewDistance'=>4,'chatVisibility'=>0,'chatColors'=>true,'skinParts'=>127,'mainHand'=>0,'textFiltering'=>false,'allowsListing'=>true,'particles'=>0],'official client information fixture');
@@ -112,7 +113,9 @@ require __DIR__.'/world.php';
 require __DIR__.'/collision.php';
 require __DIR__.'/dimensions-unit.php';
 require __DIR__.'/logging.php';
+require __DIR__.'/authentication.php';
 if (in_array('--unit', $argv,true)) {exit(0);}
+passthru(escapeshellarg(PHP_BINARY).' '.escapeshellarg(__DIR__.'/authentication-network.php'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/integration.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/terrain.py'),$code);if($code!==0){exit($code);}
 passthru('python3 '.escapeshellarg(__DIR__.'/dimensions.py'),$code);if($code!==0){exit($code);}

@@ -7,6 +7,7 @@ use PhpMinecraftJavaServer\Server\Config;
 if(is_file('server.json')){Config::load('server.json');echo "Keeping existing server.json\n";return;}
 $settings=json_decode(file_get_contents(__DIR__.'/../../server.example.json'),true,512,JSON_THROW_ON_ERROR);
 $settings['host']='0.0.0.0';
+$online=getenv('ONLINE_MODE');if($online!==false && $online!==''){if(!in_array($online,['true','false'],true)){throw new InvalidArgumentException('ONLINE_MODE must be true or false');}$settings['onlineMode']=$online==='true';}
 $integers=[
     'SERVER_PORT'=>['port',1,65535], 'WORLD_SEED'=>['seed',-2147483648,2147483647],
     'MAX_PLAYERS'=>['maxPlayers',1,100], 'VIEW_DISTANCE'=>['viewDistance',2,4],

@@ -73,11 +73,11 @@ class World
         if(count($this->generationCache)>=128){array_shift($this->generationCache);}
         return $this->generationCache[$key]=$legacy!==false && (int)$legacy===1?$this->legacyTerrain:$this->terrain;
     }
-    public function loadPlayer(string $uuid):?array {
-        $q=$this->db->prepare('SELECT data FROM players WHERE uuid=?');$q->execute([bin2hex($uuid)]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
+    public function loadPlayer(string $uuid,bool $online=false):?array {
+        $q=$this->db->prepare('SELECT data FROM players WHERE uuid=?');$q->execute([($online?'online:':'').bin2hex($uuid)]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
     }
-    public function savePlayer(string $uuid,array $data):void {
-        $q=$this->db->prepare('INSERT INTO players(uuid,data) VALUES(?,?) ON CONFLICT(uuid) DO UPDATE SET data=excluded.data');$q->execute([bin2hex($uuid),json_encode($data,JSON_THROW_ON_ERROR)]);
+    public function savePlayer(string $uuid,array $data,bool $online=false):void {
+        $q=$this->db->prepare('INSERT INTO players(uuid,data) VALUES(?,?) ON CONFLICT(uuid) DO UPDATE SET data=excluded.data');$q->execute([($online?'online:':'').bin2hex($uuid),json_encode($data,JSON_THROW_ON_ERROR)]);
     }
     public function container(array $position,?array $data=null):array {
         $key=implode(':',$position);

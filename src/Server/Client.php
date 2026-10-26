@@ -52,6 +52,12 @@ final class Client
     public string $name = '';
     public string $uuid = '';
     public bool $loginStarted = false;
+    public string $authenticationPhase='hello';
+    public string $challengeNonce='';
+    public bool $authenticated=false;
+    public array $profileProperties=[];
+    public ?\PhpMinecraftJavaServer\Authentication\Cfb8 $decryptor=null;
+    public ?\PhpMinecraftJavaServer\Authentication\Cfb8 $encryptor=null;
     public bool $registriesSent = false;
     public bool $playerLoaded = false;
     public bool $knownPacksRequested = false;
@@ -81,6 +87,12 @@ final class Client
     public function __construct(public readonly mixed $socket, public readonly string $peer) {
         $this->connectedAt = $this->lastRead = $this->lastKeepAlive = $this->packetWindow = hrtime(true)/1e9;
     }
+    public function encrypt(string $secret):void {
+        if($this->decryptor!==null){throw new \LogicException('Encryption already enabled');}
+        $this->decryptor=new \PhpMinecraftJavaServer\Authentication\Cfb8($secret,true);
+        $this->encryptor=new \PhpMinecraftJavaServer\Authentication\Cfb8($secret);
+        $this->input=$this->decryptor->transform($this->input);
+    }
     public function send(Version $version, string $name, string $payload = ''): void {
         if ($this->closing) { return; }
         $frame = Framing::encode($version->id($this->state,$name),$payload,$this->compression);
@@ -90,6 +102,6 @@ final class Client
             $this->closingAt = hrtime(true)/1e9;
             return;
         }
-        $this->output .= $frame;
+        $this->output .= $this->encryptor?->transform($frame)??$frame;
     }
 }

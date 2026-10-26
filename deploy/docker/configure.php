@@ -4,7 +4,8 @@ require __DIR__.'/../../src/bootstrap.php';
 use PhpMinecraftJavaServer\Server\Config;
 $path=$argv[1]??throw new InvalidArgumentException('Configuration path required');
 if(is_file($path)){exit(0);}
-$values=['host'=>'0.0.0.0','port'=>25676,'worldPath'=>'data/world-terrain.sqlite','generator'=>'terrain','seed'=>42,'viewDistance'=>4,'logDirectory'=>'data/logs','logRetentionDays'=>90,
+$online=getenv('MINECRAFT_ONLINE_MODE')?:'true';if(!in_array($online,['true','false'],true)){throw new InvalidArgumentException('MINECRAFT_ONLINE_MODE must be true or false');}
+$values=['onlineMode'=>$online==='true','host'=>'0.0.0.0','port'=>25676,'worldPath'=>'data/world-terrain.sqlite','generator'=>'terrain','seed'=>42,'viewDistance'=>4,'logDirectory'=>'data/logs','logRetentionDays'=>90,
     'operators'=>array_values(array_filter(array_map('trim',explode(',',getenv('MINECRAFT_OPERATORS')?:'')),static fn(string $v):bool=>$v!==''))];
 new Config(...$values);
 $directory=dirname($path);if(!is_dir($directory) && !mkdir($directory,0750,true) && !is_dir($directory)){throw new RuntimeException('Cannot create data directory');}
