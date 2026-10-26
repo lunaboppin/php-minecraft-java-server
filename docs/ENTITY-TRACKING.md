@@ -6,13 +6,15 @@ Normal position updates use `move_entity_pos` or `move_entity_pos_rot`. Ground c
 
 New viewers receive the tracker's cached position base, last sent movement and encoded rotations. Using a mob's newer, unsent position as the pairing base would make the next relative delta move that viewer to the wrong position. Removing a mob releases its tracker, and switching to the existing special-travel fallback clears the ordinary tracker before it can be reused with a different base.
 
+The reference profiles also identify actual class overrides. Shulkers use no-op interpolation and always report zero velocity, so ordinary travel and impulses cannot move them. Their teleport/attachment and other AI behavior still need separate work. Emerging wardens receive the native spawn-data flag; that flag does not implement their broader emergence/AI lifecycle.
+
 ## Evidence
 
 `tools/ExportMobTracking.java` calls the actual `ServerEntity.sendChanges` and actual `ClientboundAddEntityPacket(entity, tracker)` constructor on initialized, isolated Giant state. It does not reimplement the tracker to generate expected output. The server-level shell is sufficient for these movement calls; this probe does not run a full world or prove AI, effect or lifecycle behavior.
 
-The fixture includes 14 scenarios and 4,078 frames: long stationary runs through periodic full synchronization, walking/rotation, quantization and large-delta boundaries, angle boundaries, intervals 1/2/3/10/60, delta tracking enabled/disabled, force-step flags, hurt-velocity flags and predicted external movement. All 3,417 ordered packets, delivery classifications and post-update flags match the PHP tracker exactly. Pairing packets also match at every frame.
+The fixture includes 20 scenarios and 5,856 frames: long stationary runs through periodic full synchronization, walking/rotation, quantization and large-delta boundaries, angle boundaries, intervals 1/2/3/10/60, delta tracking enabled/disabled, force-step flags, hurt-velocity flags, predicted external movement, signed tick-counter overflow, shulker no-op interpolation and warden standing/emerging spawn data. All 4,017 ordered packets, delivery classifications and post-update flags match the PHP tracker exactly. Pairing packets also match at every frame.
 
-A separate Python decoder is checked against Java's actual `VecDelta.decode` and absolute position paths. Its 8,156 checks compare reconstructed existing-viewer positions and late-pairing bases bit for bit. Thus the independent TCP observer can recognize the new packet layouts without assuming the PHP encoder is correct.
+A separate Python decoder is checked against Java's actual `VecDelta.decode` and absolute position paths. Its 11,712 checks compare reconstructed existing-viewer positions and late-pairing bases bit for bit. Thus the independent TCP observer can recognize the new packet layouts without assuming the PHP encoder is correct.
 
 ```sh
 php tests/mob-tracking-unit.php
@@ -21,7 +23,7 @@ python3 tests/parity/entity-motion.py
 
 `tests/mob-knockback.py` exercises the integration with two established TCP clients and a third joining after the hit. It compares exact settled server state, both established clients' reconstructed position and compressed velocity sequences against an actual official server. Within each run it correlates matching position updates for the established and late viewer and allows only the protocol's 1/4096-block quantization difference. The raw vectors, packets and number of common updates checked remain in the evidence. Unseeded wall-clock timing is not treated as identical tick alignment between the two processes.
 
-The first three-client comparison passed against the pinned official server, with six unique common late-viewer updates checked in each process. Full packet captures are independently decoded by the official codecs. The ordinary movement foundation and its actual-world trajectory tests are documented in [MOB-MOVEMENT.md](MOB-MOVEMENT.md).
+The three-client comparison passed against the pinned official server, with six unique common late-viewer updates checked in each process. The extended comparison also verifies that a supported idle shulker retains its position and zero velocity. Full packet captures are independently decoded by the official codecs. The ordinary movement foundation and its actual-world trajectory tests are documented in [MOB-MOVEMENT.md](MOB-MOVEMENT.md).
 
 ## Remaining acceptance scope
 

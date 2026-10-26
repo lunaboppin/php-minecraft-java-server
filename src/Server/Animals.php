@@ -114,7 +114,7 @@ trait Animals
         }
         $type = $this->version->blocks['entity_types'][$animal['kind']];
         $spawn = $this->ordinaryMobTravel($animal)
-            ? $this->mobMotionTracker($animal)->spawnPacket(hex2bin($animal['uuid']), $type)
+            ? $this->trackedMobSpawnPacket($animal, $type)
             : Packets::addPlayer($id, hex2bin($animal['uuid']), $type, $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0, $animal['velocity'] ?? [0.0, 0.0, 0.0]);
         $c->send($this->version, 'add_entity', $spawn);
         $c->entities[$id] = true;

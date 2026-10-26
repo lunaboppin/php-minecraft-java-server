@@ -31,5 +31,5 @@ for case in reference['cases']:
         actual = [struct.pack('>d', value).hex() for value in late.positions[17]]
         assert actual == frame['pairing_position_bits'], (case['name'], tick, 'pairing base')
         checks += 2
-assert checks == 8156
-print('PASS: 8,156 independently reconstructed entity positions and late-pairing bases against actual Java codecs')
+assert checks == 11712
+print('PASS: 11,712 independently reconstructed entity positions and late-pairing bases against actual Java codecs')

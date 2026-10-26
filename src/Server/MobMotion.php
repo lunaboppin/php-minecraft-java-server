@@ -17,7 +17,8 @@ trait MobMotion
     {
         return [
             'position' => [$mob['x'], $mob['y'], $mob['z']],
-            'velocity' => $mob['velocity'] ?? [0.0, 0.0, 0.0],
+            'velocity' => $this->version->catalog->movement['profiles'][$mob['kind']]['velocity'] === 'zero'
+                ? [0.0, 0.0, 0.0] : ($mob['velocity'] ?? [0.0, 0.0, 0.0]),
             'yaw' => $mob['yaw'],
             'pitch' => $mob['pitch'] ?? 0.0,
             'head' => $mob['headYaw'] ?? $mob['yaw'],
@@ -37,8 +38,16 @@ trait MobMotion
             $mob['id'],
             max(1, $profile['update_interval']),
             $profile['track_deltas'],
-            $this->mobMotionState($mob)
+            $this->mobMotionState($mob),
+            $profile['interpolation'] === 'stepped'
         );
+    }
+
+    private function trackedMobSpawnPacket(array $mob, int $type): string
+    {
+        $profile = $this->version->catalog->movement['profiles'][$mob['kind']];
+        $data = $profile['spawn_data'] === 'warden_pose' && ($mob['pose'] ?? 'standing') === 'emerging' ? 1 : 0;
+        return $this->mobMotionTracker($mob)->spawnPacket(hex2bin($mob['uuid']), $type, $data);
     }
 
     private function knockbackMob(array &$mob, Client $attacker): void
@@ -56,7 +65,8 @@ trait MobMotion
             $attacker->z - $mob['z'],
             $this->mobRandom($mob['id'])
         );
-        $mob['velocity'] = $result['velocity'];
+        $mob['velocity'] = $this->version->catalog->movement['profiles'][$mob['kind']]['velocity'] === 'zero'
+            ? [0.0, 0.0, 0.0] : $result['velocity'];
         $mob['needsSync'] = $result['synchronize'];
         $mob['syncVelocity'] = true;
     }

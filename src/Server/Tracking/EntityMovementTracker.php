@@ -7,6 +7,8 @@ namespace PhpMinecraftJavaServer\Server\Tracking;
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\LowPrecisionVector;
 use PhpMinecraftJavaServer\Protocol\RelativePositionCodec;
+use PhpMinecraftJavaServer\Protocol\PositionPath;
+use PhpMinecraftJavaServer\World\Generation\Int64;
 use PhpMinecraftJavaServer\World\Generation\Float32;
 
 /** Ordinary unmounted movement selection; metadata/equipment have their own handlers. */
@@ -34,7 +36,8 @@ final class EntityMovementTracker
         private readonly int $id,
         private readonly int $interval,
         private readonly bool $trackDelta,
-        array $initial
+        array $initial,
+        private readonly bool $stepped = true
     ) {
         if ($interval < 1) {
             throw new \InvalidArgumentException('Movement interval must be positive');
@@ -70,25 +73,29 @@ final class EntityMovementTracker
     }
 
     /** Pair from the same cached base and encoded rotations as the next delta. */
-    public function spawnPacket(string $uuid, int $type): string
+    public function spawnPacket(string $uuid, int $type, int $data = 0): string
     {
         return Binary::writeVarInt($this->id) . $uuid . Binary::writeVarInt($type)
             . pack('EEE', ...$this->positions->base) . LowPrecisionVector::encode(...$this->lastVelocity)
-            . chr($this->lastPitch & 255) . chr($this->lastYaw & 255) . chr($this->lastHead & 255) . "\0";
+            . chr($this->lastPitch & 255) . chr($this->lastYaw & 255) . chr($this->lastHead & 255) . Binary::writeVarInt($data);
     }
 
     /** @return list<array{name: string, payload: string, delivery: string}> */
     public function update(array &$state): array
     {
         $packets = [];
-        $this->steps->update($state['position'], $state['predicted'] ?? [0.0, 0.0, 0.0], $state['sync_position']);
+        if ($this->stepped) {
+            $this->steps->update($state['position'], $state['predicted'] ?? [0.0, 0.0, 0.0], $state['sync_position']);
+        } elseif ($state['sync_position']) {
+            $this->ticks = Int64::signed32(intdiv($this->ticks, $this->interval) * $this->interval + $this->interval);
+        }
         $state['sync_position'] = false;
         if ($state['needs_sync'] || $this->ticks % $this->interval === 0 || ($state['force_update'] ?? false)) {
             $yaw = self::angle($state['yaw']);
             $pitch = self::angle($state['pitch']);
             $rotated = abs($yaw - $this->lastYaw) >= 1 || abs($pitch - $this->lastPitch) >= 1;
             ++$this->teleportDelay;
-            $path = $this->steps->path($state['position']);
+            $path = $this->stepped ? $this->steps->path($state['position']) : PositionPath::linear($state['position']);
             $this->steps->clear();
             $moved = self::distance($state['position'], $this->positions->base) >= 7.62939453125E-6 || $this->ticks % 60 === 0;
             $movement = null;
@@ -141,7 +148,7 @@ final class EntityMovementTracker
             }
             $state['needs_sync'] = false;
         }
-        ++$this->ticks;
+        $this->ticks = Int64::signed32($this->ticks + 1);
         if ($state['sync_velocity']) {
             $packets[] = $this->packet('set_entity_motion', LowPrecisionVector::encode(...$state['velocity']), 'tracking_and_self');
             $state['sync_velocity'] = false;

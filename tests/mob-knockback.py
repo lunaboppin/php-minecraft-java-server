@@ -48,16 +48,16 @@ def command(client, text):
     client.tick_barrier()
 
 
-def snapshot(server, client):
+def snapshot(server, client, kind="giant", tag="knockback_fixture"):
     if server.kind == 'java':
         # The stationary goal-free actor is settled before these running-world
         # queries; no navigation can change its position between queries.
-        return Recorder(server, client).snapshot('knockback_fixture')
+        return Recorder(server, client).snapshot(tag)
     command(client, 'save-all')
     with sqlite3.connect(server.path / 'world.sqlite') as database:
         animals = json.loads(database.execute("SELECT value FROM metadata WHERE key='animals'").fetchone()[0])
     values = animals.values() if isinstance(animals, dict) else animals
-    mob, = [mob for mob in values if mob['kind'] == 'giant']
+    mob, = [mob for mob in values if mob['kind'] == kind]
     return {'position_bits': bits([mob['x'], mob['y'], mob['z']]),
             'velocity_bits': bits(mob['velocity']), 'ground': mob['ground']}
 
@@ -129,6 +129,17 @@ def observe(server, output):
             raise AssertionError('Both tracked clients must receive the same nonempty impulses: ' + str(results))
         if before['position_bits'] == after['position_bits'] or not after['ground']:
             raise AssertionError('The mob must move away and settle on the floor')
+        command(actor, 'setblock 8 69 -9 minecraft:stone')
+        summon = 'summon minecraft:shulker 8.5 70 -8.5'
+        if server.kind == 'java':
+            summon += ' {PersistenceRequired:1b,Tags:["shulker_fixture"]}'
+        command(actor, summon)
+        stationary_before = snapshot(server, actor, 'shulker', 'shulker_fixture')
+        actor.tick_barrier()
+        stationary_after = snapshot(server, actor, 'shulker', 'shulker_fixture')
+        if stationary_before != stationary_after or stationary_after['velocity_bits'] != bits([0.0, 0.0, 0.0]):
+            raise AssertionError('An attached idle shulker must retain its position and zero velocity')
+        results['stationary_shulker'] = stationary_after
         return results
     finally:
         traces = []
