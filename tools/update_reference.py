@@ -12,6 +12,7 @@ import subprocess
 import urllib.request
 import zipfile
 from java_logging import plain_reference_logging
+from worldgen_reference import export_worldgen
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = '26.3'
@@ -135,10 +136,11 @@ def main():
     subprocess.run([java, logging_option, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
     classes = cache / 'exporter'
     classes.mkdir(exist_ok=True)
-    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java')], check=True)
+    subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java'), str(ROOT / 'tools/ExportWorldgenNoise.java')], check=True)
     cmd = [java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
     subprocess.run(cmd, check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportAuthentication', str(out / 'authentication.json')], check=True, cwd=cache)
+    export_worldgen(java,cp,classes,out/'worldgen-noise.json',jar)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())
