@@ -138,7 +138,7 @@ jobs:
   mob-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -167,6 +167,10 @@ jobs:
         run: |
           python3 tests/mob-combat.py --java-jar tools/.cache/26.3/server.jar --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-mob-combat
           python3 tools/parity/verify.py tools/.cache/parity-mob-combat/php-packets.json tools/.cache/parity-mob-combat/java-packets.json
+      - name: Compare mob voices, variants, listeners and restart with vanilla
+        run: |
+          python3 tests/mob-sounds.py --java-jar tools/.cache/26.3/server.jar --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-mob-sounds
+          python3 tools/parity/verify.py tools/.cache/parity-mob-sounds/php-packets.json tools/.cache/parity-mob-sounds/java-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -174,6 +178,7 @@ jobs:
           path: |
             tools/.cache/parity-spawn-eggs/
             tools/.cache/parity-mob-combat/
+            tools/.cache/parity-mob-sounds/
           retention-days: 7
 
   docker:
