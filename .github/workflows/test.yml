@@ -185,6 +185,41 @@ jobs:
             tools/.cache/parity-mob-sounds/
           retention-days: 7
 
+  movement-parity:
+    if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
+          coverage: none
+        env:
+          update: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Prepare pinned official reference
+        run: |
+          python3 tools/update_reference.py
+          mkdir -p tools/.cache/parity-consent
+          printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
+      - name: Reproduce exact official mob trajectories
+        run: |
+          python3 tools/parity/mob_motion.py --jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/motion-java --compare reference/26.3/mob-motion-trajectories.json
+          php tests/mob-physics-unit.php
+          php tests/mob-motion-unit.php
+          python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: movement-parity-evidence
+          path: tools/.cache/motion-java/
+          retention-days: 7
+
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 10

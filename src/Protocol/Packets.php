@@ -188,6 +188,11 @@ final class Packets
         return Binary::writeVarInt($id) . pack('G', $yaw);
     }
 
+    public static function entityMotion(int $id, float $x, float $y, float $z): string
+    {
+        return Binary::writeVarInt($id) . LowPrecisionVector::encode($x, $y, $z);
+    }
+
     public static function sound(int $sound, int $category, float $x, float $y, float $z, float $volume, float $pitch, int $seed): string
     {
         // The official packet casts multiplied coordinates toward zero, including negatives.

@@ -1,0 +1,483 @@
+{
+  "default_block_friction": 0.6000000238418579,
+  "block_friction": {
+    "ice": 0.9800000190734863,
+    "slime_block": 0.800000011920929,
+    "packed_ice": 0.9800000190734863,
+    "frosted_ice": 0.9800000190734863,
+    "blue_ice": 0.9890000224113464
+  },
+  "block_bounce_restitution": {
+    "white_bed": 0.75,
+    "orange_bed": 0.75,
+    "magenta_bed": 0.75,
+    "light_blue_bed": 0.75,
+    "yellow_bed": 0.75,
+    "lime_bed": 0.75,
+    "pink_bed": 0.75,
+    "gray_bed": 0.75,
+    "light_gray_bed": 0.75,
+    "cyan_bed": 0.75,
+    "purple_bed": 0.75,
+    "blue_bed": 0.75,
+    "brown_bed": 0.75,
+    "green_bed": 0.75,
+    "red_bed": 0.75,
+    "black_bed": 0.75,
+    "shelf_mushroom": 0.75,
+    "slime_block": 1.0
+  },
+  "default_knockback_strength": 0.4000000059604645,
+  "profiles": {
+    "allay": {
+      "update_interval": 2,
+      "travel_owner": "net.minecraft.world.entity.animal.allay.Allay",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "armadillo": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "axolotl": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "bat": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "bee": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.animal.bee.Bee"
+    },
+    "blaze": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "bogged": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "breeze": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "camel": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.animal.camel.Camel",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "camel_husk": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.animal.camel.Camel",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "cat": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "cave_spider": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "chicken": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "cod": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "copper_golem": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "cow": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "creaking": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "creeper": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "dolphin": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "donkey": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "drowned": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "elder_guardian": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "enderman": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "endermite": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "ender_dragon": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "evoker": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "fox": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "frog": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "ghast": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.monster.Ghast",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "happy_ghast": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.animal.happyghast.HappyGhast",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "giant": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "glow_squid": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.animal.squid.Squid",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "goat": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "guardian": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "hoglin": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "horse": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "husk": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "illusioner": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "iron_golem": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "llama": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "magma_cube": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "mooshroom": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "mule": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "nautilus": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "ocelot": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "panda": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "parched": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "parrot": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.animal.parrot.Parrot"
+    },
+    "phantom": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.monster.Phantom",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "pig": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "piglin": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "piglin_brute": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "pillager": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "polar_bear": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "pufferfish": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "rabbit": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "ravager": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "salmon": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "sheep": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "shulker": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "silverfish": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "skeleton": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "skeleton_horse": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "slime": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "sniffer": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "snow_golem": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "spider": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "squid": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.animal.squid.Squid",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "stray": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "strider": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "sulfur_cube": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.monster.cubemob.SulfurCube"
+    },
+    "tadpole": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "trader_llama": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "tropical_fish": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "turtle": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "vex": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "villager": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "vindicator": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "wandering_trader": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "warden": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "witch": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "wither": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "wither_skeleton": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "wolf": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zoglin": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zombie": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zombie_horse": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zombie_nautilus": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zombie_villager": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    },
+    "zombified_piglin": {
+      "update_interval": 3,
+      "travel_owner": "net.minecraft.world.entity.LivingEntity",
+      "omnidirectional_owner": "net.minecraft.world.entity.Entity"
+    }
+  }
+}
