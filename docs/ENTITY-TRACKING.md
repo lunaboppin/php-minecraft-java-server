@@ -10,7 +10,7 @@ The reference profiles also identify actual class overrides. Shulkers use no-op 
 
 ## Evidence
 
-`tools/ExportMobTracking.java` calls the actual `ServerEntity.sendChanges` and actual `ClientboundAddEntityPacket(entity, tracker)` constructor on initialized, isolated Giant state. It does not reimplement the tracker to generate expected output. The server-level shell is sufficient for these movement calls; this probe does not run a full world or prove AI, effect or lifecycle behavior.
+`tools/ExportMobTracking.java` calls the actual `ServerEntity.sendChanges` and each entity’s actual `getAddEntityPacket(tracker)` method on initialized, isolated Giant, Shulker and Warden state. It does not reimplement the tracker to generate expected output. The server-level shell is sufficient for these movement calls; this probe does not run a full world or prove AI, effect or lifecycle behavior.
 
 The fixture includes 20 scenarios and 5,856 frames: long stationary runs through periodic full synchronization, walking/rotation, quantization and large-delta boundaries, angle boundaries, intervals 1/2/3/10/60, delta tracking enabled/disabled, force-step flags, hurt-velocity flags, predicted external movement, signed tick-counter overflow, shulker no-op interpolation and warden standing/emerging spawn data. All 4,017 ordered packets, delivery classifications and post-update flags match the PHP tracker exactly. Pairing packets also match at every frame.
 
