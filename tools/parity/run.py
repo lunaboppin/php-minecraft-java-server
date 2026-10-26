@@ -3,7 +3,6 @@
 import argparse
 import contextlib
 import hashlib
-import io
 import json
 import os
 from pathlib import Path
@@ -15,9 +14,10 @@ import subprocess
 import sys
 import time
 import uuid
-import zipfile
 
 from protocol import Probe,ROOT,wire
+sys.path.insert(0,str(ROOT/'tools'))
+from java_logging import plain_reference_logging
 
 
 def difference(expected,actual,path='$'):
@@ -40,14 +40,6 @@ def free_port():
     with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
 
 
-def plain_reference_logging(jar,output):
-    # Preserve Mojang's logging setup, changing only its gzip archive suffix.
-    with zipfile.ZipFile(jar) as outer:
-        library=next(name for name in outer.namelist() if name.startswith('META-INF/libraries/') and Path(name).name.startswith('logging-') and name.endswith('.jar'))
-        with zipfile.ZipFile(io.BytesIO(outer.read(library))) as logging:
-            config=logging.read('log4j2.xml').decode('utf-8')
-    if '.log.gz' not in config:raise ValueError('Pinned reference logging format changed')
-    output.write_text(config.replace('.log.gz','.log'))
 
 
 class Server:

@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import urllib.request
 import zipfile
+from java_logging import plain_reference_logging
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = '26.3'
@@ -114,6 +115,7 @@ def main():
     if meta['id'] != VERSION or server['sha1'] != SERVER_SHA1:
         raise RuntimeError('Unexpected Mojang version metadata')
     jar = download(server['url'], cache / 'server.jar', SERVER_SHA1)
+    logging_option=plain_reference_logging(jar,cache/'log4j2-plain.xml')
     cp_dir = cache / 'classpath'
     cp_dir.mkdir(exist_ok=True)
     classpath = []
@@ -130,13 +132,13 @@ def main():
         raise RuntimeError('JAR version does not match pinned protocol')
     cp = os.pathsep.join(str(path) for path in sorted(classpath))
     generated = cache / 'generated'
-    subprocess.run([java, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', cp, 'net.minecraft.data.Main', '--reports', '--output', str(generated)], check=True, cwd=cache)
     classes = cache / 'exporter'
     classes.mkdir(exist_ok=True)
     subprocess.run([javac, '-cp', cp, '-d', str(classes), str(ROOT / 'tools/ExportReference.java'), str(ROOT / 'tools/ExportAuthentication.java')], check=True)
-    cmd = [java, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
+    cmd = [java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportReference', str(out)]
     subprocess.run(cmd, check=True, cwd=cache)
-    subprocess.run([java, '-cp', str(classes) + os.pathsep + cp, 'ExportAuthentication', str(out / 'authentication.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportAuthentication', str(out / 'authentication.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())

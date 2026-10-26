@@ -4,10 +4,13 @@ from pathlib import Path
 import struct
 import sys
 import tempfile
+import io
+import zipfile
 from unittest.mock import Mock
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'tools/parity'))
 from run import difference,observe
+from java_logging import plain_reference_logging
 from protocol import Probe,block_pos,palette,wire
 
 
@@ -42,6 +45,17 @@ class HarnessTests(unittest.TestCase):
     def test_signed_world_coordinates(self):
         for position in [(-17,-64,-33),(0,319,0),(29999999,255,-29999999)]:
             self.assertEqual(block_pos(struct.unpack('>q',wire.block_position(*position))[0]),position)
+
+    def test_reference_logging_preserves_configuration_except_compression(self):
+        original='<Configuration><File filePattern="logs/%d-%i.log.gz"/><Console name="test"/></Configuration>'
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp=Path(tmp);library=io.BytesIO()
+            with zipfile.ZipFile(library,'w') as logging:logging.writestr('log4j2.xml',original)
+            jar=tmp/'server.jar'
+            with zipfile.ZipFile(jar,'w') as archive:archive.writestr('META-INF/libraries/com/mojang/logging/1/logging-1.jar',library.getvalue())
+            output=tmp/'plain.xml';option=plain_reference_logging(jar,output)
+            self.assertEqual(output.read_text(),original.replace('.log.gz','.log'))
+            self.assertEqual(option,'-Dlog4j.configurationFile='+str(output.resolve()))
 
     def test_checkpoints_do_not_change_when_later_packets_arrive(self):
         probe=Probe.__new__(Probe);probe.entity_spawns=[{'type':30,'position':[2.5,64,.5]}];probe.notes=[]
