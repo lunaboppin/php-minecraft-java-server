@@ -3,6 +3,8 @@
   "blocks.json": "8992dc7e0fb0234ba05bb34793c29d3ca131af278ce67103c74907d2a2051a49",
   "collision.json": "313b9612cfa392577c56691681f84097447832460fe222afc1f36ced35721415",
   "combat.json": "7a5583c985f2b80705f617815e07bde66e31bdc04926e160ed1c9469e8ad5ca6",
+  "commands-all-features.json": "1864f2f4f046464ac18af3132633ab2d3f6b4a44c1fc27f63d488eddecd7bce0",
+  "commands.json": "010cb9d5cdc953729a5fbe0cabcc8b280b706be01446e2afebad4a5d381e2aa5",
   "dynamic-registries.json": "3b716ea38d7495343a09026c9f6c8b3e432a5bee0331e8c577127195ed838307",
   "fixtures.json": "6e909bbb8201fafc97c62ef9c6f72e19a1f3844ba1e172c3c80077c4a5270d27",
   "gameplay.json": "37b61e4ba8c0a3681d57b5eab6612e42bcfcdaa85e90c28a13ec5b7c73503ad1",

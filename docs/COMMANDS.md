@@ -16,3 +16,5 @@ When adding a command:
 Run `python3 tools/php_style.py` to format command modules and `python3 tools/php_style.py --check` to check them. Optional paths apply the same configuration to other changed PHP files. The helper verifies the pinned official PHP CS Fixer PHAR checksum and does not add a runtime dependency. CI checks command formatting.
 
 This refactor preserves the existing commands and permissions. It does not complete the native command set: the parser is still the existing whitespace-based parser, and native contexts, selector syntax, permission levels, full argument types, redirects and result semantics remain in #10. Console/RCON command sources remain in #14. The full command inventory must come from the pinned Java 26.3 dispatcher.
+
+The [native command inventory](command-coverage.md) tracks all 92 official roots/aliases and both default/all-feature argument graphs. Existing handlers are marked partial; registration does not establish native command behavior. Regenerate the matrix with `python3 tools/command_coverage.py` and check it with `--check`.
