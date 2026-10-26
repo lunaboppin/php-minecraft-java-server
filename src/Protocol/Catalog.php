@@ -8,6 +8,7 @@ final class Catalog
     public readonly array $simulation;
     public readonly array $tracking;
     public readonly array $mobs;
+    public readonly array $combat;
     public readonly array $collision;
     public readonly array $blocks;
     public readonly array $items;
@@ -24,6 +25,7 @@ final class Catalog
         $this->simulation=json_decode(file_get_contents($directory.'/simulation.json'),true,512,JSON_THROW_ON_ERROR);
         $this->tracking=json_decode(file_get_contents($directory.'/tracking.json'),true,512,JSON_THROW_ON_ERROR);
         $this->mobs=json_decode(file_get_contents($directory.'/mobs.json'),true,512,JSON_THROW_ON_ERROR);
+        $this->combat=json_decode(file_get_contents($directory.'/combat.json'),true,512,JSON_THROW_ON_ERROR);
         $this->collision=json_decode(file_get_contents($directory.'/collision.json'),true,512,JSON_THROW_ON_ERROR);
         $this->entityMetadata=$data['entity_metadata'];
         $this->itemMetadataIndex=$data['item_metadata_index'];$this->itemMetadataSerializer=$data['item_metadata_serializer'];

@@ -131,6 +131,8 @@ trait Survival
         else{if($c->y<$oldY){$c->fallDistance+=$oldY-$c->y;}if($c->ground){if($c->fallDistance>3){$this->damage($c,floor($c->fallDistance-3),'hit the ground too hard');}$c->fallDistance=0;}}
     }
     private function tickSurvival(Client $c):void {
+        $selected=$c->inventory[36+$c->heldSlot]['item']??-1;
+        if($selected!==$c->lastAttackItem){$c->lastAttackItem=$selected;$c->lastAttackTick=$this->ticks;}
         if($c->dead){return;}
         if(!$this->validWindow($c)){$this->closeWindow($c,true);$this->syncInventory($c);}
         if($c->mining!==null){
@@ -170,8 +172,9 @@ trait Survival
         }
     }
     private function attackEntity(Client $attacker,int $id):void {
-        if($attacker->dead || $attacker->gameMode===3 || $this->ticks-$attacker->lastAttackTick<10){return;}
+        if($attacker->dead || $attacker->gameMode===3){return;}
         if($this->attackAnimal($attacker,$id)){return;}
+        if($this->ticks-$attacker->lastAttackTick<10){return;}
         foreach($this->localPlayers() as $target){
             if($target->entityId!==$id || $target===$attacker || !$this->config->pvp){continue;}
             if(($target->x-$attacker->x)**2+($target->y-$attacker->y)**2+($target->z-$attacker->z)**2>4.5**2){return;}

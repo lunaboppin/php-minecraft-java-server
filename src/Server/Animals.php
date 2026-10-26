@@ -2,7 +2,8 @@
 declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\{Binary,Packets};
-use PhpMinecraftJavaServer\World\{Noise,Collision};
+use PhpMinecraftJavaServer\World\{Noise,Collision,Combat};
+use PhpMinecraftJavaServer\World\Generation\Float32;
 
 /** Persistent mob state; species-specific AI and progression remain separate parity work. */
 trait Animals
@@ -21,6 +22,7 @@ trait Animals
             if($this->config->difficulty===0 && !$this->version->catalog->mobs['entities'][$animal['kind']]['peaceful']){continue;}
             $id=$this->nextEntity++;if($animal['kind']==='ender_dragon'){$this->nextEntity+=8;}
             foreach(['x','y','z','yaw'] as $field){$animal[$field]=(float)$animal[$field];}
+            unset($animal['lastHurtTick'],$animal['lastHurtAmount']);
             $animal['equipment']??=$this->mobEquipment($animal['kind']);
             $animal['id']=$id;$animal['nextWander']=0;$animal['velocity']??=[0.0,0.0,0.0];$this->animals[$id]=$animal;
         }
@@ -55,8 +57,27 @@ trait Animals
     private function attackAnimal(Client $c,int $id):bool {
         if(!isset($this->animals[$id])){return false;}$animal=&$this->animals[$id];
         if(isset($animal['deadAt']) || ($c->x-$animal['x'])**2+($c->y-$animal['y'])**2+($c->z-$animal['z'])**2>4.5**2){return true;}
-        $c->lastAttackTick=$this->ticks;$tool=$this->version->catalog->itemName($c->inventory[36+$c->heldSlot]['item']??-1)??'';$damage=str_ends_with($tool,'_sword') || str_ends_with($tool,'_axe')?6:1;$animal['health']-=$damage;
-        foreach($this->localPlayers() as $p){if(isset($p->entities[$id])){$p->send($this->version,'set_entity_data',Packets::mobHealth($this->version->catalog,$id,max(0,$animal['health'])));$p->send($this->version,'entity_event',pack('N',$id).chr($animal['health']<=0?3:2));}}
+        $slot=36+$c->heldSlot;$stack=$c->inventory[$slot]??null;$tool=$this->version->catalog->itemName($stack['item']??-1)??'';
+        $weapon=$this->version->catalog->combat['items'][$tool]??$this->version->catalog->combat['default_item'];
+        $elapsed=$this->ticks-$c->lastAttackTick;
+        if(Combat::strength($weapon['speed'],$elapsed,1.0)<$weapon['minimum_charge']){return true;}
+        $damage=Combat::attack($weapon['damage'],$weapon['speed'],$elapsed);$c->lastAttackTick=$this->ticks;
+        $newWindow=$this->ticks-($animal['lastHurtTick']??-100)>=10;
+        if(!$newWindow && $damage<=($animal['lastHurtAmount']??0)){return true;}
+        $incoming=$newWindow?$damage:Float32::round($damage-$animal['lastHurtAmount']);
+        $animal['lastHurtAmount']=$damage;if($newWindow){$animal['lastHurtTick']=$this->ticks;}
+        $attributes=$this->version->catalog->mobs['entities'][$animal['kind']]['attributes'];
+        $applied=Combat::afterArmor($incoming,$attributes['armor']??0,$attributes['armor_toughness']??0);
+        $animal['health']=max(0.0,Float32::round($animal['health']-$applied));
+        foreach($this->localPlayers() as $p){if(isset($p->entities[$id])){
+            $p->send($this->version,'set_entity_data',Packets::mobHealth($this->version->catalog,$id,$animal['health']));
+            if($newWindow){$p->send($this->version,'damage_event',Packets::damageEvent($this->version,$id,$c->entityId));}
+            if($animal['health']<=0){$p->send($this->version,'entity_event',pack('N',$id)."\3");}
+        }}
+        if(in_array($c->gameMode,[0,2],true)){
+            $c->exhaustion+=0.1;$cost=$weapon['durability_cost'];$maximum=$this->version->catalog->item($stack['item']??-1)['durability']??0;
+            if($cost>0 && $maximum>0){$stack['damage']=($stack['damage']??0)+$cost;if($stack['damage']>=$maximum){unset($c->inventory[$slot]);}else{$c->inventory[$slot]=$stack;}$this->syncInventory($c);}
+        }
         if($animal['health']<=0){
             $animal['deadAt']=$this->ticks+20;
             $drops=match($animal['kind']){'cow'=>['beef'=>random_int(1,3),'leather'=>random_int(0,2)],'pig'=>['porkchop'=>random_int(1,3)],'sheep'=>['mutton'=>random_int(1,2),'white_wool'=>1],'chicken'=>['chicken'=>1,'feather'=>random_int(0,2)],default=>[]};

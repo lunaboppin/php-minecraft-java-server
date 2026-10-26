@@ -22,6 +22,7 @@ final class Client
     public bool $flying = false;
     public bool $sneaking = false;
     public int $lastAttackTick = -20;
+    public ?int $lastAttackItem = null;
     public bool $sprinting = false;
     public int $experience = 0;
     public int $lastDamageTick = -20;

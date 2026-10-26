@@ -1,0 +1,3597 @@
+{
+  "default_item": {
+    "damage": 1.0,
+    "speed": 4.0,
+    "minimum_charge": 0,
+    "durability_cost": 0
+  },
+  "items": {
+    "wooden_sword": {
+      "damage": 4.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "wooden_shovel": {
+      "damage": 2.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "wooden_pickaxe": {
+      "damage": 2.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "wooden_axe": {
+      "damage": 7.0,
+      "speed": 0.7999999523162842,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "wooden_hoe": {
+      "damage": 1.0,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "copper_sword": {
+      "damage": 5.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "copper_shovel": {
+      "damage": 3.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "copper_pickaxe": {
+      "damage": 3.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "copper_axe": {
+      "damage": 9.0,
+      "speed": 0.7999999523162842,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "copper_hoe": {
+      "damage": 1.0,
+      "speed": 2.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "stone_sword": {
+      "damage": 5.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "stone_shovel": {
+      "damage": 3.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "stone_pickaxe": {
+      "damage": 3.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "stone_axe": {
+      "damage": 9.0,
+      "speed": 0.7999999523162842,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "stone_hoe": {
+      "damage": 1.0,
+      "speed": 2.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "golden_sword": {
+      "damage": 4.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "golden_shovel": {
+      "damage": 2.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "golden_pickaxe": {
+      "damage": 2.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "golden_axe": {
+      "damage": 7.0,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "golden_hoe": {
+      "damage": 1.0,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "iron_sword": {
+      "damage": 6.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "iron_shovel": {
+      "damage": 4.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "iron_pickaxe": {
+      "damage": 4.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "iron_axe": {
+      "damage": 9.0,
+      "speed": 0.9000000953674316,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "iron_hoe": {
+      "damage": 1.0,
+      "speed": 3.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "diamond_sword": {
+      "damage": 7.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "diamond_shovel": {
+      "damage": 5.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "diamond_pickaxe": {
+      "damage": 5.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "diamond_axe": {
+      "damage": 9.0,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "diamond_hoe": {
+      "damage": 1.0,
+      "speed": 4.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "netherite_sword": {
+      "damage": 8.0,
+      "speed": 1.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "netherite_shovel": {
+      "damage": 6.5,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "netherite_pickaxe": {
+      "damage": 6.0,
+      "speed": 1.2000000476837158,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "netherite_axe": {
+      "damage": 10.0,
+      "speed": 1.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "netherite_hoe": {
+      "damage": 1.0,
+      "speed": 4.0,
+      "minimum_charge": 0.0,
+      "durability_cost": 2
+    },
+    "mace": {
+      "damage": 6.0,
+      "speed": 0.5999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    },
+    "wooden_spear": {
+      "damage": 1.0,
+      "speed": 1.5384615659713745,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "stone_spear": {
+      "damage": 2.0,
+      "speed": 1.3333333730697632,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "copper_spear": {
+      "damage": 2.0,
+      "speed": 1.1764705181121826,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "iron_spear": {
+      "damage": 3.0,
+      "speed": 1.0526316165924072,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "golden_spear": {
+      "damage": 1.0,
+      "speed": 1.0526316165924072,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "diamond_spear": {
+      "damage": 4.0,
+      "speed": 0.9523810148239136,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "netherite_spear": {
+      "damage": 5.0,
+      "speed": 0.8695652484893799,
+      "minimum_charge": 1.0,
+      "durability_cost": 1
+    },
+    "trident": {
+      "damage": 9.0,
+      "speed": 1.0999999046325684,
+      "minimum_charge": 0.0,
+      "durability_cost": 1
+    }
+  },
+  "charged_attacks": [
+    {
+      "item": "air",
+      "ticks": 0,
+      "bits": "3e54fdf4",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 1,
+      "bits": "3e8b4396",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 2,
+      "bits": "3ecccccd",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 5,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "air",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 0,
+      "bits": "3f4e1c58",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 1,
+      "bits": "3f5898b3",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 2,
+      "bits": "3f6d9168",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 5,
+      "bits": "3fb5b2d4",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 10,
+      "bits": "4043b4f4",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 20,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 40,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_sword",
+      "ticks": 100,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 0,
+      "bits": "3f0051eb",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 1,
+      "bits": "3f02e148",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 2,
+      "bits": "3f080000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 5,
+      "bits": "3f26b852",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 10,
+      "bits": "3f868f5c",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 20,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 40,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_shovel",
+      "ticks": 100,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 0,
+      "bits": "3ecd898b",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 1,
+      "bits": "3ed36f7e",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 2,
+      "bits": "3edf3b65",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 5,
+      "bits": "3f130165",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 10,
+      "bits": "3f847c31",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 20,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 40,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_pickaxe",
+      "ticks": 100,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 0,
+      "bits": "3fb37c9a",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 1,
+      "bits": "3fb5c7cd",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 2,
+      "bits": "3fba5e36",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 5,
+      "bits": "3fd5e4a4",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 10,
+      "bits": "4018d25e",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 20,
+      "bits": "40a54b48",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 40,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_axe",
+      "ticks": 100,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 0,
+      "bits": "3e4d4fdf",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 1,
+      "bits": "3e516873",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 2,
+      "bits": "3e59999a",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 5,
+      "bits": "3e856042",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 10,
+      "bits": "3ed74bc6",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 0,
+      "bits": "3f80d1b7",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 1,
+      "bits": "3f875f70",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 2,
+      "bits": "3f947ae1",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 5,
+      "bits": "3fe31f89",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 10,
+      "bits": "4074a231",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 20,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 40,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "copper_sword",
+      "ticks": 100,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 0,
+      "bits": "3f33a5e3",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 1,
+      "bits": "3f373b65",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 2,
+      "bits": "3f3e6667",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 5,
+      "bits": "3f696874",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 10,
+      "bits": "3fbc624d",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 20,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 40,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "copper_shovel",
+      "ticks": 100,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 0,
+      "bits": "3f1a2728",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 1,
+      "bits": "3f1e939e",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 2,
+      "bits": "3f276c8c",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 5,
+      "bits": "3f5c8218",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 10,
+      "bits": "3fc6ba4a",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 20,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 40,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "copper_pickaxe",
+      "ticks": 100,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 0,
+      "bits": "3fe6c4c6",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 1,
+      "bits": "3fe9b7bf",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 2,
+      "bits": "3fef9db2",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 5,
+      "bits": "400980b2",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 10,
+      "bits": "40447c30",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 20,
+      "bits": "40d4855c",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 40,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "copper_axe",
+      "ticks": 100,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 0,
+      "bits": "3e4ed917",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 1,
+      "bits": "3e5f3b65",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 2,
+      "bits": "3e800000",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 5,
+      "bits": "3ee24dd4",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "copper_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 0,
+      "bits": "3f80d1b7",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 1,
+      "bits": "3f875f70",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 2,
+      "bits": "3f947ae1",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 5,
+      "bits": "3fe31f89",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 10,
+      "bits": "4074a231",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 20,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 40,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "stone_sword",
+      "ticks": 100,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 0,
+      "bits": "3f33a5e3",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 1,
+      "bits": "3f373b65",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 2,
+      "bits": "3f3e6667",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 5,
+      "bits": "3f696874",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 10,
+      "bits": "3fbc624d",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 20,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 40,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "stone_shovel",
+      "ticks": 100,
+      "bits": "40600000",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 0,
+      "bits": "3f1a2728",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 1,
+      "bits": "3f1e939e",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 2,
+      "bits": "3f276c8c",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 5,
+      "bits": "3f5c8218",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 10,
+      "bits": "3fc6ba4a",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 20,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 40,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "stone_pickaxe",
+      "ticks": 100,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 0,
+      "bits": "3fe6c4c6",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 1,
+      "bits": "3fe9b7bf",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 2,
+      "bits": "3fef9db2",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 5,
+      "bits": "400980b2",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 10,
+      "bits": "40447c30",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 20,
+      "bits": "40d4855c",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 40,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "stone_axe",
+      "ticks": 100,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 0,
+      "bits": "3e4ed917",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 1,
+      "bits": "3e5f3b65",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 2,
+      "bits": "3e800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 5,
+      "bits": "3ee24dd4",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 0,
+      "bits": "3f4e1c58",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 1,
+      "bits": "3f5898b3",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 2,
+      "bits": "3f6d9168",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 5,
+      "bits": "3fb5b2d4",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 10,
+      "bits": "4043b4f4",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 20,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 40,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_sword",
+      "ticks": 100,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 0,
+      "bits": "3f0051eb",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 1,
+      "bits": "3f02e148",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 2,
+      "bits": "3f080000",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 5,
+      "bits": "3f26b852",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 10,
+      "bits": "3f868f5c",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 20,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 40,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "golden_shovel",
+      "ticks": 100,
+      "bits": "40200000",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 0,
+      "bits": "3ecd898b",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 1,
+      "bits": "3ed36f7e",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 2,
+      "bits": "3edf3b65",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 5,
+      "bits": "3f130165",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 10,
+      "bits": "3f847c31",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 20,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 40,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "golden_pickaxe",
+      "ticks": 100,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 0,
+      "bits": "3fb3a5e3",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 1,
+      "bits": "3fb73b65",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 2,
+      "bits": "3fbe6667",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 5,
+      "bits": "3fe96874",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 10,
+      "bits": "403c624d",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 20,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 40,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "golden_axe",
+      "ticks": 100,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 0,
+      "bits": "3e4d4fdf",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 1,
+      "bits": "3e516873",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 2,
+      "bits": "3e59999a",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 5,
+      "bits": "3e856042",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 10,
+      "bits": "3ed74bc6",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 0,
+      "bits": "3f9a9542",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 1,
+      "bits": "3fa27286",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 2,
+      "bits": "3fb22d0e",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 5,
+      "bits": "4008461f",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 10,
+      "bits": "4092c7b7",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 20,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 40,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "iron_sword",
+      "ticks": 100,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 0,
+      "bits": "3f66f9db",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 1,
+      "bits": "3f6b9581",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 2,
+      "bits": "3f74cccd",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 5,
+      "bits": "3f960c4a",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 10,
+      "bits": "3ff2353f",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 20,
+      "bits": "40900000",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 40,
+      "bits": "40900000",
+      "allowed": true
+    },
+    {
+      "item": "iron_shovel",
+      "ticks": 100,
+      "bits": "40900000",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 0,
+      "bits": "3f4d898b",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 1,
+      "bits": "3f536f7e",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 2,
+      "bits": "3f5f3b65",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 5,
+      "bits": "3f930165",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 10,
+      "bits": "40047c31",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 20,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 40,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_pickaxe",
+      "ticks": 100,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 0,
+      "bits": "3fe6ddd7",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 1,
+      "bits": "3fea995b",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 2,
+      "bits": "3ff21062",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 5,
+      "bits": "400f6d49",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 10,
+      "bits": "405a1397",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 20,
+      "bits": "40fdac01",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 40,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "iron_axe",
+      "ticks": 100,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 0,
+      "bits": "3e516873",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 1,
+      "bits": "3e7645a2",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 2,
+      "bits": "3ea00000",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 5,
+      "bits": "3f3e978e",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "iron_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 0,
+      "bits": "3fb458cd",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 1,
+      "bits": "3fbd859d",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 2,
+      "bits": "3fcfdf3b",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 5,
+      "bits": "401efc7a",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 10,
+      "bits": "40ab3e56",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 20,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 40,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_sword",
+      "ticks": 100,
+      "bits": "40e00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 0,
+      "bits": "3f8d26e9",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 1,
+      "bits": "3f8ff7cf",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 2,
+      "bits": "3f95999a",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 5,
+      "bits": "3fb7645b",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 10,
+      "bits": "40140418",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 20,
+      "bits": "40b00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 40,
+      "bits": "40b00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_shovel",
+      "ticks": 100,
+      "bits": "40b00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 0,
+      "bits": "3f8075f7",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 1,
+      "bits": "3f8425af",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 2,
+      "bits": "3f8b851f",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 5,
+      "bits": "3fb7c1be",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 10,
+      "bits": "40259b3d",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 20,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 40,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_pickaxe",
+      "ticks": 100,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 0,
+      "bits": "3fe6f9db",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 1,
+      "bits": "3feb9581",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 2,
+      "bits": "3ff4cccd",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 5,
+      "bits": "40160c4a",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 10,
+      "bits": "4072353f",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 20,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 40,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_axe",
+      "ticks": 100,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 0,
+      "bits": "3e54fdf4",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 1,
+      "bits": "3e8b4396",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 2,
+      "bits": "3ecccccd",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 5,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 0,
+      "bits": "3fce1c58",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 1,
+      "bits": "3fd898b3",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 2,
+      "bits": "3fed9168",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 5,
+      "bits": "4035b2d4",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 10,
+      "bits": "40c3b4f4",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 20,
+      "bits": "41000000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 40,
+      "bits": "41000000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_sword",
+      "ticks": 100,
+      "bits": "41000000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 0,
+      "bits": "3fa6d0e5",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 1,
+      "bits": "3faa24dd",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 2,
+      "bits": "3fb0cccd",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 5,
+      "bits": "3fd8bc6b",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 10,
+      "bits": "402eed91",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 20,
+      "bits": "40d00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 40,
+      "bits": "40d00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_shovel",
+      "ticks": 100,
+      "bits": "40d00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 0,
+      "bits": "3f9a2728",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 1,
+      "bits": "3f9e939e",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 2,
+      "bits": "3fa76c8c",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 5,
+      "bits": "3fdc8218",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 10,
+      "bits": "4046ba4a",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 20,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 40,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_pickaxe",
+      "ticks": 100,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 0,
+      "bits": "400051eb",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 1,
+      "bits": "4002e148",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 2,
+      "bits": "40080000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 5,
+      "bits": "4026b852",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 10,
+      "bits": "40868f5c",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 20,
+      "bits": "41200000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 40,
+      "bits": "41200000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_axe",
+      "ticks": 100,
+      "bits": "41200000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 0,
+      "bits": "3e54fdf4",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 1,
+      "bits": "3e8b4396",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 2,
+      "bits": "3ecccccd",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 5,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 10,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_hoe",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 0,
+      "bits": "3f99bcfe",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 1,
+      "bits": "3f9ad81b",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 2,
+      "bits": "3f9d0e56",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 5,
+      "bits": "3faa53b8",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 10,
+      "bits": "3fd69056",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 20,
+      "bits": "4040fd9e",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 40,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "mace",
+      "ticks": 100,
+      "bits": "40c00000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 0,
+      "bits": "3e4e0308",
+      "allowed": false
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 1,
+      "bits": "3e57b4de",
+      "allowed": false
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 2,
+      "bits": "3e6b188a",
+      "allowed": false
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 5,
+      "bits": "3eafb74a",
+      "allowed": false
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 10,
+      "bits": "3f38ce02",
+      "allowed": false
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "wooden_spear",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 0,
+      "bits": "3ecdb5d1",
+      "allowed": false
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 1,
+      "bits": "3ed4fdf4",
+      "allowed": false
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 2,
+      "bits": "3ee38e39",
+      "allowed": false
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 5,
+      "bits": "3f1d77ec",
+      "allowed": false
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 10,
+      "bits": "3f978d50",
+      "allowed": false
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 20,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 40,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "stone_spear",
+      "ticks": 100,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 0,
+      "bits": "3ecd8237",
+      "allowed": false
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 1,
+      "bits": "3ed32d88",
+      "allowed": false
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 2,
+      "bits": "3ede842a",
+      "allowed": false
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 5,
+      "bits": "3f1145fa",
+      "allowed": false
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 10,
+      "bits": "3f815426",
+      "allowed": false
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 20,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 40,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "copper_spear",
+      "ticks": 100,
+      "bits": "40000000",
+      "allowed": true
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 0,
+      "bits": "3f1a0686",
+      "allowed": false
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 1,
+      "bits": "3f1d6deb",
+      "allowed": false
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 2,
+      "bits": "3f243cb4",
+      "allowed": false
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 5,
+      "bits": "3f4d156b",
+      "allowed": false
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 10,
+      "bits": "3faa9e90",
+      "allowed": false
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 20,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 40,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "iron_spear",
+      "ticks": 100,
+      "bits": "40400000",
+      "allowed": true
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 0,
+      "bits": "3e4d5e08",
+      "allowed": false
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 1,
+      "bits": "3e51e7e4",
+      "allowed": false
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 2,
+      "bits": "3e5afb9b",
+      "allowed": false
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 5,
+      "bits": "3e88b8f2",
+      "allowed": false
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 10,
+      "bits": "3ee37e15",
+      "allowed": false
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 20,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 40,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "golden_spear",
+      "ticks": 100,
+      "bits": "3f800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 0,
+      "bits": "3f4d43b0",
+      "allowed": false
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 1,
+      "bits": "3f50fac7",
+      "allowed": false
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 2,
+      "bits": "3f5868f5",
+      "allowed": false
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 5,
+      "bits": "3f827f04",
+      "allowed": false
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 10,
+      "bits": "3fccccce",
+      "allowed": false
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 20,
+      "bits": "40765d1f",
+      "allowed": true
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 40,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "diamond_spear",
+      "ticks": 100,
+      "bits": "40800000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 0,
+      "bits": "3f803df2",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 1,
+      "bits": "3f822d7e",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 2,
+      "bits": "3f860c95",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 5,
+      "bits": "3f9d4724",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 10,
+      "bits": "3feab4fe",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 20,
+      "bits": "4085afab",
+      "allowed": false
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 40,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "netherite_spear",
+      "ticks": 100,
+      "bits": "40a00000",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 0,
+      "bits": "3fe718d3",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 1,
+      "bits": "3fecac33",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 2,
+      "bits": "3ff7d2f1",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 5,
+      "bits": "401d5db7",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 10,
+      "bits": "40867098",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 20,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 40,
+      "bits": "41100000",
+      "allowed": true
+    },
+    {
+      "item": "trident",
+      "ticks": 100,
+      "bits": "41100000",
+      "allowed": true
+    }
+  ],
+  "armor": [
+    {
+      "incoming": 0.25,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "3e800000"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "3e800000"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "3e800000"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "3e800000"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "3e6ccccd"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "3e6c8b44"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "3e6c28f6"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "3e6be2be"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "3e4e147b"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "3e4dd2f2"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "3e4d70a4"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "3e4d2a6c"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "3e1ae148"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "3e1a9fbe"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "3e1a3d70"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "3e19f739"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "3d51eb84"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "3d50e560"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "3d4f5c28"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "3d4e434c"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3d4ccccc"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3d4ccccc"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3d4ccccc"
+    },
+    {
+      "incoming": 0.25,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3d4ccccc"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "3f800000"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "3f800000"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "3f800000"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "3f800000"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "3f70a3d7"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "3f6f9db2"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "3f6e147b"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "3f6cfb9c"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "3f51eb85"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "3f50e560"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "3f4f5c29"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "3f4e434a"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "3f1eb852"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "3f1db22d"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "3f1c28f6"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "3f1b1018"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "3e6147b0"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "3e5d2f18"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "3e570a3c"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "3e52a6c4"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3e4ccccc"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3e4ccccc"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3e4ccccc"
+    },
+    {
+      "incoming": 1.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3e4ccccc"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "40800000"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "40800000"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "40800000"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "40800000"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "407be76d"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "407be76d"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "4075c28f"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "40715f16"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "406147ae"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "405d2f1a"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "40570a3e"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "4052a6c4"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "402e147b"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "4029fbe8"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "4023d70a"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "401f7390"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "3f8f5c28"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "3f872b02"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "3f75c290"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "3f6434a8"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3f4ccccc"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3f4ccccc"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3f4ccccc"
+    },
+    {
+      "incoming": 4.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3f4ccccc"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "40c00000"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "40c00000"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "40c00000"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "40c00000"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "40bced92"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "40bced92"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "40bc28f6"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "40b7390e"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "40b0a3d7"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "40ac0832"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "40a51eb8"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "40a02ed0"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "408a3d71"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "4085a1ca"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "407d70a3"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "407390d2"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "3ff5c28f"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "3fe353f8"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "3fc7ae14"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "3fb3ee72"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3f999999"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3f999999"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3f999999"
+    },
+    {
+      "incoming": 6.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3f999999"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "41000000"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "41000000"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "41000000"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "41000000"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "40fbe76d"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "40fbe76d"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "40fbe76d"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "40f7390d"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "40f5c28f"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "40ed9168"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "40e147ae"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "40d880bb"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "40c28f5c"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "40ba5e35"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "40ae147b"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "40a54d88"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "403851ec"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "4027ef9e"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "400f5c28"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "3ffb9c84"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3fcccccc"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3fcccccc"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3fcccccc"
+    },
+    {
+      "incoming": 8.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3fcccccc"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "41200000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "41200000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "41200000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "41200000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "411d70a4"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "411d70a4"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "411d70a4"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "411c57c6"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "41199999"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "41199999"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "41100000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "41092492"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "41000000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "40f33333"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "40e00000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "40d24925"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "407fffff"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "40666667"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "40400000"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "40249248"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "3fffffff"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "3fffffff"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "3fffffff"
+    },
+    {
+      "incoming": 10.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "3fffffff"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "41a00000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "41a00000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "41a00000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "41a00000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "419d70a4"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "419d70a4"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "419d70a4"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "419d70a4"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "41999999"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "41999999"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "41999999"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "41924925"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "41933333"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "41933333"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "41800000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "4164924a"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "41400000"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "41266666"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "40ffffff"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "40c92494"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "407fffff"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "407fffff"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "407fffff"
+    },
+    {
+      "incoming": 20.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "407fffff"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 0.0,
+      "toughness": 0.0,
+      "bits": "42c80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 0.0,
+      "toughness": 2.0,
+      "bits": "42c80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 0.0,
+      "toughness": 8.0,
+      "bits": "42c80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 0.0,
+      "toughness": 20.0,
+      "bits": "42c80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 2.0,
+      "toughness": 0.0,
+      "bits": "42c4cccd"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 2.0,
+      "toughness": 2.0,
+      "bits": "42c4cccd"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 2.0,
+      "toughness": 8.0,
+      "bits": "42c4cccd"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 2.0,
+      "toughness": 20.0,
+      "bits": "42c4cccd"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 5.0,
+      "toughness": 0.0,
+      "bits": "42c00000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 5.0,
+      "toughness": 2.0,
+      "bits": "42c00000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 5.0,
+      "toughness": 8.0,
+      "bits": "42c00000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 5.0,
+      "toughness": 20.0,
+      "bits": "42c00000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 10.0,
+      "toughness": 0.0,
+      "bits": "42b80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 10.0,
+      "toughness": 2.0,
+      "bits": "42b80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 10.0,
+      "toughness": 8.0,
+      "bits": "42b80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 10.0,
+      "toughness": 20.0,
+      "bits": "42b80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 20.0,
+      "toughness": 0.0,
+      "bits": "42a80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 20.0,
+      "toughness": 2.0,
+      "bits": "42a80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 20.0,
+      "toughness": 8.0,
+      "bits": "42a80000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 20.0,
+      "toughness": 20.0,
+      "bits": "429a4925"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 30.0,
+      "toughness": 0.0,
+      "bits": "42980000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 30.0,
+      "toughness": 2.0,
+      "bits": "42980000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 30.0,
+      "toughness": 8.0,
+      "bits": "42980000"
+    },
+    {
+      "incoming": 100.0,
+      "armor": 30.0,
+      "toughness": 20.0,
+      "bits": "42149249"
+    }
+  ],
+  "serializers": {
+    "boolean": 8
+  },
+  "fixtures": {
+    "damage_event": "0122030300",
+    "hurt_animation": "0142b40000"
+  }
+}

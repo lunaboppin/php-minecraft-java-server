@@ -5,7 +5,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
@@ -163,11 +163,17 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/spawn-eggs.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-spawn-eggs
           python3 tools/parity/verify.py tools/.cache/parity-spawn-eggs/php-packets.json tools/.cache/parity-spawn-eggs/reference-packets.json
+      - name: Compare mob damage, weapon wear and restart with vanilla
+        run: |
+          python3 tests/mob-combat.py --java-jar tools/.cache/26.3/server.jar --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-mob-combat
+          python3 tools/parity/verify.py tools/.cache/parity-mob-combat/php-packets.json tools/.cache/parity-mob-combat/java-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: mob-parity-evidence
-          path: tools/.cache/parity-spawn-eggs/
+          path: |
+            tools/.cache/parity-spawn-eggs/
+            tools/.cache/parity-mob-combat/
           retention-days: 7
 
   docker:
