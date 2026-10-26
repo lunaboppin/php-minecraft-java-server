@@ -190,6 +190,7 @@ require __DIR__ . '/commands-unit.php';
 require __DIR__ . '/mob-physics-unit.php';
 require __DIR__ . '/mob-motion-unit.php';
 require __DIR__ . '/mob-tracking-unit.php';
+require __DIR__ . '/spawn-initialization-unit.php';
 if (in_array('--unit', $argv, true)) {
     exit(0);
 }
