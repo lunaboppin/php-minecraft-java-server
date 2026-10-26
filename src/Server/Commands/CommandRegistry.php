@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpMinecraftJavaServer\Server\Commands;
+
+final class CommandRegistry
+{
+    /** @return list<CommandDefinition> */
+    public static function definitions(): array
+    {
+        return [
+            new CommandDefinition('help', 'executeHelp', false),
+            new CommandDefinition('spawn', 'executeSpawn', false),
+            new CommandDefinition('list', 'executeList', false),
+            new CommandDefinition('version', 'executeVersion', false),
+            new CommandDefinition('msg', 'executeMessage', false, ['tell']),
+            new CommandDefinition('me', 'executeMe', false),
+            new CommandDefinition('gamemode', 'executeGameMode', true),
+            new CommandDefinition('give', 'executeGive', true),
+            new CommandDefinition('tp', 'executeTeleport', true, ['teleport']),
+            new CommandDefinition('time', 'executeTime', true),
+            new CommandDefinition('weather', 'executeWeather', true),
+            new CommandDefinition('seed', 'executeSeed', true),
+            new CommandDefinition('setworldspawn', 'executeSetWorldSpawn', true),
+            new CommandDefinition('spawnpoint', 'executeSpawnPoint', true),
+            new CommandDefinition('kill', 'executeKill', true),
+            new CommandDefinition('heal', 'executeHeal', true),
+            new CommandDefinition('setblock', 'executeSetBlock', true),
+            new CommandDefinition('fill', 'executeFill', true),
+            new CommandDefinition('gamerule', 'executeGameRule', true),
+            new CommandDefinition('save-all', 'executeSaveAll', true),
+            new CommandDefinition('summon', 'executeSummon', true),
+            new CommandDefinition('dimension', 'executeDimension', true),
+        ];
+    }
+
+    /** @return list<string> */
+    public static function names(bool $operator): array
+    {
+        $names = [];
+        foreach (self::definitions() as $definition) {
+            if (!$definition->requiresOperator || $operator) {
+                array_push($names, $definition->name, ...$definition->aliases);
+            }
+        }
+        return $names;
+    }
+
+    public static function resolve(string $name, bool $operator): ?CommandDefinition
+    {
+        foreach (self::definitions() as $definition) {
+            if ($definition->name !== $name && !in_array($name, $definition->aliases, true)) {
+                continue;
+            }
+            return !$definition->requiresOperator || $operator ? $definition : null;
+        }
+        return null;
+    }
+}

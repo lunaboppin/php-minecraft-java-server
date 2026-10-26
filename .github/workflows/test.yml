@@ -22,6 +22,8 @@ jobs:
           php -r 'require "src/bootstrap.php";'
       - name: Check PHP syntax
         run: find src bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Check modular command PHP formatting
+        run: python3 tools/php_style.py --check
       - name: Validate panel egg
         run: python3 tests/panel_egg.py
       - name: Run protocol and gameplay checks

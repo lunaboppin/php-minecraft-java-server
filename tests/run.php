@@ -35,7 +35,7 @@ foreach ([0, 1, 127, 128, 255, 2147483647, -1, -2147483648] as $n) {
     check((new Binary(Binary::writeVarInt($n)))->varInt() === $n, 'VarInt ' . $n);
 }
 check(bin2hex(Binary::writeVarInt(-1)) === 'ffffffff0f', 'Signed VarInt vector');
-for ($i = 0;$i < 1000;$i++) {
+for ($i = 0; $i < 1000; $i++) {
     $n = random_int(-2147483648, 2147483647);
     check((new Binary(Binary::writeVarInt($n)))->varInt() === $n, 'random VarInt');
 }
@@ -64,7 +64,7 @@ foreach ([-1, 0, 1, 256] as $threshold) {
     foreach (['', 'a', str_repeat('Minecraft', 2000)] as $payload) {
         $frame = Framing::encode(4, $payload, $threshold);
         $buffer = '';
-        for ($i = 0;$i < strlen($frame) - 1;$i++) {
+        for ($i = 0; $i < strlen($frame) - 1; $i++) {
             $buffer .= $frame[$i];
             check(Framing::extract($buffer, $threshold) === null, 'partial frame remains buffered');
         }
@@ -140,8 +140,8 @@ $fixtures['item_metadata'] = "\2" . chr($v->catalog->itemMetadataIndex) . Binary
 $fixtures['damaged_pickaxe'] = Packets::stack(['item' => $v->blocks['items']['iron_pickaxe'], 'count' => 1, 'damage' => 7], $v->blocks['component_damage']);
 $fixtures['mob_attributes'] = Packets::attributes($v->catalog, 1, ['max_health' => 10.0]);
 $states = array_fill(0, 4096, 0);
-for ($y = 0;$y < 4;$y++) {
-    for ($i = 0;$i < 256;$i++) {
+for ($y = 0; $y < 4; $y++) {
+    for ($i = 0; $i < 256; $i++) {
         $states[$y * 256 + $i] = $v->blocks['states'][$y === 0 ? 'bedrock' : ($y === 3 ? 'grass_block' : 'dirt')];
     }
 }
@@ -186,6 +186,7 @@ require __DIR__ . '/worldgen-noise.php';
 require __DIR__ . '/worldgen-density.php';
 require __DIR__ . '/mob-combat-unit.php';
 require __DIR__ . '/mob-sounds-unit.php';
+require __DIR__ . '/commands-unit.php';
 if (in_array('--unit', $argv, true)) {
     exit(0);
 }

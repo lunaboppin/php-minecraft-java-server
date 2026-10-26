@@ -142,6 +142,8 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 
 Coordinates accept `~` relative values. Fill operations are limited to 32,768 blocks. Commands and results are synchronized with the client command tree. The server does not implement vanilla command selectors beyond `@s` where a player argument is accepted.
 
+Command handlers are organized as [individual PHP modules](docs/COMMANDS.md) under `src/Server/Commands/`, with shared registration, aliases, permissions and argument helpers. Use `python3 tools/php_style.py --check` to check their formatting; complete native command behavior remains tracked in issue #10.
+
 Set `onlineMode` to `true` for Mojang session verification and encrypted transport. New example, Docker and panel configurations enable it. Older configurations that omit the setting retain offline behavior; add `"onlineMode": true` explicitly to enable verification. In offline mode, names and operator names remain unverified.
 
 Online players use separate `online:<UUID>` save records. Existing offline records and builds are preserved, and switching modes does not copy inventories between identities. Back up your saves before changing modes; an account's first online login starts a separate player profile. Operator name matching happens after successful verification in online mode. Session-service outages reject new online logins and do not fall back to offline access. See [authentication coverage](docs/authentication.md) for the current evidence and remaining parity checks.
