@@ -100,6 +100,10 @@ final class Packets
         // ADD_PLAYER | UPDATE_GAME_MODE | UPDATE_LISTED | UPDATE_LATENCY | UPDATE_HAT
         return "\x9d\1" . $uuid . Binary::writeString($name,16) . self::profileProperties($properties) . Binary::writeVarInt($gameMode) . "\1\0".chr((int)$hat);
     }
+    public static function damageEvent(Version $version,int $id,int $cause=-1):string {
+        return Binary::writeVarInt($id).Binary::writeVarInt($version->registryId('damage_type','player_attack')).Binary::writeVarInt($cause+1).Binary::writeVarInt($cause+1)."\0";
+    }
+    public static function hurtAnimation(int $id,float $yaw):string {return Binary::writeVarInt($id).pack('G',$yaw);}
     public static function headRotation(int $entityId,float $yaw):string {
         return Binary::writeVarInt($entityId).chr(((int)floor(fmod($yaw,360)*256/360))&255);
     }
