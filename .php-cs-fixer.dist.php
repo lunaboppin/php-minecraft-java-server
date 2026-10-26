@@ -12,6 +12,7 @@ return (new PhpCsFixer\Config())
         'no_multiple_statements_per_line' => true,
         'whitespace_after_comma_in_array' => true,
         'cast_spaces' => ['space' => 'single'],
+        'space_after_semicolon' => true,
         'single_import_per_statement' => ['group_to_single_imports' => true],
         'class_attributes_separation' => [
             'elements' => ['method' => 'one', 'property' => 'one', 'trait_import' => 'one'],

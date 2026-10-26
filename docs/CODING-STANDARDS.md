@@ -1,6 +1,6 @@
 # PHP structure and readability
 
-Keep new behavior in focused modules with a clear responsibility. Each command belongs in its own file under `src/Server/Commands/`. Keep command registration, dispatch, shared argument parsing and permission policy separate from individual handlers. Existing behavior still needs to be split into those files under issue #94; complete native command semantics remain tracked in #10.
+Keep new behavior in focused modules with a clear responsibility. Each command belongs in its own file under `src/Server/Commands/`. Keep command registration, dispatch, shared argument parsing and permission policy separate from individual handlers. The existing command modules and shared registry are described in [COMMANDS.md](COMMANDS.md); complete native command semantics remain tracked in #10.
 
 Use descriptive names, four spaces for indentation, explicit types and readable control flow. Put one statement on each line, use spaces around operators and after commas, and separate methods with blank lines. Expand long argument lists across lines. Avoid compressed conditionals and a growing central switch statement.
 
