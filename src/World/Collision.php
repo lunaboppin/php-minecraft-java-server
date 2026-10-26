@@ -106,7 +106,17 @@ final class Collision
         if (!$landed) {
             $swept = self::expand($swept, [0.0, -9.999999747378752E-6, 0.0]);
         }
-        $obstacles = $this->boxes($world, $swept);
+        $obstacles = array_values(array_filter(
+            $this->boxes($world, $swept),
+            static function (array $obstacle) use ($swept): bool {
+                for ($axis = 0; $axis < 3; ++$axis) {
+                    if ($obstacle[$axis + 3] <= $swept[$axis] || $obstacle[$axis] >= $swept[$axis + 3]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        ));
         $heights = [];
         $oldHeight = Float32::round($motion[1]);
         foreach ($obstacles as $obstacle) {
