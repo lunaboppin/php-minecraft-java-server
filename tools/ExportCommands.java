@@ -15,7 +15,9 @@ import net.minecraft.server.permissions.*;
 public class ExportCommands {
  @SuppressWarnings({"rawtypes","unchecked"})
  public static void main(String[] args)throws Exception {
+  if(args.length<1||args.length>2||(args.length==2&&!args[1].equals("--all-features")))throw new IllegalArgumentException("Expected output path and optional --all-features");
   SharedConstants.tryDetectVersion();Bootstrap.bootStrap();var provider=VanillaRegistries.createWorldLookup();
+  if(!SharedConstants.getCurrentVersion().id().equals("26.3")||SharedConstants.getCurrentVersion().protocolVersion()!=777)throw new IllegalStateException("Wrong reference server version");
   BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(provider).forEach(net.minecraft.core.component.DataComponentInitializers.PendingComponents::apply);
   var features=args.length>1&&args[1].equals("--all-features")?FeatureFlags.REGISTRY.allFlags():FeatureFlags.DEFAULT_FLAGS;
   var commands=new Commands(Commands.CommandSelection.DEDICATED,CommandBuildContext.simple(provider,features));
@@ -26,16 +28,15 @@ public class ExportCommands {
    for(var child:connected)if(!ids.containsKey(child)){ids.put(child,nodes.size());nodes.add(child);}
   }
   var output=new JsonObject();output.addProperty("scope","Official Java 26.3 dedicated dispatcher; no runtime command execution");
+  output.addProperty("version",SharedConstants.getCurrentVersion().id());output.addProperty("protocol",SharedConstants.getCurrentVersion().protocolVersion());output.addProperty("null_permission_result","The predicate requires a runtime source context; not accepted as verified permission behavior");
   var featureNames=new JsonArray();for(var feature:FeatureFlags.REGISTRY.toNames(features).stream().sorted(Comparator.comparing(Object::toString)).toList())featureNames.add(feature.toString());output.add("features",featureNames);var rows=new JsonArray();
   for(var node:nodes){
    var row=new JsonObject();row.addProperty("name",node.getName());row.addProperty("kind",node instanceof RootCommandNode?"root":node instanceof LiteralCommandNode?"literal":"argument");row.addProperty("executable",node.getCommand()!=null);row.addProperty("fork",node.isFork());
    var children=new JsonArray();for(var child:node.getChildren())children.add(ids.get(child));row.add("children",children);if(node.getRedirect()!=null)row.addProperty("redirect",ids.get(node.getRedirect()));
-   var permissions=new JsonArray();
+   var permissions=new JsonObject();
    for(var level:PermissionLevel.values()){
-    var result=new JsonObject();result.addProperty("level",level.id());
-    try{result.addProperty("allowed",node.canUse(Commands.createCompilationContext(LevelBasedPermissionSet.forLevel(level))));}
-    catch(NullPointerException ex){result.addProperty("requires_runtime_context",true);}
-    permissions.add(result);
+    try{permissions.addProperty(Integer.toString(level.id()),node.canUse(Commands.createCompilationContext(LevelBasedPermissionSet.forLevel(level))));}
+    catch(NullPointerException ex){permissions.add(Integer.toString(level.id()),JsonNull.INSTANCE);}
    }row.add("permissions",permissions);
    if(node instanceof ArgumentCommandNode argument){
     ArgumentTypeInfo info=ArgumentTypeInfos.byClass(argument.getType());var template=info.unpack(argument.getType());var properties=new JsonObject();info.serializeToJson(template,properties);

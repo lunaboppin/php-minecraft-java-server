@@ -12,10 +12,16 @@ def render():
     profiles = {}
     for filename in ['commands.json', 'commands-all-features.json']:
         data = json.loads((ROOT / 'reference/26.3' / filename).read_text())
+        if data['version'] != '26.3' or data['protocol'] != 777:
+            raise ValueError('Wrong official command reference version')
         nodes = data['nodes']
         if nodes[0]['kind'] != 'root':
             raise ValueError('Official command graph has no root')
         for node in nodes:
+            if set(node['permissions']) != {'0', '1', '2', '3', '4'}:
+                raise ValueError('Official command permission observations are incomplete')
+            if any(value is not None and type(value) is not bool for value in node['permissions'].values()):
+                raise ValueError('Invalid official command permission result')
             for target in [*node['children'], *([node['redirect']] if 'redirect' in node else [])]:
                 if type(target) is not int or not 0 <= target < len(nodes):
                     raise ValueError('Invalid official command graph edge')
