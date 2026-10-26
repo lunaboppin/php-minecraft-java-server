@@ -1,0 +1,2989 @@
+{
+  "version": "26.3",
+  "server_sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c",
+  "scope": "Default adult NoAI mobs on land; generic command damage. Primary voices plus incidental sounds are retained. The dragon has a separate damage/death lifecycle.",
+  "observations": [
+    {
+      "kind": "allay",
+      "hurt": [
+        {
+          "name": "minecraft:entity.allay.hurt",
+          "id": 3,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.075844645500183,
+          "seed": "6088693098668247977"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.allay.death",
+          "id": 2,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.17637038230896,
+          "seed": "4961493347464551863"
+        }
+      ]
+    },
+    {
+      "kind": "armadillo",
+      "hurt": [
+        {
+          "name": "minecraft:entity.armadillo.hurt",
+          "id": 55,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1077570915222168,
+          "seed": "1232256539002258993"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.armadillo.death",
+          "id": 59,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.158923864364624,
+          "seed": "5821788788771081923"
+        }
+      ]
+    },
+    {
+      "kind": "axolotl",
+      "hurt": [
+        {
+          "name": "minecraft:entity.axolotl.hurt",
+          "id": 93,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9739694595336914,
+          "seed": "-1047828874685704323"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.axolotl.death",
+          "id": 92,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9291619062423706,
+          "seed": "-6114325430857448594"
+        }
+      ]
+    },
+    {
+      "kind": "bat",
+      "hurt": [
+        {
+          "name": "minecraft:entity.bat.hurt",
+          "id": 149,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.10000000149011612,
+          "pitch": 1.0438462495803833,
+          "seed": "-7006913869005894298"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.bat.death",
+          "id": 148,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.10000000149011612,
+          "pitch": 1.038404107093811,
+          "seed": "5665536356200804191"
+        }
+      ]
+    },
+    {
+      "kind": "bee",
+      "hurt": [
+        {
+          "name": "minecraft:entity.bee.hurt",
+          "id": 157,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9911737442016602,
+          "seed": "126027546148031897"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.bee.death",
+          "id": 156,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9288963675498962,
+          "seed": "-4666361361207140049"
+        }
+      ]
+    },
+    {
+      "kind": "blaze",
+      "hurt": [
+        {
+          "name": "minecraft:entity.blaze.hurt",
+          "id": 177,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0948684215545654,
+          "seed": "5238433717622294176"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.blaze.death",
+          "id": 176,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1018493175506592,
+          "seed": "-6249177144336473055"
+        }
+      ]
+    },
+    {
+      "kind": "bogged",
+      "hurt": [
+        {
+          "name": "minecraft:entity.bogged.hurt",
+          "id": 183,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.028235912322998,
+          "seed": "-7841926432101563614"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.bogged.death",
+          "id": 182,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8646787405014038,
+          "seed": "263206450196418275"
+        }
+      ]
+    },
+    {
+      "kind": "breeze",
+      "hurt": [
+        {
+          "name": "minecraft:entity.breeze.hurt",
+          "id": 208,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0373481512069702,
+          "seed": "9045652640074614625"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.breeze.death",
+          "id": 207,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9843344688415527,
+          "seed": "3187276012407439160"
+        }
+      ]
+    },
+    {
+      "kind": "camel",
+      "hurt": [
+        {
+          "name": "minecraft:entity.camel.hurt",
+          "id": 265,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.8819469213485718,
+          "seed": "5271332354608279199"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.camel.death",
+          "id": 263,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.9973422288894653,
+          "seed": "-2275500845151262037"
+        }
+      ]
+    },
+    {
+      "kind": "camel_husk",
+      "hurt": [
+        {
+          "name": "minecraft:entity.camel_husk.hurt",
+          "id": 254,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.0949959754943848,
+          "seed": "2397323778408904701"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.camel_husk.death",
+          "id": 252,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.982598602771759,
+          "seed": "-5386364695054858336"
+        }
+      ]
+    },
+    {
+      "kind": "cat",
+      "hurt": [
+        {
+          "name": "minecraft:entity.cat.hurt",
+          "id": 291,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9442267417907715,
+          "seed": "8613918900267829128"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.cat.death",
+          "id": 292,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8844460844993591,
+          "seed": "-7781380389294001463"
+        }
+      ]
+    },
+    {
+      "kind": "cave_spider",
+      "hurt": [
+        {
+          "name": "minecraft:entity.spider.hurt",
+          "id": 1584,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.095791220664978,
+          "seed": "-4848069224620110458"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.spider.death",
+          "id": 1583,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0382628440856934,
+          "seed": "685505455515356258"
+        }
+      ]
+    },
+    {
+      "kind": "chicken",
+      "hurt": [
+        {
+          "name": "minecraft:entity.chicken.hurt",
+          "id": 357,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9223007559776306,
+          "seed": "7850926175548592422"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.chicken.death",
+          "id": 358,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.144357442855835,
+          "seed": "-1792686076713778788"
+        }
+      ]
+    },
+    {
+      "kind": "cod",
+      "hurt": [
+        {
+          "name": "minecraft:entity.cod.hurt",
+          "id": 382,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0316706895828247,
+          "seed": "2673468488692383412"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.cod.death",
+          "id": 380,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.983376145362854,
+          "seed": "-2464570434230048099"
+        }
+      ]
+    },
+    {
+      "kind": "copper_golem",
+      "hurt": [
+        {
+          "name": "minecraft:entity.copper_golem.hurt",
+          "id": 414,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9735900163650513,
+          "seed": "1342120600012353996"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.copper_golem.death",
+          "id": 415,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9130698442459106,
+          "seed": "-4202525057412579678"
+        }
+      ]
+    },
+    {
+      "kind": "cow",
+      "hurt": [
+        {
+          "name": "minecraft:entity.cow.hurt",
+          "id": 451,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9624161124229431,
+          "seed": "-3913123726756761713"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.cow.death",
+          "id": 452,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9953998327255249,
+          "seed": "-6267907303612831517"
+        }
+      ]
+    },
+    {
+      "kind": "creaking",
+      "hurt": [
+        {
+          "name": "minecraft:entity.hostile.hurt",
+          "id": 877,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1113319396972656,
+          "seed": "381030539110929596"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.creaking.death",
+          "id": 464,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0078814029693604,
+          "seed": "7739054986968185193"
+        }
+      ]
+    },
+    {
+      "kind": "creeper",
+      "hurt": [
+        {
+          "name": "minecraft:entity.creeper.hurt",
+          "id": 480,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9705882668495178,
+          "seed": "-6251419425877773773"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.creeper.death",
+          "id": 479,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9827539920806885,
+          "seed": "-7522691520235489502"
+        }
+      ]
+    },
+    {
+      "kind": "dolphin",
+      "hurt": [
+        {
+          "name": "minecraft:entity.dolphin.hurt",
+          "id": 528,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.950551450252533,
+          "seed": "-4991769558796369174"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.dolphin.death",
+          "id": 526,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.900276243686676,
+          "seed": "-271224751477933615"
+        }
+      ]
+    },
+    {
+      "kind": "donkey",
+      "hurt": [
+        {
+          "name": "minecraft:entity.donkey.hurt",
+          "id": 538,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.8824277520179749,
+          "seed": "-3637711257896158727"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.donkey.death",
+          "id": 536,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.9645644426345825,
+          "seed": "255395604918513206"
+        }
+      ]
+    },
+    {
+      "kind": "drowned",
+      "hurt": [
+        {
+          "name": "minecraft:entity.drowned.hurt",
+          "id": 570,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1629152297973633,
+          "seed": "5650397975251130456"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.drowned.death",
+          "id": 568,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0140066146850586,
+          "seed": "7771498962290774343"
+        }
+      ]
+    },
+    {
+      "kind": "elder_guardian",
+      "hurt": [
+        {
+          "name": "minecraft:entity.elder_guardian.hurt_land",
+          "id": 584,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.124798059463501,
+          "seed": "-3931339157935556880"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.elder_guardian.death_land",
+          "id": 581,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0188490152359009,
+          "seed": "6665764255329320613"
+        }
+      ]
+    },
+    {
+      "kind": "enderman",
+      "hurt": [
+        {
+          "name": "minecraft:entity.enderman.hurt",
+          "id": 600,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.873289167881012,
+          "seed": "4200305353154188354"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.enderman.death",
+          "id": 599,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.019005537033081,
+          "seed": "-174054277706331363"
+        }
+      ]
+    },
+    {
+      "kind": "endermite",
+      "hurt": [
+        {
+          "name": "minecraft:entity.endermite.hurt",
+          "id": 606,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.857269823551178,
+          "seed": "3750670840642515991"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.endermite.death",
+          "id": 605,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.002124309539795,
+          "seed": "-165448623088763108"
+        }
+      ]
+    },
+    {
+      "kind": "ender_dragon",
+      "hurt": [
+        {
+          "name": "minecraft:entity.ender_dragon.ambient",
+          "id": 589,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 5.0,
+          "pitch": 1.1075496673583984,
+          "seed": "665568478187214588"
+        }
+      ],
+      "death": []
+    },
+    {
+      "kind": "evoker",
+      "hurt": [
+        {
+          "name": "minecraft:entity.evoker.hurt",
+          "id": 617,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0070679187774658,
+          "seed": "1835505854418045327"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.evoker.death",
+          "id": 615,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.976978063583374,
+          "seed": "5382124097852209762"
+        }
+      ]
+    },
+    {
+      "kind": "fox",
+      "hurt": [
+        {
+          "name": "minecraft:entity.fox.hurt",
+          "id": 657,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1332728862762451,
+          "seed": "5931289447108801312"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.fox.death",
+          "id": 655,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0011157989501953,
+          "seed": "8136043235323796724"
+        }
+      ]
+    },
+    {
+      "kind": "frog",
+      "hurt": [
+        {
+          "name": "minecraft:entity.frog.hurt",
+          "id": 687,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8617293238639832,
+          "seed": "-5261261396731274485"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.frog.death",
+          "id": 685,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0792279243469238,
+          "seed": "8892902035127393009"
+        }
+      ]
+    },
+    {
+      "kind": "ghast",
+      "hurt": [
+        {
+          "name": "minecraft:entity.ghast.hurt",
+          "id": 711,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 5.0,
+          "pitch": 0.8523082733154297,
+          "seed": "-7987817347029146958"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.ghast.death",
+          "id": 710,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 5.0,
+          "pitch": 0.9976810216903687,
+          "seed": "8086153736000368134"
+        }
+      ]
+    },
+    {
+      "kind": "happy_ghast",
+      "hurt": [
+        {
+          "name": "minecraft:entity.happy_ghast.hurt",
+          "id": 791,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 4.0,
+          "pitch": 1.0,
+          "seed": "-55548676708781270"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.happy_ghast.death",
+          "id": 790,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 4.0,
+          "pitch": 1.0,
+          "seed": "-8027919802361775667"
+        }
+      ]
+    },
+    {
+      "kind": "giant",
+      "hurt": [
+        {
+          "name": "minecraft:entity.hostile.hurt",
+          "id": 877,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.053507685661316,
+          "seed": "6645073825489253404"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.hostile.death",
+          "id": 876,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9129957556724548,
+          "seed": "-8654365042334003231"
+        }
+      ]
+    },
+    {
+      "kind": "glow_squid",
+      "hurt": [
+        {
+          "name": "minecraft:entity.glow_squid.hurt",
+          "id": 737,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.1245421171188354,
+          "seed": "-1385850623702893202"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.glow_squid.death",
+          "id": 736,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9664362072944641,
+          "seed": "-3807468842840187831"
+        }
+      ]
+    },
+    {
+      "kind": "goat",
+      "hurt": [
+        {
+          "name": "minecraft:entity.goat.hurt",
+          "id": 742,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0099493265151978,
+          "seed": "-7773748744659385088"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.goat.death",
+          "id": 740,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9693206548690796,
+          "seed": "-4929782824265896598"
+        }
+      ]
+    },
+    {
+      "kind": "guardian",
+      "hurt": [
+        {
+          "name": "minecraft:entity.guardian.hurt_land",
+          "id": 778,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1228162050247192,
+          "seed": "7711876569897687051"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.guardian.death_land",
+          "id": 775,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9876984357833862,
+          "seed": "-8646369553369221533"
+        }
+      ]
+    },
+    {
+      "kind": "hoglin",
+      "hurt": [
+        {
+          "name": "minecraft:entity.hoglin.hurt",
+          "id": 834,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0057967901229858,
+          "seed": "2800902184149324714"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.hoglin.death",
+          "id": 833,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0468145608901978,
+          "seed": "4263296559581294324"
+        }
+      ]
+    },
+    {
+      "kind": "horse",
+      "hurt": [
+        {
+          "name": "minecraft:entity.horse.hurt",
+          "id": 866,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.0938931703567505,
+          "seed": "1751143357013126918"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.horse.death",
+          "id": 861,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.1336405277252197,
+          "seed": "8066205253321091404"
+        }
+      ]
+    },
+    {
+      "kind": "husk",
+      "hurt": [
+        {
+          "name": "minecraft:entity.husk.hurt",
+          "id": 884,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0149047374725342,
+          "seed": "-5687930621945369302"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.husk.death",
+          "id": 883,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.951998233795166,
+          "seed": "-2667825128418106729"
+        }
+      ]
+    },
+    {
+      "kind": "illusioner",
+      "hurt": [
+        {
+          "name": "minecraft:entity.illusioner.hurt",
+          "id": 889,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1682085990905762,
+          "seed": "-4554882532245039942"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.illusioner.death",
+          "id": 888,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9912856817245483,
+          "seed": "-4043130430537670170"
+        }
+      ]
+    },
+    {
+      "kind": "iron_golem",
+      "hurt": [
+        {
+          "name": "minecraft:entity.iron_golem.hurt",
+          "id": 904,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0088194608688354,
+          "seed": "-8649179896832356359"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.iron_golem.death",
+          "id": 903,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9978451132774353,
+          "seed": "-1505890105982278787"
+        },
+        {
+          "name": "minecraft:entity.iron_golem.damage",
+          "id": 902,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0,
+          "seed": "7585691843325922744"
+        }
+      ]
+    },
+    {
+      "kind": "llama",
+      "hurt": [
+        {
+          "name": "minecraft:entity.llama.hurt",
+          "id": 948,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.9500858187675476,
+          "seed": "-9190327866192809023"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.llama.death",
+          "id": 946,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.1470777988433838,
+          "seed": "-7606203609928247383"
+        }
+      ]
+    },
+    {
+      "kind": "magma_cube",
+      "hurt": [
+        {
+          "name": "minecraft:entity.magma_cube.hurt_small",
+          "id": 968,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9455684423446655,
+          "seed": "-7659309814015299788"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.magma_cube.death_small",
+          "id": 953,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9743002653121948,
+          "seed": "7993476662097027642"
+        }
+      ]
+    },
+    {
+      "kind": "mooshroom",
+      "hurt": [
+        {
+          "name": "minecraft:entity.cow.hurt",
+          "id": 451,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.049182653427124,
+          "seed": "-7383722658200761668"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.cow.death",
+          "id": 452,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.857001781463623,
+          "seed": "-760052701201654294"
+        }
+      ]
+    },
+    {
+      "kind": "mule",
+      "hurt": [
+        {
+          "name": "minecraft:entity.mule.hurt",
+          "id": 1029,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.1580291986465454,
+          "seed": "8294587660393214979"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.mule.death",
+          "id": 1027,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.0067270994186401,
+          "seed": "6663218772392029738"
+        }
+      ]
+    },
+    {
+      "kind": "nautilus",
+      "hurt": [
+        {
+          "name": "minecraft:entity.nautilus.hurt_land",
+          "id": 1095,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1357074975967407,
+          "seed": "-5835438590690491536"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.nautilus.death_land",
+          "id": 1092,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9641444087028503,
+          "seed": "-5616528327957487379"
+        }
+      ]
+    },
+    {
+      "kind": "ocelot",
+      "hurt": [
+        {
+          "name": "minecraft:entity.ocelot.hurt",
+          "id": 1191,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0771515369415283,
+          "seed": "8366089935891193422"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.ocelot.death",
+          "id": 1193,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8978081345558167,
+          "seed": "6175005912037967221"
+        }
+      ]
+    },
+    {
+      "kind": "panda",
+      "hurt": [
+        {
+          "name": "minecraft:entity.panda.hurt",
+          "id": 1207,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.035409688949585,
+          "seed": "2571032242580320192"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.panda.death",
+          "id": 1201,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9038753509521484,
+          "seed": "-5391551769530872017"
+        }
+      ]
+    },
+    {
+      "kind": "parched",
+      "hurt": [
+        {
+          "name": "minecraft:entity.parched.hurt",
+          "id": 1211,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0648366212844849,
+          "seed": "3084314986361645765"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.parched.death",
+          "id": 1210,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9721498489379883,
+          "seed": "-7719042430243382707"
+        }
+      ]
+    },
+    {
+      "kind": "parrot",
+      "hurt": [
+        {
+          "name": "minecraft:entity.parrot.hurt",
+          "id": 1217,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9342575073242188,
+          "seed": "1111781690322077434"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.parrot.death",
+          "id": 1214,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9216673970222473,
+          "seed": "-7792555973452261953"
+        }
+      ]
+    },
+    {
+      "kind": "phantom",
+      "hurt": [
+        {
+          "name": "minecraft:entity.phantom.hurt",
+          "id": 1263,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0746731758117676,
+          "seed": "712583878178297196"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.phantom.death",
+          "id": 1261,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9759761095046997,
+          "seed": "-1514294642916414990"
+        }
+      ]
+    },
+    {
+      "kind": "pig",
+      "hurt": [
+        {
+          "name": "minecraft:entity.pig.hurt",
+          "id": 1273,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1071572303771973,
+          "seed": "-7926190767063681415"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.pig.death",
+          "id": 1274,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9995907545089722,
+          "seed": "1694955939241040884"
+        }
+      ]
+    },
+    {
+      "kind": "piglin",
+      "hurt": [
+        {
+          "name": "minecraft:entity.piglin.hurt",
+          "id": 1290,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9770403504371643,
+          "seed": "6774079917778529711"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.piglin.death",
+          "id": 1288,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9998712539672852,
+          "seed": "-1668224852559140502"
+        }
+      ]
+    },
+    {
+      "kind": "piglin_brute",
+      "hurt": [
+        {
+          "name": "minecraft:entity.piglin_brute.hurt",
+          "id": 1297,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9837388396263123,
+          "seed": "-2911513568888355938"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.piglin_brute.death",
+          "id": 1296,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9688464999198914,
+          "seed": "-5757265515553324901"
+        }
+      ]
+    },
+    {
+      "kind": "pillager",
+      "hurt": [
+        {
+          "name": "minecraft:entity.pillager.hurt",
+          "id": 1303,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0037946701049805,
+          "seed": "7402434157984392767"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.pillager.death",
+          "id": 1302,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.952036440372467,
+          "seed": "3241114445212711777"
+        }
+      ]
+    },
+    {
+      "kind": "polar_bear",
+      "hurt": [
+        {
+          "name": "minecraft:entity.polar_bear.hurt",
+          "id": 1330,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9243570566177368,
+          "seed": "4590617698346098697"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.polar_bear.death",
+          "id": 1329,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0687803030014038,
+          "seed": "4936588111565611170"
+        }
+      ]
+    },
+    {
+      "kind": "pufferfish",
+      "hurt": [
+        {
+          "name": "minecraft:entity.puffer_fish.hurt",
+          "id": 1350,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0727626085281372,
+          "seed": "-7663970942590882965"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.puffer_fish.death",
+          "id": 1348,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8437634110450745,
+          "seed": "-3849604439820930153"
+        }
+      ]
+    },
+    {
+      "kind": "rabbit",
+      "hurt": [
+        {
+          "name": "minecraft:entity.rabbit.hurt",
+          "id": 1356,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8549438118934631,
+          "seed": "2872643380837010765"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.rabbit.death",
+          "id": 1355,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9504561424255371,
+          "seed": "2262002839276758941"
+        }
+      ]
+    },
+    {
+      "kind": "ravager",
+      "hurt": [
+        {
+          "name": "minecraft:entity.ravager.hurt",
+          "id": 1363,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9006944298744202,
+          "seed": "-2354390520031088898"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.ravager.death",
+          "id": 1362,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9136037230491638,
+          "seed": "-4638147516682585432"
+        }
+      ]
+    },
+    {
+      "kind": "salmon",
+      "hurt": [
+        {
+          "name": "minecraft:entity.salmon.hurt",
+          "id": 1399,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.945673942565918,
+          "seed": "2116949672016059547"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.salmon.death",
+          "id": 1397,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9554337859153748,
+          "seed": "7853644302034933879"
+        }
+      ]
+    },
+    {
+      "kind": "sheep",
+      "hurt": [
+        {
+          "name": "minecraft:entity.sheep.hurt",
+          "id": 1444,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.008908748626709,
+          "seed": "-165617159470915696"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.sheep.death",
+          "id": 1443,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.083012342453003,
+          "seed": "1109188601516318899"
+        }
+      ]
+    },
+    {
+      "kind": "shulker",
+      "hurt": [
+        {
+          "name": "minecraft:entity.shulker.hurt_closed",
+          "id": 1475,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0057179927825928,
+          "seed": "5913103260533474191"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.shulker.death",
+          "id": 1473,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.908332109451294,
+          "seed": "-9075196573240341091"
+        }
+      ]
+    },
+    {
+      "kind": "silverfish",
+      "hurt": [
+        {
+          "name": "minecraft:entity.silverfish.hurt",
+          "id": 1481,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0228172540664673,
+          "seed": "-8499078527937317419"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.silverfish.death",
+          "id": 1480,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8480112552642822,
+          "seed": "-4063514145128785625"
+        }
+      ]
+    },
+    {
+      "kind": "skeleton",
+      "hurt": [
+        {
+          "name": "minecraft:entity.skeleton.hurt",
+          "id": 1494,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8508650064468384,
+          "seed": "-5281034883724810995"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.skeleton.death",
+          "id": 1485,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9867719411849976,
+          "seed": "-2931302663698939203"
+        }
+      ]
+    },
+    {
+      "kind": "skeleton_horse",
+      "hurt": [
+        {
+          "name": "minecraft:entity.skeleton_horse.hurt",
+          "id": 1488,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.023010492324829,
+          "seed": "-4683534190876973891"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.skeleton_horse.death",
+          "id": 1487,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.1376124620437622,
+          "seed": "1807503826386264545"
+        }
+      ]
+    },
+    {
+      "kind": "slime",
+      "hurt": [
+        {
+          "name": "minecraft:entity.slime.hurt_small",
+          "id": 1551,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9766771197319031,
+          "seed": "6824154696704234498"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.slime.death_small",
+          "id": 1550,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.8640058636665344,
+          "seed": "-277481430467129866"
+        }
+      ]
+    },
+    {
+      "kind": "sniffer",
+      "hurt": [
+        {
+          "name": "minecraft:entity.sniffer.hurt",
+          "id": 1559,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8884649872779846,
+          "seed": "-5339987822589854848"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.sniffer.death",
+          "id": 1560,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.18728506565094,
+          "seed": "9132138112621670235"
+        }
+      ]
+    },
+    {
+      "kind": "snow_golem",
+      "hurt": [
+        {
+          "name": "minecraft:entity.snow_golem.hurt",
+          "id": 1576,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1275373697280884,
+          "seed": "-6359365275101817197"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.snow_golem.death",
+          "id": 1575,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1498161554336548,
+          "seed": "-1462770095612113477"
+        }
+      ]
+    },
+    {
+      "kind": "spider",
+      "hurt": [
+        {
+          "name": "minecraft:entity.spider.hurt",
+          "id": 1584,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0649657249450684,
+          "seed": "-2333292552906785847"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.spider.death",
+          "id": 1583,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9633815288543701,
+          "seed": "3601272108304609186"
+        }
+      ]
+    },
+    {
+      "kind": "squid",
+      "hurt": [
+        {
+          "name": "minecraft:entity.squid.hurt",
+          "id": 1598,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.065375566482544,
+          "seed": "-4348146694482257772"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.squid.death",
+          "id": 1597,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.0558795928955078,
+          "seed": "1842236795560288084"
+        }
+      ]
+    },
+    {
+      "kind": "stray",
+      "hurt": [
+        {
+          "name": "minecraft:entity.stray.hurt",
+          "id": 1611,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.091085433959961,
+          "seed": "-2252054935962438597"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.stray.death",
+          "id": 1610,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1882259845733643,
+          "seed": "3599736534764169434"
+        }
+      ]
+    },
+    {
+      "kind": "strider",
+      "hurt": [
+        {
+          "name": "minecraft:entity.strider.hurt",
+          "id": 1545,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0689703226089478,
+          "seed": "-4612531373440785060"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.strider.death",
+          "id": 1544,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9327573180198669,
+          "seed": "-1360382929206416662"
+        }
+      ]
+    },
+    {
+      "kind": "sulfur_cube",
+      "hurt": [
+        {
+          "name": "minecraft:entity.small_sulfur_cube.hurt",
+          "id": 1968,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9600704312324524,
+          "seed": "4990358694062269898"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.small_sulfur_cube.death",
+          "id": 1967,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 0.9978015422821045,
+          "seed": "-7205292208846315964"
+        }
+      ]
+    },
+    {
+      "kind": "tadpole",
+      "hurt": [
+        {
+          "name": "minecraft:entity.tadpole.hurt",
+          "id": 1625,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9028444290161133,
+          "seed": "-6111407834889234466"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.tadpole.death",
+          "id": 1622,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9602546095848083,
+          "seed": "1429546895315107328"
+        }
+      ]
+    },
+    {
+      "kind": "trader_llama",
+      "hurt": [
+        {
+          "name": "minecraft:entity.llama.hurt",
+          "id": 948,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.9551922082901001,
+          "seed": "-3101888320677925969"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.llama.death",
+          "id": 946,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.0346189737319946,
+          "seed": "-5895036065149842737"
+        }
+      ]
+    },
+    {
+      "kind": "tropical_fish",
+      "hurt": [
+        {
+          "name": "minecraft:entity.tropical_fish.hurt",
+          "id": 1644,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9696342945098877,
+          "seed": "-4939158988353179756"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.tropical_fish.death",
+          "id": 1642,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1308404207229614,
+          "seed": "1181374869819887895"
+        }
+      ]
+    },
+    {
+      "kind": "turtle",
+      "hurt": [
+        {
+          "name": "minecraft:entity.turtle.hurt",
+          "id": 1666,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0678162574768066,
+          "seed": "-1475518450700895384"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.turtle.death",
+          "id": 1661,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0715196132659912,
+          "seed": "635920046679778452"
+        }
+      ]
+    },
+    {
+      "kind": "vex",
+      "hurt": [
+        {
+          "name": "minecraft:entity.vex.hurt",
+          "id": 1698,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9681088924407959,
+          "seed": "-6339272511124883348"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.vex.death",
+          "id": 1697,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9680311679840088,
+          "seed": "-1982157498710662449"
+        }
+      ]
+    },
+    {
+      "kind": "villager",
+      "hurt": [
+        {
+          "name": "minecraft:entity.villager.hurt",
+          "id": 1702,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0063269138336182,
+          "seed": "5376642217316241020"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.villager.death",
+          "id": 1701,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1379680633544922,
+          "seed": "692581928640359428"
+        }
+      ]
+    },
+    {
+      "kind": "vindicator",
+      "hurt": [
+        {
+          "name": "minecraft:entity.vindicator.hurt",
+          "id": 1722,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0005934238433838,
+          "seed": "565077214819621201"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.vindicator.death",
+          "id": 1721,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9943743348121643,
+          "seed": "-2465096887574271125"
+        }
+      ]
+    },
+    {
+      "kind": "wandering_trader",
+      "hurt": [
+        {
+          "name": "minecraft:entity.wandering_trader.hurt",
+          "id": 1734,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0305856466293335,
+          "seed": "-6490609300832763143"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.wandering_trader.death",
+          "id": 1730,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1104259490966797,
+          "seed": "-116673154419996137"
+        }
+      ]
+    },
+    {
+      "kind": "warden",
+      "hurt": [
+        {
+          "name": "minecraft:entity.warden.hurt",
+          "id": 1747,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 4.0,
+          "pitch": 0.9770320057868958,
+          "seed": "-294317631620608484"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.warden.death",
+          "id": 1743,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 4.0,
+          "pitch": 1.0177664756774902,
+          "seed": "-5885099477285821545"
+        }
+      ]
+    },
+    {
+      "kind": "witch",
+      "hurt": [
+        {
+          "name": "minecraft:entity.witch.hurt",
+          "id": 1782,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0583375692367554,
+          "seed": "-5197348177179003087"
+        },
+        {
+          "name": "minecraft:entity.witch.drink",
+          "id": 1781,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8576305508613586,
+          "seed": "6055798618071630023"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.witch.death",
+          "id": 1780,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1220473051071167,
+          "seed": "7993891832180811584"
+        }
+      ]
+    },
+    {
+      "kind": "wither",
+      "hurt": [
+        {
+          "name": "minecraft:entity.wither.hurt",
+          "id": 1787,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9934931397438049,
+          "seed": "-5004695748985205908"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.wither.death",
+          "id": 1786,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0396363735198975,
+          "seed": "-6896676359810897777"
+        }
+      ]
+    },
+    {
+      "kind": "wither_skeleton",
+      "hurt": [
+        {
+          "name": "minecraft:entity.wither_skeleton.hurt",
+          "id": 1791,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9323237538337708,
+          "seed": "8772518989531329971"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.wither_skeleton.death",
+          "id": 1790,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.15126371383667,
+          "seed": "8233231755030611238"
+        }
+      ]
+    },
+    {
+      "kind": "wolf",
+      "hurt": [
+        {
+          "name": "minecraft:entity.wolf.hurt",
+          "id": 1810,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.0367486476898193,
+          "seed": "-3941819421229890097"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.wolf.death",
+          "id": 1808,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.4000000059604645,
+          "pitch": 1.094987392425537,
+          "seed": "8463413208780601901"
+        }
+      ]
+    },
+    {
+      "kind": "zoglin",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zoglin.hurt",
+          "id": 1871,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.005639672279358,
+          "seed": "-4099321417938168846"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zoglin.death",
+          "id": 1870,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0259300470352173,
+          "seed": "-3479896471957575160"
+        }
+      ]
+    },
+    {
+      "kind": "zombie",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zombie.hurt",
+          "id": 1885,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1306225061416626,
+          "seed": "-6255137618582670213"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zombie.death",
+          "id": 1878,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.9890903830528259,
+          "seed": "2958719229490041648"
+        }
+      ]
+    },
+    {
+      "kind": "zombie_horse",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zombie_horse.hurt",
+          "id": 1884,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 0.9208272695541382,
+          "seed": "661071663831526228"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zombie_horse.death",
+          "id": 1882,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 0.800000011920929,
+          "pitch": 1.0877914428710938,
+          "seed": "-8197584560523412690"
+        }
+      ]
+    },
+    {
+      "kind": "zombie_nautilus",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zombie_nautilus.hurt_land",
+          "id": 1897,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8673899173736572,
+          "seed": "64635182659171022"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zombie_nautilus.death_land",
+          "id": 1894,
+          "category": 6,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 0.8579001426696777,
+          "seed": "-7599964316683607024"
+        }
+      ]
+    },
+    {
+      "kind": "zombie_villager",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zombie_villager.hurt",
+          "id": 1908,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.1150503158569336,
+          "seed": "9212393098041715822"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zombie_villager.death",
+          "id": 1907,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.058436632156372,
+          "seed": "-8777778067842637908"
+        }
+      ]
+    },
+    {
+      "kind": "zombified_piglin",
+      "hurt": [
+        {
+          "name": "minecraft:entity.zombified_piglin.hurt",
+          "id": 1902,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.0544146299362183,
+          "seed": "-5542090736314167029"
+        }
+      ],
+      "death": [
+        {
+          "name": "minecraft:entity.zombified_piglin.death",
+          "id": 1901,
+          "category": 5,
+          "position": [
+            20,
+            512,
+            4
+          ],
+          "volume": 1.0,
+          "pitch": 1.003138542175293,
+          "seed": "-8311026343622305467"
+        }
+      ]
+    }
+  ]
+}
