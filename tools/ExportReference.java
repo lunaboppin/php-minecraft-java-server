@@ -113,7 +113,10 @@ public class ExportReference {
         var mobs=new JsonObject();var mobTypes=new JsonObject();var eggs=new JsonObject();var attributeIds=new JsonObject();var syncAttributes=new JsonArray();
         for(var attribute:BuiltInRegistries.ATTRIBUTE){var name=BuiltInRegistries.ATTRIBUTE.getKey(attribute).getPath();attributeIds.addProperty(name,BuiltInRegistries.ATTRIBUTE.getId(attribute));if(attribute.isClientSyncable())syncAttributes.add(name);}
         for(var type:BuiltInRegistries.ENTITY_TYPE){
-            var info=new JsonObject();info.addProperty("id",BuiltInRegistries.ENTITY_TYPE.getId(type));info.addProperty("width",type.getWidth());info.addProperty("height",type.getHeight());info.addProperty("eye_height",type.getDimensions().eyeHeight());
+            var info=new JsonObject();info.addProperty("id",BuiltInRegistries.ENTITY_TYPE.getId(type));
+            // Entity dimensions are floats widened to doubles during collision.
+            // Retain those exact values rather than shortening them to decimals.
+            info.addProperty("width",(double)type.getWidth());info.addProperty("height",(double)type.getHeight());info.addProperty("eye_height",(double)type.getDimensions().eyeHeight());
             info.addProperty("category",type.getCategory().getName());info.addProperty("fire_immune",type.fireImmune());info.addProperty("summonable",type.canSummon());
             info.addProperty("peaceful",type.isAllowedInPeaceful());info.addProperty("enabled",type.isEnabled(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
             var stats=new JsonObject();
