@@ -200,6 +200,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/mob-combat.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/mob-knockback.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/mob-sounds.py'), $code);
 if ($code !== 0) {
     exit($code);

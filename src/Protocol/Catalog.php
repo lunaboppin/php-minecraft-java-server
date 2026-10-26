@@ -15,6 +15,8 @@ final class Catalog
 
     public readonly array $combat;
 
+    public readonly array $movement;
+
     public readonly array $mobSounds;
 
     public readonly array $collision;
@@ -46,6 +48,7 @@ final class Catalog
         $this->tracking = json_decode(file_get_contents($directory . '/tracking.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->mobs = json_decode(file_get_contents($directory . '/mobs.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->combat = json_decode(file_get_contents($directory . '/combat.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->movement = json_decode(file_get_contents($directory . '/movement.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->mobSounds = json_decode(file_get_contents($directory . '/mob-sounds.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->collision = json_decode(file_get_contents($directory . '/collision.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->entityMetadata = $data['entity_metadata'];
@@ -58,7 +61,7 @@ final class Catalog
             $this->itemNames[$item['id']] = $name;
         }
         foreach ($this->blocks as $name => $block) {
-            for ($i = $block['first'],$end = $i + $block['count'];$i < $end;++$i) {
+            for ($i = $block['first'],$end = $i + $block['count']; $i < $end; ++$i) {
                 $this->stateNames[$i] = $name;
             }
         }

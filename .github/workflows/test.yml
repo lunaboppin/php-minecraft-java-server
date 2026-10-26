@@ -213,11 +213,15 @@ jobs:
           php tests/mob-physics-unit.php
           php tests/mob-motion-unit.php
           python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
+          python3 tests/mob-knockback.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/knockback-java
+          python3 tools/parity/verify.py tools/.cache/knockback-java/php-packets.json tools/.cache/knockback-java/java-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: movement-parity-evidence
-          path: tools/.cache/motion-java/
+          path: |
+            tools/.cache/motion-java/
+            tools/.cache/knockback-java/
           retention-days: 7
 
   docker:

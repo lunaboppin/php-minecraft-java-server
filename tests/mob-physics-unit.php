@@ -20,6 +20,7 @@ $mobPhysicsReference = json_decode(
     JSON_THROW_ON_ERROR
 );
 $mobPhysicsChecks = 0;
+$physicsVersion = new Version();
 
 foreach ($mobPhysicsReference['vectors'] as $sample) {
     $vector = array_map(
@@ -43,6 +44,14 @@ foreach ($mobPhysicsReference['vectors'] as $sample) {
 
     if (bin2hex(Packets::entityMotion(17, ...$vector)) !== $sample['motion_hex']) {
         throw new RuntimeException('Official entity-motion packet bytes differ');
+    }
+    ++$mobPhysicsChecks;
+    if (bin2hex(Packets::teleportEntity(17, 0.5, 64.0, 0.5, 22.5, -45.0, true, $vector)) !== $sample['teleport_hex']) {
+        throw new RuntimeException('Official velocity-bearing entity teleport bytes differ');
+    }
+    ++$mobPhysicsChecks;
+    if (bin2hex(Packets::addPlayer(17, hex2bin('000102030405060708090a0b0c0d0e0f'), $physicsVersion->catalog->mobs['entities']['giant']['id'], 0.5, 64.0, 0.5, 22.5, -45.0, $vector)) !== $sample['spawn_hex']) {
+        throw new RuntimeException('Official velocity-bearing entity spawn bytes differ');
     }
     ++$mobPhysicsChecks;
 }
@@ -117,7 +126,6 @@ foreach ($mobPhysicsReference['speeds'] as $sample) {
     ++$mobPhysicsChecks;
 }
 
-$physicsVersion = new Version();
 foreach ($mobPhysicsReference['bounds'] as $sample) {
     $position = $readPhysicsVector($sample['position_bits']);
     $definition = $physicsVersion->catalog->mobs['entities'][$sample['kind']];

@@ -46,7 +46,7 @@ trait Animals
             foreach (['x', 'y', 'z', 'yaw'] as $field) {
                 $animal[$field] = (float) $animal[$field];
             }
-            unset($animal['lastHurtTick'],$animal['lastHurtAmount']);
+            unset($animal['lastHurtTick'], $animal['lastHurtAmount'], $animal['needsSync'], $animal['syncVelocity'], $animal['syncPosition']);
             $animal['equipment'] ??= $this->mobEquipment($animal['kind']);
             if (isset($this->version->catalog->mobSounds['mobs'][$animal['kind']]['variants'])) {
                 $animal['soundVariant'] ??= 'minecraft:classic';
@@ -112,7 +112,7 @@ trait Animals
         if (isset($c->entities[$id]) || !$this->tracksPosition($c, $animal['x'], $animal['z'], $animal['kind'])) {
             return;
         }
-        $c->send($this->version, 'add_entity', Packets::addPlayer($id, hex2bin($animal['uuid']), $this->version->blocks['entity_types'][$animal['kind']], $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0));
+        $c->send($this->version, 'add_entity', Packets::addPlayer($id, hex2bin($animal['uuid']), $this->version->blocks['entity_types'][$animal['kind']], $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0, $animal['velocity'] ?? [0.0, 0.0, 0.0]));
         $c->entities[$id] = true;
         $c->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $animal['health']));
         if (isset($animal['soundVariant'])) {
@@ -127,7 +127,7 @@ trait Animals
 
     private function removeAnimal(int $id): void
     {
-        unset($this->mobSoundRandom[$id]);
+        unset($this->mobRandomSources[$id], $this->mobLastSent[$id], $this->mobTrackingTicks[$id], $this->mobLastSentVelocity[$id]);
         unset($this->animals[$id]);
         foreach ($this->localPlayers() as $p) {
             if (isset($p->entities[$id])) {
@@ -169,6 +169,7 @@ trait Animals
         $applied = Combat::afterArmor($incoming, $attributes['armor'] ?? 0, $attributes['armor_toughness'] ?? 0);
         $animal['health'] = max(0.0, Float32::round($animal['health'] - $applied));
         if ($newWindow) {
+            $this->knockbackMob($animal, $c);
             $this->mobDamageSound($animal, $animal['health'] <= 0);
         }
         foreach ($this->localPlayers() as $p) {
@@ -215,9 +216,6 @@ trait Animals
 
     private function tickAnimals(): void
     {
-        if ($this->ticks % 4 !== 0) {
-            return;
-        }
         $noise = new Noise($this->world->seed);
         foreach ($this->animals as $id => &$animal) {
             if (isset($animal['deadAt'])) {
@@ -228,7 +226,9 @@ trait Animals
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {
-                $this->showAnimal($p, $animal);
+                if ($this->ticks % 4 === 0) {
+                    $this->showAnimal($p, $animal);
+                }
                 if (($p->x - $animal['x']) ** 2 + ($p->z - $animal['z']) ** 2 < 80 ** 2) {
                     $near = true;
                 }

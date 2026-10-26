@@ -11,7 +11,7 @@ use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 /** Default adult primary damage voices. Special states and ambient/step sounds remain in #88. */
 trait MobSounds
 {
-    private array $mobSoundRandom = [];
+    use MobRandomness;
 
     private array $mobVariantRandom = [];
 
@@ -34,7 +34,7 @@ trait MobSounds
         if ($sound === null) {
             return;
         }
-        $random = $this->mobSoundRandom[$mob['id']] ??= new LegacyRandom(unpack('J', random_bytes(8))[1]);
+        $random = $this->mobRandom($mob['id']);
         $pitch = MobAudio::pitch($random, $info['pitch_method'], $mob['baby'] ?? false);
         $radius = MobAudio::range($sound, $info['volume']);
         $payload = Packets::sound(

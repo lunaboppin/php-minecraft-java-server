@@ -120,9 +120,9 @@ final class Packets
             . chr($meta['flags_index']) . Binary::writeVarInt($meta['byte_serializer']) . chr($flags) . "\xff";
     }
 
-    public static function moveRotation(float $x, float $y, float $z, float $yaw, float $pitch): string
+    public static function moveRotation(float $x, float $y, float $z, float $yaw, float $pitch, array $velocity = [0.0, 0.0, 0.0]): string
     {
-        return pack('EEEEEEGG', $x, $y, $z, 0, 0, 0, $yaw, $pitch);
+        return pack('EEEEEEGG', $x, $y, $z, ...[...$velocity, $yaw, $pitch]);
     }
 
     public static function position(int $teleportId, float $x, float $y, float $z, float $yaw = 0, float $pitch = 0): string
@@ -212,15 +212,15 @@ final class Packets
         return Binary::writeVarInt($entityId) . chr(((int) floor(fmod($yaw, 360) * 256 / 360)) & 255);
     }
 
-    public static function teleportEntity(int $id, float $x, float $y, float $z, float $yaw, float $pitch, bool $ground): string
+    public static function teleportEntity(int $id, float $x, float $y, float $z, float $yaw, float $pitch, bool $ground, array $velocity = [0.0, 0.0, 0.0]): string
     {
-        return Binary::writeVarInt($id) . self::moveRotation($x, $y, $z, $yaw, $pitch) . pack('N', 0) . chr((int) $ground);
+        return Binary::writeVarInt($id) . self::moveRotation($x, $y, $z, $yaw, $pitch, $velocity) . pack('N', 0) . chr((int) $ground);
     }
 
-    public static function addPlayer(int $id, string $uuid, int $typeId, float $x, float $y, float $z, float $yaw, float $pitch): string
+    public static function addPlayer(int $id, string $uuid, int $typeId, float $x, float $y, float $z, float $yaw, float $pitch, array $velocity = [0.0, 0.0, 0.0]): string
     {
         return Binary::writeVarInt($id) . $uuid . Binary::writeVarInt($typeId) . pack('EEE', $x, $y, $z)
-            . "\0" . chr(((int) floor($pitch * 256 / 360)) & 255) . chr(((int) floor($yaw * 256 / 360)) & 255)
+            . LowPrecisionVector::encode(...$velocity) . chr(((int) floor($pitch * 256 / 360)) & 255) . chr(((int) floor($yaw * 256 / 360)) & 255)
             . chr(((int) floor($yaw * 256 / 360)) & 255) . "\0";
     }
 }
