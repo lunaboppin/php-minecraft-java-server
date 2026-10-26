@@ -4,9 +4,14 @@
     "Compare named semantic checkpoints after a causal game-clock barrier rather than wall-clock packet ordering; full bidirectional traces are retained.",
     "Exclude generated session/entity IDs, command feedback text and clocks from these explicit checkpoints; do not normalize inventory, blocks, mode, health or dimension.",
     "Use a flat test world with bedrock at Y=60, two dirt layers and grass at Y=63 on both servers.",
-    "Treat an absent item damage component and explicit zero damage as equivalent."
+    "Treat an absent item damage component and explicit zero damage as equivalent.",
+    "Disable natural spawning with the official spawn_mobs gamerule before scripted actions so this scenario compares only the deliberately summoned cow. Retain every unexpected entity in the observations."
   ],
   "steps": [
+    {
+      "action": "command",
+      "text": "gamerule minecraft:spawn_mobs false"
+    },
     {
       "action": "command",
       "text": "tp @s 0.5 64 0.5"
