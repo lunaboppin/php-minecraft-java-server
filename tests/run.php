@@ -113,6 +113,7 @@ require __DIR__.'/world.php';
 require __DIR__.'/collision.php';
 require __DIR__.'/dimensions-unit.php';
 require __DIR__.'/logging.php';
+require __DIR__.'/restart-notice.php';
 require __DIR__.'/authentication.php';
 require __DIR__.'/worldgen-noise.php';
 if (in_array('--unit', $argv,true)) {exit(0);}

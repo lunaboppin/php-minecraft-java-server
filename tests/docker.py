@@ -43,8 +43,12 @@ def main():
             try:
                 c.refresh_inventory();assert c.inventory[36]['item']==wire.BLOCKS['items']['diamond'] and c.inventory[36]['count']==3
                 assert c.block([1,64,1])==wire.BLOCKS['states']['diamond_block']
+                message='Server restarting: mob damage and sound fixes added. Please reconnect shortly.'
+                notice=path/'restart-reason.txt';notice.write_text(message+'\n')
                 docker('stop','--time','45',name)
-                reason=c.until('disconnect');assert b'Server restarting. Please reconnect shortly.' in reason,reason
+                reason=c.until('disconnect');assert message.encode() in reason,reason
+                assert not notice.exists(),'restart notice was not consumed'
+                assert not list(path.glob('restart-reason.txt.consuming-*')),'claimed notice was not cleaned up'
             finally:c.close()
             assert cfg.read_bytes()==before,'configuration overwritten'
             assert 'Server stopped' in docker('logs',name)

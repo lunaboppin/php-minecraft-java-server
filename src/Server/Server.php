@@ -89,9 +89,10 @@ final class Server
                 if ($now >= $nextTick) { $this->tick($now); ++$this->ticks; $nextTick = max($nextTick+0.05,$now); }
             }
         } finally {
+            $restartReason=RestartNotice::consume($this->config->worldPath);
             foreach ($this->clients as $client) {
                 if($client->state==='play'){$this->closeWindow($client);$this->savePlayer($client);$this->log($client->name.' disconnected (server shutdown)');}
-                $this->disconnect($client,'Server restarting. Please reconnect shortly.');
+                $this->disconnect($client,$restartReason);
             }
             // Drain queued frames and the restart reason before closing healthy connections.
             $deadline=self::now()+2;
