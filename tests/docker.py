@@ -43,6 +43,10 @@ def main():
             try:
                 c.refresh_inventory();assert c.inventory[36]['item']==wire.BLOCKS['items']['diamond'] and c.inventory[36]['count']==3
                 assert c.block([1,64,1])==wire.BLOCKS['states']['diamond_block']
+                update='Development update: improving mob movement, damage reactions and sounds.'
+                announcement=path/'server-announcement.txt';announcement.write_text(update+'\n')
+                c.until('system_chat',lambda payload:update.encode() in payload)
+                assert not announcement.exists(),'announcement not consumed'
                 message='Server restarting: mob damage and sound fixes added. Please reconnect shortly.'
                 notice=path/'restart-reason.txt';notice.write_text(message+'\n')
                 docker('stop','--time','45',name)

@@ -175,6 +175,8 @@ PUID=$(id -u) PGID=$(id -g) docker compose up -d --build
 docker compose logs -f
 ```
 
+For occasional development chat updates, write a short public overview to `server-announcement.txt` beside the primary world database. The running server broadcasts and logs it once when players are present. Repeated identical messages are suppressed and new updates are limited to one every five minutes; the latest pending message waits through the cooldown. Only human-written public summaries belong here—do not copy logs, account details or infrastructure information into chat.
+
 Before a deployment restart, write the full player-facing reason to `restart-reason.txt` beside the primary world database (normally `data/restart-reason.txt`). The running process reads it during shutdown, sends it in the disconnect packet, and consumes it once. For example: `Server restarting: mob damage fixes added. Please reconnect shortly.` UTF-8 messages up to 1024 bytes are accepted; missing or malformed files use the generic restart message. This works with Docker Stop/SIGTERM without a preliminary configuration reload.
 
 Connect on TCP **25676**. The container runs as your configured non-root UID/GID, uses PHP **8.5.12** with graceful signal handling, and checks health through the Minecraft status protocol. `data/server.json` is created only when absent. Worlds, configuration and 90-day logs live in the bind-mounted `data/` directory. Set `MINECRAFT_OPERATORS` and, if needed, `MINECRAFT_ONLINE_MODE=true|false` before the first start, or edit `data/server.json` and restart. Existing configuration is preserved. `SERVER_PORT` changes the published host port; the container listens on 25676.

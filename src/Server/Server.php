@@ -16,8 +16,10 @@ final class Server
     private array $pendingLight=[];
     private World $world;
     private readonly DailyLog $logger;
+    private readonly Announcements $announcements;
     public function __construct(private readonly Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
         $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
+        $this->announcements=new Announcements($config->worldPath);
         $this->initializeAuthentication($sessions);
         $this->world = new World($version,$config->worldPath,$config->generator,$config->seed);
         $this->worlds['overworld']=$this->world;
@@ -479,6 +481,7 @@ final class Server
         foreach ($this->players() as $player) { $player->send($this->version,'system_chat',Packets::chat($message)); }
     }
     private function tick(float $now): void {
+        if(($announcement=$this->announcements->poll($this->players()!==[]))!==null){$this->broadcast($announcement);}
         ++$this->worldAge;if($this->daylightCycle){++$this->dayTime;}
         $this->tickDimensions();
         if($this->ticks%200===0){$this->saveWorld();}
