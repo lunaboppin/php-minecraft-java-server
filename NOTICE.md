@@ -6,3 +6,10 @@ Official version metadata: https://piston-meta.mojang.com/v1/packages/61fff1316b
 Requested protocol reference: https://minecraft.wiki/w/Protocol?oldid=2772350
 
 The historical wiki revision was inaccessible and was not copied into this implementation. The reference-export tooling is original integration code that invokes public APIs in the checksum-pinned official distribution.
+
+The logarithm implementation in src/World/Generation/StableMath.php is adapted from fdlibm e_log.c (https://netlib.org/fdlibm/e_log.c), with this permission notice:
+
+Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+Developed at SunSoft, a Sun Microsystems, Inc. business.
+Permission to use, copy, modify, and distribute this software is freely
+granted, provided that this notice is preserved.
