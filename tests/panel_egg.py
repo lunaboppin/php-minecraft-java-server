@@ -77,7 +77,7 @@ def container():
         def start(port=25676):
             args=['docker','run','--detach','--user',f'{uid}:{gid}','--memory','1536m',
                   '--volume',f'{server}:/home/container','--publish',f'127.0.0.1::{port}',
-                  '--env',f'STARTUP={egg["startup"]}','--env',f'SERVER_PORT={port}',image]
+                  '--env',f'STARTUP={egg["startup"]}','--env',f'SERVER_PORT={port}','--env','SERVER_MEMORY=1536',image]
             name=subprocess.check_output(args,text=True).strip()
             for _ in range(100):
                 logs=subprocess.check_output(['docker','logs',name],text=True,stderr=subprocess.STDOUT)
@@ -86,6 +86,7 @@ def container():
                     raise AssertionError(logs)
                 time.sleep(.1)
             else:raise AssertionError('Runtime startup timed out: '+logs)
+            assert 'PHP memory limit: 1152M' in logs,logs
             mapping=json.loads(subprocess.check_output(['docker','inspect',name],text=True))[0]['NetworkSettings']['Ports']
             return name,int(mapping[f'{port}/tcp'][0]['HostPort'])
         def stop(name):
