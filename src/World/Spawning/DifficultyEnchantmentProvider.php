@@ -26,7 +26,14 @@ final class DifficultyEnchantmentProvider
         $cost = $provider['min_cost'] + $random->nextInt($span + 1);
         $component = $item['stored_book'] ? 'storedEnchantments' : 'enchantments';
         $enchantments = $stack[$component] ?? [];
-        foreach (EnchantmentSelection::select($random, $item, $cost, $provider['pool'], $reference) as $selected) {
+        $selectedEnchantments = EnchantmentSelection::select(
+            $random,
+            $item,
+            $cost,
+            $provider['pool'],
+            $reference
+        );
+        foreach ($selectedEnchantments as $selected) {
             $name = $selected['name'];
             $enchantments[$name] = max($enchantments[$name] ?? 0, min(255, $selected['level']));
         }

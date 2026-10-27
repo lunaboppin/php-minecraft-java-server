@@ -27,7 +27,14 @@ final class MobEquipmentEnchanting
             $chance = Float32::round(Float32::round($entry['chance']) * $special);
             if ($random->nextFloat() < $chance) {
                 $metadata = $metadataBySlot[$slot] ?? throw new \InvalidArgumentException('Missing current item component metadata');
-                DifficultyEnchantmentProvider::apply($equipment[$slot], $metadata, $reference['provider'], $random, $special, $reference);
+                DifficultyEnchantmentProvider::apply(
+                    $equipment[$slot],
+                    $metadata,
+                    $reference['provider'],
+                    $random,
+                    $special,
+                    $reference
+                );
             }
         }
     }

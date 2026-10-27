@@ -27,6 +27,7 @@ php tests/spawn-initialization-unit.php
 php tests/spawn-groups-unit.php
 php tests/spawn-equipment-unit.php
 php tests/spawn-enchanting-unit.php
+php tests/enchantment-component-unit.php
 JAVA_HOME=/path/to/jdk25 python3 tools/update_reference.py
 ```
 
@@ -45,6 +46,10 @@ Another 624 scripted native calls exercise all armor tiers, all weapon branches 
 `ExportEnchanting.java` loads the actual vanilla data packs and invokes native candidate selection, weighted selection, difficulty providers and virtual mob enchanting methods. Its fixture covers 100 item/component variants, 17,202 cost-boundary candidate cases, 32,400 seeded selections, 9,600 provider contexts and 3,456 mob equipment contexts. Provider and mob contexts each retain two consecutive calls. Tests check exact RNG tails, existing high-level enchantments, missing enchantability/storage components, empty pools, signed integer cost boundaries and all six supported mob classes.
 
 The 183,151 checks compare semantic enchantment maps, counts, damage, other retained fields and random state. Map iteration order based on native holder identity is not a semantic ordering contract. This fixture does not establish item-component wire encoding. The smaller `enchanting-rules.json` contains runtime rules and default item metadata; PHP execution uses that file instead of loading the large test oracle. Tests also verify enchantment IDs against the registry synchronized to clients. Independent native exports must produce identical fixtures and runtime rules.
+
+`Protocol/Components/EnchantmentComponent` implements the shared payload of ordinary and stored enchantments separately from stack framing. `ExportEnchantmentComponents.java` captures 419 actual native codec cases: every registry entry, levels 0 through 255 at selected boundaries, complete maps, truncations, duplicate keys, invalid final levels/holders and trailing fields. Its 1,637 comparisons retain native bytes, semantic entries, exact successful consumption and acceptance/rejection. PHP re-encoding preserves the supplied map iteration order; native holder identity order is not a requirement for equivalent maps. Duplicate keys use the native last-write behavior, including an invalid level overwritten before final validation.
+
+This payload codec is not yet connected to item-stack patches or equipment delivery. The raw captured native bytes remain part of the fixture; semantic unordered-map equality does not excuse lost entries, incorrect lengths or extra bytes.
 
 ## Work required before completing #99
 

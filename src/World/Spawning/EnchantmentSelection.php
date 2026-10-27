@@ -12,8 +12,12 @@ use PhpMinecraftJavaServer\World\Generation\RandomSource;
 final class EnchantmentSelection
 {
     /** @return list<array{name: string, level: int}> */
-    public static function available(int $cost, array $item, array $pool, array $reference): array
-    {
+    public static function available(
+        int $cost,
+        array $item,
+        array $pool,
+        array $reference
+    ): array {
         $available = [];
         foreach ($pool as $name) {
             if (!$item['book'] && !in_array($name, $item['primary'], true)) {
@@ -32,8 +36,13 @@ final class EnchantmentSelection
     }
 
     /** @return list<array{name: string, level: int}> */
-    public static function select(RandomSource $random, array $item, int $cost, array $pool, array $reference): array
-    {
+    public static function select(
+        RandomSource $random,
+        array $item,
+        int $cost,
+        array $pool,
+        array $reference
+    ): array {
         if ($item['enchantability'] === null) {
             return [];
         }
