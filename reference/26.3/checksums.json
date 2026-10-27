@@ -9,6 +9,7 @@
   "entity-sine.bin": "87a67a39fff59636acb04edcda4ef622831037291f11fb61586c57596771dac2",
   "fixtures.json": "6e909bbb8201fafc97c62ef9c6f72e19a1f3844ba1e172c3c80077c4a5270d27",
   "gameplay.json": "37b61e4ba8c0a3681d57b5eab6612e42bcfcdaa85e90c28a13ec5b7c73503ad1",
+  "mob-equipment.json": "4178bee6e14073504332fcc9de4eec2419791b0d807b7aa7605023e8fe78ca71",
   "mob-initialization.json": "27e0362ba4f7507ab48ac7b713a3e244abacc4f0411d4429f4e0acc4255fa37b",
   "mob-motion-trajectories.json": "21f670b0df8cf43f38bd2433414ccca6f75cf99a1603e3e4395f72bcada476b5",
   "mob-physics.json": "fedd00336138674df66814cdef9daef1691a82c4ef1e27917aca7b41bc525a96",

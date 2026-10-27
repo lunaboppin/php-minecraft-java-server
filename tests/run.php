@@ -192,6 +192,7 @@ require __DIR__ . '/mob-motion-unit.php';
 require __DIR__ . '/mob-tracking-unit.php';
 require __DIR__ . '/spawn-initialization-unit.php';
 require __DIR__ . '/spawn-groups-unit.php';
+require __DIR__ . '/spawn-equipment-unit.php';
 if (in_array('--unit', $argv, true)) {
     exit(0);
 }

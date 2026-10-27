@@ -2,7 +2,6 @@ import java.lang.reflect.*;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import com.google.gson.*;
 import net.minecraft.SharedConstants;
@@ -25,7 +24,6 @@ import net.minecraft.world.phys.AABB;
 /** Observe the actual finalizeSpawn prefix, before equipment/holiday/attribute phases. */
 public class ExportZombieSpawnGroups {
     static final StackWalker WALKER = StackWalker.getInstance();
-    static final Field RANDOM_SEED;
 
     static JsonObject chickenState(Chicken chicken, JsonObject initialAttributes) throws ReflectiveOperationException {
         var state = new JsonObject();
@@ -47,15 +45,6 @@ public class ExportZombieSpawnGroups {
         return state;
     }
 
-    static {
-        try {
-            RANDOM_SEED = LegacyRandomSource.class.getDeclaredField("seed");
-            RANDOM_SEED.setAccessible(true);
-        } catch (ReflectiveOperationException failure) {
-            throw new ExceptionInInitializerError(failure);
-        }
-    }
-
     static class WorldRandom extends LegacyRandomSource {
         Zombie actor;
         JsonObject prefix;
@@ -67,13 +56,7 @@ public class ExportZombieSpawnGroups {
         WorldRandom(long seed) { super(seed); }
 
         long nextLongWithoutAdvancing() {
-            try {
-                var copy = new LegacyRandomSource(0);
-                ((AtomicLong) RANDOM_SEED.get(copy)).set(((AtomicLong) RANDOM_SEED.get(this)).get());
-                return copy.nextLong();
-            } catch (ReflectiveOperationException failure) {
-                throw new IllegalStateException(failure);
-            }
+            return ReferenceWorldData.peekNextLong(this);
         }
 
         void capture() {

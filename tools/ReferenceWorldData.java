@@ -9,6 +9,9 @@ import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Load actual vanilla data and tags; construction-only registry lookups cannot resolve all tags. */
 public record ReferenceWorldData(
@@ -35,6 +38,20 @@ public record ReferenceWorldData(
 
     public RegistryAccess.Frozen access() {
         return registries.compositeAccess();
+    }
+
+    /** Observe a native legacy stream without consuming the phase's next draws. */
+    public static long peekNextLong(RandomSource random) {
+        if (!(random instanceof LegacyRandomSource)) throw new IllegalArgumentException("Expected the native legacy random source");
+        try {
+            var seed = LegacyRandomSource.class.getDeclaredField("seed");
+            seed.setAccessible(true);
+            var copy = new LegacyRandomSource(0);
+            ((AtomicLong) seed.get(copy)).set(((AtomicLong) seed.get(random)).get());
+            return copy.nextLong();
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException(failure);
+        }
     }
 
     @Override
