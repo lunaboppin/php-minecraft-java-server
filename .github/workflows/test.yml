@@ -5,7 +5,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The full suite takes ~13 minutes, including live collision backend checks.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
