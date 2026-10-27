@@ -267,8 +267,9 @@ jobs:
       - name: Compare encrypted rejection and validate decrypted packets
         run: |
           php tests/authentication-network.php
+          php tests/profile-lifecycle.php
           python3 tools/parity/authentication.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-authentication
-          python3 tools/parity/verify.py tools/.cache/parity-authentication/php-packets.json tools/.cache/parity-authentication/java-packets.json /tmp/php-minecraft-auth-verified-packets.json /tmp/php-minecraft-auth-verified-restart-packets.json
+          python3 tools/parity/verify.py tools/.cache/parity-authentication/php-packets.json tools/.cache/parity-authentication/java-packets.json /tmp/php-minecraft-auth-verified-packets.json /tmp/php-minecraft-auth-verified-restart-packets.json /tmp/php-minecraft-profile-lifecycle-packets.json /tmp/php-minecraft-profile-lifecycle-restart-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
