@@ -1,0 +1,552 @@
+{
+  "version": "26.3",
+  "protocol": 777,
+  "profiles": {
+    "allay": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "armadillo": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "axolotl": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "bat": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.ambient.Bat",
+      "doPush": "net.minecraft.world.entity.ambient.Bat",
+      "pushEntities": "net.minecraft.world.entity.ambient.Bat"
+    },
+    "bee": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "blaze": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "bogged": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "breeze": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "camel": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "camel_husk": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "cat": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "cave_spider": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "chicken": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "cod": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "copper_golem": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "cow": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "creaking": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.monster.creaking.Creaking",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "creeper": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "dolphin": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "donkey": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "drowned": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "elder_guardian": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "enderman": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "endermite": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "ender_dragon": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "evoker": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "fox": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "frog": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "ghast": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "happy_ghast": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "giant": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "glow_squid": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "goat": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "guardian": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "hoglin": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "horse": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "husk": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "illusioner": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "iron_golem": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.animal.golem.IronGolem",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "llama": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "magma_cube": {
+      "push": "net.minecraft.world.entity.monster.cubemob.AbstractCubeMob",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "mooshroom": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "mule": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "nautilus": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "ocelot": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "panda": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "parched": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "parrot": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.parrot.Parrot",
+      "doPush": "net.minecraft.world.entity.animal.parrot.Parrot",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "phantom": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "pig": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "piglin": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "piglin_brute": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "pillager": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "polar_bear": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "pufferfish": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "rabbit": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "ravager": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "salmon": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "sheep": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "shulker": {
+      "push": "net.minecraft.world.entity.monster.Shulker",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "silverfish": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "skeleton": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "skeleton_horse": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "slime": {
+      "push": "net.minecraft.world.entity.monster.cubemob.AbstractCubeMob",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "sniffer": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "snow_golem": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "spider": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "squid": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "stray": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "strider": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "sulfur_cube": {
+      "push": "net.minecraft.world.entity.monster.cubemob.AbstractCubeMob",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.monster.cubemob.SulfurCube",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "tadpole": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "trader_llama": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "tropical_fish": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "turtle": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "vex": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "villager": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "vindicator": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "wandering_trader": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "warden": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.monster.warden.Warden",
+      "doPush": "net.minecraft.world.entity.monster.warden.Warden",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "witch": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "wither": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "wither_skeleton": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "wolf": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zoglin": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zombie": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zombie_horse": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.animal.equine.AbstractHorse",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zombie_nautilus": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zombie_villager": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "zombified_piglin": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.world.entity.LivingEntity"
+    },
+    "player": {
+      "push": "net.minecraft.world.entity.LivingEntity",
+      "pushable": "net.minecraft.world.entity.LivingEntity",
+      "doPush": "net.minecraft.world.entity.LivingEntity",
+      "pushEntities": "net.minecraft.server.level.ServerPlayer"
+    }
+  }
+}

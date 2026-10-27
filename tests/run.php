@@ -198,6 +198,9 @@ foreach ([
     'spawn-enchanting-unit.php',
     'enchantment-component-unit.php',
     'equipment-stack-unit.php',
+    'entity-pushing-unit.php',
+    'entity-section-unit.php',
+    'entity-pushing-world-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
