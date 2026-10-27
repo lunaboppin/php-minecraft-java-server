@@ -17,7 +17,7 @@ final class Server
     private World $world;
     private readonly DailyLog $logger;
     private readonly Announcements $announcements;
-    public function __construct(private readonly Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
+    public function __construct(private Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
         $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
         $this->announcements=new Announcements($config->worldPath);
         $this->initializeAuthentication($sessions);
@@ -215,7 +215,7 @@ final class Server
     private function joinWorld(Client $c):void {
         $c->send($this->version,'login',Packets::playLogin($this->version,$c->entityId,$this->config->maxPlayers,$this->viewDistance($c),$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension,array_keys($this->worlds),$this->config->viewDistance));
         $c->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$c->entityId,$c->information['skinParts']??0,$c->information['mainHand']??1));
-        $c->send($this->version,'change_difficulty',chr($this->config->difficulty)."\1");
+        $c->send($this->version,'change_difficulty',Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version,'set_default_spawn_position',Packets::spawn($this->worlds['overworld']->spawn()));
         $this->health($c);

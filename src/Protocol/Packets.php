@@ -161,6 +161,17 @@ final class Packets
         return Nbt::text($text) . "\0";
     }
 
+    public static function systemChat(array $component): string
+    {
+        return Nbt::component($component) . "\0";
+    }
+
+    /** Dedicated servers report an unlocked difficulty; clients only lock it in singleplayer. */
+    public static function difficulty(int $difficulty): string
+    {
+        return chr($difficulty) . "\0";
+    }
+
     public static function time(int $ticks): string
     {
         return pack('J', $ticks) . "\0";

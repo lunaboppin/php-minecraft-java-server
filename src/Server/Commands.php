@@ -54,6 +54,10 @@ trait Commands
 
     use CommandModules\SaveAllCommand;
 
+    use CommandModules\DifficultyCommand;
+
+    use CommandModules\DefaultGameModeCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -68,6 +72,28 @@ trait Commands
     {
         $this->log('[Server -> ' . $client->name . '] ' . $text);
         $client->send($this->version, 'system_chat', Packets::chat($text));
+    }
+
+    /** Vanilla sendSuccess: tell the source, and optionally echo to other operators as an admin message. */
+    private function sendSuccess(Client $sender, array $message, bool $broadcastToOperators): void
+    {
+        $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        $sender->send($this->version, 'system_chat', Packets::systemChat($message));
+        if (!$broadcastToOperators) {
+            return;
+        }
+        $admin = ['translate' => 'chat.type.admin', 'with' => [['text' => $sender->name], $message], 'color' => 'gray', 'italic' => true];
+        foreach ($this->players() as $player) {
+            if ($player !== $sender && $this->operator($player)) {
+                $player->send($this->version, 'system_chat', Packets::systemChat($admin));
+            }
+        }
+    }
+
+    /** Vanilla sendFailure: the message in red, without a parse-context line. */
+    private function sendFailure(Client $sender, array $message): void
+    {
+        $sender->send($this->version, 'system_chat', Packets::systemChat(['text' => '', 'color' => 'red', 'extra' => [$message]]));
     }
 
     private function playerByName(string $name, Client $sender): Client

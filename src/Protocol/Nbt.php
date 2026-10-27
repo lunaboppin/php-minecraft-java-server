@@ -9,6 +9,33 @@ final class Nbt
         if (preg_match('//u', $text) !== 1) { throw new \InvalidArgumentException('Invalid UTF-8'); }
         return "\x08" . self::string($text);
     }
+    /**
+     * Encode a text component. A component with only `text` stays a bare string tag, as vanilla
+     * does; otherwise it is a compound supporting text, translate, color, italic, with and extra.
+     */
+    public static function component(array $component): string
+    {
+        if (array_keys($component) === ['text']) {
+            return self::text($component['text']);
+        }
+        return "\x0a" . self::componentBody($component);
+    }
+
+    private static function componentBody(array $component): string
+    {
+        $out = '';
+        foreach ($component as $key => $value) {
+            $out .= match ($key) {
+                'text', 'translate', 'color' => "\x08" . self::string($key) . self::string($value),
+                'italic' => "\x01" . self::string($key) . chr((int) $value),
+                'with', 'extra' => "\x09" . self::string($key) . "\x0a" . pack('N', count($value))
+                    . implode('', array_map(self::componentBody(...), $value)),
+                default => throw new \InvalidArgumentException('Unsupported text component field: ' . $key),
+            };
+        }
+        return $out . "\0";
+    }
+
     public static function sign(array $data):string {
         $out="\x0a";
         foreach(['front','back'] as $side){
