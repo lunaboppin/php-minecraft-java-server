@@ -12,10 +12,12 @@ services:
       SERVER_PORT: "25676"
       CONFIG_FILE: /app/data/server.json
       MINECRAFT_OPERATORS: "${MINECRAFT_OPERATORS:-}"
+      # PHP heap limit; keep it below the container cap to leave room for SQLite caches and health checks.
+      PHP_MEMORY_LIMIT: "${PHP_MEMORY_LIMIT:-2048M}"
     volumes:
       - ./data:/app/data
     cap_drop:
       - ALL
     security_opt:
       - no-new-privileges:true
-    mem_limit: 1g
+    mem_limit: "${CONTAINER_MEMORY_LIMIT:-3g}"

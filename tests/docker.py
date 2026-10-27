@@ -38,6 +38,9 @@ def main():
                 assert int(docker('exec',name,'id','-u'))==os.getuid()!=0
                 docker('exec',name,'php','deploy/docker/health.php')
                 version=docker('exec',name,'php','-r','require "src/bootstrap.php"; if (!extension_loaded("pcntl")) exit(1); echo PHP_VERSION;')
+                assert docker('exec',name,'php','-r','echo ini_get("memory_limit");')=='2048M'
+                server=[c for c in docker('exec',name,'sh','-c','for p in /proc/[0-9]*/cmdline; do tr "\\0" " " < "$p"; echo; done').splitlines() if 'bin/server.php' in c]
+                assert len(server)==1 and '-d memory_limit=2048M ' in server[0],server
             finally:c.close()
             docker('restart','--timeout','45',name);ready(name,2);port=int(docker('port',name,'25676/tcp').rsplit(':',1)[1]);c=Probe(port,'container-restart').login()
             try:
@@ -58,7 +61,10 @@ def main():
             assert 'Server stopped' in docker('logs',name)
             assert list((path/'logs').glob('server-*.log')),'logs not persisted'
             assert all((path/('world.sqlite'+suffix)).is_file() for suffix in ['', '.the_nether.sqlite','.the_end.sqlite'])
-            print(f'PASS: non-root Docker PHP {version}, protocol health, actual join, SIGTERM saves, config/inventory/block/dimension persistence')
+            assert docker('run','--rm','-e','PHP_MEMORY_LIMIT=768M',image,'php','-r','echo ini_get("memory_limit");')=='768M'
+            rejected=subprocess.run(['docker','run','--rm','-e','PHP_MEMORY_LIMIT=2048MB',image],capture_output=True,text=True)
+            assert rejected.returncode==1 and 'PHP_MEMORY_LIMIT must be' in rejected.stderr,rejected
+            print(f'PASS: non-root Docker PHP {version}, protocol health, actual join, SIGTERM saves, memory limits, config/inventory/block/dimension persistence')
         finally:subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
 
