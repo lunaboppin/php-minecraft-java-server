@@ -28,6 +28,8 @@ php tests/spawn-groups-unit.php
 php tests/spawn-equipment-unit.php
 php tests/spawn-enchanting-unit.php
 php tests/enchantment-component-unit.php
+php tests/equipment-stack-unit.php
+python3 tools/verify_equipment_stacks.py
 JAVA_HOME=/path/to/jdk25 python3 tools/update_reference.py
 ```
 
@@ -49,8 +51,22 @@ The 183,151 checks compare semantic enchantment maps, counts, damage, other reta
 
 `Protocol/Components/EnchantmentComponent` implements the shared payload of ordinary and stored enchantments separately from stack framing. `ExportEnchantmentComponents.java` captures 419 actual native codec cases: every registry entry, levels 0 through 255 at selected boundaries, complete maps, truncations, duplicate keys, invalid final levels/holders and trailing fields. Its 1,637 comparisons retain native bytes, semantic entries, exact successful consumption and acceptance/rejection. PHP re-encoding preserves the supplied map iteration order; native holder identity order is not a requirement for equivalent maps. Duplicate keys use the native last-write behavior, including an invalid level overwritten before final validation.
 
-This payload codec is not yet connected to item-stack patches or equipment delivery. The raw captured native bytes remain part of the fixture; semantic unordered-map equality does not excuse lost entries, incorrect lengths or extra bytes.
+The payload codec is connected to the equipment stack bridge described below. The raw captured native bytes remain part of the fixture; semantic unordered-map equality does not excuse lost entries, incorrect lengths or extra bytes.
+
+## Equipment stack bridge
+
+`Protocol/ItemStackCodec` frames optional stacks and resolves component patches against actual item defaults. It currently supports additions for damage, ordinary/stored enchantments and enchantability, plus registry-driven component removals. Unsupported additions raise an explicit error. `equipment-stack-rules.json` contains the complete component ID map, all default component-presence sets and the supported default values. Neither the large test oracle nor Java is needed by the game runtime.
+
+The canonical state retains removal records and distinguishes missing components from present empty maps. Redundant additions/removals disappear as they do in the native patched component map. Enchanting metadata is resolved from current merged components. Item/component equality ignores count while comparing the complete supported state, so inventory merging cannot discard different enchantments.
+
+Inventory, equipment, cursor and dropped-item metadata serialization all use the codec through the runtime catalog. Player restore preserves these component fields in existing JSON records; no SQL schema migration or world reset is required. General creative component submissions remain rejected pending the complete component and authority validation work in #9.
+
+`ExportEquipmentStacks.java` captures 351 native stack cases, 17 complete eight-slot equipment packets and a 216-by-216 matrix of actual `ItemStack.isSameItemSameComponents` results. These cover 18 item types, 12 mutation layouts, truncations, duplicate additions, addition/removal conflicts, default normalization and native edge cases. The 49,879 PHP checks include current enchanting metadata and exact successful packet consumption. Independent JVM captures can have different native map iteration order; the repeated captures must agree on complete states, metadata, comparison results, acceptance and boundaries. Both raw captures are tested without rewriting their bytes. Runtime rule exports are byte-identical.
+
+`verify_equipment_stacks.py` verifies the official server JAR and every extracted classpath JAR before decoding PHP output through the actual Java codecs. Java accepts all 243 generated stack/equipment payloads, with 260 exact state comparisons and no trailing bytes. CI retains PHP requests, Java results and readable logs. Run `tools/update_reference.py` first to compile the helpers, then run the verifier with JDK 25. The verifier can also accept an explicitly supplied compiled-classes directory and Java home.
+
+The multiplayer equipment test checks enchantments, stored book enchantments and component removals through late pairing, hand selection, dimension travel and two restores. It verifies that unequal enchantment levels swap, equal enchanted stacks merge, and server-produced saved state retains the result after another restart. These tests establish the supported stack bridge; other components, item interactions and full mob initialization/lifecycle parity remain separate work.
 
 ## Work required before completing #99
 
-The live spawn coordinator still needs to integrate these decisions and initialization phases, complete item-component wire support and subclass initialization, and apply per-entity attributes/dimensions/metadata. Passenger movement and metadata must be synchronized, and relationships must restore by persistent identity through tracking, dimension changes and restart. Damage, sound, dismount/death and real-client behavior need official full-world comparisons. The unseeded egg comparison must retain legitimate additional entities and explain stochastic differences without masking an unimplemented branch. Neither #99 nor its parent parity issues can close on these phase checks alone.
+The live spawn coordinator still needs to integrate these decisions and initialization phases, complete subclass initialization, and apply per-entity attributes/dimensions/metadata. Passenger movement and metadata must be synchronized, and relationships must restore by persistent identity through tracking, dimension changes and restart. Damage, sound, dismount/death and real-client behavior need official full-world comparisons. Native entity pushing also remains open in #105, backed by a retained CI world-motion divergence when a late player spawned beside the Giant. The unseeded egg comparison must retain legitimate additional entities and explain stochastic differences without masking an unimplemented branch. Neither #99 nor its parent parity issues can close on these phase checks alone.

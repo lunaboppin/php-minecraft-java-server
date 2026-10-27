@@ -142,6 +142,7 @@ def main():
         'ExportCommands.java', 'ExportMobPhysics.java', 'ExportMobTracking.java',
         'ReferenceWorldData.java', 'ExportMobInitialization.java', 'ExportZombieSpawnGroups.java',
         'ExportMobEquipment.java', 'ExportEnchanting.java', 'ExportEnchantmentComponents.java',
+        'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -161,6 +162,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobEquipment', str(out / 'mob-equipment.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportEnchanting', str(out / 'enchanting.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportEnchantmentComponents', str(out / 'enchantment-components.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportEquipmentStacks', str(out / 'equipment-stacks.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())

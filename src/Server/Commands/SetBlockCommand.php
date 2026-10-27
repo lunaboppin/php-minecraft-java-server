@@ -14,7 +14,7 @@ trait SetBlockCommand
             throw new \InvalidArgumentException('Usage: /setblock x y z block[properties]');
         }
         $position = $this->coordinates(array_slice($arguments, 0, 3), $sender);
-        [$x,$y,$z] = array_map('intval', array_map('floor', $position));
+        [$x, $y, $z] = array_map('intval', array_map('floor', $position));
         $this->setBlock($x, $y, $z, $this->blockArgument($arguments[3]));
         $this->tell($sender, 'Block updated');
         return;

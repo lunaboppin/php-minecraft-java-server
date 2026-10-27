@@ -23,7 +23,7 @@ trait Animals
     /** Guaranteed main-hand items in the pinned skeleton/illager populateDefaultEquipmentSlots methods. */
     private function mobEquipment(string $kind): array
     {
-        $name = match($kind) {
+        $name = match ($kind) {
             'skeleton','stray','bogged','parched' => 'bow','wither_skeleton' => 'stone_sword','pillager' => 'crossbow','vindicator' => 'iron_axe',default => null
         };
         return $name === null ? [] : [0 => ['item' => $this->version->blocks['items'][$name], 'count' => 1]];
@@ -125,7 +125,7 @@ trait Animals
         $attributes = array_intersect_key($this->version->catalog->mobs['entities'][$animal['kind']]['attributes'], array_flip($this->version->catalog->mobs['sync_attributes']));
         $c->send($this->version, 'update_attributes', Packets::attributes($this->version->catalog, $id, $attributes));
         if (($animal['equipment'] ?? []) !== []) {
-            $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage']));
+            $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
         }
     }
 
@@ -203,7 +203,7 @@ trait Animals
         }
         if ($animal['health'] <= 0) {
             $animal['deadAt'] = $this->ticks + 20;
-            $drops = match($animal['kind']) {
+            $drops = match ($animal['kind']) {
                 'cow' => ['beef' => random_int(1, 3), 'leather' => random_int(0, 2)],'pig' => ['porkchop' => random_int(1, 3)],'sheep' => ['mutton' => random_int(1, 2), 'white_wool' => 1],'chicken' => ['chicken' => 1, 'feather' => random_int(0, 2)],default => []
             };
             foreach ($drops as $name => $count) {

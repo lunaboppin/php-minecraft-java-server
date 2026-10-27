@@ -81,6 +81,13 @@ def main():
                 saved=json.loads(data)
                 if isinstance(saved['inventory'],dict) and saved['inventory'].get('36',{}).get('item')==wire.BLOCKS['items']['golden_axe']:
                     saved['inventory']['36']['damage']=7
+                    saved['inventory']['36']['enchantments']={'minecraft:sharpness':3,'minecraft:unbreaking':255}
+                    saved['inventory']['36']['removedComponents']=['minecraft:enchantable']
+                    saved['inventory']['37']={'item':wire.BLOCKS['items']['enchanted_book'],'count':1,'storedEnchantments':{'minecraft:fortune':3}}
+                    for slot,count,level in [(38,12,1),(39,13,None),(40,14,2),(41,15,1)]:
+                        stack={'item':wire.BLOCKS['items']['stone'],'count':count}
+                        if level is not None:stack['enchantments']={'minecraft:mending':level}
+                        saved['inventory'][str(slot)]=stack
                     db.execute('UPDATE players SET data=? WHERE uuid=?',(json.dumps(saved),uuid))
         with wire.server(cfg) as port:
             a=Probe(port,'restored').login('Wearer');b=Probe(port,'restored-observer').login('Watcher')
@@ -88,13 +95,49 @@ def main():
                 snapshot=collect(b,a.entity_id)
                 assert snapshot[0]['item']==wire.BLOCKS['items']['golden_axe'] and snapshot[5] is None
                 assert snapshot[0]['damage']==7,'damage component lost'
+                assert snapshot[0]['enchantments']=={'minecraft:sharpness':3,'minecraft:unbreaking':255},'enchantments lost on restore/equipment'
+                assert snapshot[0]['removedComponents']==['minecraft:enchantable'],'component removal lost'
+                assert a.inventory[37]['storedEnchantments']=={'minecraft:fortune':3},'stored book enchantments lost'
+                # Different enchantment levels must swap rather than merge.
+                def click(slot):
+                    a.send('container_click',wire.vi(a.window)+wire.vi(a.revision)+struct.pack('>hB',slot,0)+wire.vi(0)+b'\0\0')
+                    a.tick_barrier()
+                click(38)
+                assert a.cursor['count']==12 and a.cursor['enchantments']=={'minecraft:mending':1}
+                click(40)
+                assert a.cursor['count']==14 and a.cursor['enchantments']=={'minecraft:mending':2}
+                assert a.inventory[40]['count']==12 and a.inventory[40]['enchantments']=={'minecraft:mending':1}
+                click(38)
+                assert a.cursor is None and a.inventory[38]['count']==14
+                click(40)
+                click(41)
+                assert a.cursor is None and a.inventory[41]['count']==27,'matching enchantments did not merge'
+                # Pairing after a dimension transition retains the full patch.
+                command(a,'dimension the_nether');b.tick_barrier()
+                command(a,'dimension overworld');b.tick_barrier()
+                assert collect(b,a.entity_id)[0]['enchantments']==snapshot[0]['enchantments']
+                a.send('set_carried_item',struct.pack('>h',1));a.tick_barrier();b.tick_barrier()
+                assert collect(b,a.entity_id)[0]['storedEnchantments']=={'minecraft:fortune':3},'stored enchantments lost from equipment'
+                a.send('set_carried_item',struct.pack('>h',0));a.tick_barrier();b.tick_barrier()
+                command(a,'save-all')
                 assert snapshot[1]['count']==12
                 # A stable inventory must not emit periodic duplicate equipment updates.
                 b.tick_barrier();start=len(b.seen);a.tick_barrier();b.tick_barrier()
                 assert not collect(b,a.entity_id,start),'unchanged equipment repeated'
             finally:a.close();b.close()
+        # Reload state produced by the server itself, after inventory mutations.
+        with wire.server(cfg) as port:
+            a=Probe(port,'saved-again').login('Wearer');b=Probe(port,'saved-observer').login('Watcher')
+            try:
+                restored=collect(b,a.entity_id)[0]
+                assert restored['damage']==7 and restored['enchantments']=={'minecraft:sharpness':3,'minecraft:unbreaking':255}
+                assert restored['removedComponents']==['minecraft:enchantable']
+                assert a.inventory[37]['storedEnchantments']=={'minecraft:fortune':3}
+                assert a.inventory[38]['count']==14 and a.inventory[38]['enchantments']=={'minecraft:mending':2}
+                assert a.inventory[41]['count']==27 and a.inventory[41]['enchantments']=={'minecraft:mending':1}
+            finally:a.close();b.close()
     Path('/tmp/php-minecraft-equipment-capture.json').write_text(json.dumps(wire.CAPTURE))
-    print('PASS: six equipment slots, selection, hand swap, removals, late joins, dimension isolation/re-entry, restart and deduplication')
+    print('PASS: equipment slots, hand swaps, removals, late joins, dimension tracking, restart, enchanted components, distinct/matching merges and deduplication')
 
 
 if __name__=='__main__':main()

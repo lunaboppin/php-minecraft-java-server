@@ -6,7 +6,7 @@ All **260** reported packet IDs are listed: 3 accepted without payload validatio
 
 This is a source inventory, not a parity claim. **Partial handler** means a named dispatch branch exists; its fields and behavior still need vanilla comparison. **Emission reference** means source contains a send call for that packet name; it does not prove every state, variant or ordering. **Unsupported** means no named handler/emission was found. Required unsupported play packets currently reach a silent default branch; configuration/login violations are rejected. Optional telemetry is listed separately and is not counted as gameplay support.
 
-Reconfiguration, full item components and many interactions remain unsupported. See issues [#2](https://github.com/lunaboppin/php-minecraft-java-server/issues/2), [#3](https://github.com/lunaboppin/php-minecraft-java-server/issues/3) and the [comparison harness](../tools/parity/README.md).
+Supported item-stack additions now include damage, ordinary/stored enchantments and enchantability, with registry-driven removals and preservation through player saves. The [stack bridge evidence](MOB-SPAWNING.md#equipment-stack-bridge) includes actual Java decoding of PHP equipment packets. Reconfiguration, full item components and many interactions remain unsupported. See issues [#2](https://github.com/lunaboppin/php-minecraft-java-server/issues/2), [#3](https://github.com/lunaboppin/php-minecraft-java-server/issues/3) and the [comparison harness](../tools/parity/README.md).
 
 ## configuration / clientbound
 

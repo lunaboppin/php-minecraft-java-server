@@ -172,8 +172,8 @@ try {
         unlink($file);
     }
 }
-rejects(fn () => new Config(port:65536), 'invalid port');
-rejects(fn () => new Config(viewDistance:1), 'invalid view distance');
+rejects(fn () => new Config(port: 65536), 'invalid port');
+rejects(fn () => new Config(viewDistance: 1), 'invalid view distance');
 check((new Config())->host === '127.0.0.1', 'loopback default');
 echo 'PASS: ' . $checks . ' PHP checks, including ' . count($fixtures) . " Mojang codec fixtures\n";
 require __DIR__ . '/world.php';
@@ -197,6 +197,7 @@ foreach ([
     'spawn-equipment-unit.php',
     'spawn-enchanting-unit.php',
     'enchantment-component-unit.php',
+    'equipment-stack-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;

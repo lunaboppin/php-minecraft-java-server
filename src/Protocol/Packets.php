@@ -61,8 +61,11 @@ final class Packets
             . Binary::writeVarInt($gameMode) . "\0\0" . chr((int) $flat) . "\0\0" . Binary::writeVarInt($dimension === 'the_nether' ? 32 : ($dimension === 'the_end' ? 0 : 63)) . "\0\0";
     }
 
-    public static function stack(?array $stack, int $damageComponent = 0): string
+    public static function stack(?array $stack, int $damageComponent = 0, ?ItemStackCodec $codec = null): string
     {
+        if ($codec !== null) {
+            return $codec->write($stack);
+        }
         if ($stack === null || $stack['count'] <= 0) {
             return "\0";
         }
@@ -71,13 +74,19 @@ final class Packets
         return $out . ($damage > 0 ? "\1\0" . Binary::writeVarInt($damageComponent) . Binary::writeVarInt($damage) : "\0\0");
     }
 
-    public static function inventory(int $window, int $revision, array $items, ?array $cursor, int $damageComponent): string
-    {
+    public static function inventory(
+        int $window,
+        int $revision,
+        array $items,
+        ?array $cursor,
+        int $damageComponent,
+        ?ItemStackCodec $codec = null
+    ): string {
         $out = Binary::writeVarInt($window) . Binary::writeVarInt($revision) . Binary::writeVarInt(count($items));
         foreach ($items as $item) {
-            $out .= self::stack($item, $damageComponent);
+            $out .= self::stack($item, $damageComponent, $codec);
         }
-        return $out . self::stack($cursor, $damageComponent);
+        return $out . self::stack($cursor, $damageComponent, $codec);
     }
 
     public static function mobHealth(Catalog $catalog, int $entityId, float $health): string
@@ -95,15 +104,19 @@ final class Packets
     }
 
     /** EquipmentSlot ordinal with the high bit marking another slot, per the 26.3 codec. */
-    public static function equipment(int $entityId, array $slots, int $damageComponent): string
-    {
+    public static function equipment(
+        int $entityId,
+        array $slots,
+        int $damageComponent,
+        ?ItemStackCodec $codec = null
+    ): string {
         if ($slots === []) {
             throw new \InvalidArgumentException('Empty equipment update');
         }
         $out = Binary::writeVarInt($entityId);
         $remaining = count($slots);
         foreach ($slots as $slot => $stack) {
-            $out .= chr($slot | (--$remaining > 0 ? 128 : 0)) . self::stack($stack, $damageComponent);
+            $out .= chr($slot | (--$remaining > 0 ? 128 : 0)) . self::stack($stack, $damageComponent, $codec);
         }
         return $out;
     }

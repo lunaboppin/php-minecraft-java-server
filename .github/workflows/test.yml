@@ -33,7 +33,9 @@ jobs:
       - name: Check spawn initialization PHP formatting
         run: python3 tools/php_style.py --check src/World/Spawning src/World/Generation/Float32.php tests/spawn-initialization-unit.php tests/spawn-groups-unit.php tests/spawn-equipment-unit.php tests/spawn-enchanting-unit.php
       - name: Check item component PHP formatting
-        run: python3 tools/php_style.py --check src/Protocol/Components tests/enchantment-component-unit.php
+        run: python3 tools/php_style.py --check src/Protocol/Components src/Protocol/ItemStackCodec.php src/Protocol/Packets.php src/Protocol/Catalog.php tests/enchantment-component-unit.php tests/equipment-stack-unit.php
+      - name: Check inventory bridge PHP formatting
+        run: python3 tools/php_style.py --check src/Server/Server.php src/Server/InventoryManagement.php src/Server/Entities.php src/Server/Animals.php src/Server/Survival.php src/World/Inventory.php
       - name: Validate panel egg
         run: python3 tests/panel_egg.py
       - name: Run protocol and gameplay checks
@@ -135,6 +137,7 @@ jobs:
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare multiplayer equipment and tracking with vanilla
         run: |
+          python3 tools/verify_equipment_stacks.py
           python3 tools/parity/run.py --scenario tests/parity/equipment.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-equipment
           python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
@@ -145,6 +148,7 @@ jobs:
           path: |
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
+            tools/.cache/equipment-stack-verification/
           retention-days: 7
 
   mob-parity:
