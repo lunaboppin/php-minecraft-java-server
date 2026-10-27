@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Protocol;
 
+use PhpMinecraftJavaServer\World\EntityPushEligibility;
+use PhpMinecraftJavaServer\World\Pushing\EligibilityRegistry;
+
 /** State properties and gameplay constants extracted from the pinned Mojang JAR. */
 final class Catalog
 {
     public readonly ItemStackCodec $itemStacks;
+
+    public readonly array $pushing;
+
+    public readonly EntityPushEligibility $pushEligibility;
+
+    public readonly EligibilityRegistry $pushEligibilityRegistry;
 
     public readonly array $simulation;
 
@@ -46,6 +55,10 @@ final class Catalog
             throw new \RuntimeException('Missing gameplay reference data');
         }
         $data = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
+        $this->pushing = json_decode(file_get_contents($directory . '/entity-pushing-rules.json'), true, 512, JSON_THROW_ON_ERROR)['profiles'];
+        $pushRules = json_decode(file_get_contents($directory . '/push-eligibility-rules.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->pushEligibility = new EntityPushEligibility($pushRules);
+        $this->pushEligibilityRegistry = new EligibilityRegistry($this->pushEligibility);
         $stackRules = json_decode(file_get_contents($directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR);
         $enchantingRules = json_decode(file_get_contents($directory . '/enchanting-rules.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->itemStacks = new ItemStackCodec($stackRules, $enchantingRules);

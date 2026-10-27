@@ -89,8 +89,10 @@ final class EntityPushing
                 return;
             }
         }
-        foreach ($impulse as $axis => $component) {
-            $entity['velocity'][$axis] += $component;
+        if (($entity['velocityMode'] ?? 'normal') !== 'zero') {
+            foreach ($impulse as $axis => $component) {
+                $entity['velocity'][$axis] += $component;
+            }
         }
         $entity['needsSync'] = true;
     }

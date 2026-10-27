@@ -38,8 +38,10 @@ final class LivingEntityPushPhase
         $this->index->setAccessible($section, $accessible);
     }
 
-    public function pushNeighbors(int $id): void
+    /** @return list<int> IDs touched by eligible contacts. */
+    public function pushNeighbors(int $id, ?\Closure $dispatch = null): array
     {
+        $touched = [];
         $caller = &$this->entities[$id];
         foreach ($this->index->query($caller['bounds']) as $otherId) {
             if ($otherId === $id) {
@@ -58,7 +60,13 @@ final class LivingEntityPushPhase
                 continue;
             }
             $sameVehicle = ($caller['rootVehicle'] ?? $id) === ($other['rootVehicle'] ?? $otherId);
-            EntityPushing::doPush($caller, $other, $sameVehicle);
+            if ($dispatch === null) {
+                EntityPushing::doPush($caller, $other, $sameVehicle);
+            } else {
+                $dispatch($caller, $other, $sameVehicle);
+            }
+            $touched[$id] = $touched[$otherId] = true;
         }
+        return array_keys($touched);
     }
 }

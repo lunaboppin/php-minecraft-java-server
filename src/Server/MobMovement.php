@@ -16,6 +16,8 @@ trait MobMovement
 
     use MobMotion;
 
+    use MobPushing;
+
     private ?AirTravel $mobAirTravel = null;
 
     private function ordinaryMobTravel(array $mob): bool
@@ -38,6 +40,7 @@ trait MobMovement
             if ($this->ticks % 4 === 0) {
                 $this->moveLegacyMob($mob, $noise);
             }
+            $this->pushAfterMobTravel($mob);
             return;
         }
         if ($this->version->catalog->movement['profiles'][$mob['kind']]['velocity'] === 'zero') {
@@ -45,7 +48,7 @@ trait MobMovement
             // setter ignores impulses; ordinary travel cannot move them.
             $mob['velocity'] = [0.0, 0.0, 0.0];
             $mob['ground'] = false;
-            $this->synchronizeMobMotion($mob);
+            $this->pushAfterMobTravel($mob);
             return;
         }
         $definition = $this->version->catalog->mobs['entities'][$mob['kind']];
@@ -69,7 +72,7 @@ trait MobMovement
         if ($moving) {
             $mob['yaw'] = Float32::round(rad2deg(atan2(-$dx, $dz)));
         }
-        $this->synchronizeMobMotion($mob);
         $this->mobAirTravel->step($this->world, $mob, $definition, [0.0, 0.0, $speed], $speed);
+        $this->pushAfterMobTravel($mob);
     }
 }

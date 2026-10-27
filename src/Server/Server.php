@@ -498,6 +498,7 @@ final class Server
             return;
         }
         [$c->x, $c->y, $c->z] = $position ?? $this->world->spawn();
+        $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
         $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
@@ -738,6 +739,7 @@ final class Server
         $c->pitch = $pitch;
         $c->ground = ($flags & 1) !== 0;
         $this->survivalMovement($c, $oldY, $distance);
+        $this->trackPushingPlayer($c);
         if ($y < -80 && in_array($c->gameMode, [1, 3], true)) {
             $this->teleport($c);
         }
@@ -1059,9 +1061,6 @@ final class Server
             ++$this->dayTime;
         }
         $this->tickDimensions();
-        if ($this->ticks % 200 === 0) {
-            $this->saveWorld();
-        }
         foreach ($this->clients as $id => $c) {
             if ($c->closing) {
                 if ($c->output === '' || $now - $c->closingAt > 2) {
@@ -1088,6 +1087,7 @@ final class Server
                         return;
                     }
                     $this->tickSurvival($c);
+                    $this->tickPlayerPushing($c);
                     $this->syncEquipment($c);
                     $this->syncPlayerMetadata($c);
                     if ($this->ticks % 20 === 0) {
@@ -1113,6 +1113,10 @@ final class Server
             } catch (ProtocolException $e) {
                 $this->disconnect($c, $e->getMessage());
             }
+        }
+        // Native autosave follows world and connection/player simulation.
+        if ($this->ticks % 200 === 0) {
+            $this->saveWorld();
         }
     }
 
@@ -1145,6 +1149,7 @@ final class Server
             return;
         }
         $this->sessionVerifier?->cancel($id);
+        $this->forgetPushingEntity($c->entityId, $c->dimension);
         unset($this->clients[$id]);
         if ($c->state === 'play') {
             $this->closeWindow($c);

@@ -201,6 +201,8 @@ foreach ([
     'entity-pushing-unit.php',
     'entity-section-unit.php',
     'entity-pushing-world-unit.php',
+    'push-eligibility-unit.php',
+    'mob-pushing-backend.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
