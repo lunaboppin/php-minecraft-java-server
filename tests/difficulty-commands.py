@@ -11,22 +11,45 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 
 
-# Independent of the PHP encoder: network NBT text components as vanilla's codec writes them.
+# Independent of the PHP encoder: vanilla NBT text components. CompoundTag is a Java HashMap,
+# so fields appear in bucket order (the official join message in tests/text-component-unit.php
+# pins this against captured bytes).
 def nbt_string(value):
     data = value.encode('utf-8')
     return struct.pack('>H', len(data)) + data
 
 
+def java_order(keys):
+    def bucket(key):
+        value = 0
+        for unit in struct.unpack('>%dH' % len(key), key.encode('utf-16-be')):
+            value = (31 * value + unit) & 0xffffffff
+        return (value ^ (value >> 16)) & 15
+    return sorted(keys, key=bucket)
+
+
 def body(component):
     out = b''
-    for key, value in component.items():
-        if key in ('text', 'translate', 'color'):
-            out += b'\x08' + nbt_string(key) + nbt_string(value)
-        elif key == 'italic':
+    for key in java_order(list(component)):
+        value = component[key]
+        if isinstance(value, bool):
             out += b'\x01' + nbt_string(key) + bytes([int(value)])
+        elif key == 'uuid':
+            out += b'\x0b' + nbt_string(key) + struct.pack('>i', 4) + value
+        elif isinstance(value, str):
+            out += b'\x08' + nbt_string(key) + nbt_string(value)
+        elif isinstance(value, dict):
+            out += b'\x0a' + nbt_string(key) + body(value)
+        elif all(list(c) == ['text'] for c in value):
+            out += b'\x09' + nbt_string(key) + b'\x08' + struct.pack('>i', len(value)) + b''.join(nbt_string(c['text']) for c in value)
         else:
             out += b'\x09' + nbt_string(key) + b'\x0a' + struct.pack('>i', len(value)) + b''.join(body(c) for c in value)
     return out + b'\0'
+
+
+def player(name, uuid):
+    return {'text': name, 'insertion': name, 'click_event': {'action': 'suggest_command', 'command': '/tell ' + name + ' '},
+            'hover_event': {'action': 'show_entity', 'id': 'minecraft:player', 'uuid': uuid, 'name': name}}
 
 
 def chat(component):
@@ -37,8 +60,8 @@ def translate(key, *arguments):
     return {'translate': key, 'with': list(arguments)} if arguments else {'translate': key}
 
 
-def admin(name, message):
-    return {'translate': 'chat.type.admin', 'with': [{'text': name}, message], 'color': 'gray', 'italic': True}
+def admin(sender, message):
+    return {'translate': 'chat.type.admin', 'with': [sender, message], 'color': 'gray', 'italic': True}
 
 
 def run(client, text):
@@ -67,11 +90,16 @@ def main():
         with wire.server(config) as port:
             op = Probe(port, 'operator').login()
             witness = Probe(port, 'witness').login('Witness')
+            # Offline-mode UUID, as listed to the other player.
+            op_uuid = next(payload[2:18] for name, payload in witness.seen if name == 'player_info_update' and b'ParityProbe' in payload)
             guest = Probe(port, 'guest').login('Guest')
             try:
                 for client in (op, witness, guest):
                     client.tick_barrier()  # Drain join messages before measuring command output.
                     assert difficulties(client.seen) == [b'\x02\x00'], 'dedicated servers send an unlocked difficulty'
+                guest_uuid = next(payload[2:18] for name, payload in op.seen if name == 'player_info_update' and b'Guest' in payload)
+                joined = {'translate': 'multiplayer.player.joined', 'with': [player('Guest', guest_uuid)], 'color': 'yellow'}
+                assert chat(joined) in chats(op.seen) and chat(joined) in chats(witness.seen), 'vanilla join message'
                 normal = translate('options.difficulty.normal')
                 hard = translate('options.difficulty.hard')
 
@@ -84,7 +112,7 @@ def main():
                 assert difficulties(packets) == [b'\x03\x00']
                 witness.tick_barrier()
                 guest.tick_barrier()
-                assert chats(witness.seen[start[witness]:]) == [chat(admin('ParityProbe', success))]
+                assert chats(witness.seen[start[witness]:]) == [chat(admin(player('ParityProbe', op_uuid), success))]
                 assert chats(guest.seen[start[guest]:]) == [], 'non-operators do not receive admin echoes'
                 assert difficulties(witness.seen[start[witness]:]) == difficulties(guest.seen[start[guest]:]) == [b'\x03\x00']
 
@@ -101,6 +129,9 @@ def main():
                     traces.extend(late.trace)
                 finally:
                     late.close()
+                late_uuid = op.until('player_info_update', lambda payload: b'Latecomer' in payload)[2:18]
+                left = {'translate': 'multiplayer.player.left', 'with': [player('Latecomer', late_uuid)], 'color': 'yellow'}
+                op.until('system_chat', lambda payload: payload == chat(left))
                 # Numeric game modes are not GameModeArgument input; the operator's mode is unchanged.
                 assert chats(run(op, 'defaultgamemode 1')) != []
                 assert op.mode == 0

@@ -82,7 +82,7 @@ trait Commands
         if (!$broadcastToOperators) {
             return;
         }
-        $admin = ['translate' => 'chat.type.admin', 'with' => [['text' => $sender->name], $message], 'color' => 'gray', 'italic' => true];
+        $admin = ['translate' => 'chat.type.admin', 'with' => [Packets::playerName($sender->name, $sender->uuid), $message], 'color' => 'gray', 'italic' => true];
         foreach ($this->players() as $player) {
             if ($player !== $sender && $this->operator($player)) {
                 $player->send($this->version, 'system_chat', Packets::systemChat($admin));
