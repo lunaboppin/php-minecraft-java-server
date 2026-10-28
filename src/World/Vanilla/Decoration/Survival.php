@@ -93,6 +93,8 @@ final class Survival
                 }
                 return $blocks->inTag($below, 'support_override_snow_layer') || $blocks->sturdy($below, Blocks::UP)
                     || ($blocks->name($below) === 'snow' && $this->prop($below, 'layers') === '8');
+            case 'BambooStalkBlock':
+                return $blocks->inTag($below, 'supports_bamboo');
             case 'LeafLitterBlock':
                 return $blocks->sturdy($below, Blocks::UP);
             case 'CarpetBlock':

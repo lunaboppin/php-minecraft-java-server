@@ -699,6 +699,43 @@ final class Patches
         return true;
     }
 
+    /** BambooFeature, with a podzol disc under some stalks. */
+    public function bamboo(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $blocks = $this->blocks;
+        if (!$blocks->isAir($region->get($x, $y, $z))) {
+            return false;
+        }
+        $trunk = $blocks->state('bamboo', ['age' => '1', 'leaves' => 'none', 'stage' => '0']);
+        if ($this->decorator->survival->canSurvive($trunk, $region, $x, $y, $z)) {
+            $height = $random->nextInt(12) + 5;
+            if ($random->nextFloat() < F32::r((float) ($feature['probability'] ?? 0.0))) {
+                $r = $random->nextInt(4) + 1;
+                for ($xx = $x - $r; $xx <= $x + $r; ++$xx) {
+                    for ($zz = $z - $r; $zz <= $z + $r; ++$zz) {
+                        if (($xx - $x) ** 2 + ($zz - $z) ** 2 <= $r * $r) {
+                            $py = $region->height(Region::WORLD_SURFACE, $xx, $zz) - 1;
+                            if ($blocks->inTag($region->get($xx, $py, $zz), 'beneath_bamboo_podzol_replaceable')) {
+                                $region->set($xx, $py, $zz, $blocks->state('podzol'));
+                            }
+                        }
+                    }
+                }
+            }
+            $py = $y;
+            for ($i = 0; $i < $height && $blocks->isAir($region->get($x, $py, $z)); ++$i) {
+                $region->set($x, $py, $z, $trunk);
+                ++$py;
+            }
+            if ($py - $y >= 3) {
+                $region->set($x, $py, $z, $blocks->state('bamboo', ['age' => '1', 'leaves' => 'large', 'stage' => '1']));
+                $region->set($x, $py - 1, $z, $blocks->state('bamboo', ['age' => '1', 'leaves' => 'large', 'stage' => '0']));
+                $region->set($x, $py - 2, $z, $blocks->state('bamboo', ['age' => '1', 'leaves' => 'small', 'stage' => '0']));
+            }
+        }
+        return true;
+    }
+
     /** Util.toShuffledList */
     private function shuffle(array $list, RandomSource $random): array
     {
