@@ -104,4 +104,38 @@ foreach ($backendCases as $case) {
         rmdir($directory);
     }
 }
+// Saved mobs far from every player are not ticking, so eligibility never consults their
+// blocks. Reading them anyway generated terrain for every saved mob on each tick, which
+// stalled a restored live world with mobs across more chunks than the terrain cache holds.
+$directory = sys_get_temp_dir() . '/php-idle-pushing-' . bin2hex(random_bytes(8));
+mkdir($directory);
+try {
+    $version = new Version();
+    $world = new World($version, $directory . '/world.sqlite', 'terrain', 12345);
+    $idle = [];
+    for ($chunk = 0; $chunk < 40; ++$chunk) {
+        $idle[] = ['id' => $chunk + 1, 'uuid' => bin2hex(random_bytes(16)), 'kind' => 'pig', 'health' => 10, 'x' => 4000.5 + $chunk * 16, 'y' => 80.0, 'z' => -4000.5, 'yaw' => 0.0, 'equipment' => []];
+    }
+    $world->setting('animals', $idle);
+    unset($world);
+    $server = new Server(new Config(port: 0, worldPath: $directory . '/world.sqlite', generator: 'terrain', seed: 12345, difficulty: 2, logDirectory: $directory . '/logs'), $version);
+    for ($tick = 0; $tick < 3; ++$tick) {
+        $backendInvoke($server, 'tick', hrtime(true) / 1e9);
+    }
+    if (count($backendProperty('animals')->getValue($server)) !== 40) {
+        throw new RuntimeException('Idle saved mobs were not restored');
+    }
+    $generated = (new ReflectionProperty(World::class, 'baseCache'))->getValue($backendProperty('world')->getValue($server));
+    if ($generated !== []) {
+        throw new RuntimeException('Idle mob pushing generated ' . count($generated) . ' terrain chunks');
+    }
+    $backendChecks += 2;
+} finally {
+    unset($server);
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($iterator as $path) {
+        $path->isDir() ? rmdir($path->getPathname()) : unlink($path->getPathname());
+    }
+    rmdir($directory);
+}
 echo 'PASS: ' . $backendChecks . " exact native world fields through actual server spawn, ticking, eligibility, queries and contact adapters\n";
