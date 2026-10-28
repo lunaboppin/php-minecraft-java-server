@@ -168,6 +168,7 @@ def main():
     parser.add_argument('--to', dest='end', required=True, help='chunk x:z of the other corner')
     parser.add_argument('--margin', type=int, default=0, help='extra force-loaded chunks around the rectangle')
     parser.add_argument('--structures', action='store_true')
+    parser.add_argument('--threads', type=int, help='limit the official server to this many background (generation) threads')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--work', type=Path, default=ROOT / 'tools/.cache/worldgen-reference')
     parser.add_argument('--eula-file', type=Path, required=True)
@@ -196,7 +197,8 @@ def main():
     (work / 'server.properties').write_text(''.join(f'{k}={v}\n' for k, v in props.items()))
     log = (work / 'server.log').open('w')
     process = subprocess.Popen(
-        [args.java, '-Xms512M', '-Xmx2G', '-Dlog4j.configurationFile=' + str(work / 'log4j2-plain.xml'), '-jar', str(args.jar.resolve()), 'nogui'],
+        [args.java, '-Xms512M', '-Xmx2G', *([f'-Dmax.bg.threads={args.threads}'] if args.threads else []),
+         '-Dlog4j.configurationFile=' + str(work / 'log4j2-plain.xml'), '-jar', str(args.jar.resolve()), 'nogui'],
         cwd=work, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT, text=True,
     )
 
