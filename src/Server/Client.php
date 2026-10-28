@@ -81,7 +81,11 @@ final class Client
     public int $chunkZ = 0;
     public array $loadedChunks = [];
     public array $queuedChunks = [];
-    public bool $awaitingBatch = false;
+    /** PlayerChunkSender: the client's reported rate, the batch window and the send quota. */
+    public float $desiredChunksPerTick = 9.0;
+    public int $maxUnacknowledgedBatches = 1;
+    public int $unacknowledgedBatches = 0;
+    public float $batchQuota = 0.0;
     public float $batchAt = 0;
     public int $heldSlot = 0;
     public array $inventory = [];

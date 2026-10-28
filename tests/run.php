@@ -288,6 +288,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/time-command.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/join-sequence.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/multiplayer.py'), $code);
 if ($code !== 0) {
     exit($code);
