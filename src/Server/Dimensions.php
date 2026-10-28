@@ -96,7 +96,9 @@ trait Dimensions
             $c->loadedChunks = [];
             $c->queuedChunks = [];
             $c->entities = [];
-            $c->awaitingBatch = false;
+            // Respawning creates a fresh player in vanilla: a new chunk sender and newly set attributes.
+            $c->attributesSent = false;
+            [$c->desiredChunksPerTick, $c->maxUnacknowledgedBatches, $c->unacknowledgedBatches, $c->batchQuota] = [9.0, 1, 0, 0.0];
             $c->mining = null;
             $c->eating = null;
             $c->playerLoaded = false;

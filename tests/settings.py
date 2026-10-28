@@ -34,13 +34,14 @@ def main():
                 assert players['online']==2 and {p['name'] for p in players['sample']}=={'ParityProbe','Witness'},players
                 # Drain all initial batches before reducing distance.
                 a.until('set_time',lambda p:struct.unpack_from('>q',p)[0]>120)
-                assert len(a.chunks)==81,len(a.chunks)
+                # ChunkTrackingView with the border ring: 117 chunks at view distance 4, 49 at 2.
+                assert len(a.chunks)==117,len(a.chunks)
                 start=len(b.seen)
                 a.send('client_information',information(view=2,skin=1,arm=1,listing=False));a.barrier()
                 assert a.appearance=={'skinParts':1,'mainHand':1},a.appearance
                 radius=next(p for name,p in reversed(a.seen) if name=='set_chunk_cache_radius')
                 assert wire.read_vi(radius)[0]==2
-                assert len(a.chunks)==25,len(a.chunks)
+                assert len(a.chunks)==49,len(a.chunks)
                 b.barrier()
                 meta=json.loads((ROOT/'reference/26.3/gameplay.json').read_text())['entity_metadata']
                 expected=wire.vi(a.entity_id)+bytes([meta['skin_index']])+wire.vi(meta['byte_serializer'])+b'\1'+bytes([meta['main_hand_index']])+wire.vi(meta['main_hand_serializer'])+b'\1\xff'

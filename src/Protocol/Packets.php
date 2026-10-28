@@ -103,6 +103,24 @@ final class Packets
         return $out;
     }
 
+    /**
+     * ClientboundUpdateAttributesPacket with modifiers: each attribute's base value and its
+     * (identifier, amount, operation) modifiers.
+     *
+     * @param list<array{string, float, list<array{string, float, int}>}> $attributes
+     */
+    public static function attributeModifiers(Catalog $catalog, int $entityId, array $attributes): string
+    {
+        $out = Binary::writeVarInt($entityId) . Binary::writeVarInt(count($attributes));
+        foreach ($attributes as [$name, $base, $modifiers]) {
+            $out .= Binary::writeVarInt($catalog->mobs['attribute_ids'][$name]) . pack('E', $base) . Binary::writeVarInt(count($modifiers));
+            foreach ($modifiers as [$id, $amount, $operation]) {
+                $out .= Binary::writeString($id) . pack('E', $amount) . Binary::writeVarInt($operation);
+            }
+        }
+        return $out;
+    }
+
     /** EquipmentSlot ordinal with the high bit marking another slot, per the 26.3 codec. */
     public static function equipment(
         int $entityId,
@@ -215,10 +233,32 @@ final class Packets
         return $payload;
     }
 
-    public static function playerInfo(string $uuid, string $name, int $gameMode = 1, bool $hat = true, array $properties = []): string
+    /**
+     * ClientboundPlayerInfoUpdatePacket.createPlayerInitializing: every action (mask 0xff) for each
+     * player, without a chat session or display name, listed, at latency and list order 0.
+     *
+     * @param list<array{uuid: string, name: string, gameMode: int, hat: bool, properties: array}> $players
+     */
+    public static function playerInfoInitializing(array $players): string
     {
-        // ADD_PLAYER | UPDATE_GAME_MODE | UPDATE_LISTED | UPDATE_LATENCY | UPDATE_HAT
-        return "\x9d\1" . $uuid . Binary::writeString($name, 16) . self::profileProperties($properties) . Binary::writeVarInt($gameMode) . "\1\0" . chr((int) $hat);
+        $payload = "\xff" . Binary::writeVarInt(count($players));
+        foreach ($players as $player) {
+            $payload .= $player['uuid'] . Binary::writeString($player['name'], 16) . self::profileProperties($player['properties'])
+                . "\0" . Binary::writeVarInt($player['gameMode']) . "\1" . Binary::writeVarInt(0) . "\0" . Binary::writeVarInt(0) . chr((int) $player['hat']);
+        }
+        return $payload;
+    }
+
+    /** ClientboundServerDataPacket: the MOTD as a component, without a server icon. */
+    public static function serverData(string $motd): string
+    {
+        return Nbt::component(['text' => $motd]) . "\0";
+    }
+
+    /** ClientboundInitializeBorderPacket for vanilla's default world border. */
+    public static function defaultWorldBorder(): string
+    {
+        return pack('EEEE', 0.0, 0.0, 59999968.0, 59999968.0) . Binary::writeVarLong(0) . Binary::writeVarInt(29999984) . Binary::writeVarInt(5) . Binary::writeVarInt(300);
     }
 
     public static function damageEvent(Version $version, int $id, int $cause = -1): string

@@ -142,16 +142,34 @@ class World
         $biomes=[];
         for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$biomes[]=$this->biome($cx*16+$bx*4+2,$cz*16+$bz*4+2);}}
         $biomeData=Palette::biomes(array_merge($biomes,$biomes,$biomes,$biomes),(int)ceil(log($this->version->registryCount('worldgen/biome'),2)));
+        // Counts come from each section's distinct states; only sections holding block entities are
+        // scanned per block, and heightmaps are found top-down, skipping all-air sections.
+        $flags=$catalog->flags;$empty=[];
         foreach($sections as $section=>$states){
-            $count=0;$fluids=0;
-            foreach($states as $index=>$state){
-                if($catalog->air($state)){continue;}++$count;if($catalog->fluid($state)){++$fluids;}
-                if(isset($this->blockEntityMap[$state])){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state]).$this->blockEntityNbt($cx*16+($index&15),$section*16+$this->minY+($index>>8),$cz*16+(($index>>4)&15));}
-                $column=$index&255;$height=$section*16+($index>>8)+1;
-                $surface[$column]=max($surface[$column],$height);
-                if($catalog->motionBlocking($state)){$motion[$column]=max($motion[$column],$height);}
+            $count=0;$fluids=0;$hasEntities=false;
+            foreach(array_count_values($states) as $state=>$number){
+                $flag=$flags[$state]??0;
+                if(($flag&1)!==0){continue;}
+                $count+=$number;if(($flag&4)!==0){$fluids+=$number;}
+                if(isset($this->blockEntityMap[$state])){$hasEntities=true;}
+            }
+            $empty[$section]=$count===0;
+            if($hasEntities){
+                foreach($states as $index=>$state){
+                    if(isset($this->blockEntityMap[$state]) && (($flags[$state]??0)&1)===0){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state]).$this->blockEntityNbt($cx*16+($index&15),$section*16+$this->minY+($index>>8),$cz*16+(($index>>4)&15));}
+                }
             }
             $bytes.=pack('nn',$count,$fluids).Palette::blocks($states,$this->globalBits).$biomeData;
+        }
+        for($column=0;$column<256;++$column){
+            $needSurface=true;$needMotion=true;
+            for($y=count($sections)*16-1;$y>=0 && ($needSurface || $needMotion);--$y){
+                if($empty[$y>>4]){$y&=~15;continue;}
+                $flag=$flags[$sections[$y>>4][(($y&15)<<8)|$column]]??0;
+                if(($flag&1)!==0){continue;}
+                if($needSurface){$surface[$column]=$y+1;$needSurface=false;}
+                if($needMotion && ($flag&6)!==0){$motion[$column]=$y+1;$needMotion=false;}
+            }
         }
         $heightmaps="\2";
         foreach([1=>$surface,4=>$motion] as $type=>$values){$packed=Palette::pack($values,9);$heightmaps.=Binary::writeVarInt($type).Binary::writeVarInt(intdiv(strlen($packed),8)).$packed;}

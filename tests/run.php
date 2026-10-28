@@ -208,6 +208,7 @@ foreach ([
     'mob-pushing-backend.php',
     'tick-cost-unit.php',
     'terrain-generator-unit.php',
+    'chunk-packet-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
@@ -285,6 +286,14 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/time-command.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/join-sequence.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/command-tree.py'), $code);
 if ($code !== 0) {
     exit($code);
 }

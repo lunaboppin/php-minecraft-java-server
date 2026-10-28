@@ -433,34 +433,84 @@ final class Server
         $this->withDimension($c->dimension, fn () => $this->joinWorld($c));
     }
 
+    /**
+     * PlayerChunkSender.sendNextChunks: the quota grows by the client's desired rate, capped at
+     * that rate, and the nearest pending chunks fill one batch. Vanilla only sends chunks that
+     * are already loaded; generation here is synchronous, so a batch also stops after 25 ms.
+     */
+    private function sendNextChunks(Client $c, float $now): void
+    {
+        if ($c->unacknowledgedBatches >= $c->maxUnacknowledgedBatches || strlen($c->output) >= 1048576) {
+            return;
+        }
+        $float = static fn (float $value): float => unpack('G', pack('G', $value))[1];
+        $c->batchQuota = $float(min($c->batchQuota + $c->desiredChunksPerTick, max(1.0, $c->desiredChunksPerTick)));
+        if ($c->batchQuota < 1.0 || $c->queuedChunks === []) {
+            return;
+        }
+        $pending = $c->queuedChunks;
+        uasort($pending, static fn (array $a, array $b): int => (($a[0] - $c->chunkX) ** 2 + ($a[1] - $c->chunkZ) ** 2) <=> (($b[0] - $c->chunkX) ** 2 + ($b[1] - $c->chunkZ) ** 2));
+        $c->send($this->version, 'chunk_batch_start');
+        ++$c->unacknowledgedBatches;
+        $count = 0;
+        $started = hrtime(true);
+        foreach (array_slice($pending, 0, (int) floor($c->batchQuota), true) as $key => [$x, $z]) {
+            $c->send($this->version, 'level_chunk_with_light', $this->world->chunk($x, $z));
+            $c->loadedChunks[$key] = [$x, $z];
+            $this->naturalAnimals($x, $z);
+            unset($c->queuedChunks[$key]);
+            ++$count;
+            $c->trackingDirty = true;
+            if ((hrtime(true) - $started) / 1e6 > 25) {
+                break;
+            }
+        }
+        $c->send($this->version, 'chunk_batch_finished', Binary::writeVarInt($count));
+        $c->batchQuota = $float($c->batchQuota - $count);
+        $c->batchAt = $now;
+    }
+
+    /** PlayerList.placeNewPlayer and sendLevelInfo, in vanilla's packet order. */
     private function joinWorld(Client $c): void
     {
         $c->send($this->version, 'login', Packets::playLogin($this->version, $c->entityId, $this->config->maxPlayers, $this->viewDistance($c), $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension, array_keys($this->worlds), $this->config->viewDistance));
-        $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
-        $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
-        $this->health($c);
-        $this->syncInventory($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
-        $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
-        $this->sendWeather($c);
         $this->sendPermissionLevel($c);
-        foreach ($this->players() as $other) {
-            $c->send($this->version, 'player_info_update', Packets::playerInfo($other->uuid, $other->name, $other->gameMode, (($other->information['skinParts'] ?? 0) & 64) !== 0, $other->profileProperties));
-            if ($other !== $c) {
-                $other->send($this->version, 'player_info_update', Packets::playerInfo($c->uuid, $c->name, $c->gameMode, (($c->information['skinParts'] ?? 0) & 64) !== 0, $c->profileProperties));
-                $this->spawnPlayer($c, $other);
-                $this->spawnPlayer($other, $c);
-            }
+        // The recipe book (all filters closed) has no recipes here yet (#24).
+        $c->send($this->version, 'recipe_book_settings', str_repeat("\0", 8));
+        // The join message reaches players already online, not the one joining.
+        $this->broadcastComponent(['translate' => 'multiplayer.player.joined', 'with' => [Packets::playerName($c->name, $c->uuid)], 'color' => 'yellow'], $c->name . ' joined the game', $c);
+        $this->sendPosition($c, [$c->x, $c->y, $c->z]);
+        $c->send($this->version, 'server_data', Packets::serverData($this->config->motd));
+        $info = static fn (Client $player): array => ['uuid' => $player->uuid, 'name' => $player->name, 'gameMode' => $player->gameMode, 'hat' => (($player->information['skinParts'] ?? 0) & 64) !== 0, 'properties' => $player->profileProperties];
+        $others = array_values(array_filter($this->players(), static fn (Client $player): bool => $player !== $c));
+        $c->send($this->version, 'player_info_update', Packets::playerInfoInitializing(array_map($info, $others)));
+        foreach ($this->players() as $player) {
+            $player->send($this->version, 'player_info_update', Packets::playerInfoInitializing([$info($c)]));
         }
+        $c->send($this->version, 'initialize_border', Packets::defaultWorldBorder());
+        $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
+        $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
+        $this->sendJoinWeather($c);
         $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
-        $this->teleport($c, [$c->x, $c->y, $c->z]);
+        // The server ticks at 20 per second, unfrozen and without pending steps.
+        $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
+        $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
+        $this->scheduleChunks($c);
+        $this->broadcastPlayerPosition($c);
+        foreach ($others as $other) {
+            $this->spawnPlayer($c, $other);
+            $this->spawnPlayer($other, $c);
+        }
+        $c->send($this->version, 'post_effects', Binary::writeVarInt(0));
+        $this->syncInventory($c);
+        $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
+        $this->health($c);
         if ($c->dead) {
             $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::text($c->name . ' died'));
         }
-        $this->broadcastComponent(['translate' => 'multiplayer.player.joined', 'with' => [Packets::playerName($c->name, $c->uuid)], 'color' => 'yellow'], $c->name . ' joined the game');
-        $c->send($this->version, 'system_chat', Packets::chat('Use /help. Your progress and block edits are saved.'));
         $this->log($c->name . ' joined from ' . $c->peer);
     }
 
@@ -511,15 +561,21 @@ final class Server
             $this->withDimension($c->dimension, fn () => $this->teleport($c, $position));
             return;
         }
-        [$c->x, $c->y, $c->z] = $position ?? $this->world->spawn();
+        $this->sendPosition($c, $position ?? $this->world->spawn());
+        $this->scheduleChunks($c);
+        $this->broadcastPlayerPosition($c);
+    }
+
+    /** ServerGamePacketListenerImpl.teleport: move the player and await their confirmation. */
+    private function sendPosition(Client $c, array $position): void
+    {
+        [$c->x, $c->y, $c->z] = $position;
         $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
         $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportAt = self::now();
         $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
-        $this->scheduleChunks($c);
-        $this->broadcastPlayerPosition($c);
     }
 
     private function scheduleChunks(Client $c): void
@@ -531,8 +587,13 @@ final class Server
         $wanted = [];
         $queue = [];
         $view = $this->viewDistance($c);
-        for ($z = $cz - $view; $z <= $cz + $view; ++$z) {
-            for ($x = $cx - $view; $x <= $cx + $view; ++$x) {
+        // ChunkTrackingView.isWithinDistance with the chunks adjacent to the view border: a
+        // cylinder two chunks wider than the view distance.
+        for ($z = $cz - $view - 2; $z <= $cz + $view + 2; ++$z) {
+            for ($x = $cx - $view - 2; $x <= $cx + $view + 2; ++$x) {
+                if (max(0, abs($x - $cx) - 2) ** 2 + max(0, abs($z - $cz) - 2) ** 2 >= $view * $view) {
+                    continue;
+                }
                 $key = $x . ':' . $z;
                 $wanted[$key] = true;
                 if (!isset($c->loadedChunks[$key])) {
@@ -585,10 +646,13 @@ final class Server
             case 'chunk_batch_received':
                 $rate = $r->float();
                 $r->end();
-                if (!is_finite($rate) || $rate <= 0) {
-                    throw new ProtocolException('Invalid chunk batch acknowledgement');
+                // PlayerChunkSender.onChunkBatchReceivedByClient: a NaN rate means the minimum.
+                $c->unacknowledgedBatches = max(0, $c->unacknowledgedBatches - 1);
+                $c->desiredChunksPerTick = is_nan($rate) ? 0.01 : max(0.01, min(64.0, $rate));
+                if ($c->unacknowledgedBatches === 0) {
+                    $c->batchQuota = 1.0;
                 }
-                $c->awaitingBatch = false;
+                $c->maxUnacknowledgedBatches = 10;
                 return;
             case 'move_player_pos': case 'move_player_pos_rot': case 'move_player_rot': case 'move_player_status_only':
                 $this->movement($c, $name, $r);
@@ -612,6 +676,12 @@ final class Server
                     throw new ProtocolException('Invalid chat characters');
                 }
                 $this->broadcast('<' . $c->name . '> ' . $message);
+                return;
+            case 'command_suggestion':
+                $id = $r->varInt();
+                $command = $r->string(32500);
+                $r->end();
+                $this->commandSuggestions($c, $id, $command);
                 return;
             case 'chat_command':
                 $command = $r->string(256);
@@ -1062,11 +1132,13 @@ final class Server
     }
 
     /** Log the server-side English text, as vanilla's console does, and send the component. */
-    private function broadcastComponent(array $message, string $logText): void
+    private function broadcastComponent(array $message, string $logText, ?Client $except = null): void
     {
         $this->log('[CHAT] ' . $logText);
         foreach ($this->players() as $player) {
-            $player->send($this->version, 'system_chat', Packets::systemChat($message));
+            if ($player !== $except) {
+                $player->send($this->version, 'system_chat', Packets::systemChat($message));
+            }
         }
     }
 
@@ -1105,7 +1177,7 @@ final class Server
                 }
                 continue;
             }
-            if (($c->state !== 'play' && $now - $c->connectedAt > 30) || $now - $c->lastRead > 60 || ($c->keepAlive !== null && $now - $c->lastKeepAlive > 30) || ($c->teleport !== null && $now - $c->teleportAt > 30) || ($c->awaitingBatch && $now - $c->batchAt > 30)) {
+            if (($c->state !== 'play' && $now - $c->connectedAt > 30) || $now - $c->lastRead > 60 || ($c->keepAlive !== null && $now - $c->lastKeepAlive > 30) || ($c->teleport !== null && $now - $c->teleportAt > 30) || ($c->unacknowledgedBatches > 0 && $now - $c->batchAt > 30)) {
                 $this->disconnect($c, 'Connection timed out');
                 continue;
             }
@@ -1130,20 +1202,10 @@ final class Server
                     if ($this->ticks % 20 === 0) {
                         $this->sendClock($c);
                     }
-                    if ($c->queuedChunks !== [] && !$c->awaitingBatch && strlen($c->output) < 1048576) {
-                        $c->send($this->version, 'chunk_batch_start');
-                        $count = 0;
-                        foreach (array_slice($c->queuedChunks, 0, 2, true) as $key => [$x, $z]) {
-                            $c->send($this->version, 'level_chunk_with_light', $this->world->chunk($x, $z));
-                            $c->loadedChunks[$key] = [$x, $z];
-                            $this->naturalAnimals($x, $z);
-                            unset($c->queuedChunks[$key]);
-                            ++$count;
-                            $c->trackingDirty = true;
-                        }
-                        $c->send($this->version, 'chunk_batch_finished', Binary::writeVarInt($count));
-                        $c->awaitingBatch = true;
-                        $c->batchAt = $now;
+                    $this->sendNextChunks($c, $now);
+                    if (!$c->attributesSent) {
+                        $c->send($this->version, 'update_attributes', $this->joinAttributes($c));
+                        $c->attributesSent = true;
                     }
                     $this->refreshTracking($c);
                 });

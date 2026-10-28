@@ -232,24 +232,93 @@ trait Commands
         return CommandModules\CommandRegistry::names($this->operator($sender));
     }
 
+    /**
+     * The command tree: the official graph for the player's permission level (4 for operators,
+     * as vanilla's default op level, otherwise 0) for the vanilla commands implemented here, and
+     * a string argument for this server's own commands.
+     */
+    private function commandTree(Client $client): CommandModules\CommandTree
+    {
+        static $graph = null;
+        static $trees = [];
+        $operator = $this->operator($client);
+        $graph ??= json_decode((string) file_get_contents($this->version->directory . '/commands.json'), true, 512, JSON_THROW_ON_ERROR)['nodes'];
+        if (!isset($trees[$operator])) {
+            $vanilla = array_map(static fn (int $child): string => $graph[$child]['name'], $graph[0]['network_children']);
+            $names = $this->commandNames($client);
+            $trees[$operator] = new CommandModules\CommandTree($graph, $operator ? 4 : 0, array_values(array_intersect($names, $vanilla)), array_values(array_diff($names, $vanilla)));
+        }
+        return $trees[$operator];
+    }
+
+    /**
+     * ServerCommandSuggestionsProvider for this server's ask_server arguments: /op suggests online
+     * players who are not operators, /deop the operators, and /time set the clock's time markers.
+     * Other requests are answered with no suggestions.
+     */
+    private function commandSuggestions(Client $client, int $id, string $text): void
+    {
+        $input = str_starts_with($text, '/') ? substr($text, 1) : $text;
+        $tokens = explode(' ', $input);
+        $partial = (string) end($tokens);
+        $start = strlen($text) - strlen($partial);
+        $candidates = [];
+        $resources = false;
+        if ($this->operator($client) && count($tokens) === 2 && in_array($tokens[0], ['op', 'deop'], true)) {
+            $candidates = $tokens[0] === 'op'
+                ? array_map(static fn (Client $player): string => $player->name, array_filter($this->players(), fn (Client $player): bool => !$this->operator($player)))
+                : $this->config->operators;
+        } elseif ($this->operator($client) && ($tokens[0] ?? '') === 'time' && (array_slice($tokens, 0, 2) === ['time', 'set'] && count($tokens) === 3 || ($tokens[1] ?? '') === 'of' && ($tokens[3] ?? '') === 'set' && count($tokens) === 5)) {
+            $clock = count($tokens) === 5 ? (str_contains($tokens[2], ':') ? $tokens[2] : 'minecraft:' . $tokens[2]) : 'minecraft:overworld';
+            foreach ($this->version->catalog->timelines as $timeline) {
+                if ($timeline['clock'] === $clock) {
+                    foreach ($timeline['time_markers'] as $marker => $data) {
+                        if ($data['show_in_commands'] ?? false) {
+                            $candidates[] = $marker;
+                        }
+                    }
+                }
+            }
+            $resources = true;
+        }
+        $remaining = strtolower($partial);
+        $matches = array_values(array_unique(array_filter($candidates, static function (string $candidate) use ($remaining, $resources): bool {
+            if (!$resources || str_contains($remaining, ':')) {
+                return self::matchesSubString($remaining, strtolower($candidate));
+            }
+            [$namespace, $path] = explode(':', $candidate, 2);
+            return self::matchesSubString($remaining, $namespace) || self::matchesSubString($remaining, $path);
+        })));
+        // Suggestions.create orders suggestions case-insensitively.
+        usort($matches, static fn (string $a, string $b): int => strcasecmp($a, $b));
+        $payload = Binary::writeVarInt($id) . Binary::writeVarInt($start) . Binary::writeVarInt(strlen($partial)) . Binary::writeVarInt(count($matches));
+        foreach ($matches as $match) {
+            $payload .= Binary::writeString($match) . "\0";
+        }
+        $client->send($this->version, 'command_suggestions', $payload);
+    }
+
+    /** SharedSuggestionProvider.matchesSubStr: a match at the start or after any '.', '_' or '/'. */
+    private static function matchesSubString(string $input, string $candidate): bool
+    {
+        for ($index = 0; ; ++$index) {
+            if (str_starts_with(substr($candidate, $index), $input)) {
+                return true;
+            }
+            $next = strcspn($candidate, '._/', $index);
+            if ($index + $next >= strlen($candidate)) {
+                return false;
+            }
+            $index += $next;
+        }
+    }
+
     private function commands(Client $client): void
     {
-        $names = $this->commandNames($client);
-        $nodes = [];
-        $children = [];
-        foreach ($names as $i => $name) {
-            $children[] = 1 + $i * 2;
-        }
-        $root = "\0" . Binary::writeVarInt(count($children));
-        foreach ($children as $id) {
-            $root .= Binary::writeVarInt($id);
-        }
-        $nodes[] = $root;
-        foreach ($names as $i => $name) {
-            $nodes[] = "\5\1" . Binary::writeVarInt(2 + $i * 2) . Binary::writeString($name);
-            $nodes[] = "\6\0" . Binary::writeString('arguments') . Binary::writeVarInt($this->version->blocks['argument_string']) . "\2";
-        }
-        $client->send($this->version, 'commands', Binary::writeVarInt(count($nodes)) . implode('', $nodes) . "\0");
+        static $packets = [];
+        $tree = $this->commandTree($client);
+        $packets[spl_object_id($tree)] ??= $tree->packet($this->version->blocks['argument_string']);
+        $client->send($this->version, 'commands', $packets[spl_object_id($tree)]);
     }
 
     private function coordinate(string $text, float $relative): float
@@ -397,6 +466,16 @@ trait Commands
     {
         foreach ($this->players() as $player) {
             $player->send($this->version, 'set_time', $this->clockPacket([$name]));
+        }
+    }
+
+    /** sendLevelInfo: weather is only sent to a joining player while it rains. */
+    private function sendJoinWeather(Client $client): void
+    {
+        if ($client->dimension === 'overworld' && $this->weather !== 'clear') {
+            $client->send($this->version, 'game_event', "\1" . pack('G', 0));
+            $client->send($this->version, 'game_event', "\7" . pack('G', 1.0));
+            $client->send($this->version, 'game_event', "\x08" . pack('G', $this->weather === 'thunder' ? 1.0 : 0.0));
         }
     }
 
