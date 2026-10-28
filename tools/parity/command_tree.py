@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare PHP's command trees, built from the exported graph, with the official server's.
+"""Compare PHP's command trees and /help usage, built from the exported graph, with the official server's.
 
 The official operator (level 4) and non-operator (level 0) trees are captured, PHP builds the same
 trees for every root with CommandTree, and both are decoded and compared node by node: flags,
@@ -10,11 +10,12 @@ import argparse
 import json
 import os
 from pathlib import Path
+import struct
 import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from protocol import Probe, ROOT
+from protocol import Probe, ROOT, wire
 from run import Server
 
 
@@ -107,10 +108,36 @@ def difference(ours, theirs):
     return walk(0, 0, ())
 
 
+def php_usage(level, path):
+    code = ('require "src/bootstrap.php"; $g = json_decode(file_get_contents("reference/26.3/commands.json"), true)["nodes"];'
+            '$roots = array_map(fn ($c) => $g[$c]["name"], $g[0]["network_children"]);'
+            'echo json_encode((new PhpMinecraftJavaServer\\Server\\Commands\\CommandTree($g, %d, $roots, []))->usage(json_decode($argv[1], true)));' % level)
+    return json.loads(subprocess.run(['php', '-r', code, json.dumps(path)], cwd=ROOT, check=True, capture_output=True, text=True).stdout)
+
+
+def help_lines(client, command):
+    start = len(client.seen)
+    client.send('chat_command', wire.string(command))
+    client.tick_barrier()
+    lines = []
+    for packet, payload in client.seen[start:]:
+        if packet == 'system_chat' and payload[0] == 8:
+            length = struct.unpack_from('>H', payload, 1)[0]
+            lines.append(payload[3:3 + length].decode())
+    return lines
+
+
+def canonical(line):
+    """Gamerule alternatives are listed in the official server's hash order."""
+    if line.startswith('/gamerule ('):
+        return '/gamerule (' + '|'.join(sorted(line[len('/gamerule ('):-1].split('|'))) + ')'
+    return line
+
+
 def php_tree(level):
     code = ('require "src/bootstrap.php"; $g = json_decode(file_get_contents("reference/26.3/commands.json"), true)["nodes"];'
             '$roots = array_map(fn ($c) => $g[$c]["name"], $g[0]["network_children"]); $v = new PhpMinecraftJavaServer\\Protocol\\Version();'
-            'echo bin2hex(PhpMinecraftJavaServer\\Server\\Commands\\CommandTree::packet($g, %d, $roots, [], $v->blocks["argument_string"]));' % level)
+            'echo bin2hex((new PhpMinecraftJavaServer\\Server\\Commands\\CommandTree($g, %d, $roots, []))->packet($v->blocks["argument_string"]));' % level)
     return bytes.fromhex(subprocess.run(['php', '-r', code], cwd=ROOT, check=True, capture_output=True, text=True).stdout)
 
 
@@ -127,9 +154,12 @@ def main():
     server.start()
     try:
         captured = {}
+        helps = {}
         for level, name in ((4, 'ParityProbe'), (0, 'Witness')):
             client = Probe(server.port, name).login(name)
+            client.tick_barrier()
             captured[level] = next(payload for packet, payload in client.seen if packet == 'commands')
+            helps[level] = {command: help_lines(client, command) for command in ('help', 'help gamemode', 'help tp', 'help list')}
             client.close()
     finally:
         server.stop()
@@ -141,6 +171,14 @@ def main():
         print(f'level {level}: {len(decode(ours))} nodes, {len(ours)} bytes; ' + ('identical structure' if found is None else 'differs at ' + found))
         if found:
             failures.append(found)
+        for command, official in helps[level].items():
+            path = command.split()[1:]
+            usage = php_usage(level, path)
+            ours = [] if usage is None else ['/' + ' '.join(path + [line]) for line in usage]
+            same = [canonical(line) for line in ours] == [canonical(line) for line in official] or (usage is None and official and not official[0].startswith('/'))
+            print(f'level {level} /{command}: {len(official)} lines, ' + ('identical' if same else 'differs'))
+            if not same:
+                failures.append(command)
     sys.exit(1 if failures else 0)
 
 

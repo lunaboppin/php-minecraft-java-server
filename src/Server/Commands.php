@@ -237,18 +237,26 @@ trait Commands
      * as vanilla's default op level, otherwise 0) for the vanilla commands implemented here, and
      * a string argument for this server's own commands.
      */
-    private function commands(Client $client): void
+    private function commandTree(Client $client): CommandModules\CommandTree
     {
-        $operator = $this->operator($client);
         static $graph = null;
         static $trees = [];
+        $operator = $this->operator($client);
         $graph ??= json_decode((string) file_get_contents($this->version->directory . '/commands.json'), true, 512, JSON_THROW_ON_ERROR)['nodes'];
         if (!isset($trees[$operator])) {
             $vanilla = array_map(static fn (int $child): string => $graph[$child]['name'], $graph[0]['network_children']);
             $names = $this->commandNames($client);
-            $trees[$operator] = CommandModules\CommandTree::packet($graph, $operator ? 4 : 0, array_values(array_intersect($names, $vanilla)), array_values(array_diff($names, $vanilla)), $this->version->blocks['argument_string']);
+            $trees[$operator] = new CommandModules\CommandTree($graph, $operator ? 4 : 0, array_values(array_intersect($names, $vanilla)), array_values(array_diff($names, $vanilla)));
         }
-        $client->send($this->version, 'commands', $trees[$operator]);
+        return $trees[$operator];
+    }
+
+    private function commands(Client $client): void
+    {
+        static $packets = [];
+        $tree = $this->commandTree($client);
+        $packets[spl_object_id($tree)] ??= $tree->packet($this->version->blocks['argument_string']);
+        $client->send($this->version, 'commands', $packets[spl_object_id($tree)]);
     }
 
     private function coordinate(string $text, float $relative): float

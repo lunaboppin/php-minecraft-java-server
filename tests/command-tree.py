@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""The command trees sent to operators and other players: vanilla subtrees for implemented commands."""
+"""The command trees sent to operators and other players, and /help: vanilla subtrees and usage."""
 import argparse
 import json
 from pathlib import Path
+import struct
 import sys
 import tempfile
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,8 +55,16 @@ def main():
                             # This server's own commands take a greedy string.
                             literal = sent[index]
                             argument = sent[literal['children'][0]]
-                            assert literal['flags'] == 1 and argument['flags'] == 6 and argument['raw'] == b'\x02', (name, command)
+                            assert literal['flags'] == 5 and argument['flags'] == 6 and argument['raw'] == b'\x02', (name, command)
                     assert ('gamemode' in sent_roots) == (level == 4) and 'help' in sent_roots and 'advancement' not in sent_roots, sorted(sent_roots)
+                    # /help prints brigadier's smart usage of this tree, one literal line per command.
+                    start = len(client.seen)
+                    client.send('chat_command', wire.string('help'))
+                    client.tick_barrier()
+                    lines = [p[3:3 + struct.unpack_from('>H', p, 1)[0]].decode() for n, p in client.seen[start:] if n == 'system_chat' and p[0] == 8]
+                    assert len(lines) == len(sent_roots) and '/list [uuids]' in lines and '/spawn [<arguments>]' in lines, lines
+                    if level == 4:
+                        assert '/gamemode <gamemode> [<target>]' in lines and '/tp -> teleport' in lines, lines
                     traces.extend(client.trace)
                 finally:
                     client.close()
