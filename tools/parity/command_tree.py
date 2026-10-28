@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare PHP's command trees and /help usage, built from the exported graph, with the official server's.
+"""Compare PHP's command trees, /help usage and ask_server suggestions with the official server's.
 
 The official operator (level 4) and non-operator (level 0) trees are captured, PHP builds the same
 trees for every root with CommandTree, and both are decoded and compared node by node: flags,
@@ -127,6 +127,18 @@ def help_lines(client, command):
     return lines
 
 
+SUGGESTIONS = ['/op ', '/op W', '/deop ', '/deop P', '/time set ', '/time set n', '/time set minecraft:m', '/time of minecraft:overworld set d']
+
+
+def official_suggestions(client):
+    """command_suggestions replies for ask_server arguments, asked while the witness is online."""
+    replies = []
+    for number, text in enumerate(SUGGESTIONS, 1):
+        client.send('command_suggestion', wire.vi(number) + wire.string(text))
+        replies.append(client.until('command_suggestions', lambda payload, number=number: wire.read_vi(payload)[0] == number))
+    return replies
+
+
 def canonical(line):
     """Gamerule alternatives are listed in the official server's hash order."""
     if line.startswith('/gamerule ('):
@@ -155,11 +167,18 @@ def main():
     try:
         captured = {}
         helps = {}
+        witness = None
         for level, name in ((4, 'ParityProbe'), (0, 'Witness')):
+            if level == 4:
+                # A non-operator online for /op's suggestions.
+                witness = Probe(server.port, 'Witness').login('Witness')
             client = Probe(server.port, name).login(name)
             client.tick_barrier()
             captured[level] = next(payload for packet, payload in client.seen if packet == 'commands')
             helps[level] = {command: help_lines(client, command) for command in ('help', 'help gamemode', 'help tp', 'help list')}
+            if level == 4:
+                suggestions = official_suggestions(client)
+                witness.close()
             client.close()
     finally:
         server.stop()
@@ -179,6 +198,20 @@ def main():
             print(f'level {level} /{command}: {len(official)} lines, ' + ('identical' if same else 'differs'))
             if not same:
                 failures.append(command)
+    php = Server(args.output / 'php', 'php', args.java, args.jar, args.eula_file)
+    php.start()
+    try:
+        witness = Probe(php.port, 'Witness').login('Witness')
+        client = Probe(php.port, 'ParityProbe').login()
+        client.tick_barrier()
+        ours = official_suggestions(client)
+        client.close(); witness.close()
+    finally:
+        php.stop()
+    for text, a, b in zip(SUGGESTIONS, ours, suggestions):
+        print(f'suggestions {text!r}: ' + ('identical' if a == b else 'differs'))
+        if a != b:
+            failures.append(text)
     sys.exit(1 if failures else 0)
 
 

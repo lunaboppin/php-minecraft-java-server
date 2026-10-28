@@ -677,6 +677,12 @@ final class Server
                 }
                 $this->broadcast('<' . $c->name . '> ' . $message);
                 return;
+            case 'command_suggestion':
+                $id = $r->varInt();
+                $command = $r->string(32500);
+                $r->end();
+                $this->commandSuggestions($c, $id, $command);
+                return;
             case 'chat_command':
                 $command = $r->string(256);
                 $r->end();

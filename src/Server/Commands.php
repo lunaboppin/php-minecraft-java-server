@@ -251,6 +251,68 @@ trait Commands
         return $trees[$operator];
     }
 
+    /**
+     * ServerCommandSuggestionsProvider for this server's ask_server arguments: /op suggests online
+     * players who are not operators, /deop the operators, and /time set the clock's time markers.
+     * Other requests are answered with no suggestions.
+     */
+    private function commandSuggestions(Client $client, int $id, string $text): void
+    {
+        $input = str_starts_with($text, '/') ? substr($text, 1) : $text;
+        $tokens = explode(' ', $input);
+        $partial = (string) end($tokens);
+        $start = strlen($text) - strlen($partial);
+        $candidates = [];
+        $resources = false;
+        if ($this->operator($client) && count($tokens) === 2 && in_array($tokens[0], ['op', 'deop'], true)) {
+            $candidates = $tokens[0] === 'op'
+                ? array_map(static fn (Client $player): string => $player->name, array_filter($this->players(), fn (Client $player): bool => !$this->operator($player)))
+                : $this->config->operators;
+        } elseif ($this->operator($client) && ($tokens[0] ?? '') === 'time' && (array_slice($tokens, 0, 2) === ['time', 'set'] && count($tokens) === 3 || ($tokens[1] ?? '') === 'of' && ($tokens[3] ?? '') === 'set' && count($tokens) === 5)) {
+            $clock = count($tokens) === 5 ? (str_contains($tokens[2], ':') ? $tokens[2] : 'minecraft:' . $tokens[2]) : 'minecraft:overworld';
+            foreach ($this->version->catalog->timelines as $timeline) {
+                if ($timeline['clock'] === $clock) {
+                    foreach ($timeline['time_markers'] as $marker => $data) {
+                        if ($data['show_in_commands'] ?? false) {
+                            $candidates[] = $marker;
+                        }
+                    }
+                }
+            }
+            $resources = true;
+        }
+        $remaining = strtolower($partial);
+        $matches = array_values(array_unique(array_filter($candidates, static function (string $candidate) use ($remaining, $resources): bool {
+            if (!$resources || str_contains($remaining, ':')) {
+                return self::matchesSubString($remaining, strtolower($candidate));
+            }
+            [$namespace, $path] = explode(':', $candidate, 2);
+            return self::matchesSubString($remaining, $namespace) || self::matchesSubString($remaining, $path);
+        })));
+        // Suggestions.create orders suggestions case-insensitively.
+        usort($matches, static fn (string $a, string $b): int => strcasecmp($a, $b));
+        $payload = Binary::writeVarInt($id) . Binary::writeVarInt($start) . Binary::writeVarInt(strlen($partial)) . Binary::writeVarInt(count($matches));
+        foreach ($matches as $match) {
+            $payload .= Binary::writeString($match) . "\0";
+        }
+        $client->send($this->version, 'command_suggestions', $payload);
+    }
+
+    /** SharedSuggestionProvider.matchesSubStr: a match at the start or after any '.', '_' or '/'. */
+    private static function matchesSubString(string $input, string $candidate): bool
+    {
+        for ($index = 0; ; ++$index) {
+            if (str_starts_with(substr($candidate, $index), $input)) {
+                return true;
+            }
+            $next = strcspn($candidate, '._/', $index);
+            if ($index + $next >= strlen($candidate)) {
+                return false;
+            }
+            $index += $next;
+        }
+    }
+
     private function commands(Client $client): void
     {
         static $packets = [];
