@@ -117,6 +117,14 @@ SCRIPT = [
     ('worldborder damage buffer 2.5', False), ('worldborder warning distance 5', False), ('worldborder warning distance 10', False),
     ('worldborder warning time 15', False), ('worldborder warning time 300', False), ('worldborder warning time 20s', False),
     ('worldborder set 59999968', False), ('worldborder center 0 0', False),
+    # Enchanting main-hand items, from empty inventories.
+    ('!quiet clear @a', False), ('enchant Witness sharpness', False), ('give Witness diamond_sword', False),
+    ('enchant Witness sharpness', False), ('enchant Witness sharpness 3', False), ('enchant Witness smite', False),
+    ('enchant Witness sharpness 6', False), ('enchant Witness minecraft:unbreaking 3', False), ('enchant Witness mending', False),
+    ('enchant Witness binding_curse', False), ('give Witness stone', False), ('enchant Witness unbreaking', False),
+    ('enchant Witness nope', False), ('enchant @a unbreaking', False), ('give @a book', False),
+    ('enchant @a unbreaking', False), ('summon pig 0 64 0', False), ('enchant @e[type=pig] sharpness', False),
+    ('enchant Witness binding_curse', False), ('enchant Witness protection 5', False),
     ('list', False),
 ]
 

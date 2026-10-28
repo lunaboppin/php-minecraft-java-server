@@ -43,6 +43,7 @@ final class ArgumentReader
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
+            'minecraft:enchantment' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/enchantments.json'), true, 512, JSON_THROW_ON_ERROR))),
             'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
             'item_tag' => array_fill_keys(array_keys($version->registryTags('minecraft:item')), true),
         ];

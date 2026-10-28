@@ -45,6 +45,7 @@ final class CommandRegistry
             new CommandDefinition('experience', 'executeExperience', true, ['xp']),
             new CommandDefinition('clear', 'executeClear', true),
             new CommandDefinition('worldborder', 'executeWorldBorder', true),
+            new CommandDefinition('enchant', 'executeEnchant', true),
         ];
     }
 

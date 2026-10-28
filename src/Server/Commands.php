@@ -78,6 +78,8 @@ trait Commands
 
     use CommandModules\WorldBorderCommand;
 
+    use CommandModules\EnchantCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

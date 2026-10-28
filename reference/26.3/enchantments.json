@@ -1,0 +1,321 @@
+{
+  "minecraft:aqua_affinity": {
+    "description": {
+      "translate": "enchantment.minecraft.aqua_affinity"
+    },
+    "supported_items": "#minecraft:enchantable/head_armor",
+    "max_level": 1
+  },
+  "minecraft:bane_of_arthropods": {
+    "description": {
+      "translate": "enchantment.minecraft.bane_of_arthropods"
+    },
+    "supported_items": "#minecraft:enchantable/weapon",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 5
+  },
+  "minecraft:binding_curse": {
+    "description": {
+      "translate": "enchantment.minecraft.binding_curse"
+    },
+    "supported_items": "#minecraft:enchantable/equippable",
+    "max_level": 1
+  },
+  "minecraft:blast_protection": {
+    "description": {
+      "translate": "enchantment.minecraft.blast_protection"
+    },
+    "supported_items": "#minecraft:enchantable/armor",
+    "exclusive_set": "#minecraft:exclusive_set/armor",
+    "max_level": 4
+  },
+  "minecraft:breach": {
+    "description": {
+      "translate": "enchantment.minecraft.breach"
+    },
+    "supported_items": "#minecraft:enchantable/mace",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 4
+  },
+  "minecraft:channeling": {
+    "description": {
+      "translate": "enchantment.minecraft.channeling"
+    },
+    "supported_items": "#minecraft:enchantable/trident",
+    "max_level": 1
+  },
+  "minecraft:density": {
+    "description": {
+      "translate": "enchantment.minecraft.density"
+    },
+    "supported_items": "#minecraft:enchantable/mace",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 5
+  },
+  "minecraft:depth_strider": {
+    "description": {
+      "translate": "enchantment.minecraft.depth_strider"
+    },
+    "supported_items": "#minecraft:enchantable/foot_armor",
+    "exclusive_set": "#minecraft:exclusive_set/boots",
+    "max_level": 3
+  },
+  "minecraft:efficiency": {
+    "description": {
+      "translate": "enchantment.minecraft.efficiency"
+    },
+    "supported_items": "#minecraft:enchantable/mining",
+    "max_level": 5
+  },
+  "minecraft:feather_falling": {
+    "description": {
+      "translate": "enchantment.minecraft.feather_falling"
+    },
+    "supported_items": "#minecraft:enchantable/foot_armor",
+    "max_level": 4
+  },
+  "minecraft:fire_aspect": {
+    "description": {
+      "translate": "enchantment.minecraft.fire_aspect"
+    },
+    "supported_items": "#minecraft:enchantable/fire_aspect",
+    "max_level": 2
+  },
+  "minecraft:fire_protection": {
+    "description": {
+      "translate": "enchantment.minecraft.fire_protection"
+    },
+    "supported_items": "#minecraft:enchantable/armor",
+    "exclusive_set": "#minecraft:exclusive_set/armor",
+    "max_level": 4
+  },
+  "minecraft:flame": {
+    "description": {
+      "translate": "enchantment.minecraft.flame"
+    },
+    "supported_items": "#minecraft:enchantable/bow",
+    "max_level": 1
+  },
+  "minecraft:fortune": {
+    "description": {
+      "translate": "enchantment.minecraft.fortune"
+    },
+    "supported_items": "#minecraft:enchantable/mining_loot",
+    "exclusive_set": "#minecraft:exclusive_set/mining",
+    "max_level": 3
+  },
+  "minecraft:frost_walker": {
+    "description": {
+      "translate": "enchantment.minecraft.frost_walker"
+    },
+    "supported_items": "#minecraft:enchantable/foot_armor",
+    "exclusive_set": "#minecraft:exclusive_set/boots",
+    "max_level": 2
+  },
+  "minecraft:impaling": {
+    "description": {
+      "translate": "enchantment.minecraft.impaling"
+    },
+    "supported_items": "#minecraft:enchantable/trident",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 5
+  },
+  "minecraft:infinity": {
+    "description": {
+      "translate": "enchantment.minecraft.infinity"
+    },
+    "supported_items": "#minecraft:enchantable/bow",
+    "exclusive_set": "#minecraft:exclusive_set/bow",
+    "max_level": 1
+  },
+  "minecraft:knockback": {
+    "description": {
+      "translate": "enchantment.minecraft.knockback"
+    },
+    "supported_items": "#minecraft:enchantable/melee_weapon",
+    "max_level": 2
+  },
+  "minecraft:looting": {
+    "description": {
+      "translate": "enchantment.minecraft.looting"
+    },
+    "supported_items": "#minecraft:enchantable/melee_weapon",
+    "max_level": 3
+  },
+  "minecraft:loyalty": {
+    "description": {
+      "translate": "enchantment.minecraft.loyalty"
+    },
+    "supported_items": "#minecraft:enchantable/trident",
+    "max_level": 3
+  },
+  "minecraft:luck_of_the_sea": {
+    "description": {
+      "translate": "enchantment.minecraft.luck_of_the_sea"
+    },
+    "supported_items": "#minecraft:enchantable/fishing",
+    "max_level": 3
+  },
+  "minecraft:lunge": {
+    "description": {
+      "translate": "enchantment.minecraft.lunge"
+    },
+    "supported_items": "#minecraft:enchantable/lunge",
+    "max_level": 3
+  },
+  "minecraft:lure": {
+    "description": {
+      "translate": "enchantment.minecraft.lure"
+    },
+    "supported_items": "#minecraft:enchantable/fishing",
+    "max_level": 3
+  },
+  "minecraft:mending": {
+    "description": {
+      "translate": "enchantment.minecraft.mending"
+    },
+    "supported_items": "#minecraft:enchantable/durability",
+    "max_level": 1
+  },
+  "minecraft:multishot": {
+    "description": {
+      "translate": "enchantment.minecraft.multishot"
+    },
+    "supported_items": "#minecraft:enchantable/crossbow",
+    "exclusive_set": "#minecraft:exclusive_set/crossbow",
+    "max_level": 1
+  },
+  "minecraft:piercing": {
+    "description": {
+      "translate": "enchantment.minecraft.piercing"
+    },
+    "supported_items": "#minecraft:enchantable/crossbow",
+    "exclusive_set": "#minecraft:exclusive_set/crossbow",
+    "max_level": 4
+  },
+  "minecraft:power": {
+    "description": {
+      "translate": "enchantment.minecraft.power"
+    },
+    "supported_items": "#minecraft:enchantable/bow",
+    "max_level": 5
+  },
+  "minecraft:projectile_protection": {
+    "description": {
+      "translate": "enchantment.minecraft.projectile_protection"
+    },
+    "supported_items": "#minecraft:enchantable/armor",
+    "exclusive_set": "#minecraft:exclusive_set/armor",
+    "max_level": 4
+  },
+  "minecraft:protection": {
+    "description": {
+      "translate": "enchantment.minecraft.protection"
+    },
+    "supported_items": "#minecraft:enchantable/armor",
+    "exclusive_set": "#minecraft:exclusive_set/armor",
+    "max_level": 4
+  },
+  "minecraft:punch": {
+    "description": {
+      "translate": "enchantment.minecraft.punch"
+    },
+    "supported_items": "#minecraft:enchantable/bow",
+    "max_level": 2
+  },
+  "minecraft:quick_charge": {
+    "description": {
+      "translate": "enchantment.minecraft.quick_charge"
+    },
+    "supported_items": "#minecraft:enchantable/crossbow",
+    "max_level": 3
+  },
+  "minecraft:respiration": {
+    "description": {
+      "translate": "enchantment.minecraft.respiration"
+    },
+    "supported_items": "#minecraft:enchantable/head_armor",
+    "max_level": 3
+  },
+  "minecraft:riptide": {
+    "description": {
+      "translate": "enchantment.minecraft.riptide"
+    },
+    "supported_items": "#minecraft:enchantable/trident",
+    "exclusive_set": "#minecraft:exclusive_set/riptide",
+    "max_level": 3
+  },
+  "minecraft:sharpness": {
+    "description": {
+      "translate": "enchantment.minecraft.sharpness"
+    },
+    "supported_items": "#minecraft:enchantable/sharp_weapon",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 5
+  },
+  "minecraft:silk_touch": {
+    "description": {
+      "translate": "enchantment.minecraft.silk_touch"
+    },
+    "supported_items": "#minecraft:enchantable/mining_loot",
+    "exclusive_set": "#minecraft:exclusive_set/mining",
+    "max_level": 1
+  },
+  "minecraft:smite": {
+    "description": {
+      "translate": "enchantment.minecraft.smite"
+    },
+    "supported_items": "#minecraft:enchantable/weapon",
+    "exclusive_set": "#minecraft:exclusive_set/damage",
+    "max_level": 5
+  },
+  "minecraft:soul_speed": {
+    "description": {
+      "translate": "enchantment.minecraft.soul_speed"
+    },
+    "supported_items": "#minecraft:enchantable/foot_armor",
+    "max_level": 3
+  },
+  "minecraft:sweeping_edge": {
+    "description": {
+      "translate": "enchantment.minecraft.sweeping_edge"
+    },
+    "supported_items": "#minecraft:enchantable/sweeping",
+    "max_level": 3
+  },
+  "minecraft:swift_sneak": {
+    "description": {
+      "translate": "enchantment.minecraft.swift_sneak"
+    },
+    "supported_items": "#minecraft:enchantable/leg_armor",
+    "max_level": 3
+  },
+  "minecraft:thorns": {
+    "description": {
+      "translate": "enchantment.minecraft.thorns"
+    },
+    "supported_items": "#minecraft:enchantable/armor",
+    "max_level": 3
+  },
+  "minecraft:unbreaking": {
+    "description": {
+      "translate": "enchantment.minecraft.unbreaking"
+    },
+    "supported_items": "#minecraft:enchantable/durability",
+    "max_level": 3
+  },
+  "minecraft:vanishing_curse": {
+    "description": {
+      "translate": "enchantment.minecraft.vanishing_curse"
+    },
+    "supported_items": "#minecraft:enchantable/vanishing",
+    "max_level": 1
+  },
+  "minecraft:wind_burst": {
+    "description": {
+      "translate": "enchantment.minecraft.wind_burst"
+    },
+    "supported_items": "#minecraft:enchantable/mace",
+    "max_level": 3
+  }
+}
