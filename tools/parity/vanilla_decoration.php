@@ -38,7 +38,9 @@ $chunks = [];
 for ($dz = -3; $dz <= 3; ++$dz) {
     for ($dx = -3; $dx <= 3; ++$dx) {
         $chunk = $generator->chunk($centerX + $dx, $centerZ + $dz);
-        $chunks[($centerX + $dx) . ',' . ($centerZ + $dz)] = new ProtoChunk($centerX + $dx, $centerZ + $dz, array_map($blocks->state(...), $chunk['blocks']), $chunk['biomes']);
+        $ids = array_map($blocks->state(...), $chunk['blocks']);
+        $heights = ProtoChunk::worldgenHeights($blocks, $ids, $generator->settings->minY, $generator->settings->height);
+        $chunks[($centerX + $dx) . ',' . ($centerZ + $dz)] = new ProtoChunk($centerX + $dx, $centerZ + $dz, $ids, $chunk['biomes'], $heights);
     }
 }
 $settings = $generator->settings;

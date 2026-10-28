@@ -110,6 +110,14 @@ final class Survival
             case 'BigDripleafBlock':
                 return in_array($blocks->name($below), ['big_dripleaf', 'big_dripleaf_stem'], true) || $blocks->inTag($below, 'supports_big_dripleaf');
         }
+        if (in_array('BaseCoralWallFanBlock', $chain, true)) {
+            $facing = array_search($this->prop($state, 'facing'), ['down', 'up', 'north', 'south', 'west', 'east'], true);
+            [$dx, $dy, $dz] = Blocks::OFFSETS[$facing ^ 1];
+            return $blocks->sturdy($region->get($x + $dx, $y + $dy, $z + $dz), $facing);
+        }
+        if (in_array('BaseCoralPlantTypeBlock', $chain, true)) {
+            return $blocks->sturdy($below, Blocks::UP);
+        }
         if (in_array('GrowingPlantBlock', $chain, true)) {
             $up = in_array($class, ['KelpBlock', 'KelpPlantBlock', 'TwistingVinesBlock', 'TwistingVinesPlantBlock'], true);
             $attached = $up ? $below : $above;

@@ -37,9 +37,10 @@ final class BiomeClimate
     }
 
     /** Biome.BIOME_INFO_NOISE */
+    /** Biome.BIOME_INFO_NOISE, a SimplexNoise whose Noise.get returns a float. */
     public function infoNoise(float $x, float $z): float
     {
-        return $this->infoNoise->get($x, $z);
+        return F32::r($this->infoNoise->get($x, $z));
     }
 
     /** @return array{0: float, 1: string} the base temperature and temperature modifier */

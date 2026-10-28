@@ -290,8 +290,11 @@ final class Providers
                 }
                 return $this->blocks->with($state, $json['property'], (string) self::int($json['values'], $random));
             case 'rotated':
-                $state = $this->blocks->parse($json['state']);
                 $direction = isset($json['direction']) ? array_search($json['direction'], ['down', 'up', 'north', 'south', 'west', 'east'], true) : $random->nextInt(6);
+                // The wrapped state is a provider, or a plain block state as shorthand.
+                $state = is_array($json['state']) && !isset($json['state']['type'])
+                    ? $this->blocks->parse($json['state'])
+                    : $this->state($json['state'], $region, $random, $x, $y, $z);
                 $axis = $direction <= 1 ? 'y' : ($direction <= 3 ? 'z' : 'x');
                 $name = ['down', 'up', 'north', 'south', 'west', 'east'][$direction];
                 // trySetValue: AXIS, then FACING (also HORIZONTAL_FACING's name) when the value is allowed.

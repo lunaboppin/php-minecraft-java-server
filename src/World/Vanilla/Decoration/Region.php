@@ -8,8 +8,9 @@ use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
 
 /**
  * server.level.WorldGenRegion for decoration: the decorating chunk and its eight neighbours.
- * Writes outside the 3×3 area are refused, as vanilla's write radius does. Heightmaps are
- * found by scanning, which matches vanilla's incrementally maintained ones.
+ * Writes outside the 3×3 area are refused, as vanilla's write radius does. The worldgen
+ * heightmaps are the chunks' post-carving ones; the others are found by scanning, which
+ * matches vanilla's incrementally maintained ones.
  */
 final class Region
 {
@@ -87,7 +88,7 @@ final class Region
         }
         $chunk = $this->chunks[($x >> 4) . ',' . ($z >> 4)];
         $chunk->blocks[(($y - $this->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
-        foreach ([self::WORLD_SURFACE_WG, self::OCEAN_FLOOR_WG, self::MOTION_BLOCKING, self::MOTION_BLOCKING_NO_LEAVES] as $type) {
+        foreach ([self::WORLD_SURFACE, self::OCEAN_FLOOR, self::MOTION_BLOCKING, self::MOTION_BLOCKING_NO_LEAVES] as $type) {
             unset($this->heights["$type,$x,$z"]);
         }
         return true;
@@ -97,8 +98,8 @@ final class Region
     {
         $blocks = $this->blocks;
         return match ($type) {
-            self::WORLD_SURFACE_WG, self::WORLD_SURFACE => !$blocks->isAir($state),
-            self::OCEAN_FLOOR_WG, self::OCEAN_FLOOR => $blocks->flag($state, Blocks::MOTION_HEIGHTMAP),
+            self::WORLD_SURFACE => !$blocks->isAir($state),
+            self::OCEAN_FLOOR => $blocks->flag($state, Blocks::MOTION_HEIGHTMAP),
             self::MOTION_BLOCKING => $blocks->flag($state, Blocks::MOTION_HEIGHTMAP) || $blocks->hasFluid($state),
             self::MOTION_BLOCKING_NO_LEAVES => $blocks->flag($state, Blocks::MOTION_NO_LEAVES) || $blocks->hasFluid($state),
         };
@@ -107,11 +108,11 @@ final class Region
     /** WorldGenRegion.getHeight: the lowest Y above every block the heightmap counts. */
     public function height(string $type, int $x, int $z): int
     {
-        $canonical = match ($type) {
-            self::WORLD_SURFACE => self::WORLD_SURFACE_WG,
-            self::OCEAN_FLOOR => self::OCEAN_FLOOR_WG,
-            default => $type,
-        };
+        if ($type === self::WORLD_SURFACE_WG || $type === self::OCEAN_FLOOR_WG) {
+            $chunk = $this->chunks[($x >> 4) . ',' . ($z >> 4)] ?? null;
+            return $chunk === null ? $this->minY : $chunk->worldgenHeights[($type === self::OCEAN_FLOOR_WG ? 256 : 0) | (($z & 15) << 4) | ($x & 15)];
+        }
+        $canonical = $type;
         $key = "$canonical,$x,$z";
         if (isset($this->heights[$key])) {
             return $this->heights[$key];

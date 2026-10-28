@@ -7,14 +7,17 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Decoration;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 
-/** Frozen ocean features: icebergs and the blue ice inside them. */
+/** Ice features: icebergs, the blue ice inside them, and ice spikes. */
 final class Ice
 {
     private readonly Blocks $blocks;
 
+    private readonly Predicates $predicates;
+
     public function __construct(Decorator $decorator)
     {
         $this->blocks = $decorator->blocks;
+        $this->predicates = $decorator->predicates;
     }
 
     private function named(int $state, string ...$names): bool
@@ -272,6 +275,72 @@ final class Ice
                 if ($this->named($region->get($px + $dx, $py + $dy, $pz + $dz), 'blue_ice')) {
                     $region->set($px, $py, $pz, $blue);
                     break;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** SpikeFeature: an ice spike with a pillar down to Y 50. */
+    public function spike(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        while ($this->blocks->isAir($region->get($x, $y, $z)) && $y > $region->minY + 2) {
+            --$y;
+        }
+        if (!$this->predicates->test($feature['can_place_on'], $region, $x, $y, $z)) {
+            return false;
+        }
+        $state = $this->blocks->parse($feature['state']);
+        $replace = fn (int $px, int $py, int $pz): bool => $this->predicates->test($feature['can_replace'], $region, $px, $py, $pz);
+        $y += $random->nextInt(4);
+        $height = $random->nextInt(4) + 7;
+        $width = intdiv($height, 4) + $random->nextInt(2);
+        if ($width > 1 && $random->nextInt(60) === 0) {
+            $y += 10 + $random->nextInt(30);
+        }
+        for ($yOff = 0; $yOff < $height; ++$yOff) {
+            $scale = F32::r(F32::r(1.0 - F32::r($yOff / (float) $height)) * $width);
+            $newWidth = self::ceil($scale);
+            for ($xo = -$newWidth; $xo <= $newWidth; ++$xo) {
+                $dx = F32::r(abs($xo) - 0.25);
+                for ($zo = -$newWidth; $zo <= $newWidth; ++$zo) {
+                    $dz = F32::r(abs($zo) - 0.25);
+                    $inside = ($xo === 0 && $zo === 0) || !(F32::r(F32::r($dx * $dx) + F32::r($dz * $dz)) > F32::r($scale * $scale));
+                    if (!$inside) {
+                        continue;
+                    }
+                    $edge = $xo === -$newWidth || $xo === $newWidth || $zo === -$newWidth || $zo === $newWidth;
+                    if ($edge && $random->nextFloat() > 0.75) {
+                        continue;
+                    }
+                    foreach ($yOff !== 0 && $newWidth > 1 ? [$yOff, -$yOff] : [$yOff] as $dy) {
+                        [$px, $py, $pz] = [$x + $xo, $y + $dy, $z + $zo];
+                        if ($this->blocks->isAir($region->get($px, $py, $pz)) || $replace($px, $py, $pz)) {
+                            $region->set($px, $py, $pz, $state);
+                        }
+                    }
+                }
+            }
+        }
+        $pillar = max(0, min(1, $width - 1));
+        for ($xo = -$pillar; $xo <= $pillar; ++$xo) {
+            for ($zo = -$pillar; $zo <= $pillar; ++$zo) {
+                [$px, $py, $pz] = [$x + $xo, $y - 1, $z + $zo];
+                $run = 50;
+                if (abs($xo) === 1 && abs($zo) === 1) {
+                    $run = $random->nextInt(5);
+                }
+                while ($py > 50) {
+                    $here = $region->get($px, $py, $pz);
+                    if (!$this->blocks->isAir($here) && !$replace($px, $py, $pz) && $here !== $state) {
+                        break;
+                    }
+                    $region->set($px, $py, $pz, $state);
+                    --$py;
+                    if (--$run <= 0) {
+                        $py -= $random->nextInt(5) + 1;
+                        $run = $random->nextInt(5);
+                    }
                 }
             }
         }

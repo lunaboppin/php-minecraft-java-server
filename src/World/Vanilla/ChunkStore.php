@@ -42,6 +42,11 @@ final class ChunkStore
         $db->exec('CREATE TABLE IF NOT EXISTS vanilla_chunks(cx INTEGER NOT NULL,cz INTEGER NOT NULL,status INTEGER NOT NULL,blocks BLOB NOT NULL,biomes BLOB NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_requests(cx INTEGER NOT NULL,cz INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_claims(cx INTEGER NOT NULL,cz INTEGER NOT NULL,claimed REAL NOT NULL,PRIMARY KEY(cx,cz))');
+        // Worldgen heightmaps of the carved chunk, kept while neighbours decorate into it.
+        $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
+        if (!in_array('heights', $columns, true)) {
+            $db->exec('ALTER TABLE vanilla_chunks ADD COLUMN heights BLOB');
+        }
     }
 
     public function blocks(): Blocks
@@ -178,11 +183,14 @@ final class ChunkStore
         $chunk = $this->generator()->chunk($cx, $cz);
         $blocks = $this->blocks();
         $ids = array_map(static fn (string $name): int => $blocks->state($name), $chunk['blocks']);
-        $q = $this->db->prepare('INSERT OR IGNORE INTO vanilla_chunks(cx,cz,status,blocks,biomes) VALUES(?,?,1,?,?)');
+        $settings = $this->generator()->settings;
+        $heights = ProtoChunk::worldgenHeights($blocks, $ids, $settings->minY, $settings->height);
+        $q = $this->db->prepare('INSERT OR IGNORE INTO vanilla_chunks(cx,cz,status,blocks,biomes,heights) VALUES(?,?,1,?,?,?)');
         $q->bindValue(1, $cx, \PDO::PARAM_INT);
         $q->bindValue(2, $cz, \PDO::PARAM_INT);
         $q->bindValue(3, self::encode($ids), \PDO::PARAM_LOB);
         $q->bindValue(4, implode("\n", $chunk['biomes']), \PDO::PARAM_LOB);
+        $q->bindValue(5, pack('s*', ...$heights), \PDO::PARAM_LOB);
         $q->execute();
     }
 
@@ -202,12 +210,16 @@ final class ChunkStore
         }
         $this->db->exec('BEGIN IMMEDIATE');
         try {
-            $q = $this->db->prepare('SELECT cx,cz,status,blocks,biomes FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ?');
+            $q = $this->db->prepare('SELECT cx,cz,status,blocks,biomes,heights FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ?');
             $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
             $chunks = [];
             $done = false;
-            foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $status, $blocks, $biomes]) {
-                $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, self::decode($blocks), explode("\n", $biomes));
+            $settings = $this->generator()->settings;
+            foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $status, $blocks, $biomes, $heights]) {
+                $ids = self::decode($blocks);
+                // Chunks stored before heightmaps were kept use their current blocks.
+                $heights = $heights === null ? ProtoChunk::worldgenHeights($this->blocks(), $ids, $settings->minY, $settings->height) : array_values(unpack('s*', $heights));
+                $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, $ids, explode("\n", $biomes), $heights);
                 if ((int) $x === $cx && (int) $z === $cz && (int) $status >= self::DECORATED) {
                     $done = true;
                 }
@@ -216,7 +228,6 @@ final class ChunkStore
                 $this->db->exec('COMMIT');
                 return;
             }
-            $settings = $this->generator()->settings;
             $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $settings->height, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed);
             $this->decorator()->decorate($region);
             $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=?,status=MAX(status,?) WHERE cx=? AND cz=?');

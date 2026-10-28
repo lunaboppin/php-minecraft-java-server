@@ -178,11 +178,42 @@ final class Decorator
                 return array_fill(0, max(0, (int) ceil(($noise + ($modifier['noise_offset'] ?? 0.0)) * $modifier['noise_to_count_ratio'])), $position);
             case 'environment_scan':
                 return $this->environmentScan($modifier, $region, $position);
+            case 'cuboid':
+                return self::cuboid($modifier, $random, $position);
             case 'randomly_selected':
                 return $this->modify($modifier['placements'][$random->nextInt(count($modifier['placements']))], $region, $random, $position, $top);
         }
         $this->skipped['placement ' . $modifier['type']] = ($this->skipped['placement ' . $modifier['type']] ?? 0) + 1;
         return [];
+    }
+
+    /**
+     * CuboidPlacement: the positions of a box, optionally without its edges or interior.
+     *
+     * @return list<array{0: int, 1: int, 2: int}>
+     */
+    private static function cuboid(array $modifier, RandomSource $random, array $position): array
+    {
+        $height = Providers::int($modifier['y_size'], $random);
+        $width = Providers::int($modifier['xz_size'], $random);
+        $length = Providers::int($modifier['xz_size'], $random);
+        $edges = $modifier['include_edges'] ?? true;
+        $interior = $modifier['include_interior'] ?? true;
+        $out = [];
+        for ($x = 0; $x <= $width; ++$x) {
+            for ($y = 0; $y <= $height; ++$y) {
+                for ($z = 0; $z <= $length; ++$z) {
+                    $innerX = $x !== 0 && $x !== $width;
+                    $innerY = $y !== 0 && $y !== $height;
+                    $innerZ = $z !== 0 && $z !== $length;
+                    if (($edges || $innerX || $innerY) && ($edges || $innerZ || $innerY) && ($edges || $innerX || $innerZ)
+                        && ($interior || !$innerX || !$innerY || !$innerZ)) {
+                        $out[] = [$position[0] + $x, $position[1] + $y, $position[2] + $z];
+                    }
+                }
+            }
+        }
+        return $out;
     }
 
     private function environmentScan(array $modifier, Region $region, array $position): array
@@ -242,6 +273,16 @@ final class Decorator
                 return $chosen !== null && $this->placePlaced($chosen, $region, $random, [$x, $y, $z]);
             case 'random_boolean_selector':
                 return $this->placePlaced($random->nextBoolean() ? $feature['feature_true'] : $feature['feature_false'], $region, $random, [$x, $y, $z]);
+            case 'overlay':
+                $placedAny = false;
+                foreach ((array) $feature['features'] as $placed) {
+                    $placedAny = $this->placePlaced($placed, $region, $random, [$x, $y, $z]) || $placedAny;
+                }
+                return $placedAny;
+            case 'coral_tree':
+                return ($this->patches ??= new Patches($this))->coralTree($feature['feature'], $region, $random, $x, $y, $z);
+            case 'coral_claw':
+                return ($this->patches ??= new Patches($this))->coralClaw($feature['feature'], $region, $random, $x, $y, $z);
             case 'sequence':
                 foreach ((array) $feature['features'] as $placed) {
                     if (!$this->placePlaced($placed, $region, $random, [$x, $y, $z])) {
@@ -288,6 +329,8 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->speleothem($feature, $region, $random, $x, $y, $z);
             case 'iceberg':
                 return ($this->ice ??= new Ice($this))->iceberg($feature, $region, $random, $x, $z);
+            case 'spike':
+                return ($this->ice ??= new Ice($this))->spike($feature, $region, $random, $x, $y, $z);
             case 'blue_ice':
                 return ($this->ice ??= new Ice($this))->blueIce($region, $random, $x, $y, $z);
             case 'large_dripstone':

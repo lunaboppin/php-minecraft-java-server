@@ -1094,6 +1094,81 @@ final class Patches
         }
     }
 
+    /** Direction.Plane.HORIZONTAL: north, east, south, west (clockwise). */
+    private const PLANE = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
+    /** CoralTreeFeature: a short trunk with two to four branches. */
+    public function coralTree(mixed $placed, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $trunk = $random->nextInt(3) + 1;
+        for ($i = 0; $i < $trunk; ++$i) {
+            if (!$this->decorator->placePlaced($placed, $region, $random, [$x, $y, $z])) {
+                return true;
+            }
+            ++$y;
+        }
+        $branches = $random->nextInt(3) + 2;
+        foreach (array_slice($this->shuffle(self::PLANE, $random), 0, $branches) as [$dx, $dz]) {
+            [$px, $py, $pz] = [$x + $dx, $y, $z + $dz];
+            $height = $random->nextInt(5) + 2;
+            $segment = 0;
+            for ($j = 0; $j < $height && $this->decorator->placePlaced($placed, $region, $random, [$px, $py, $pz]); ++$j) {
+                ++$segment;
+                ++$py;
+                if ($j === 0 || ($segment >= 2 && $random->nextFloat() < F32::r(0.25))) {
+                    $px += $dx;
+                    $pz += $dz;
+                    $segment = 0;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** CoralClawFeature: a base block with two or three bent arms. */
+    public function coralClaw(mixed $placed, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        if (!$this->decorator->placePlaced($placed, $region, $random, [$x, $y, $z])) {
+            return false;
+        }
+        $claw = $random->nextInt(4);
+        $branches = $random->nextInt(2) + 2;
+        $options = $this->shuffle([$claw, ($claw + 1) % 4, ($claw + 3) % 4], $random);
+        foreach (array_slice($options, 0, $branches) as $branch) {
+            [$bx, $bz] = self::PLANE[$branch];
+            [$px, $py, $pz] = [$x + $bx, $y, $z + $bz];
+            $sideways = $random->nextInt(2) + 1;
+            if ($branch === $claw) {
+                $segment = [$bx, 0, $bz];
+                $inward = $random->nextInt(3) + 2;
+            } else {
+                ++$py;
+                $segment = [[$bx, 0, $bz], [0, 1, 0]][$random->nextInt(2)];
+                $inward = $random->nextInt(3) + 3;
+            }
+            for ($i = 0; $i < $sideways && $this->decorator->placePlaced($placed, $region, $random, [$px, $py, $pz]); ++$i) {
+                $px += $segment[0];
+                $py += $segment[1];
+                $pz += $segment[2];
+            }
+            $px -= $segment[0];
+            $py -= $segment[1] - 1;
+            $pz -= $segment[2];
+            [$cx, $cz] = self::PLANE[$claw];
+            for ($i = 0; $i < $inward; ++$i) {
+                $px += $cx;
+                $pz += $cz;
+                if (!$this->decorator->placePlaced($placed, $region, $random, [$px, $py, $pz])) {
+                    break;
+                }
+                if ($random->nextFloat() < F32::r(0.25)) {
+                    ++$py;
+                }
+            }
+        }
+        return true;
+    }
+
     /** Util.toShuffledList */
     private function shuffle(array $list, RandomSource $random): array
     {
