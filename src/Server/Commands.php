@@ -366,9 +366,38 @@ trait Commands
         }
     }
 
+    /** Clock name => total, paused, rate and partial-tick fields. */
+    private const CLOCKS = [
+        'minecraft:overworld' => ['dayTime', 'clockPaused', 'clockRate', 'clockPartial'],
+        'minecraft:the_end' => ['endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'],
+    ];
+
+    /** The periodic time sync: game time only, as clients extrapolate the clocks. */
     private function sendClock(Client $client): void
     {
-        $client->send($this->version, 'set_time', Packets::clockTime($this->version, $this->worldAge, $this->dayTime, $this->daylightCycle));
+        $client->send($this->version, 'set_time', $this->clockPacket([]));
+    }
+
+    /**
+     * set_time with the named clocks' network state. The effective rate is zero while a clock is
+     * paused or time does not advance.
+     */
+    private function clockPacket(array $names): string
+    {
+        $clocks = [];
+        foreach ($names as $name) {
+            [$total, $paused, $rate, $partial] = self::CLOCKS[$name];
+            $clocks[] = [substr($name, 10), $this->$total, $this->$partial, $this->daylightCycle && !$this->$paused ? $this->$rate : 0.0];
+        }
+        return Packets::clockTime($this->version, $this->worldAge, $clocks);
+    }
+
+    /** ServerClockManager.modifyClock: everyone receives the changed clock. */
+    private function broadcastClock(string $name): void
+    {
+        foreach ($this->players() as $player) {
+            $player->send($this->version, 'set_time', $this->clockPacket([$name]));
+        }
     }
 
     private function sendWeather(Client $client): void

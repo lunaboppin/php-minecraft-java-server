@@ -124,9 +124,11 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 /give player item [count]
 /tp player
 /tp [player] x y z
-/time set day|noon|night|midnight|ticks
-/time add ticks
-/time query
+/time set <ticks>|day|noon|night|midnight
+/time add <ticks>
+/time query time|gametime
+/time pause|resume
+/time rate <rate>
 /weather clear|rain|thunder
 /seed
 /setworldspawn [x y z [yaw pitch]]

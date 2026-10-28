@@ -5,6 +5,10 @@ import struct
 # Independent of the PHP encoder: vanilla NBT text components. CompoundTag is a Java HashMap,
 # so fields appear in bucket order (the official join message in tests/text-component-unit.php
 # pins this against captured bytes).
+class Long(int):
+    """A Java long translation argument (plain ints are Java ints)."""
+
+
 def nbt_string(value):
     data = value.encode('utf-8')
     return struct.pack('>H', len(data)) + data
@@ -33,13 +37,17 @@ def body(component):
             out += b'\x0a' + nbt_string(key) + body(value)
         elif all(isinstance(c, float) for c in value):
             out += b'\x09' + nbt_string(key) + b'\x05' + struct.pack('>i', len(value)) + b''.join(struct.pack('>f', c) for c in value)
-        elif all(isinstance(c, int) for c in value):
+        elif all(isinstance(c, Long) for c in value):
+            out += b'\x09' + nbt_string(key) + b'\x04' + struct.pack('>i', len(value)) + b''.join(struct.pack('>q', c) for c in value)
+        elif all(isinstance(c, int) and not isinstance(c, Long) for c in value):
             out += b'\x09' + nbt_string(key) + b'\x03' + struct.pack('>i', len(value)) + b''.join(struct.pack('>i', c) for c in value)
         elif all(isinstance(c, dict) and list(c) == ['text'] for c in value):
             out += b'\x09' + nbt_string(key) + b'\x08' + struct.pack('>i', len(value)) + b''.join(nbt_string(c['text']) for c in value)
         else:
             # Mixed tag types: ListTag writes compounds and wraps each number or bare string as {"": value}.
             def entry(c):
+                if isinstance(c, Long):
+                    return b'\x04' + nbt_string('') + struct.pack('>q', c) + b'\0'
                 if isinstance(c, float):
                     return b'\x05' + nbt_string('') + struct.pack('>f', c) + b'\0'
                 if isinstance(c, int):

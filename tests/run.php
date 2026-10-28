@@ -125,7 +125,8 @@ $fixtures = [
     'spawn' => Packets::spawn(), 'chat' => Packets::chat('Hello'), 'time' => Packets::time(100),
     'entity_teleport' => Packets::teleportEntity(1, 0.5, 64, 0.5, 0, 0, true),
     'entity_spawn' => Packets::addPlayer(1, $uuid, $v->blocks['player_entity_type'], 0.5, 64, 0.5, 0, 0),
-    'time_overworld' => Packets::clockTime($v, 100),
+    'time_overworld' => Packets::clockTime($v, 100, [['overworld', 6100, 0.0, 1.0]]),
+    'time' => Packets::clockTime($v, 100),
     'light' => FlatWorld::light(),
     'empty_section' => Palette::section(array_fill(0, 4096, 0), $v->registryId('worldgen/biome', 'plains'), 16),
 ];
@@ -280,6 +281,10 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/death-messages.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/time-command.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
