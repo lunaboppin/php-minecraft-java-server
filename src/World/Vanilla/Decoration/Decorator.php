@@ -36,6 +36,8 @@ final class Decorator
 
     private ?Patches $patches = null;
 
+    private ?Ice $ice = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -284,6 +286,10 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->bamboo($feature, $region, $random, $x, $y, $z);
             case 'speleothem':
                 return ($this->patches ??= new Patches($this))->speleothem($feature, $region, $random, $x, $y, $z);
+            case 'iceberg':
+                return ($this->ice ??= new Ice($this))->iceberg($feature, $region, $random, $x, $z);
+            case 'blue_ice':
+                return ($this->ice ??= new Ice($this))->blueIce($region, $random, $x, $y, $z);
             case 'large_dripstone':
                 return ($this->patches ??= new Patches($this))->largeDripstone($feature, $region, $random, $x, $y, $z);
             case 'speleothem_cluster':
