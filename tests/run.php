@@ -229,6 +229,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/settings.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/difficulty-commands.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/multiplayer.py'), $code);
 if ($code !== 0) {
     exit($code);

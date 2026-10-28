@@ -17,7 +17,7 @@ final class Server
     private World $world;
     private readonly DailyLog $logger;
     private readonly Announcements $announcements;
-    public function __construct(private readonly Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
+    public function __construct(private Config $config, private readonly Version $version = new Version(),?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions=null) {
         $this->logger=new DailyLog($config->logDirectory,$config->logRetentionDays);
         $this->announcements=new Announcements($config->worldPath);
         $this->initializeAuthentication($sessions);
@@ -215,7 +215,7 @@ final class Server
     private function joinWorld(Client $c):void {
         $c->send($this->version,'login',Packets::playLogin($this->version,$c->entityId,$this->config->maxPlayers,$this->viewDistance($c),$c->gameMode,$this->world->generator==='flat' && $c->dimension==='overworld',$this->world->hashedSeed(),$c->dimension,array_keys($this->worlds),$this->config->viewDistance));
         $c->send($this->version,'set_entity_data',Packets::playerAppearance($this->version->catalog,$c->entityId,$c->information['skinParts']??0,$c->information['mainHand']??1));
-        $c->send($this->version,'change_difficulty',chr($this->config->difficulty)."\1");
+        $c->send($this->version,'change_difficulty',Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version,'set_default_spawn_position',Packets::spawn($this->worlds['overworld']->spawn()));
         $this->health($c);
@@ -234,7 +234,7 @@ final class Server
         $c->send($this->version,'game_event',"\x0d".pack('G',0));
         $this->teleport($c,[$c->x,$c->y,$c->z]);
         if($c->dead){$c->send($this->version,'player_combat_kill',Binary::writeVarInt($c->entityId).Nbt::text($c->name.' died'));}
-        $this->broadcast($c->name.' joined the game');
+        $this->broadcastComponent(['translate'=>'multiplayer.player.joined','with'=>[Packets::playerName($c->name,$c->uuid)],'color'=>'yellow'],$c->name.' joined the game');
         $c->send($this->version,'system_chat',Packets::chat('Use /help. Your progress and block edits are saved.'));
         $this->log($c->name.' joined from '.$c->peer);
     }
@@ -476,6 +476,11 @@ final class Server
         $type=$this->world->blockEntityType($this->world->get($x,$y,$z));
         if($type!==null){$c->send($this->version,'block_entity_data',Binary::writePosition($x,$y,$z).Binary::writeVarInt($type).$this->world->blockEntityNbt($x,$y,$z));}
     }
+    /** Log the server-side English text, as vanilla's console does, and send the component. */
+    private function broadcastComponent(array $message, string $logText): void {
+        $this->log('[CHAT] '.$logText);
+        foreach ($this->players() as $player) { $player->send($this->version,'system_chat',Packets::systemChat($message)); }
+    }
     private function broadcast(string $message): void {
         $this->log('[CHAT] '.$message);
         foreach ($this->players() as $player) { $player->send($this->version,'system_chat',Packets::chat($message)); }
@@ -540,7 +545,7 @@ final class Server
                     $other->send($this->version,'player_info_remove',"\1".$c->uuid);
                 } catch (ProtocolException) { $this->closeAfterWrite($other); }
             }
-            $this->broadcast($c->name.' left the game');$this->log($c->name.' disconnected');
+            $this->broadcastComponent(['translate'=>'multiplayer.player.left','with'=>[Packets::playerName($c->name,$c->uuid)],'color'=>'yellow'],$c->name.' left the game');$this->log($c->name.' disconnected');
         }
     }
 }

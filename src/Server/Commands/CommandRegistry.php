@@ -32,6 +32,8 @@ final class CommandRegistry
             new CommandDefinition('save-all', 'executeSaveAll', true),
             new CommandDefinition('summon', 'executeSummon', true),
             new CommandDefinition('dimension', 'executeDimension', true),
+            new CommandDefinition('difficulty', 'executeDifficulty', true),
+            new CommandDefinition('defaultgamemode', 'executeDefaultGameMode', true),
         ];
     }
 
