@@ -375,7 +375,7 @@ def main():
                 # Keep-alive is tested on a real socket, with batching continuously acknowledged.
                 a.until('keep_alive', limit=1000)
                 a.send('chat_command', string('list'))
-                a.until('system_chat', lambda p: b'Players: Steve, Alex' in p)
+                a.until('system_chat', lambda p: b'commands.list.players' in p and b'Steve' in p and b'Alex' in p)
                 check(True, 'keep-alive exchange and continued play')
             finally:
                 a.close()

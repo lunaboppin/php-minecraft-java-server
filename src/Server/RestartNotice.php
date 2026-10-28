@@ -6,7 +6,8 @@ namespace PhpMinecraftJavaServer\Server;
 final class RestartNotice
 {
     public const FALLBACK='Server restarting. Please reconnect shortly.';
-    public static function consume(string $worldPath):string {
-        return OperatorMessage::consume(dirname($worldPath).'/restart-reason.txt')??self::FALLBACK;
+    /** The deployment message if one was left, otherwise $fallback (text or a text component). */
+    public static function consume(string $worldPath,string|array $fallback=self::FALLBACK):string|array {
+        return OperatorMessage::consume(dirname($worldPath).'/restart-reason.txt')??$fallback;
     }
 }

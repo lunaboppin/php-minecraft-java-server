@@ -96,7 +96,7 @@ def main():
                     click(a, slot)
                     click(a, source)
                 # Persistent chest contents, observed concurrently by another player.
-                command(a, 'setblock 2 65 0 chest', 'Block updated')
+                command(a, 'setblock 2 65 0 chest', 'commands.setblock.success')
                 use_block(a, 2, 65, 0)
                 net.check(len(a.inventory) == 63, 'single chest menu has 27 storage and 36 player slots')
                 click(a, find(a, 'oak_planks', 27), mode=1)
@@ -111,7 +111,7 @@ def main():
                 click(a, 0, mode=1)
                 close(a)
                 command(a, 'give @s stick 2', 'Gave 2 stick')
-                command(a, 'setblock 2 65 1 crafting_table', 'Block updated')
+                command(a, 'setblock 2 65 1 crafting_table', 'commands.setblock.success')
                 use_block(a, 2, 65, 1)
                 source = find(a, 'oak_planks', 10)
                 click(a, source)
@@ -131,7 +131,7 @@ def main():
                 # A real 200-tick furnace recipe with real fuel consumption.
                 command(a, 'give @s raw_iron 1', 'Gave 1 raw_iron')
                 command(a, 'give @s coal 1', 'Gave 1 coal')
-                command(a, 'setblock 2 65 2 furnace', 'Block updated')
+                command(a, 'setblock 2 65 2 furnace', 'commands.setblock.success')
                 use_block(a, 2, 65, 2)
                 click(a, find(a, 'raw_iron', 3), mode=1)
                 click(a, find(a, 'coal', 3), mode=1)
@@ -145,7 +145,7 @@ def main():
                 a.until('game_event', lambda p: p[0] == 3 and struct.unpack('>f', p[1:])[0] == 0)
                 # Timed survival mining, drops, pickup and tool durability.
                 a.send('set_carried_item', struct.pack('>h', 8))
-                command(a, 'setblock 1 65 1 stone', 'Block updated')
+                command(a, 'setblock 1 65 1 stone', 'commands.setblock.success')
                 a.send('player_action', net.vi(0) + net.block_position(1, 65, 1) + b'\1' + net.vi(91))
                 a.until('block_changed_ack', lambda p: net.read_vi(p)[0] == 91)
                 with sqlite3.connect(world) as db:
@@ -189,9 +189,9 @@ def main():
                 net.check(b.until('pong_response') == nonce, 'play continues after death and respawn')
                 command(a, 'time set night', 'Time set to 13000')
                 command(a, 'gamerule doDaylightCycle false', 'doDaylightCycle = false')
-                command(a, 'weather rain', 'Weather changed to rain')
+                command(a, 'weather rain', 'commands.weather.set.rain')
                 a.send('move_player_pos', struct.pack('>dddB', 1.5, 65, .5, 1))
-                command(a, 'save-all', 'Saved world and player data')
+                command(a, 'save-all', 'commands.save.success')
                 with sqlite3.connect(world) as db:
                     profile = json.loads(db.execute('SELECT data FROM players WHERE uuid=?', (a.uuid.hex(),)).fetchone()[0])
                     net.check(profile['gameMode'] == 0 and profile['x'] == 1.5, 'player position and mode persisted')

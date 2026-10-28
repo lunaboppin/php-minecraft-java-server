@@ -45,6 +45,12 @@ final class Server
 
     private bool $running = true;
 
+    /** Periodic autosave, toggled by /save-on and /save-off. */
+    private bool $autoSave = true;
+
+    /** The disconnect reason for a /stop shutdown; deployments may still override it. */
+    private string|array|null $stopReason = null;
+
     private int $nextEntity = 1;
 
     private int $ticks = 0;
@@ -193,7 +199,7 @@ final class Server
                 }
             }
         } finally {
-            $restartReason = RestartNotice::consume($this->config->worldPath);
+            $restartReason = RestartNotice::consume($this->config->worldPath, $this->stopReason ?? RestartNotice::FALLBACK);
             foreach ($this->clients as $client) {
                 if ($client->state === 'play') {
                     $this->closeWindow($client);
@@ -425,7 +431,7 @@ final class Server
         $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
-        $c->send($this->version, 'set_default_spawn_position', Packets::spawn($this->worlds['overworld']->spawn()));
+        $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
         $this->health($c);
         $this->syncInventory($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
@@ -1124,7 +1130,7 @@ final class Server
             }
         }
         // Native autosave follows world and connection/player simulation.
-        if ($this->ticks % 200 === 0) {
+        if ($this->autoSave && $this->ticks % 200 === 0) {
             $this->saveWorld();
         }
     }

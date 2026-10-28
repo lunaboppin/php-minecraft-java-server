@@ -35,6 +35,11 @@ $mixed = "\x0a" . "\x09" . $nbtString('with') . "\x0a" . pack('N', 2)
     . "\x08" . $nbtString('translate') . $nbtString('y') . "\0"
     . "\x08" . $nbtString('translate') . $nbtString('k') . "\0";
 $textCheck(Nbt::component(['translate' => 'k', 'with' => [['text' => 'x'], ['translate' => 'y']]]) === $mixed, 'mixed arguments use wrapped compound list entries');
+// Integer translation arguments: alone they form an int list; mixed, each is wrapped as {"": int}.
+$textCheck(Nbt::component(['translate' => 'k', 'with' => [2, 20]]) === "\x0a" . "\x09" . $nbtString('with') . "\x03" . pack('N', 2) . pack('N', 2) . pack('N', 20) . "\x08" . $nbtString('translate') . $nbtString('k') . "\0", 'integer arguments form an int list');
+$textCheck(Nbt::component(['translate' => 'k', 'with' => [2, ['text' => '']]]) === "\x0a" . "\x09" . $nbtString('with') . "\x0a" . pack('N', 2)
+    . "\x03" . $nbtString('') . pack('N', 2) . "\0" . "\x08" . $nbtString('') . $nbtString('') . "\0"
+    . "\x08" . $nbtString('translate') . $nbtString('k') . "\0", 'mixed integer and text arguments are wrapped');
 foreach ([['uuid' => 'short'], ['size' => 1]] as $invalid) {
     try {
         Nbt::component(['translate' => 'k', ...$invalid]);

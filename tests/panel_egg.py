@@ -103,7 +103,7 @@ def container():
             c=net.Client(port,terrain=True).login('EggProbe')
             try:
                 c.send('chat_command',net.string('setblock 1 65 1 diamond_block'))
-                c.until('system_chat',lambda p:b'Block updated' in p)
+                c.until('system_chat',lambda p:b'commands.setblock.success' in p)
                 c.send('chat_command',net.string('give @s diamond 3'))
                 c.until('system_chat',lambda p:b'Gave' in p)
             finally:c.close()

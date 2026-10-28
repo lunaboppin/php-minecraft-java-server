@@ -46,7 +46,8 @@ def use(c, x, y, z, seq=501):
 
 
 def edit(c, x, y, z, state):
-    command(c, f'setblock {x} {y} {z} {state}', 'Block updated')
+    # Setting a block to its current state reports commands.setblock.failed, as in vanilla.
+    command(c, f'setblock {x} {y} {z} {state}', 'commands.setblock.')
 
 
 def move(c, xyz, wait=True):

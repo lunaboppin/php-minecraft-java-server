@@ -64,6 +64,12 @@ trait Commands
 
     use CommandModules\KickCommand;
 
+    use CommandModules\SaveOnCommand;
+
+    use CommandModules\SaveOffCommand;
+
+    use CommandModules\StopCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -178,6 +184,32 @@ trait Commands
         if (file_put_contents($temporary, $json) === false || !rename($temporary, $this->configPath)) {
             throw new \RuntimeException('Cannot save operators to ' . $this->configPath);
         }
+    }
+
+    /**
+     * RotationArgument: yaw then pitch in degrees, either absolute or ~relative to the sender.
+     *
+     * @return array{float, float}
+     */
+    private function rotationArguments(string $yaw, string $pitch, Client $sender): array
+    {
+        $parse = static function (string $text, float $relative): float {
+            $offset = str_starts_with($text, '~');
+            $number = $offset ? substr($text, 1) : $text;
+            if (($number !== '' || !$offset) && !is_numeric($number)) {
+                throw new \InvalidArgumentException('Invalid rotation: ' . $text);
+            }
+            // Java stores the angles as floats.
+            return unpack('G', pack('G', ($offset ? $relative : 0.0) + (float) $number))[1];
+        };
+        return [$parse($yaw, $sender->yaw), $parse($pitch, $sender->pitch)];
+    }
+
+    /** set_default_spawn_position for the stored world spawn and its rotation. */
+    private function worldSpawnPacket(): string
+    {
+        [$yaw, $pitch] = $this->worlds['overworld']->setting('spawnRotation') ?? [0.0, 0.0];
+        return Packets::spawn($this->worlds['overworld']->spawn(), 'overworld', (float) $yaw, (float) $pitch);
     }
 
     private function playerByName(string $name, Client $sender): Client
