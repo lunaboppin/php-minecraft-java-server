@@ -13,9 +13,10 @@ final class CommandRegistry
             new CommandDefinition('help', 'executeHelp', false),
             new CommandDefinition('spawn', 'executeSpawn', false),
             new CommandDefinition('list', 'executeList', false),
-            new CommandDefinition('version', 'executeVersion', false),
             new CommandDefinition('msg', 'executeMessage', false, ['tell']),
             new CommandDefinition('me', 'executeMe', false),
+            // A dedicated server requires game-master permission for /version.
+            new CommandDefinition('version', 'executeVersion', true),
             new CommandDefinition('gamemode', 'executeGameMode', true),
             new CommandDefinition('give', 'executeGive', true),
             new CommandDefinition('tp', 'executeTeleport', true, ['teleport']),

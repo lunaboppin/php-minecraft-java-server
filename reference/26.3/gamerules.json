@@ -1,0 +1,324 @@
+{
+  "version": "26.3",
+  "rules": {
+    "advance_time": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "advance_weather": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "allow_entering_nether_using_portals": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "block_drops": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "block_explosion_drop_decay": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "command_blocks_work": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "command_block_output": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "drowning_damage": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "elytra_movement_check": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "ender_pearls_vanish_on_death": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "entity_drops": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "fall_damage": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "fire_damage": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "fire_spread_radius_around_player": {
+      "type": "int",
+      "default": "128",
+      "min": -1,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "forgive_dead_players": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "freeze_damage": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "global_sound_events": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "immediate_respawn": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "keep_inventory": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "lava_source_conversion": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "limited_crafting": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "locator_bar": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "log_admin_commands": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "max_block_modifications": {
+      "type": "int",
+      "default": "32768",
+      "min": 1,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "max_command_forks": {
+      "type": "int",
+      "default": "65536",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "max_command_sequence_length": {
+      "type": "int",
+      "default": "65536",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "max_entity_cramming": {
+      "type": "int",
+      "default": "24",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "max_minecart_speed": {
+      "type": "int",
+      "default": "8",
+      "min": 1,
+      "max": 1000,
+      "vanilla": false
+    },
+    "max_snow_accumulation_height": {
+      "type": "int",
+      "default": "1",
+      "min": 0,
+      "max": 8,
+      "vanilla": true
+    },
+    "mob_drops": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "mob_explosion_drop_decay": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "mob_griefing": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "natural_health_regeneration": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "player_movement_check": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "players_nether_portal_creative_delay": {
+      "type": "int",
+      "default": "0",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "players_nether_portal_default_delay": {
+      "type": "int",
+      "default": "80",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "players_sleeping_percentage": {
+      "type": "int",
+      "default": "100",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "projectiles_can_break_blocks": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "pvp": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "raids": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "random_tick_speed": {
+      "type": "int",
+      "default": "3",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "reduced_debug_info": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "respawn_radius": {
+      "type": "int",
+      "default": "10",
+      "min": 0,
+      "max": 2147483647,
+      "vanilla": true
+    },
+    "send_command_feedback": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "show_advancement_messages": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "show_death_messages": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawner_blocks_work": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_mobs": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_monsters": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_patrols": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_phantoms": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_wandering_traders": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spawn_wardens": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spectators_generate_chunks": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "spread_vines": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "tnt_explodes": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    },
+    "tnt_explosion_drop_decay": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "universal_anger": {
+      "type": "bool",
+      "default": "false",
+      "vanilla": true
+    },
+    "water_source_conversion": {
+      "type": "bool",
+      "default": "true",
+      "vanilla": true
+    }
+  }
+}

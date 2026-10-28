@@ -39,6 +39,8 @@ SCRIPT = [
     ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
     ('tp Witness 0 70 0', False), ('tp 1 70 1', False), ('tp Witness ParityProbe', False), ('teleport @a 2 70 2', False), ('tp @s ~ ~1 ~', False),
     ('kill Witness', False), ('kill Witness', False),
+    ('version', False), ('gamerule keep_inventory', False), ('gamerule minecraft:keep_inventory true', False), ('gamerule keep_inventory true', False),
+    ('gamerule random_tick_speed 5', False), ('gamerule random_tick_speed', False),
     ('list', False),
 ]
 

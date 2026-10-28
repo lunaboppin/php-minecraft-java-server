@@ -275,6 +275,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/entity-commands.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/rule-commands.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/multiplayer.py'), $code);
 if ($code !== 0) {
     exit($code);

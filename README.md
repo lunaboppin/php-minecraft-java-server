@@ -114,7 +114,7 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 
 ## Commands and operators
 
-Everyone can use `/help`, `/spawn`, `/list`, `/version`, `/msg`, `/tell` and `/me`.
+Everyone can use `/help`, `/spawn`, `/list`, `/msg`, `/tell` and `/me`.
 
 Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. `/op` and `/deop` change the list in game and save it to `server.json` immediately, as vanilla saves `ops.json`; only the `operators` value is rewritten. Operator commands include:
 
@@ -133,7 +133,8 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 /spawnpoint [player [x y z [yaw pitch]]]
 /setblock x y z block[property=value]
 /fill x1 y1 z1 x2 y2 z2 block
-/gamerule doDaylightCycle|keepInventory|naturalRegeneration [true|false]
+/gamerule <rule> [value]
+/version
 /kill [player]
 /heal [player]
 /summon cow|pig|sheep|chicken [x y z]
