@@ -142,17 +142,33 @@ trait Survival
         $this->savePlayer($c);
     }
 
-    /** @param string|array $reason English text after the name, or a vanilla death message component */
-    private function damage(Client $c, float $amount, string|array $reason, bool $force = false): void
+    /**
+     * LivingEntity.hurtServer for players with a vanilla damage type. Returns whether the player was hurt.
+     * Armor, enchantments and effects do not reduce damage yet (#31, #23).
+     */
+    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null): bool
     {
         if ($c->dimension !== $this->world->dimension) {
-            $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $reason, $force));
-            return;
+            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker));
         }
-        if ($c->dead || (!$force && (in_array($c->gameMode, [1, 3], true) || $this->ticks - $c->lastDamageTick < 10))) {
-            return;
+        $type = str_contains($type, ':') ? $type : 'minecraft:' . $type;
+        $tags = $this->version->catalog->damageTypes['tags'];
+        // Creative and spectator players are invulnerable unless the damage type bypasses it.
+        if ($c->dead || (in_array($c->gameMode, [1, 3], true) && !in_array($type, $tags['minecraft:bypasses_invulnerability'], true))) {
+            return false;
         }
-        $c->lastDamageTick = $this->ticks;
+        // During the invulnerability window only a stronger hit lands, for the difference.
+        if ($this->ticks - $c->lastDamageTick < 10) {
+            if ($amount <= $c->lastDamageAmount) {
+                return false;
+            }
+            [$amount, $c->lastDamageAmount] = [$amount - $c->lastDamageAmount, $amount];
+        } else {
+            [$c->lastDamageTick, $c->lastDamageAmount] = [$this->ticks, $amount];
+        }
+        if ($attacker !== null) {
+            [$c->lastHurtByPlayer, $c->lastHurtByPlayerTick] = [$attacker, $this->ticks];
+        }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
         foreach ($this->localPlayers() as $p) {
@@ -171,20 +187,38 @@ trait Survival
                 }$c->inventory = [];
                 $c->experience = 0;
             }
-            if (is_array($reason)) {
-                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component($reason));
-                // The console shows the English death message, as vanilla's does.
-                $this->broadcastComponent($reason, $c->name . ' ' . match ($reason['translate']) {
-                    'death.attack.genericKill' => 'was killed',
-                    default => 'died',
-                });
+            // ServerPlayer.die: the death screen always opens; the message is shared only if the rule allows it.
+            $message = $this->deathMessage($c, $type, $attacker);
+            if ($this->gameRule('show_death_messages') === 'true') {
+                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component($message));
+                $this->broadcastComponent($message, $c->name . ' died: ' . $message['translate']);
             } else {
-                $message = $c->name . ' ' . $reason;
-                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::text($message));
-                $this->broadcast($message);
+                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component(['text' => '']));
             }
             $this->savePlayer($c);
         }
+        return true;
+    }
+
+    /** CombatTracker.getDeathMessage for the killing blow. */
+    private function deathMessage(Client $c, string $type, ?Client $attacker): array
+    {
+        $data = $this->version->catalog->damageTypes['types'][$type] ?? throw new \LogicException('Unknown damage type ' . $type);
+        $victim = Packets::playerName($c->name, $c->uuid);
+        // Fall variants apply to a significant fall of more than five blocks; there is no
+        // ladder, vine or water fall location yet, so it is the generic accident.
+        if (($data['death_message_type'] ?? 'default') === 'fall_variants' && $c->fallDistance > 5) {
+            return ['translate' => 'death.fell.accident.generic', 'with' => [$victim]];
+        }
+        $key = 'death.attack.' . $data['message_id'];
+        if ($attacker !== null) {
+            return ['translate' => $key, 'with' => [$victim, Packets::playerName($attacker->name, $attacker->uuid)]];
+        }
+        // Without a direct attacker, a player who hurt the victim in the last 100 ticks is credited.
+        $credit = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
+        return $credit === null
+            ? ['translate' => $key, 'with' => [$victim]]
+            : ['translate' => $key . '.player', 'with' => [$victim, Packets::playerName($credit->name, $credit->uuid)]];
     }
 
     private function respawnPlayer(Client $c): void
@@ -355,7 +389,7 @@ trait Survival
                 $c->fallDistance += $oldY - $c->y;
             }if ($c->ground) {
                 if ($c->fallDistance > 3) {
-                    $this->damage($c, floor($c->fallDistance - 3), 'hit the ground too hard');
+                    $this->damage($c, floor($c->fallDistance - 3), 'fall');
                 }$c->fallDistance = 0;
             }
         }
@@ -402,8 +436,9 @@ trait Survival
         if ($c->gameMode !== 0 || $this->ticks % 20 !== 0) {
             return;
         }
-        if ($c->y < $this->world->minY - 16) {
-            $this->damage($c, 4, 'fell out of the world');
+        // Entity.checkBelowWorld: out_of_world damage starts 64 blocks below the world.
+        if ($c->y < $this->world->minY - 64) {
+            $this->damage($c, 4, 'out_of_world');
             return;
         }
         $head = $this->world->get((int) floor($c->x), (int) floor($c->y + 1.62), (int) floor($c->z));
@@ -412,19 +447,19 @@ trait Survival
         if ($water) {
             $c->air -= 20;
             if ($c->air < 0) {
-                $this->damage($c, 2, 'drowned');
+                $this->damage($c, 2, 'drown');
             }
         } else {
             $c->air = min(300, $c->air + 80);
         }
         if ($this->version->catalog->blockName($feet) === 'lava') {
             $c->fireTicks = 160;
-            $this->damage($c, 4, 'tried to swim in lava');
+            $this->damage($c, 4, 'lava');
         } elseif ($this->version->catalog->blockName($feet) === 'water') {
             $c->fireTicks = 0;
         } elseif ($c->fireTicks > 0) {
             $c->fireTicks -= 20;
-            $this->damage($c, 1, 'burned to death');
+            $this->damage($c, 1, 'on_fire');
         }
         while ($c->exhaustion >= 4) {
             $c->exhaustion -= 4;
@@ -444,7 +479,7 @@ trait Survival
                 $c->health = min(20, $c->health + 1);
                 $c->exhaustion += 6;
             } elseif ($c->food === 0 && ($this->config->difficulty === 3 || $c->health > ($this->config->difficulty === 1 ? 10 : 1))) {
-                $this->damage($c, 1, 'starved to death');
+                $this->damage($c, 1, 'starve');
             }
         }
         $this->health($c);
@@ -520,7 +555,7 @@ trait Survival
                     'wooden','golden' => 4,'stone' => 5,'iron' => 6,'diamond' => 7,'netherite' => 8,default => 1
                 };
             }
-            $this->damage($target, $damage, 'was slain by ' . $attacker->name);
+            $this->damage($target, $damage, 'player_attack', $attacker);
             $attacker->exhaustion += 0.1;
             return;
         }

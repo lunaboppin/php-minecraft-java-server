@@ -41,6 +41,7 @@ final class CommandRegistry
             new CommandDefinition('save-on', 'executeSaveOn', true),
             new CommandDefinition('save-off', 'executeSaveOff', true),
             new CommandDefinition('stop', 'executeStop', true),
+            new CommandDefinition('damage', 'executeDamage', true),
         ];
     }
 

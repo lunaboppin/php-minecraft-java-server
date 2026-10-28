@@ -297,6 +297,9 @@ def status_test(port):
         text, off = read_string(result)
         info = json.loads(text)
         check(info['version'] == {'name': '26.3', 'protocol': 777}, 'status advertises exact version')
+        # Vanilla's ServerStatus codec: field order, a bare-string plain description, and no empty sample or false enforcesSecureChat.
+        check(list(info) == ['description', 'players', 'version'] and isinstance(info['description'], str), 'status matches vanilla field shape')
+        check('sample' not in info['players'] or info['players']['sample'], 'an empty player sample is omitted')
         check(c.until('pong_response') == nonce, '64-bit ping echoed byte-for-byte')
         check(c.sock.recv(1) == b'', 'status connection closes after pong')
     finally:

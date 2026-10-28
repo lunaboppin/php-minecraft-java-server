@@ -26,6 +26,11 @@ final class Client
     public bool $sprinting = false;
     public int $experience = 0;
     public int $lastDamageTick = -20;
+    /** The amount of the last hurt, which a hit during the invulnerability window must exceed. */
+    public float $lastDamageAmount = 0;
+    /** Kill credit: the player who last hurt this one, remembered for 100 ticks as in vanilla. */
+    public ?Client $lastHurtByPlayer = null;
+    public int $lastHurtByPlayerTick = -1000;
     public ?array $mining = null;
     public ?array $eating = null;
     public ?array $cursor = null;

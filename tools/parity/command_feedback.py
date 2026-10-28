@@ -20,6 +20,8 @@ from run import Server
 # Commands whose feedback does not depend on timing or randomness. Each entry is
 # (command, reconnect the witness first).
 SCRIPT = [
+    # 26.3 has no spawn-monsters property; without these, night-time monsters kill the witness.
+    ('gamerule spawn_monsters false', False), ('gamerule spawn_mobs false', False),
     ('list', False), ('seed', False),
     ('difficulty', False), ('difficulty hard', False), ('difficulty hard', False),
     ('defaultgamemode survival', False), ('defaultgamemode survival', False),
@@ -38,9 +40,15 @@ SCRIPT = [
     ('give Witness minecraft:dirt 3', False), ('give @a minecraft:dirt 2', False), ('give Witness minecraft:diamond_sword 2', False),
     ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
     ('tp Witness 0 70 0', False), ('tp 1 70 1', False), ('tp Witness ParityProbe', False), ('teleport @a 2 70 2', False), ('tp @s ~ ~1 ~', False),
-    ('kill Witness', False), ('kill Witness', False),
+    ('kill Witness', False), ('kill Witness', False), ('!respawn', False),
     ('version', False), ('gamerule keep_inventory', False), ('gamerule minecraft:keep_inventory true', False), ('gamerule keep_inventory true', False),
     ('gamerule random_tick_speed 5', False), ('gamerule random_tick_speed', False),
+    # Death messages: the witness respawns between deaths.
+    ('gamemode survival Witness', False), ('damage Witness 2.5', False),
+    ('damage Witness 100 drown', False), ('!respawn', False), ('damage Witness 100 fall', False), ('!respawn', False),
+    ('damage Witness 100 player_attack by ParityProbe', False), ('!respawn', False),
+    ('damage Witness 1 player_attack by ParityProbe', False), ('damage Witness 100 drown', False), ('!respawn', False),
+    ('damage Witness 100 out_of_world', False), ('!respawn', False), ('damage ParityProbe 5', False),
     ('list', False),
 ]
 
@@ -64,6 +72,12 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 witness = Probe(server.port, 'witness').login('Witness')
                 witness.tick_barrier()
                 operator.tick_barrier()
+            if command == '!respawn':
+                # Not a command: the witness leaves the death screen before the next step.
+                witness.send('client_command', wire.vi(0))
+                witness.tick_barrier()
+                operator.tick_barrier()
+                continue
             marks = (len(operator.seen), len(witness.seen))
             operator.send('chat_command', wire.string(command))
             operator.tick_barrier()
@@ -121,8 +135,8 @@ def main():
     reference = record('java', args.output, args.java, args.jar, args.eula_file, script)
     differences = compare(reference, php)
     (args.output / 'differences.json').write_text(json.dumps(differences, indent=1))
-    matched = len(script) * 2 - len(differences)
-    print(f'{matched}/{len(script) * 2} command observations identical; differences in {args.output / "differences.json"}')
+    observed = sum(command != '!respawn' for command, _ in script) * 2
+    print(f'{observed - len(differences)}/{observed} command observations identical; differences in {args.output / "differences.json"}')
     sys.exit(1 if differences else 0)
 
 
