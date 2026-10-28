@@ -100,6 +100,10 @@ trait Commands
 
     use CommandModules\EffectCommand;
 
+    use CommandModules\PlaySoundCommand;
+
+    use CommandModules\StopSoundCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

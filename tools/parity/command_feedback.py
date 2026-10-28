@@ -219,6 +219,13 @@ SCRIPT = [
     ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
     ('effect give Witness instant_health 1 0', False), ('effect give Witness instant_damage 1 0', False), ('effect give Witness poison 5', False),
     ('effect clear Witness poison', False), ('effect clear', False),
+    # Sounds, with their random seeds zeroed before comparison.
+    ('tp @a 0 100 0', False), ('playsound minecraft:entity.player.levelup', False), ('playsound minecraft:entity.player.levelup master', False),
+    ('playsound entity.player.levelup player @a', False), ('playsound minecraft:block.note_block.harp record Witness 0 100 0 0.5 2', False), ('playsound minecraft:block.note_block.harp record Witness 0 100 0 2 0.5 0.3', False),
+    ('playsound minecraft:block.note_block.harp record Witness 1000 100 0', False), ('playsound minecraft:block.note_block.harp record Witness 1000 100 0 1 1 0.5', False), ('playsound custom:my.sound master @s', False),
+    ('playsound minecraft:entity.player.levelup nope', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ -1', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ 1 3', False),
+    ('stopsound @s', False), ('stopsound @a master', False), ('stopsound Witness * minecraft:entity.player.levelup', False),
+    ('stopsound @s player minecraft:entity.player.levelup', False),
     ('list', False),
 ]
 
@@ -229,7 +236,7 @@ def collect(client, since):
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
-            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect',
+            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect', 'sound', 'stop_sound',
             'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 
 
@@ -287,6 +294,11 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
     return results
 
 
+def normalize_seeds(items):
+    """Zero the random seed that ends every sound packet."""
+    return [{**item, 'hex': item['hex'][:-16] + '0' * 16} if item['packet'] == 'sound' else item for item in items]
+
+
 def normalize_uuids(items):
     """Zero random entity UUIDs (int-array tags and dashed insertion strings) for comparison."""
     uuid_tag = re.compile(r'0b0004' + b'uuid'.hex() + r'00000004[0-9a-f]{32}')
@@ -321,7 +333,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_entity_ids(expected[role])) != key(normalize_entity_ids(actual[role])):
+            if key(normalize_seeds(normalize_entity_ids(expected[role]))) != key(normalize_seeds(normalize_entity_ids(actual[role]))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
