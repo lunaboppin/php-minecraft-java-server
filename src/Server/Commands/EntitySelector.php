@@ -11,7 +11,7 @@ namespace PhpMinecraftJavaServer\Server\Commands;
 final class EntitySelector
 {
     /** Options this server does not evaluate; selecting with one fails. */
-    private const UNSUPPORTED = ['nbt', 'scores', 'advancements', 'predicate'];
+    private const UNSUPPORTED = ['nbt', 'advancements', 'predicate'];
 
     private const OPTIONS = ['name', 'distance', 'level', 'x', 'y', 'z', 'dx', 'dy', 'dz', 'x_rotation', 'y_rotation', 'limit', 'sort', 'gamemode', 'team', 'type', 'tag', 'nbt', 'scores', 'advancements', 'predicate'];
 

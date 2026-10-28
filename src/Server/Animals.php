@@ -205,6 +205,7 @@ trait Animals
             }
         }
         if ($animal['health'] <= 0) {
+            $this->incrementCriteria('totalKillCount', $c->name);
             $this->animalDeathLoot($animal, $c);
             if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
                 $this->giveExperiencePoints($c, random_int(1, 3));

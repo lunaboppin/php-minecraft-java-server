@@ -50,8 +50,9 @@ trait WorldBorderCommand
             case 'center':
                 // Vec2Argument centres absolute block coordinates.
                 $center = static fn (string $text): float => !str_starts_with($text, '~') && !str_contains($text, '.') ? 0.5 : 0.0;
-                $x = $this->coordinate($arguments[1], $sender->x) + $center($arguments[1]);
-                $z = $this->coordinate($arguments[2], $sender->z) + $center($arguments[2]);
+                // Vec2Argument yields floats.
+                $x = unpack('G', pack('G', $this->coordinate($arguments[1], $sender->x) + $center($arguments[1])))[1];
+                $z = unpack('G', pack('G', $this->coordinate($arguments[2], $sender->z) + $center($arguments[2])))[1];
                 if ($x === $border->centerX && $z === $border->centerZ) {
                     throw new CommandFailure(['translate' => 'commands.worldborder.center.failed']);
                 }

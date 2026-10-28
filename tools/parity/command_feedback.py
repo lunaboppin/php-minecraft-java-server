@@ -154,12 +154,36 @@ SCRIPT = [
     ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
     ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
     ('clear Witness diamond_sword', False),
+    # Scoreboard objectives, scores, display slots and score components; "kill" respawns both players.
+    ('scoreboard objectives list', False), ('scoreboard objectives add kills dummy', False), ('scoreboard objectives add kills dummy', False),
+    ('scoreboard objectives add deaths deathCount {text:"Deaths",color:"red"}', False), ('scoreboard objectives add bad nope', False), ('scoreboard objectives add Ab_c-.+ dummy', False),
+    ('scoreboard objectives add averyveryveryveryveryveryverylongname dummy', False), ('scoreboard objectives list', False), ('scoreboard objectives modify kills displayname "Kills!"', False),
+    ('scoreboard objectives modify kills rendertype hearts', False), ('scoreboard objectives setdisplay sidebar kills', False), ('scoreboard objectives setdisplay sidebar kills', False),
+    ('scoreboard objectives setdisplay sidebar', False), ('scoreboard objectives setdisplay list deaths', False), ('scoreboard objectives setdisplay sidebar.team.red kills', False),
+    ('scoreboard objectives setdisplay belowName nope', False), ('scoreboard players set Witness kills 5', False), ('scoreboard players set @a kills 3', False),
+    ('scoreboard players add Witness kills 2', False), ('scoreboard players remove Witness kills 1', False), ('scoreboard players get Witness kills', False),
+    ('scoreboard players get Witness deaths', False), ('scoreboard players get Nobody kills', False), ('scoreboard players set fakeplayer kills 10', False),
+    ('scoreboard players set * kills 1', False), ('scoreboard players list', False), ('scoreboard players list Witness', False),
+    ('scoreboard players list Nobody', False), ('scoreboard players operation Witness kills += fakeplayer kills', False), ('scoreboard players operation Witness kills *= fakeplayer kills', False),
+    ('scoreboard players operation Witness kills %= fakeplayer kills', False), ('scoreboard players operation Witness kills >< fakeplayer kills', False), ('scoreboard players operation Witness kills /= Nobody kills', False),
+    ('scoreboard players get Witness kills', False), ('scoreboard players reset fakeplayer kills', False), ('scoreboard players reset fakeplayer', False),
+    ('scoreboard players enable Witness kills', False), ('scoreboard objectives add t trigger', False), ('scoreboard players enable Witness t', False),
+    ('scoreboard players enable @a t', False), ('tellraw @s {score:{name:"Witness",objective:"kills"}}', False), ('tellraw @s {score:{name:"@s",objective:"kills"}}', False),
+    ('kill @a[scores={kills=1..}]', False), ('scoreboard objectives remove kills', False), ('scoreboard objectives remove kills', False),
+    ('scoreboard objectives list', False),
+    ('!respawn', False),
     ('list', False),
 ]
 
 
 def collect(client, since):
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in ('system_chat', 'disconnect')]
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED]
+
+
+# Chat, disconnects, and the packets commands send directly: scoreboard, titles and the world border.
+COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective',
+            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles',
+            'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 
 
 def record(kind, output, java, jar, eula, script=SCRIPT):

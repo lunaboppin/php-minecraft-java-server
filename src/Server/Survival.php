@@ -233,6 +233,13 @@ trait Survival
             } else {
                 $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component(['text' => '']));
             }
+            // ServerPlayer.die: the death counts, then the killer's kill counts (awardKillScore).
+            $this->incrementCriteria('deathCount', $c->name);
+            $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
+            if ($killer !== null && $killer !== $c) {
+                $this->incrementCriteria('totalKillCount', $killer->name);
+                $this->incrementCriteria('playerKillCount', $killer->name);
+            }
             $this->savePlayer($c);
         }
         return true;

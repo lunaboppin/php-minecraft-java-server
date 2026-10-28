@@ -26,6 +26,8 @@ final class Server
 
     use PlayerLists;
 
+    use Scoreboards;
+
     use Commands;
 
     use Animals;
@@ -487,6 +489,8 @@ final class Server
         $this->sendPermissionLevel($c);
         // The recipe book (all filters closed) has no recipes here yet (#24).
         $c->send($this->version, 'recipe_book_settings', str_repeat("\0", 8));
+        // PlayerList.updateEntireScoreboard: displayed objectives and their scores.
+        $this->sendScoreboard($c);
         // The join message reaches players already online, not the one joining.
         $this->broadcastComponent(['translate' => 'multiplayer.player.joined', 'with' => [Packets::playerName($c->name, $c->uuid)], 'color' => 'yellow'], $c->name . ' joined the game', $c);
         $this->sendPosition($c, [$c->x, $c->y, $c->z]);

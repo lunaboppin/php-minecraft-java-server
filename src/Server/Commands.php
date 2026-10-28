@@ -92,6 +92,8 @@ trait Commands
 
     use CommandModules\TitleCommand;
 
+    use CommandModules\ScoreboardCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -201,6 +203,9 @@ trait Commands
                         return false;
                     }
                 }
+            }
+            if (isset($options['scores']) && !$this->matchesScores($options['scores'][0][1], $entity)) {
+                return false;
             }
             foreach ($options['gamemode'] ?? [] as [$negated, $mode]) {
                 if ($client === null || ($client->gameMode === $mode) === $negated) {

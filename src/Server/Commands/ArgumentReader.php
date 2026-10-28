@@ -129,6 +129,39 @@ final class ArgumentReader
             case 'minecraft:vec3':
                 $this->coordinates($reader, 3, false);
                 return;
+            case 'minecraft:objective':
+                $reader->readUnquotedString();
+                return;
+            case 'minecraft:objective_criteria':
+                $this->criteria($reader);
+                return;
+            case 'minecraft:scoreboard_slot':
+                $slot = $reader->readUnquotedString();
+                if (!isset(\PhpMinecraftJavaServer\World\Scoreboard::SLOTS[$slot])) {
+                    throw $reader->error('argument.scoreboardDisplaySlot.invalid', [$slot]);
+                }
+                return;
+            case 'minecraft:score_holder':
+                if ($reader->canRead() && $reader->peek() === '@') {
+                    EntitySelector::read($reader, $this->selectors, $this->registries['minecraft:entity_type'] ?? null);
+                    return;
+                }
+                while ($reader->canRead() && $reader->peek() !== ' ') {
+                    $reader->skip();
+                }
+                return;
+            case 'minecraft:operation':
+                $start = $reader->cursor;
+                while ($reader->canRead() && $reader->peek() !== ' ') {
+                    $reader->skip();
+                }
+                if (!in_array(substr($reader->string, $start, $reader->cursor - $start), ['=', '+=', '-=', '*=', '/=', '%=', '<', '>', '><'], true)) {
+                    throw $reader->error('arguments.operation.invalid');
+                }
+                return;
+            case 'minecraft:style':
+                Snbt::read($reader);
+                return;
             case 'minecraft:component':
                 TextComponentArgument::read($reader);
                 return;
@@ -279,6 +312,24 @@ final class ArgumentReader
         $reader->skip();
         if ($reader->canRead() && $reader->peek() !== ' ') {
             $reader->readDouble();
+        }
+    }
+
+    /** ObjectiveCriteriaArgument: a built-in criterion, a team colour criterion or a statistic. */
+    private function criteria(StringReader $reader): void
+    {
+        $start = $reader->cursor;
+        while ($reader->canRead() && $reader->peek() !== ' ') {
+            $reader->skip();
+        }
+        $name = substr($reader->string, $start, $reader->cursor - $start);
+        $colors = 'black|dark_blue|dark_green|dark_aqua|dark_red|dark_purple|gold|gray|dark_gray|blue|green|aqua|red|light_purple|yellow|white';
+        $valid = in_array($name, ['dummy', 'trigger', 'deathCount', 'playerKillCount', 'totalKillCount', 'health', 'food', 'air', 'armor', 'xp', 'level'], true)
+            || preg_match('/\A(teamkill|killedByTeam)\.(' . $colors . ')\z/D', $name) === 1
+            || preg_match('/\A[a-z0-9_.\-]+\.[a-z0-9_.\-\/]+:[a-z0-9_.\-]+\.[a-z0-9_.\-\/]+\z/D', $name) === 1;
+        if (!$valid) {
+            $reader->cursor = $start;
+            throw $reader->error('argument.criteria.invalid', [$name]);
         }
     }
 

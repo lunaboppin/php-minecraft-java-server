@@ -52,6 +52,7 @@ final class CommandRegistry
             new CommandDefinition('whitelist', 'executeWhitelist', true),
             new CommandDefinition('tellraw', 'executeTellraw', true),
             new CommandDefinition('title', 'executeTitle', true),
+            new CommandDefinition('scoreboard', 'executeScoreboard', true),
         ];
     }
 
