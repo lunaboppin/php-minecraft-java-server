@@ -24,6 +24,8 @@ final class Server
 
     use Borders;
 
+    use PlayerLists;
+
     use Commands;
 
     use Animals;
@@ -365,10 +367,6 @@ final class Server
                     }
                 }
             }
-            if ($count >= $this->config->maxPlayers) {
-                $this->disconnect($c, 'Server is full');
-                return;
-            }
             $c->name = $username;
             $c->loginStarted = true;
             if ($this->config->onlineMode) {
@@ -377,6 +375,11 @@ final class Server
                 $c->send($this->version, 'hello', $this->challenge->packet($c->challengeNonce));
             } else {
                 $c->uuid = Binary::offlineUuid($username);
+                $rejection = $this->loginRejection($c);
+                if ($rejection !== null) {
+                    $this->disconnect($c, $rejection);
+                    return;
+                }
                 $this->finishLogin($c);
             }
         } elseif ($name === 'key' && $c->authenticationPhase === 'key') {

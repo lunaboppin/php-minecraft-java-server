@@ -45,6 +45,13 @@ final class CommandRegistry
             new CommandDefinition('experience', 'executeExperience', true, ['xp']),
             new CommandDefinition('clear', 'executeClear', true),
             new CommandDefinition('worldborder', 'executeWorldBorder', true),
+            new CommandDefinition('enchant', 'executeEnchant', true),
+            new CommandDefinition('ban', 'executeBan', true),
+            new CommandDefinition('pardon', 'executePardon', true),
+            new CommandDefinition('banlist', 'executeBanList', true),
+            new CommandDefinition('whitelist', 'executeWhitelist', true),
+            new CommandDefinition('tellraw', 'executeTellraw', true),
+            new CommandDefinition('title', 'executeTitle', true),
         ];
     }
 

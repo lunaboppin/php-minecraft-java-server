@@ -16,7 +16,7 @@ trait ClearCommand
     private function executeClear(Client $sender, array $arguments): void
     {
         $targets = $this->selectPlayers($arguments[0] ?? '@s', $sender);
-        $matches = isset($arguments[1]) ? $this->itemPredicate($arguments[1]) : static fn (int $item): bool => true;
+        $matches = isset($arguments[1]) ? $this->itemPredicate($arguments[1]) : static fn (array $stack): bool => true;
         $maximum = isset($arguments[2]) ? (int) $arguments[2] : -1;
         $total = 0;
         foreach ($targets as $player) {
@@ -42,7 +42,7 @@ trait ClearCommand
     {
         $count = 0;
         $take = function (?array $stack) use ($matches, $maximum, &$count): ?array {
-            if ($stack === null || !$matches($stack['item'])) {
+            if ($stack === null || !$matches($stack)) {
                 return $stack;
             }
             if ($maximum === 0) {
@@ -74,18 +74,60 @@ trait ClearCommand
         return $count;
     }
 
-    /** ItemPredicateArgument: an item, an item tag or "*"; component tests are not compared. */
+    /**
+     * ItemPredicateArgument: an item, an item tag or "*", with component tests. Damage and
+     * enchantments are compared exactly; other components and predicates are not.
+     */
     private function itemPredicate(string $text): \Closure
     {
-        if (preg_match('/\A(\*|#?[a-z0-9_.\-:\/]+)/', $text, $match) !== 1) {
-            throw new \InvalidArgumentException('Invalid item predicate');
+        $reader = new StringReader($text);
+        if ($reader->peek() === '*') {
+            $reader->skip();
+            $ids = null;
+        } else {
+            $tag = $reader->peek() === '#';
+            if ($tag) {
+                $reader->skip();
+            }
+            $id = $reader->readIdentifier();
+            $names = $tag ? ($this->version->registryTags('minecraft:item')[$id] ?? []) : [substr($id, 10)];
+            $ids = array_flip(array_map(fn (string $name): int => $this->version->blocks['items'][$name] ?? -1, $names));
         }
-        $id = $match[1];
-        if ($id === '*') {
-            return static fn (int $item): bool => true;
+        $tests = [];
+        if ($reader->canRead() && $reader->peek() === '[') {
+            $reader->skip();
+            while ($reader->canRead() && $reader->peek() !== ']') {
+                $reader->skipWhitespace();
+                $name = $reader->readIdentifier();
+                $reader->skipWhitespace();
+                $operator = $reader->read();
+                $reader->skipWhitespace();
+                $value = Snbt::read($reader);
+                if ($operator === '=' && in_array($name, ['minecraft:damage', 'minecraft:enchantments', 'minecraft:stored_enchantments'], true)) {
+                    $tests[$name] = $value;
+                }
+                $reader->skipWhitespace();
+                if ($reader->canRead() && ($reader->peek() === ',' || $reader->peek() === '|')) {
+                    $reader->skip();
+                }
+            }
         }
-        $names = str_starts_with($id, '#') ? ($this->version->registryTags('minecraft:item')[str_contains($id, ':') ? substr($id, 1) : 'minecraft:' . substr($id, 1)] ?? []) : [preg_replace('/\Aminecraft:/', '', $id)];
-        $ids = array_flip(array_map(fn (string $name): int => $this->version->blocks['items'][$name] ?? -1, $names));
-        return static fn (int $item): bool => isset($ids[$item]);
+        $levels = static fn (array $tag): array => array_combine(array_map(static fn (string $name): string => str_contains($name, ':') ? $name : 'minecraft:' . $name, array_keys($tag['value'])), array_map(static fn (array $level): int => (int) $level['value'], $tag['value']));
+        return static function (array $stack) use ($ids, $tests, $levels): bool {
+            if ($ids !== null && !isset($ids[$stack['item']])) {
+                return false;
+            }
+            foreach ($tests as $name => $value) {
+                $matched = match ($name) {
+                    'minecraft:damage' => ($stack['damage'] ?? 0) === (int) $value['value'],
+                    'minecraft:enchantments' => ($stack['enchantments'] ?? []) == $levels($value),
+                    default => ($stack['storedEnchantments'] ?? []) == $levels($value),
+                };
+                if (!$matched) {
+                    return false;
+                }
+            }
+            return true;
+        };
     }
 }

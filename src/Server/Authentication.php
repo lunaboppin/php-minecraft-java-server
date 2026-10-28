@@ -22,8 +22,11 @@ trait Authentication
             if($c===null || $c->closing || $c->authenticationPhase!=='verifying'){continue;}
             if(isset($result['error'])){$this->disconnect($c,$result['error']);continue;}
             $p=$result['profile'];
-            $c->uuid=$p['uuid'];$c->name=$p['name'];$c->profileProperties=$p['properties'];$c->authenticated=true;$c->authenticationPhase='waiting';
-            foreach($this->clients as $other){if($other!==$c && !$other->closing && $other->authenticated && $other->uuid===$c->uuid){$this->disconnect($other,'You logged in from another location');}}
+            $c->uuid=$p['uuid'];$c->name=$p['name'];$c->profileProperties=$p['properties'];
+            // PlayerList.canPlayerLogin runs before the previous session is disconnected.
+            $rejection=$this->loginRejection($c);if($rejection!==null){$this->disconnect($c,$rejection);continue;}
+            $c->authenticated=true;$c->authenticationPhase='waiting';
+            foreach($this->clients as $other){if($other!==$c && !$other->closing && $other->authenticated && $other->uuid===$c->uuid){$this->disconnect($other,['translate'=>'multiplayer.disconnect.duplicate_login']);}}
             $this->log('Verified account '.$c->name.' ('.Binary::formatUuid($c->uuid).')');
         }
         // Vanilla delays admission until the previous player instance has left the world.

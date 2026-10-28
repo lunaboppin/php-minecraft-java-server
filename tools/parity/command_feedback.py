@@ -117,6 +117,43 @@ SCRIPT = [
     ('worldborder damage buffer 2.5', False), ('worldborder warning distance 5', False), ('worldborder warning distance 10', False),
     ('worldborder warning time 15', False), ('worldborder warning time 300', False), ('worldborder warning time 20s', False),
     ('worldborder set 59999968', False), ('worldborder center 0 0', False),
+    # Enchanting main-hand items, from empty inventories.
+    ('!quiet clear @a', False), ('enchant Witness sharpness', False), ('give Witness diamond_sword', False),
+    ('enchant Witness sharpness', False), ('enchant Witness sharpness 3', False), ('enchant Witness smite', False),
+    ('enchant Witness sharpness 6', False), ('enchant Witness minecraft:unbreaking 3', False), ('enchant Witness mending', False),
+    ('enchant Witness binding_curse', False), ('give Witness stone', False), ('enchant Witness unbreaking', False),
+    ('enchant Witness nope', False), ('enchant @a unbreaking', False), ('give @a book', False),
+    ('enchant @a unbreaking', False), ('summon pig 0 64 0', False), ('enchant @e[type=pig] sharpness', False),
+    ('enchant Witness binding_curse', False), ('enchant Witness protection 5', False),
+    # The whitelist and bans; "!reconnect" brings the witness back after a pardon.
+    ('banlist', False), ('banlist players', False), ('banlist ips', False),
+    ('whitelist list', False), ('whitelist add Witness', False), ('whitelist add Witness', False),
+    ('whitelist list', False), ('whitelist add ParityProbe', False), ('whitelist list', False),
+    ('whitelist on', False), ('whitelist on', False), ('whitelist remove ParityProbe', False),
+    ('whitelist remove ParityProbe', False), ('whitelist off', False), ('whitelist off', False),
+    ('whitelist reload', False), ('whitelist remove Witness', False), ('ban Witness', False),
+    ('banlist', False), ('banlist players', False), ('ban Witness', False),
+    ('pardon Witness', False), ('pardon Witness', False), ('!reconnect', False),
+    ('ban Witness Griefing  the spawn', False), ('banlist', False), ('pardon Witness', False),
+    ('!reconnect', False), ('ban @a[name=Witness]', False), ('pardon Witness', False),
+    ('!reconnect', False), ('banlist', False),
+    # Text component arguments: tellraw and titles.
+    ('tellraw @s "hello"', False), ('tellraw @s {text:"hi",color:"red"}', False), ('tellraw @s {"text":"json style","bold":true}', False),
+    ('tellraw @s ["a",{text:"b",italic:1b}]', False), ('tellraw @s {translate:"chat.type.text",with:["x","y"]}', False), ('tellraw @s {selector:"@a"}', False),
+    ('tellraw @s {text:"x",extra:[{selector:"@s"}]}', False), ('tellraw @s 123', False), ('tellraw @s {text:"unterminated"', False),
+    ('tellraw @s {foo:"bar"}', False), ('tellraw @s {text:1}', False), ('tellraw @a {text:"to all"}', False),
+    ('tellraw Witness [{text:"click",click_event:{action:"run_command",command:"/help"}}]', False), ('tellraw @s {text:"hover",hover_event:{action:"show_text",value:"tip"}}', False), ("tellraw @s ''", False),
+    ('tellraw @s {score:{name:"@s",objective:"x"}}', False), ('tellraw @s {keybind:"key.jump"}', False), ('tellraw @s', False),
+    ('title @s title "Big"', False), ('title @s subtitle {text:"Small",color:"gold"}', False), ('title @s actionbar "bar"', False),
+    ('title @s times 10 70 20', False), ('title @s clear', False), ('title @s reset', False),
+    ('title @a title "All"', False),
+    # Item components in /give and /clear, from empty inventories.
+    ('!quiet clear @a', False), ('give Witness diamond_sword[damage=5]', False), ('give Witness diamond_sword[enchantments={sharpness:3}]', False),
+    ('give Witness diamond_sword[enchantments={"minecraft:sharpness":3,unbreaking:1}]', False), ('give Witness diamond_sword[damage=5,enchantments={sharpness:3}] 2', False), ('give Witness enchanted_book[stored_enchantments={mending:1}]', False),
+    ('give Witness stick[enchantments={sharpness:1}]', False), ('give Witness golden_apple[enchantments={sharpness:1}]', False), ('give Witness diamond_sword[!damage]', False),
+    ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
+    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
+    ('clear Witness diamond_sword', False),
     ('list', False),
 ]
 
@@ -143,6 +180,13 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
             if command == '!respawn':
                 # Not a command: the witness leaves the death screen before the next step.
                 witness.send('client_command', wire.vi(0))
+                witness.tick_barrier()
+                operator.tick_barrier()
+                continue
+            if command == '!reconnect':
+                # The witness joins again, for instance after a kick or a pardon.
+                witness.close()
+                witness = Probe(server.port, 'witness').login('Witness')
                 witness.tick_barrier()
                 operator.tick_barrier()
                 continue
@@ -211,7 +255,7 @@ def main():
     reference = record('java', args.output, args.java, args.jar, args.eula_file, script)
     differences = compare(reference, php)
     (args.output / 'differences.json').write_text(json.dumps(differences, indent=1))
-    observed = sum(command != '!respawn' and not command.startswith('!quiet ') for command, _ in script) * 2
+    observed = sum(command not in ('!respawn', '!reconnect') and not command.startswith('!quiet ') for command, _ in script) * 2
     print(f'{observed - len(differences)}/{observed} command observations identical; differences in {args.output / "differences.json"}')
     sys.exit(1 if differences else 0)
 

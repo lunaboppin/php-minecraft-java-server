@@ -88,6 +88,24 @@ def loot(inner):
     return {'tables': tables, 'predicates': predicates}
 
 
+def enchantments(inner):
+    """Vanilla enchantment definitions without their effects, used by /enchant."""
+    result = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith('data/minecraft/enchantment/') and name.endswith('.json'):
+                data = json.loads(archive.read(name))
+                result['minecraft:' + Path(name).stem] = {key: data[key] for key in ('description', 'supported_items', 'exclusive_set', 'max_level') if key in data}
+    return result
+
+
+def english_names(inner):
+    """The en_us names of items, blocks and entities, which some command errors print as plain text."""
+    with zipfile.ZipFile(inner) as archive:
+        lang = json.loads(archive.read('assets/minecraft/lang/en_us.json'))
+    return {key: value for key, value in sorted(lang.items()) if key.startswith(('item.minecraft.', 'block.minecraft.', 'entity.minecraft.'))}
+
+
 def generate_tags(inner, registries, dynamic):
     tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
               for name, registry in registries.items()}
@@ -238,6 +256,8 @@ def main():
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))
+    write_json(out / 'enchantments.json', enchantments(inner))
+    write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)

@@ -213,6 +213,7 @@ foreach ([
     'chunk-packet-unit.php',
     'loot-unit.php',
     'world-border-unit.php',
+    'text-argument-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
@@ -266,6 +267,10 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/admin-commands.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/player-lists.py'), $code);
 if ($code !== 0) {
     exit($code);
 }

@@ -44,8 +44,15 @@ final class Nbt
             // UUIDs are stored as four big-endian ints, the vanilla UUIDUtil codec.
             $key === 'uuid' => "\x0b" . $name . pack('N', 4) . self::uuid($value),
             is_string($value) => "\x08" . $name . self::string($value),
+            // Data component values in item hovers, such as minecraft:damage.
+            is_int($value) => "\x03" . $name . pack('N', $value),
+            is_float($value) => "\x05" . $name . pack('G', $value),
+            // A plain text component is written as its bare string, as the codec does anywhere.
+            is_array($value) && array_keys($value) === ['text'] && is_string($value['text']) => "\x08" . $name . self::string($value['text']),
             is_array($value) && array_is_list($value) => "\x09" . $name . self::componentList($value),
             is_array($value) => "\x0a" . $name . self::compoundBody($value),
+            // An object stands for a compound that may be empty, which an empty PHP array cannot.
+            $value instanceof \stdClass => "\x0a" . $name . self::compoundBody(get_object_vars($value)),
             default => throw new \InvalidArgumentException('Unsupported text component field: ' . $key),
         };
     }
@@ -101,7 +108,8 @@ final class Nbt
     }
 
     /** @param list<string> $keys */
-    private static function hashMapOrder(array $keys): array
+    /** Java HashMap iteration order for string keys. */
+    public static function hashMapOrder(array $keys): array
     {
         $capacity = 16;
         while (count($keys) > $capacity * 3 / 4) {
