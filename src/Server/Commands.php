@@ -70,6 +70,8 @@ trait Commands
 
     use CommandModules\StopCommand;
 
+    use CommandModules\DamageCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

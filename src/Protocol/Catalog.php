@@ -40,6 +40,9 @@ final class Catalog
     /** Vanilla game rules: value type, default, integer bounds and whether they need experimental features. */
     public readonly array $gameRules;
 
+    /** Vanilla damage types (message IDs and death message types) and resolved damage type tags. */
+    public readonly array $damageTypes;
+
     public readonly array $items;
 
     public readonly array $flags;
@@ -77,6 +80,7 @@ final class Catalog
         $this->collision = json_decode(file_get_contents($directory . '/collision.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->displayNames = json_decode(file_get_contents($directory . '/display-names.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->gameRules = json_decode(file_get_contents($directory . '/gamerules.json'), true, 512, JSON_THROW_ON_ERROR)['rules'];
+        $this->damageTypes = json_decode(file_get_contents($directory . '/damage-types.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->entityMetadata = $data['entity_metadata'];
         $this->itemMetadataIndex = $data['item_metadata_index'];
         $this->itemMetadataSerializer = $data['item_metadata_serializer'];

@@ -119,8 +119,8 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    # The command feedback comparison adds a third official-server run.
-    timeout-minutes: 20
+    # The command feedback comparison, with its death messages, adds a long official-server run.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

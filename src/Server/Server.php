@@ -322,7 +322,13 @@ final class Server
             foreach ($this->players() as $player) {
                 $sample[] = ($player->information['allowsListing'] ?? false) ? ['name' => $player->name, 'id' => Binary::formatUuid($player->uuid)] : ['name' => 'Anonymous Player', 'id' => '00000000-0000-0000-0000-000000000000'];
             }
-            $json = json_encode(['version' => ['name' => Version::NAME, 'protocol' => Version::PROTOCOL], 'players' => ['max' => $this->config->maxPlayers, 'online' => count($this->players()), 'sample' => array_slice($sample, 0, 12)], 'description' => ['text' => $this->config->motd], 'enforcesSecureChat' => false], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            // ServerStatus codec order. A plain-text description is a bare string, and the empty
+            // sample and false enforcesSecureChat are omitted as lenient optional defaults.
+            $players = ['max' => $this->config->maxPlayers, 'online' => count($this->players())];
+            if ($sample !== []) {
+                $players['sample'] = array_slice($sample, 0, 12);
+            }
+            $json = json_encode(['description' => $this->config->motd, 'players' => $players, 'version' => ['name' => Version::NAME, 'protocol' => Version::PROTOCOL]], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
             $c->send($this->version, 'status_response', Binary::writeString($json));
         } elseif ($name === 'ping_request') {
             $payload = $r->bytes(8);

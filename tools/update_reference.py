@@ -43,6 +43,25 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n')
 
 
+def damage_types(inner):
+    """Vanilla damage types (message IDs, death message types, scaling) and their tags, for death messages."""
+    types, tags = {}, {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith('data/minecraft/damage_type/') and name.endswith('.json'):
+                types['minecraft:' + Path(name).stem] = json.loads(archive.read(name))
+            elif name.startswith('data/minecraft/tags/damage_type/') and name.endswith('.json'):
+                tags['minecraft:' + name[len('data/minecraft/tags/damage_type/'):-5]] = json.loads(archive.read(name))['values']
+    # Resolve nested tag references (#minecraft:...) into plain damage type lists.
+    def members(tag, seen=()):
+        result = []
+        for value in tags[tag]:
+            entry = value['id'] if isinstance(value, dict) else value
+            result += members(entry[1:], seen + (tag,)) if entry.startswith('#') else [entry]
+        return result
+    return {'types': types, 'tags': {tag: sorted(set(members(tag))) for tag in sorted(tags)}}
+
+
 def generate_tags(inner, registries, dynamic):
     tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
               for name, registry in registries.items()}
@@ -188,6 +207,7 @@ def main():
     data['component_damage'] = registries['minecraft:data_component_type']['entries']['minecraft:damage']['protocol_id']
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
+    write_json(out / 'damage-types.json', damage_types(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)
