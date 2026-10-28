@@ -16,9 +16,12 @@ final class BiomeClimate
 {
     /** @var array<string, array{0: float, 1: string}> */
     private array $climates = [];
+
     private readonly SimplexNoise2D $temperatureNoise;
+
     /** @var list<array{0: SimplexNoise2D, 1: float, 2: float}> */
     private readonly array $frozenNoise;
+
     private readonly SimplexNoise2D $infoNoise;
 
     public function __construct(private readonly string $directory)

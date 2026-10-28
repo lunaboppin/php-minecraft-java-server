@@ -8,7 +8,6 @@ use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\Sampler;
 use PhpMinecraftJavaServer\World\Vanilla\SamplerContext;
 use PhpMinecraftJavaServer\World\Vanilla\Volume;
-
 use PhpMinecraftJavaServer\World\Vanilla\Noise\Noise;
 
 /** NoiseFunction.Sampler, and the shifted samplers whose shifts are added to the scaled coordinates. */

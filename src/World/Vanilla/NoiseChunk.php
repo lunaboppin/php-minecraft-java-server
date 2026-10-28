@@ -11,7 +11,9 @@ namespace PhpMinecraftJavaServer\World\Vanilla;
 final class NoiseChunk
 {
     public readonly SamplerContext $context;
+
     public readonly Volume $volume;
+
     public readonly Aquifer $aquifer;
 
     public function __construct(public readonly OverworldSettings $settings, int $chunkX, int $chunkZ)

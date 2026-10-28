@@ -12,7 +12,9 @@ final class BiomeSource
 {
     /** @var array{0: list<array{0: int, 1: int}>, 1: ?list<array>, 2: ?string} the root node: bounds, children, and a leaf's biome */
     private array $root;
+
     private ?array $lastResult = null;
+
     /** @var array<string, list<string>> */
     private array $chunks = [];
 
@@ -183,6 +185,18 @@ final class BiomeSource
         $minQuartY = $this->settings->minY >> 2;
         $y = min(max($quartY - $minQuartY, 0), intdiv($this->settings->height, 4) - 1);
         return $biomes[($y << 4) | (($quartZ & 3) << 2) | ($quartX & 3)];
+    }
+
+    /** BiomeSource.createUncachedResolver: climate sampled point by point without caches. */
+    public function uncached(int $quartX, int $quartY, int $quartZ): string
+    {
+        $router = $this->settings->json['noise_router'];
+        $context = new SamplerContext(false);
+        $climate = [];
+        foreach (['temperature', 'vegetation', 'continents', 'erosion', 'depth', 'ridges'] as $name) {
+            $climate[] = $this->settings->state->sampler($router[$name])->value($context, $quartX << 2, $quartY << 2, $quartZ << 2);
+        }
+        return $this->find($climate);
     }
 
     /** @return list<string> the distinct biomes of a chunk */

@@ -16,6 +16,7 @@ use PhpMinecraftJavaServer\World\Vanilla\Volume;
 final class Interpolated extends Sampler
 {
     private readonly float $inverseXz;
+
     private readonly float $inverseY;
 
     public function __construct(private readonly Sampler $input, private readonly int $cellXz, private readonly int $cellY)

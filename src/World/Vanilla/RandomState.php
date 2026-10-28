@@ -42,16 +42,22 @@ final class RandomState
     private const Z = 4;
 
     public readonly PositionalRandom $random;
+
     /** @var array<string, array> */
     private array $definitions = [];
+
     /** @var array<string, NoiseStack> */
     private array $noises = [];
+
     /** @var array<string, PositionalRandom> */
     private array $factories = [];
+
     /** @var array<string, Sampler> */
     private array $samplers = [];
+
     /** @var array<string, array> */
     private array $prepared = [];
+
     private int $nextCache = 0;
 
     public function __construct(public readonly int $seed, private readonly string $directory, private readonly bool $legacy = false)

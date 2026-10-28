@@ -1,0 +1,105 @@
+{
+ "version": "26.3",
+ "source": "tools/ExportWorldgenChunks.java run offline on the pinned official server, reduced by tools/worldgen_fixture.py",
+ "chunks": [
+  {
+   "seed": "42",
+   "x": 0,
+   "z": 0,
+   "biomes": "7ef47ed4270a0831ab721347758cf5ee9c5a37a0c104ec727d36455a52779f8c",
+   "noise": "254bd8176939e71e7b25f6388a13c9462abda0cee707731f6b4c89dc52fabc01",
+   "surface": "5832038c3a2c7a8cd384facb4d041c085be7ccafed8f600afa87b279de41d5ea",
+   "carvers": "62493db093f2c56788675ce0cada9741afc10375957a570db0e36f665a8e7ea0"
+  },
+  {
+   "seed": "42",
+   "x": -1,
+   "z": -1,
+   "biomes": "70c0eb9bb0ec4ba7e839a71c0e459cce714a88ae83a36574f8741c72759fdad7",
+   "noise": "b2242649c1f6f7f887181d1fa177a60c484dfe4cc721bc04d1b4c0d9e5d3503c",
+   "surface": "6a216dd0308ce0d8d35182641592de01e9d2c3f937b2b0abc009da238637daec",
+   "carvers": "b5b21c217d79a7505d415656b9a549a88a23c4d1f21c8e3a67daad051e61cb00"
+  },
+  {
+   "seed": "42",
+   "x": -160,
+   "z": 64,
+   "biomes": "edf35275712471b7449882900e443d1f658ebb42db566a9b44f7fcf3ee53adc0",
+   "noise": "204450f82b1b594abeb879b7e160f438033382fb794ef3949f8250be4655187c",
+   "surface": "15dead23847a45cdd8d13d5187f973e78f2b4c1e481dd4d399df589fb77984fe",
+   "carvers": "c0d42416fea085727432eea4067968cb57cc252b2c96431ea3b173aa6a86f02f"
+  },
+  {
+   "seed": "42",
+   "x": -152,
+   "z": -160,
+   "biomes": "860b490f9cb60562c3d5fb08d473f7def98075d26d43f5d7c7d5e914bc3d355a",
+   "noise": "7f5de5993c604960d5633a8dd43398d144a2d64b9399dbe06bd6ae807ca42c74",
+   "surface": "45141f813387f188b7c0defa83e64480b1d660998b770fb64cdbfd6e7999aa81",
+   "carvers": "1cda9836db31d9e87d5851b84743f00f57bb8ee9db4cf5022cb3eb732d6b8f91"
+  },
+  {
+   "seed": "42",
+   "x": 144,
+   "z": -160,
+   "biomes": "fd6f27bed389eca815ee239bfd38acf81c5cc31e3f6914f29d458f3335ddb88d",
+   "noise": "b197d68793655631bd6d0381d58301af13ca0a193bd7b3fa7ea0526018164ae0",
+   "surface": "d22c5a03b934121e3d936e12850e0fc0e7a0f014649cbfe6cd4236ca282346bd",
+   "carvers": "1d0ddc8b2d263235eba34eaf3b0f9577aaad4417fc51b6325a75e491c0969e86"
+  },
+  {
+   "seed": "42",
+   "x": -80,
+   "z": -104,
+   "biomes": "7e971c264b3da48cd0699c1afe7b541b64578c9eb547f3b7055c05216d1b33ad",
+   "noise": "1a845843c1de43cdd9533f0cd8e7766f7e6a9148b31aae183454ed34b8cf5349",
+   "surface": "a7ee38f86183eb5bc1eb8531b9128716230f2156c762ce879bb24b845d22c27b",
+   "carvers": "c4c6c3188037f9880eb9c0c6dff3c239067796dec81b66dd2f2c5fcdd7cb2f65"
+  },
+  {
+   "seed": "42",
+   "x": 1874999,
+   "z": -1874999,
+   "biomes": "07e75585344a33b779933cf1eb63c2d07128e1f74e22abe338eabf7d770559a8",
+   "noise": "e3a14a457863d9f7ad103a1b30314024f84dde18dc9ee53083727df777c042e2",
+   "surface": "dc48c6edd1deb7803c41829464d32c82dc27d420699ce71b5581c177309c6e36",
+   "carvers": "dc48c6edd1deb7803c41829464d32c82dc27d420699ce71b5581c177309c6e36"
+  },
+  {
+   "seed": "42",
+   "x": -20000,
+   "z": 15000,
+   "biomes": "d3cfd0b03c35d49cfbb8eede39db06f1d631466c25b685c5a4b7984293f2d9c6",
+   "noise": "758d012b42f60d67b154f8af29699c15fba86e7fdc816bba894448ba13b7f8c2",
+   "surface": "3e556fe7202416b1abbd651a424b5ad9f7f273bdde2139af411108b84f136010",
+   "carvers": "3e556fe7202416b1abbd651a424b5ad9f7f273bdde2139af411108b84f136010"
+  },
+  {
+   "seed": "-4172144997902289642",
+   "x": 0,
+   "z": 0,
+   "biomes": "3e111797491f2471e1cf93bb9eec57197e8812cb24faf67702cf541f04f315da",
+   "noise": "cafe2a5b32d0126d82e0b7d0a9d9896df72d04d922800918e6bf0dee44af22ae",
+   "surface": "09489044f78d5c5613ae1f1b06e241e7b1b731cf9d8bbe33b78e19f1f4918e3d",
+   "carvers": "032a52e0dc35c352f696e6f5d7f2b79bd096447ce572ebfc49c7dcc036555738"
+  },
+  {
+   "seed": "-4172144997902289642",
+   "x": 7,
+   "z": -3,
+   "biomes": "b7d3c44b2d36ef02913681a249a1868567e5b9492286e7b2d4bf572cf14e910c",
+   "noise": "70ed8c360c7c4fb6c3b756dd040da2cae00b6f43486e5a8deccdf9c015177df3",
+   "surface": "16a23d5c440b3a08288313c7443ad43e9379ce52b3038f1f91778a82bc9c17fa",
+   "carvers": "e36bade899e19a41d27ef7b0166e5b23b85a2af677d0ddef832fa55d94a63d1f"
+  },
+  {
+   "seed": "-4172144997902289642",
+   "x": -300,
+   "z": 250,
+   "biomes": "c0a5632c5400aa711dec163e8652e91a98d964b01cd9368cc83cc5e8abe8d2ca",
+   "noise": "0ee699d44b77525f4ce656e2649063b8d4e034a9eadc49142393a7b594aeda09",
+   "surface": "688b0439ed3d764763a79419a5b1a1a8bee7982b1254fd86f267bb7e3d571000",
+   "carvers": "bf2e8ba6d0eac1118a43a9e3423f6b686dbdcc530ebd39751d51c268512ba0d4"
+  }
+ ]
+}

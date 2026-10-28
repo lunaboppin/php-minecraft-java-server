@@ -8,9 +8,13 @@ namespace PhpMinecraftJavaServer\World\Vanilla;
 final class OverworldSettings
 {
     public readonly array $json;
+
     public readonly RandomState $state;
+
     public readonly int $minY;
+
     public readonly int $height;
+
     public readonly int $seaLevel;
 
     public function __construct(int $seed, public readonly string $directory)

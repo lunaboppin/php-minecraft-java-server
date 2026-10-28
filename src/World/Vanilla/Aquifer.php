@@ -17,18 +17,28 @@ final class Aquifer
     private const SURFACE_OFFSETS = [[0, 0], [-2, -1], [-1, -1], [0, -1], [1, -1], [-3, 0], [-2, 0], [-1, 0], [1, 0], [-2, 1], [-1, 1], [0, 1], [1, 1]];
 
     private readonly float $flowingSimilarity;
+
     private readonly int $minGridX;
+
     private readonly int $minGridY;
+
     private readonly int $minGridZ;
+
     private readonly int $gridSizeX;
+
     private readonly int $gridSizeZ;
+
     private readonly int $skipSamplingAboveY;
+
     /** @var array<int, array{0: int, 1: string}> */
     private array $statusCache = [];
+
     /** @var array<int, array{0: int, 1: int, 2: int}> */
     private array $locationCache = [];
+
     /** @var array<string, int> */
     private array $surfaceCache = [];
+
     public bool $shouldScheduleFluidUpdate = false;
 
     public function __construct(

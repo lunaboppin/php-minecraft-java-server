@@ -17,34 +17,59 @@ final class MaterialSystem
 
     /** @var list<string> */
     private readonly array $clayBands;
+
     private readonly PositionalRandom $noiseRandom;
+
     private readonly BiomeClimate $climate;
 
     // MaterialRuleContext state, reset for each chunk.
     private int $lastUpdateXZ = 0;
+
     private int $lastUpdateY = 0;
+
     private int $blockX = 0;
+
     private int $blockY = 0;
+
     private int $blockZ = 0;
+
     private int $gradientX = 0;
+
     private int $gradientZ = 0;
+
     private int $surfaceDepth = 0;
+
     private int $waterHeight = PHP_INT_MIN;
+
     private int $stoneBelow = 0;
+
     private int $stoneAbove = 0;
+
     private ?string $biome = null;
+
     private int $secondaryUpdate = -1;
+
     private float $secondary = 0.0;
+
     private int $minSurfaceUpdate = -1;
+
     private int $minSurface = 0;
+
     private ?array $preliminarySurface = null;
+
     private ?Volume $preliminaryVolume = null;
+
     private ?Volume $expectedVolume = null;
+
     private ?NoiseChunk $noiseChunk = null;
+
     private ?\Closure $biomeAt = null;
+
     private ?array $possibleBiomes = null;
+
     /** @var array<string, array> */
     private array $ruleJson = [];
+
     /** @var array<string, array> */
     private array $conditionJson = [];
 
@@ -202,6 +227,34 @@ final class MaterialSystem
                 $heights[($z << 4) | $x] = self::columnHeight($blocks, ($z << 4) | $x, $minY);
             }
         }
+    }
+
+    /**
+     * MaterialSystem.topMaterial: the surface rule for one block exposed by a carver, in a
+     * fresh rule context without biome pruning.
+     */
+    public function topMaterial(array $blocks, NoiseChunk $noiseChunk, \Closure $biomeAt, int $x, int $y, int $z, bool $underFluid): ?string
+    {
+        $minY = $this->settings->minY;
+        $this->noiseChunk = $noiseChunk;
+        $this->biomeAt = $biomeAt;
+        $this->possibleBiomes = null;
+        $this->expectedVolume = new Volume(1, 1, 1, $x, $y, $z);
+        $this->preliminaryVolume = new Volume(1, 1, 1, $x, 0, $z);
+        $this->preliminarySurface = null;
+        $this->lastUpdateXZ = PHP_INT_MIN + 1;
+        $this->lastUpdateY = PHP_INT_MIN + 1;
+        $this->secondaryUpdate = $this->lastUpdateXZ - 1;
+        $this->minSurfaceUpdate = $this->lastUpdateXZ - 1;
+        $rule = $this->compileRule($this->settings->json['material_rule']);
+        $lx = $x & 15;
+        $lz = $z & 15;
+        $height = static fn (int $cx, int $cz): int => self::columnHeight($blocks, ($cz << 4) | $cx, $minY);
+        $gradientX = $height(min($lx + 1, 15), $lz) - $height(max($lx - 1, 0), $lz);
+        $gradientZ = $height($lx, min($lz + 1, 15)) - $height($lx, max($lz - 1, 0));
+        $this->updateXZ($x, $z, $gradientX, $gradientZ);
+        $this->updateY(1, 1, $underFluid ? $y + 1 : PHP_INT_MIN, $y);
+        return $rule($x, $y, $z);
     }
 
     /**
@@ -408,10 +461,10 @@ final class MaterialSystem
                 return fn (): bool => $this->blockY >= $this->minSurfaceLevel();
             case 'biome':
                 $biomes = array_flip(array_map(self::state(...), (array) $json['biome_is']));
-                if (array_diff_key($biomes, $this->possibleBiomes) === $biomes) {
+                if ($this->possibleBiomes !== null && array_diff_key($biomes, $this->possibleBiomes) === $biomes) {
                     return static fn (): bool => false;
                 }
-                if (array_diff_key($this->possibleBiomes, $biomes) === []) {
+                if ($this->possibleBiomes !== null && array_diff_key($this->possibleBiomes, $biomes) === []) {
                     return static fn (): bool => true;
                 }
                 return $this->lazy(true, fn (): bool => isset($biomes[$this->biome()]));

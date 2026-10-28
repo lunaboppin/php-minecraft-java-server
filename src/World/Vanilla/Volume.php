@@ -8,6 +8,7 @@ namespace PhpMinecraftJavaServer\World\Vanilla;
 final class Volume
 {
     public readonly int $size;
+
     public readonly string $key;
 
     public function __construct(

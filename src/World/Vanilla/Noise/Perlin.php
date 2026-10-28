@@ -21,8 +21,11 @@ class Perlin implements Noise
 
     /** @var list<int> */
     protected array $permutations;
+
     protected float $offsetX;
+
     protected float $offsetY;
+
     protected float $offsetZ;
 
     public function __construct(RandomSource $random)

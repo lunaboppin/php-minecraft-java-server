@@ -8,7 +8,6 @@ use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\Sampler;
 use PhpMinecraftJavaServer\World\Vanilla\SamplerContext;
 use PhpMinecraftJavaServer\World\Vanilla\Volume;
-
 use PhpMinecraftJavaServer\World\Vanilla\Noise\Noise;
 
 /** ShiftNoiseFunction.ShiftB: offset noise sampled at (z/4, x/4, 0), times four. */
