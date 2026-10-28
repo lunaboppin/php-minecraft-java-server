@@ -127,6 +127,9 @@ final class ArgumentReader
             case 'minecraft:vec3':
                 $this->coordinates($reader, 3, false);
                 return;
+            case 'minecraft:component':
+                TextComponentArgument::read($reader);
+                return;
             case 'minecraft:vec2':
                 $this->vec2($reader);
                 return;

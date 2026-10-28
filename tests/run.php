@@ -213,6 +213,7 @@ foreach ([
     'chunk-packet-unit.php',
     'loot-unit.php',
     'world-border-unit.php',
+    'text-argument-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;

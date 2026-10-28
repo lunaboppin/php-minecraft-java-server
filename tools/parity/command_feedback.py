@@ -137,6 +137,16 @@ SCRIPT = [
     ('ban Witness Griefing  the spawn', False), ('banlist', False), ('pardon Witness', False),
     ('!reconnect', False), ('ban @a[name=Witness]', False), ('pardon Witness', False),
     ('!reconnect', False), ('banlist', False),
+    # Text component arguments: tellraw and titles.
+    ('tellraw @s "hello"', False), ('tellraw @s {text:"hi",color:"red"}', False), ('tellraw @s {"text":"json style","bold":true}', False),
+    ('tellraw @s ["a",{text:"b",italic:1b}]', False), ('tellraw @s {translate:"chat.type.text",with:["x","y"]}', False), ('tellraw @s {selector:"@a"}', False),
+    ('tellraw @s {text:"x",extra:[{selector:"@s"}]}', False), ('tellraw @s 123', False), ('tellraw @s {text:"unterminated"', False),
+    ('tellraw @s {foo:"bar"}', False), ('tellraw @s {text:1}', False), ('tellraw @a {text:"to all"}', False),
+    ('tellraw Witness [{text:"click",click_event:{action:"run_command",command:"/help"}}]', False), ('tellraw @s {text:"hover",hover_event:{action:"show_text",value:"tip"}}', False), ("tellraw @s ''", False),
+    ('tellraw @s {score:{name:"@s",objective:"x"}}', False), ('tellraw @s {keybind:"key.jump"}', False), ('tellraw @s', False),
+    ('title @s title "Big"', False), ('title @s subtitle {text:"Small",color:"gold"}', False), ('title @s actionbar "bar"', False),
+    ('title @s times 10 70 20', False), ('title @s clear', False), ('title @s reset', False),
+    ('title @a title "All"', False),
     ('list', False),
 ]
 

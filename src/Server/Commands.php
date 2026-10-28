@@ -88,6 +88,10 @@ trait Commands
 
     use CommandModules\WhitelistCommand;
 
+    use CommandModules\TellrawCommand;
+
+    use CommandModules\TitleCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

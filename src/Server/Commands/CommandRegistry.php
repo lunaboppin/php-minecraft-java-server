@@ -50,6 +50,8 @@ final class CommandRegistry
             new CommandDefinition('pardon', 'executePardon', true),
             new CommandDefinition('banlist', 'executeBanList', true),
             new CommandDefinition('whitelist', 'executeWhitelist', true),
+            new CommandDefinition('tellraw', 'executeTellraw', true),
+            new CommandDefinition('title', 'executeTitle', true),
         ];
     }
 

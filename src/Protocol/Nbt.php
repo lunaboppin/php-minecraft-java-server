@@ -44,6 +44,8 @@ final class Nbt
             // UUIDs are stored as four big-endian ints, the vanilla UUIDUtil codec.
             $key === 'uuid' => "\x0b" . $name . pack('N', 4) . self::uuid($value),
             is_string($value) => "\x08" . $name . self::string($value),
+            // A plain text component is written as its bare string, as the codec does anywhere.
+            is_array($value) && array_keys($value) === ['text'] && is_string($value['text']) => "\x08" . $name . self::string($value['text']),
             is_array($value) && array_is_list($value) => "\x09" . $name . self::componentList($value),
             is_array($value) => "\x0a" . $name . self::compoundBody($value),
             default => throw new \InvalidArgumentException('Unsupported text component field: ' . $key),
