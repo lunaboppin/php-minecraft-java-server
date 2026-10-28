@@ -1,14 +1,20 @@
 <?php
+
 declare(strict_types=1);
+
 namespace PhpMinecraftJavaServer\Protocol;
 
 /** Network NBT has an unnamed root (no two-byte root-name prefix). */
 final class Nbt
 {
-    public static function text(string $text): string {
-        if (preg_match('//u', $text) !== 1) { throw new \InvalidArgumentException('Invalid UTF-8'); }
+    public static function text(string $text): string
+    {
+        if (preg_match('//u', $text) !== 1) {
+            throw new \InvalidArgumentException('Invalid UTF-8');
+        }
         return "\x08" . self::string($text);
     }
+
     /**
      * Encode a text component as vanilla does: text-only components are bare strings, anything
      * else a compound whose fields follow Java HashMap iteration order (CompoundTag is a HashMap).
@@ -44,18 +50,28 @@ final class Nbt
         };
     }
 
+    /**
+     * A list of components and primitive arguments (translation arguments may be integers).
+     * Elements of one tag type form a plain list. Mixed types are written as compounds, with
+     * every non-compound element wrapped as {"": element} (ListTag.identifyRawElementType and
+     * wrapIfNeeded).
+     */
     private static function componentList(array $components): string
     {
-        $plain = array_map(static fn (array $component): bool => array_keys($component) === ['text'], $components);
-        if ($components !== [] && !in_array(false, $plain, true)) {
-            return "\x08" . pack('N', count($components)) . implode('', array_map(static fn (array $component): string => self::string($component['text']), $components));
-        }
-        // A list of mixed tag types is written as compounds, with every non-compound element
-        // wrapped as {"": element} (ListTag.identifyRawElementType and wrapIfNeeded).
-        return "\x0a" . pack('N', count($components)) . implode('', array_map(
-            static fn (array $component): string => array_keys($component) === ['text'] ? "\x08" . self::string('') . self::string($component['text']) . "\0" : self::compoundBody($component),
-            $components
-        ));
+        $types = array_map(static fn (int|array $component): int => is_int($component) ? 3 : (array_keys($component) === ['text'] ? 8 : 10), $components);
+        $type = $components === [] ? 10 : (count(array_unique($types)) === 1 ? $types[0] : 10);
+        $elements = array_map(static function (int|array $component) use ($type): string {
+            $payload = match (true) {
+                is_int($component) => pack('N', $component),
+                array_keys($component) === ['text'] => self::string($component['text']),
+                default => self::compoundBody($component),
+            };
+            if ($type !== 10 || (is_array($component) && array_keys($component) !== ['text'])) {
+                return $payload;
+            }
+            return (is_int($component) ? "\x03" : "\x08") . self::string('') . $payload . "\0";
+        }, $components);
+        return chr($type) . pack('N', count($components)) . implode('', $elements);
     }
 
     private static function uuid(string $uuid): string
@@ -85,26 +101,39 @@ final class Nbt
         return $keys;
     }
 
-    public static function sign(array $data):string {
-        $out="\x0a";
-        foreach(['front','back'] as $side){
-            $out.="\x0a".self::string($side.'_text')."\x09".self::string('messages')."\x08".pack('N',4);
-            foreach($data[$side]??['','','',''] as $line){$out.=self::string($line);}
-            $out.="\x08".self::string('color').self::string('black')."\x01".self::string('has_glowing_text')."\0\0";
+    public static function sign(array $data): string
+    {
+        $out = "\x0a";
+        foreach (['front', 'back'] as $side) {
+            $out .= "\x0a" . self::string($side . '_text') . "\x09" . self::string('messages') . "\x08" . pack('N', 4);
+            foreach ($data[$side] ?? ['', '', '', ''] as $line) {
+                $out .= self::string($line);
+            }
+            $out .= "\x08" . self::string('color') . self::string('black') . "\x01" . self::string('has_glowing_text') . "\0\0";
         }
-        return $out."\x01".self::string('is_waxed')."\0\0";
+        return $out . "\x01" . self::string('is_waxed') . "\0\0";
     }
+
     // NBT uses Java modified UTF-8, including surrogate pairs for supplementary characters.
-    private static function string(string $value): string {
+    private static function string(string $value): string
+    {
         $utf16 = iconv('UTF-8', 'UTF-16BE', $value);
-        if ($utf16 === false) { throw new \InvalidArgumentException('Invalid text'); }
+        if ($utf16 === false) {
+            throw new \InvalidArgumentException('Invalid text');
+        }
         $out = '';
         foreach (unpack('n*', $utf16) as $unit) {
-            if ($unit >= 1 && $unit <= 127) { $out .= chr($unit); }
-            elseif ($unit <= 2047) { $out .= chr(0xc0 | ($unit >> 6)) . chr(0x80 | ($unit & 63)); }
-            else { $out .= chr(0xe0 | ($unit >> 12)) . chr(0x80 | (($unit >> 6) & 63)) . chr(0x80 | ($unit & 63)); }
+            if ($unit >= 1 && $unit <= 127) {
+                $out .= chr($unit);
+            } elseif ($unit <= 2047) {
+                $out .= chr(0xc0 | ($unit >> 6)) . chr(0x80 | ($unit & 63));
+            } else {
+                $out .= chr(0xe0 | ($unit >> 12)) . chr(0x80 | (($unit >> 6) & 63)) . chr(0x80 | ($unit & 63));
+            }
         }
-        if (strlen($out) > 65535) { throw new \InvalidArgumentException('NBT string too long'); }
+        if (strlen($out) > 65535) {
+            throw new \InvalidArgumentException('NBT string too long');
+        }
         return pack('n', strlen($out)) . $out;
     }
 }

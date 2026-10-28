@@ -31,12 +31,17 @@ def body(component):
             out += b'\x08' + nbt_string(key) + nbt_string(value)
         elif isinstance(value, dict):
             out += b'\x0a' + nbt_string(key) + body(value)
-        elif all(list(c) == ['text'] for c in value):
+        elif all(isinstance(c, int) for c in value):
+            out += b'\x09' + nbt_string(key) + b'\x03' + struct.pack('>i', len(value)) + b''.join(struct.pack('>i', c) for c in value)
+        elif all(isinstance(c, dict) and list(c) == ['text'] for c in value):
             out += b'\x09' + nbt_string(key) + b'\x08' + struct.pack('>i', len(value)) + b''.join(nbt_string(c['text']) for c in value)
         else:
-            # Mixed tag types: ListTag writes compounds and wraps each bare string as {"": value}.
-            entries = [b'\x08' + nbt_string('') + nbt_string(c['text']) + b'\0' if list(c) == ['text'] else body(c) for c in value]
-            out += b'\x09' + nbt_string(key) + b'\x0a' + struct.pack('>i', len(value)) + b''.join(entries)
+            # Mixed tag types: ListTag writes compounds and wraps each integer or bare string as {"": value}.
+            def entry(c):
+                if isinstance(c, int):
+                    return b'\x03' + nbt_string('') + struct.pack('>i', c) + b'\0'
+                return b'\x08' + nbt_string('') + nbt_string(c['text']) + b'\0' if list(c) == ['text'] else body(c)
+            out += b'\x09' + nbt_string(key) + b'\x0a' + struct.pack('>i', len(value)) + b''.join(entry(c) for c in value)
     return out + b'\0'
 
 

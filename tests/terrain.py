@@ -189,7 +189,7 @@ def main():
                 net.check(b.until('pong_response') == nonce, 'play continues after death and respawn')
                 command(a, 'time set night', 'Time set to 13000')
                 command(a, 'gamerule doDaylightCycle false', 'doDaylightCycle = false')
-                command(a, 'weather rain', 'Weather changed to rain')
+                command(a, 'weather rain', 'commands.weather.set.rain')
                 a.send('move_player_pos', struct.pack('>dddB', 1.5, 65, .5, 1))
                 command(a, 'save-all', 'commands.save.success')
                 with sqlite3.connect(world) as db:

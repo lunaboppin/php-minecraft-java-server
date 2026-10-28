@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""/seed, /save-all, /save-on, /save-off and /stop feedback, autosave state and shutdown."""
+"""/seed, /list, /weather, /save-all, /save-on, /save-off and /stop feedback, autosave state and shutdown."""
 import argparse
 import json
 from pathlib import Path
@@ -44,6 +44,7 @@ def main():
                 for client in clients:
                     client.tick_barrier()
                 op_uuid = next(payload[2:18] for name, payload in watcher.seen if name == 'player_info_update' and b'ParityProbe' in payload)
+                watcher_uuid = next(payload[2:18] for name, payload in op.seen if name == 'player_info_update' and b'Watcher' in payload)
                 echoes = lambda client, start: chats(client.seen[start:])
 
                 seed = '-1234567'
@@ -61,6 +62,22 @@ def main():
                 assert chats(run(op, 'save-all flush')) == [chat(translate('commands.save.saving')), chat(saved)]
                 watcher.tick_barrier()
                 assert echoes(watcher, start) == [chat(admin(player('ParityProbe', op_uuid), saved))], 'only the success is echoed'
+
+                guest_uuid = next(payload[2:18] for name, payload in op.seen if name == 'player_info_update' and b'Guest' in payload)
+                separator = {'text': ', ', 'color': 'gray'}
+                names = {'text': '', 'extra': [player('ParityProbe', op_uuid), separator, player('Watcher', watcher_uuid), separator, player('Guest', guest_uuid)]}
+                assert chats(run(guest, 'list')) == [chat(translate('commands.list.players', 3, 20, names))]
+                uuid_text = lambda raw: '-'.join((raw.hex()[:8], raw.hex()[8:12], raw.hex()[12:16], raw.hex()[16:20], raw.hex()[20:]))
+                with_ids = [translate('commands.list.nameAndId', {'text': name}, {'text': uuid_text(raw)}) for name, raw in (('ParityProbe', op_uuid), ('Watcher', watcher_uuid), ('Guest', guest_uuid))]
+                with_ids = {'text': '', 'extra': [with_ids[0], separator, with_ids[1], separator, with_ids[2]]}
+                assert chats(run(guest, 'list uuids')) == [chat(translate('commands.list.players', 3, 20, with_ids))]
+
+                for weather in ('rain', 'thunder', 'clear'):
+                    start = len(watcher.seen)
+                    changed = translate('commands.weather.set.' + weather)
+                    assert chats(run(op, 'weather ' + weather + (' 2d' if weather == 'rain' else ''))) == [chat(changed)]
+                    watcher.tick_barrier()
+                    assert echoes(watcher, start) == [chat(admin(player('ParityProbe', op_uuid), changed))]
 
                 assert chats(run(op, 'save-on')) == [failure('commands.save.alreadyOn')]
                 assert chats(run(op, 'save-off')) == [chat(translate('commands.save.disabled'))]
@@ -82,7 +99,7 @@ def main():
                     client.close()
         if args.output:
             args.output.write_text(json.dumps(traces))
-    print('PASS: /seed copy text, /save-all, /save-on, /save-off, /stop broadcast and shutdown reason')
+    print('PASS: /seed copy text, /list, /weather, /save-all, /save-on, /save-off, /stop broadcast and shutdown reason')
 
 
 if __name__ == '__main__':

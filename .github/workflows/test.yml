@@ -119,7 +119,8 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The command feedback comparison adds a third official-server run.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -146,6 +147,8 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/equipment.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-equipment
           python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
+      - name: Compare command feedback bytes with vanilla
+        run: python3 tools/parity/command_feedback.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/command-feedback
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -153,6 +156,7 @@ jobs:
           path: |
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
+            tools/.cache/command-feedback/
             tools/.cache/equipment-stack-verification/
           retention-days: 7
 
