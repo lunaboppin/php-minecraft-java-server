@@ -44,10 +44,10 @@ During development, every block of 47 seed-42 chunks matched vanilla through car
 Ported features:
 - Ores, scattered ores, simple blocks (including double plants), block columns (kelp, sugar cane, cacti), all selectors and sequences.
 - Disks, springs, freeze-top-layer, lakes, vegetation patches and their waterlogged variant (lush caves, clay pools), vines, block blobs, underwater magma, glow lichen (placement without spreading).
-- Monster rooms (spawner mob and chest loot draws, without storing the contents), amethyst geodes and huge mushrooms.
+- Monster rooms (spawner mob and chest loot draws, without storing the contents), amethyst geodes and huge mushrooms, fallen trees, bamboo, dripstone clusters, pointed dripstone and large dripstone.
 - Trees: straight, forking, giant, mega jungle, dark oak, fancy, bending and cherry trunks; blob, bush, fancy, spruce, pine, mega pine, acacia, jungle, dark oak, random spread and cherry foliage; beehive, leaf and trunk vine, cocoa, alter ground, place-on-ground and attached-to-logs decorators; leaf distances. Decorators walk logs and leaves in Java `HashSet` order sorted by Y, which decides their random draws, so that order is reproduced.
 
-Not ported yet: structures, mangrove, poplar and other branching trunks with root placers, ice spikes, icebergs, coral, bamboo, dripstone, fossils and templates, sculk, and the tree edge shape updates.
+Not ported yet: structures, mangrove, poplar and other branching trunks with root placers, ice spikes, icebergs, coral, fossils and templates, sculk, and the tree edge shape updates.
 
 `tools/parity/worldgen_regions.py` runs the official server on a seed (structures off), force-loads an area and decodes the saved region files. `php tools/parity/vanilla_decoration.php` decorates the same area in PHP and compares the middle 3×3 chunks. Two official runs of one seed differed by up to 555 blocks per chunk in testing, because vanilla decorates neighbouring chunks in a scheduling-dependent order and overlapping features overwrite each other. So exact agreement can only be expected away from such overlaps. Against official seed-42 chunks around the origin, ores, clay, tuff, gravel, dirt blobs, geodes, lush-cave moss and the trees and vegetation of interior chunks agreed. The remaining differences were overlaps at chunk borders, the same kind as between the two official runs.
 

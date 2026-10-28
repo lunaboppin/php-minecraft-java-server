@@ -68,6 +68,27 @@ final class Providers
         return null;
     }
 
+    /**
+     * IntProvider.minInclusive and maxInclusive.
+     *
+     * @return array{0: int, 1: int}
+     */
+    public static function intBounds(mixed $json): array
+    {
+        if (is_int($json)) {
+            return [$json, $json];
+        }
+        $type = preg_replace('/^minecraft:/', '', $json['type'] ?? 'uniform');
+        if ($type === 'constant') {
+            return [$json['value'], $json['value']];
+        }
+        if ($type === 'clamped') {
+            [$min, $max] = self::intBounds($json['source']);
+            return [max($json['min_inclusive'], $min), min($json['max_inclusive'], $max)];
+        }
+        return [$json['min_inclusive'] ?? $json['min'] ?? 0, $json['max_inclusive'] ?? $json['max'] ?? 0];
+    }
+
     public static function int(mixed $json, RandomSource $random): int
     {
         if (is_int($json)) {

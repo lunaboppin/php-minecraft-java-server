@@ -48,13 +48,13 @@ final class Trees
         $this->providers = $decorator->providers;
     }
 
-    private static function mthSin(float $value): float
+    public static function mthSin(float $value): float
     {
         self::$sine ??= array_map(static fn (int $i): float => F32::r(sin($i / 10430.378350470453)), range(0, 65535));
         return self::$sine[((int) ($value * 10430.378350470453)) & 65535];
     }
 
-    private static function mthCos(float $value): float
+    public static function mthCos(float $value): float
     {
         self::$sine ??= array_map(static fn (int $i): float => F32::r(sin($i / 10430.378350470453)), range(0, 65535));
         return self::$sine[((int) ($value * 10430.378350470453 + 16384.0)) & 65535];

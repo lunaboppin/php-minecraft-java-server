@@ -948,6 +948,152 @@ final class Patches
         }
     }
 
+    private function emptyWaterOrLava(int $state): bool
+    {
+        return $this->emptyOrWater($state) || $this->blocks->name($state) === 'lava';
+    }
+
+    /** LargeDripstoneFeature: a pair of large stalactite and stalagmite cones across a cave. */
+    public function largeDripstone(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        if (!$this->emptyOrWater($region->get($x, $y, $z))) {
+            return false;
+        }
+        $base = $feature['base_block'] ?? 'dripstone_block';
+        $feature['base_block'] = $base;
+        [$ceiling, $floor] = self::columnScan(
+            $region,
+            $x,
+            $y,
+            $z,
+            $feature['floor_to_ceiling_search_range'] ?? 30,
+            $this->emptyOrWater(...),
+            fn (int $s): bool => $this->speleothemBase($feature, $s) || $this->blocks->name($s) === 'lava',
+        ) ?? [null, null];
+        if ($ceiling === null || $floor === null || $ceiling - $floor - 1 < 4) {
+            return false;
+        }
+        [$minRadius, $maxRadius] = Providers::intBounds($feature['column_radius']);
+        $byHeight = (int) F32::r(($ceiling - $floor - 1) * F32::r((float) $feature['max_column_radius_to_cave_height_ratio']));
+        $radius = $random->nextInt(min(max($byHeight, $minRadius), $maxRadius) - $minRadius + 1) + $minRadius;
+        $stalactite = ['y' => $ceiling - 1, 'up' => false, 'radius' => $radius, 'blunt' => Providers::float($feature['stalactite_bluntness'], $random), 'scale' => Providers::float($feature['height_scale'], $random)];
+        $stalagmite = ['y' => $floor + 1, 'up' => true, 'radius' => $radius, 'blunt' => Providers::float($feature['stalagmite_bluntness'], $random), 'scale' => Providers::float($feature['height_scale'], $random)];
+        $minWindRadius = $feature['min_radius_for_wind'];
+        $minWindBlunt = F32::r((float) $feature['min_bluntness_for_wind']);
+        $wind = null;
+        if ($stalactite['radius'] >= $minWindRadius && $stalactite['blunt'] >= $minWindBlunt && $stalagmite['radius'] >= $minWindRadius && $stalagmite['blunt'] >= $minWindBlunt) {
+            $speed = Providers::float($feature['wind_speed'], $random);
+            $direction = F32::r($random->nextFloat() * F32::r(M_PI));
+            $wind = [$y, Trees::mthCos($direction) * $speed, Trees::mthSin($direction) * $speed, 16 - $radius];
+        }
+        $offset = static function (int $px, int $py, int $pz) use ($wind): array {
+            if ($wind === null) {
+                return [$px, $pz];
+            }
+            $dy = $wind[0] - $py;
+            $limit = $wind[3];
+            return [
+                $px + max(-$limit, min($limit, (int) floor(F32::r($wind[1]) * $dy))),
+                $pz + max(-$limit, min($limit, (int) floor(F32::r($wind[2]) * $dy))),
+            ];
+        };
+        $embedded = [];
+        foreach ([&$stalactite, &$stalagmite] as &$cone) {
+            $embedded[] = $this->embedDripstone($region, $x, $z, $cone, $offset);
+        }
+        unset($cone);
+        if ($embedded[0]) {
+            $this->placeDripstone($region, $random, $x, $z, $stalactite, $offset);
+        }
+        if ($embedded[1]) {
+            $this->placeDripstone($region, $random, $x, $z, $stalagmite, $offset);
+        }
+        return true;
+    }
+
+    /** SpeleothemUtils.getSpeleothemHeight */
+    private static function coneHeight(float $distance, array $cone): int
+    {
+        $distance = max($distance, $cone['blunt']);
+        $r = $distance / $cone['radius'] * 0.384;
+        $height = max($cone['scale'] * (0.75 * $r ** 1.3333333333333333 - $r ** 0.6666666666666666 - 0.3333333333333333 * log($r)), 0.0);
+        return (int) ($height / 0.384 * $cone['radius']);
+    }
+
+    /** moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary */
+    private function embedDripstone(Region $region, int $x, int $z, array &$cone, \Closure $offset): bool
+    {
+        while ($cone['radius'] > 1) {
+            $py = $cone['y'];
+            $tries = min(10, self::coneHeight(0.0, $cone));
+            for ($i = 0; $i < $tries; ++$i) {
+                if ($this->blocks->name($region->get($x, $py, $z)) === 'lava') {
+                    return false;
+                }
+                [$cx, $cz] = $offset($x, $py, $z);
+                if ($this->circleInStone($region, $cx, $py, $cz, $cone['radius'])) {
+                    $cone['y'] = $py;
+                    return true;
+                }
+                $py += $cone['up'] ? -1 : 1;
+            }
+            $cone['radius'] = intdiv($cone['radius'], 2);
+        }
+        return false;
+    }
+
+    private function circleInStone(Region $region, int $x, int $y, int $z, int $radius): bool
+    {
+        if ($this->emptyWaterOrLava($region->get($x, $y, $z))) {
+            return false;
+        }
+        $increment = F32::r(6.0 / $radius);
+        $limit = F32::r(M_PI * 2);
+        for ($angle = 0.0; $angle < $limit; $angle = F32::r($angle + $increment)) {
+            $dx = (int) F32::r(Trees::mthCos($angle) * $radius);
+            $dz = (int) F32::r(Trees::mthSin($angle) * $radius);
+            if ($this->emptyWaterOrLava($region->get($x + $dx, $y, $z + $dz))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function placeDripstone(Region $region, RandomSource $random, int $x, int $z, array $cone, \Closure $offset): void
+    {
+        $dripstone = $this->blocks->state('dripstone_block');
+        $radius = $cone['radius'];
+        for ($dx = -$radius; $dx <= $radius; ++$dx) {
+            for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                $distance = F32::r(sqrt($dx * $dx + $dz * $dz));
+                if ($distance > $radius) {
+                    continue;
+                }
+                $height = self::coneHeight($distance, $cone);
+                if ($height <= 0) {
+                    continue;
+                }
+                if ($random->nextFloat() < 0.2) {
+                    $height = (int) F32::r($height * F32::r($random->nextFloat() * F32::r(0.2) + F32::r(0.8)));
+                }
+                [$px, $py, $pz] = [$x + $dx, $cone['y'], $z + $dz];
+                $out = false;
+                $maxY = $cone['up'] ? $region->height(Region::WORLD_SURFACE_WG, $px, $pz) : PHP_INT_MAX;
+                for ($i = 0; $i < $height && $py < $maxY; ++$i) {
+                    [$wx, $wz] = $offset($px, $py, $pz);
+                    $state = $region->get($wx, $py, $wz);
+                    if ($this->emptyWaterOrLava($state)) {
+                        $out = true;
+                        $region->set($wx, $py, $wz, $dripstone);
+                    } elseif ($out && $this->blocks->inTag($state, 'base_stone_overworld')) {
+                        break;
+                    }
+                    $py += $cone['up'] ? 1 : -1;
+                }
+            }
+        }
+    }
+
     /** Util.toShuffledList */
     private function shuffle(array $list, RandomSource $random): array
     {
