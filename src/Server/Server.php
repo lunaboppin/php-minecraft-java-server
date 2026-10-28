@@ -57,7 +57,7 @@ final class Server
 
     private readonly Announcements $announcements;
 
-    public function __construct(private Config $config, private readonly Version $version = new Version(), ?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions = null)
+    public function __construct(private Config $config, private readonly Version $version = new Version(), ?\PhpMinecraftJavaServer\Authentication\SessionVerifier $sessions = null, private readonly ?string $configPath = null)
     {
         $this->logger = new DailyLog($config->logDirectory, $config->logRetentionDays);
         $this->announcements = new Announcements($config->worldPath);
@@ -431,7 +431,7 @@ final class Server
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
         $this->sendClock($c);
         $this->sendWeather($c);
-        $this->commands($c);
+        $this->sendPermissionLevel($c);
         foreach ($this->players() as $other) {
             $c->send($this->version, 'player_info_update', Packets::playerInfo($other->uuid, $other->name, $other->gameMode, (($other->information['skinParts'] ?? 0) & 64) !== 0, $other->profileProperties));
             if ($other !== $c) {
@@ -1135,13 +1135,15 @@ final class Server
         $c->closingAt = self::now();
     }
 
-    private function disconnect(Client $c, string $reason): void
+    /** @param string|array $reason plain text, or a text component */
+    private function disconnect(Client $c, string|array $reason): void
     {
         if ($c->closing) {
             return;
         }
         if (in_array($c->state, ['login', 'configuration', 'play'], true)) {
-            $payload = $c->state === 'login' ? Binary::writeString(json_encode(['text' => $reason], JSON_THROW_ON_ERROR)) : Nbt::text($reason);
+            $component = is_array($reason) ? $reason : ['text' => $reason];
+            $payload = $c->state === 'login' ? Binary::writeString(json_encode($component, JSON_THROW_ON_ERROR)) : Nbt::component($component);
             try {
                 $c->send($this->version, $c->state === 'login' ? 'login_disconnect' : 'disconnect', $payload);
             } catch (ProtocolException) {

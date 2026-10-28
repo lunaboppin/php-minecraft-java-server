@@ -15,7 +15,7 @@ try {
     }
     if (isset($options['port'])) { $overrides['port']=(int)$options['port']; }
     $config=Config::load($options['config']??null,$overrides);
-    (new Server($config))->run(isset($options['max-ticks'])?(int)$options['max-ticks']:null);
+    (new Server($config, configPath: $options['config'] ?? null))->run(isset($options['max-ticks'])?(int)$options['max-ticks']:null);
 } catch (Throwable $e) {
     fwrite(STDERR,'Server error: '.$e->getMessage().PHP_EOL);exit(1);
 }

@@ -34,6 +34,9 @@ final class CommandRegistry
             new CommandDefinition('dimension', 'executeDimension', true),
             new CommandDefinition('difficulty', 'executeDifficulty', true),
             new CommandDefinition('defaultgamemode', 'executeDefaultGameMode', true),
+            new CommandDefinition('op', 'executeOp', true),
+            new CommandDefinition('deop', 'executeDeOp', true),
+            new CommandDefinition('kick', 'executeKick', true),
         ];
     }
 
