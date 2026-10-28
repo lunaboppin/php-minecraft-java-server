@@ -46,6 +46,10 @@ final class CommandRegistry
             new CommandDefinition('clear', 'executeClear', true),
             new CommandDefinition('worldborder', 'executeWorldBorder', true),
             new CommandDefinition('enchant', 'executeEnchant', true),
+            new CommandDefinition('ban', 'executeBan', true),
+            new CommandDefinition('pardon', 'executePardon', true),
+            new CommandDefinition('banlist', 'executeBanList', true),
+            new CommandDefinition('whitelist', 'executeWhitelist', true),
         ];
     }
 

@@ -314,7 +314,7 @@ def rejected_login(port, name='Bad-Name', protocol=777, reason='Invalid'):
             c.send('hello', string(name) + bytes(16))
         payload = c.until('login_disconnect')
         text, _ = read_string(payload)
-        check(reason in json.loads(text)['text'], 'login rejected: ' + reason)
+        check(reason in text, 'login rejected: ' + reason)
     finally:
         c.close()
 

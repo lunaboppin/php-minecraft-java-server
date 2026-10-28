@@ -101,7 +101,8 @@ final class Nbt
     }
 
     /** @param list<string> $keys */
-    private static function hashMapOrder(array $keys): array
+    /** Java HashMap iteration order for string keys. */
+    public static function hashMapOrder(array $keys): array
     {
         $capacity = 16;
         while (count($keys) > $capacity * 3 / 4) {

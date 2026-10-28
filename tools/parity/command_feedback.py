@@ -125,6 +125,18 @@ SCRIPT = [
     ('enchant Witness nope', False), ('enchant @a unbreaking', False), ('give @a book', False),
     ('enchant @a unbreaking', False), ('summon pig 0 64 0', False), ('enchant @e[type=pig] sharpness', False),
     ('enchant Witness binding_curse', False), ('enchant Witness protection 5', False),
+    # The whitelist and bans; "!reconnect" brings the witness back after a pardon.
+    ('banlist', False), ('banlist players', False), ('banlist ips', False),
+    ('whitelist list', False), ('whitelist add Witness', False), ('whitelist add Witness', False),
+    ('whitelist list', False), ('whitelist add ParityProbe', False), ('whitelist list', False),
+    ('whitelist on', False), ('whitelist on', False), ('whitelist remove ParityProbe', False),
+    ('whitelist remove ParityProbe', False), ('whitelist off', False), ('whitelist off', False),
+    ('whitelist reload', False), ('whitelist remove Witness', False), ('ban Witness', False),
+    ('banlist', False), ('banlist players', False), ('ban Witness', False),
+    ('pardon Witness', False), ('pardon Witness', False), ('!reconnect', False),
+    ('ban Witness Griefing  the spawn', False), ('banlist', False), ('pardon Witness', False),
+    ('!reconnect', False), ('ban @a[name=Witness]', False), ('pardon Witness', False),
+    ('!reconnect', False), ('banlist', False),
     ('list', False),
 ]
 
@@ -151,6 +163,13 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
             if command == '!respawn':
                 # Not a command: the witness leaves the death screen before the next step.
                 witness.send('client_command', wire.vi(0))
+                witness.tick_barrier()
+                operator.tick_barrier()
+                continue
+            if command == '!reconnect':
+                # The witness joins again, for instance after a kick or a pardon.
+                witness.close()
+                witness = Probe(server.port, 'witness').login('Witness')
                 witness.tick_barrier()
                 operator.tick_barrier()
                 continue
@@ -219,7 +238,7 @@ def main():
     reference = record('java', args.output, args.java, args.jar, args.eula_file, script)
     differences = compare(reference, php)
     (args.output / 'differences.json').write_text(json.dumps(differences, indent=1))
-    observed = sum(command != '!respawn' and not command.startswith('!quiet ') for command, _ in script) * 2
+    observed = sum(command not in ('!respawn', '!reconnect') and not command.startswith('!quiet ') for command, _ in script) * 2
     print(f'{observed - len(differences)}/{observed} command observations identical; differences in {args.output / "differences.json"}')
     sys.exit(1 if differences else 0)
 

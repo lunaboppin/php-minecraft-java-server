@@ -21,6 +21,8 @@ final class Config
         public readonly bool $onlineMode = false,
         public readonly string $logDirectory = 'logs',
         public readonly int $logRetentionDays = 90,
+        /** server.properties white-list: only whitelisted players and operators may join. */
+        public readonly bool $whiteList = false,
     ) {
         if($logDirectory==='' || $logRetentionDays<1 || $logRetentionDays>90){throw new \InvalidArgumentException('Log retention must be between 1 and 90 days');}
         if (!in_array($generator,['flat','terrain'],true) || $seed < -2147483648 || $seed > 2147483647 || $defaultGameMode<0 || $defaultGameMode>3 || $difficulty<0 || $difficulty>3) { throw new \InvalidArgumentException('Invalid world settings'); }
@@ -41,7 +43,7 @@ final class Config
             if (!$object instanceof \stdClass) { throw new \InvalidArgumentException('Configuration must be a JSON object'); }
             $values = get_object_vars($object);
         }
-        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays'];
+        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList'];
         foreach ($values as $key => $_) { if (!in_array($key,$allowed,true)) { throw new \InvalidArgumentException('Unknown configuration option: ' . $key); } }
         return new self(...array_replace($values,$overrides));
     }

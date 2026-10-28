@@ -269,6 +269,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/admin-commands.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/player-lists.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/server-commands.py'), $code);
 if ($code !== 0) {
     exit($code);

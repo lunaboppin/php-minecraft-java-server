@@ -80,6 +80,14 @@ trait Commands
 
     use CommandModules\EnchantCommand;
 
+    use CommandModules\BanCommand;
+
+    use CommandModules\PardonCommand;
+
+    use CommandModules\BanListCommand;
+
+    use CommandModules\WhitelistCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -305,18 +313,23 @@ trait Commands
     /** Replace the operator list, persisting it to server.json as vanilla persists ops.json. */
     private function setOperators(array $operators): void
     {
-        $this->config = $this->config->with(['operators' => array_values($operators)]);
+        $this->persistConfig(['operators' => array_values($operators)]);
+    }
+
+    /** Change settings and write them to server.json, as vanilla rewrites ops.json and server.properties. */
+    private function persistConfig(array $changes): void
+    {
+        $this->config = $this->config->with($changes);
         if ($this->configPath === null) {
             return;
         }
-        $settings = json_decode((string) file_get_contents($this->configPath), true, 512, JSON_THROW_ON_ERROR);
-        $settings['operators'] = $this->config->operators;
+        $settings = array_replace(json_decode((string) file_get_contents($this->configPath), true, 512, JSON_THROW_ON_ERROR), $changes);
         $json = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         // Keep server.json's two-space indentation.
         $json = preg_replace_callback('/^( +)/m', static fn (array $match): string => str_repeat(' ', intdiv(strlen($match[1]), 2)), $json) . "\n";
         $temporary = $this->configPath . '.tmp';
         if (file_put_contents($temporary, $json) === false || !rename($temporary, $this->configPath)) {
-            throw new \RuntimeException('Cannot save operators to ' . $this->configPath);
+            throw new \RuntimeException('Cannot save settings to ' . $this->configPath);
         }
     }
 
