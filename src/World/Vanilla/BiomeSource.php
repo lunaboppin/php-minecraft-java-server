@@ -208,15 +208,21 @@ final class BiomeSource
         foreach (['temperature', 'vegetation', 'continents', 'erosion', 'depth', 'ridges'] as $name) {
             $climate[] = $state->sampler($router[$name])->volume($context, $volume);
         }
+        // ChunkAccess.fillBiomesFromNoise: sections from the bottom, each in x, y, z order. The
+        // order matters because the previous result decides exact ties.
         $biomes = [];
-        for ($y = 0; $y < $volume->sizeY; ++$y) {
-            for ($z = 0; $z < 4; ++$z) {
-                for ($x = 0; $x < 4; ++$x) {
-                    $index = $volume->index($x, $y, $z);
-                    $biomes[($y << 4) | ($z << 2) | $x] = $this->find(array_map(static fn (array $buffer): float => $buffer[$index], $climate));
+        for ($section = 0; $section < intdiv($volume->sizeY, 4); ++$section) {
+            for ($x = 0; $x < 4; ++$x) {
+                for ($dy = 0; $dy < 4; ++$dy) {
+                    $y = $section * 4 + $dy;
+                    for ($z = 0; $z < 4; ++$z) {
+                        $index = $volume->index($x, $y, $z);
+                        $biomes[($y << 4) | ($z << 2) | $x] = $this->find(array_map(static fn (array $buffer): float => $buffer[$index], $climate));
+                    }
                 }
             }
         }
+        ksort($biomes);
         return $biomes;
     }
 }

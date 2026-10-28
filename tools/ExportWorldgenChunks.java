@@ -77,6 +77,22 @@ public class ExportWorldgenChunks {
                 row.addProperty("x", cx);
                 row.addProperty("z", cz);
                 row.add("biomes", biomes(chunk, height));
+                if (Boolean.getBoolean("climate")) {
+                    var climateVolume = new DensityVolume(4, height.getHeight() / 4, 4, cx * 16, height.getMinY(), cz * 16, 4, 4, 4);
+                    var samplers = randomState.samplersWithContext(net.minecraft.world.level.levelgen.densityfunction.SamplerContext.builder().enableCaches().build());
+                    var router = settings.noiseRouter();
+                    var climate = new JsonObject();
+                    var functions = new net.minecraft.world.level.levelgen.densityfunction.DensityFunction[]{router.temperature(), router.vegetation(), router.continents(), router.erosion(), router.depth(), router.ridges()};
+                    String[] names = {"temperature", "vegetation", "continents", "erosion", "depth", "ridges"};
+                    for (int f = 0; f < functions.length; ++f) {
+                        var bits = ByteBuffer.allocate(climateVolume.size() * 4);
+                        try (var buffer = samplers.get(functions[f]).sampleVolume(climateVolume)) {
+                            for (int j = 0; j < climateVolume.size(); ++j) bits.putFloat(buffer.get(j));
+                        }
+                        climate.addProperty(names[f], Base64.getEncoder().encodeToString(bits.array()));
+                    }
+                    row.add("climate", climate);
+                }
                 var pos = chunk.getPos();
                 var volume = new DensityVolume(16, height.getHeight(), 16, pos.getMinBlockX(), height.getMinY(), pos.getMinBlockZ());
                 try (NoiseChunk noise = new NoiseChunk(randomState, null, settings, fluidPicker, Blender.empty(), volume)) {
