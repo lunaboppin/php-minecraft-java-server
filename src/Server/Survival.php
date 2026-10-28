@@ -329,6 +329,15 @@ trait Survival
         return false;
     }
 
+    private function blockLoot(): \PhpMinecraftJavaServer\World\BlockLoot
+    {
+        static $loot = null;
+        $tags = fn (string $registry): \Closure => function (string $tag) use ($registry): array {
+            return array_map(static fn (string $name): string => 'minecraft:' . $name, $this->version->registryTags($registry)[$tag] ?? []);
+        };
+        return $loot ??= new \PhpMinecraftJavaServer\World\BlockLoot(json_decode((string) file_get_contents($this->version->directory . '/block-loot.json'), true, 512, JSON_THROW_ON_ERROR), $tags('minecraft:item'), $tags('minecraft:block'));
+    }
+
     private function breakBlock(Client $c, int $x, int $y, int $z): void
     {
         $state = $this->world->get($x, $y, $z);
@@ -375,38 +384,23 @@ trait Survival
         $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
         $required = $this->version->catalog->blocks[$name]['requires_tool'];
         if (!$required || $this->correctTool($tool, $name)) {
-            $drop = match ($name) {
-                'grass_block' => 'dirt','stone' => 'cobblestone','deepslate' => 'cobbled_deepslate',default => $name
+            // The block's official loot table, for the held tool.
+            $held = $c->inventory[36 + $c->heldSlot] ?? null;
+            $toolStack = $held === null ? null : ['item' => 'minecraft:' . $tool, 'enchantments' => $held['enchantments'] ?? []];
+            $blockAt = function (int $offset) use ($x, $y, $z): array {
+                $above = $this->world->get($x, $y + $offset, $z);
+                return ['minecraft:' . $this->version->catalog->blockName($above), array_map('strval', $this->version->catalog->properties($above))];
             };
-            $count = 1;
-            if (str_contains($name, 'ore')) {
-                foreach (['coal' => 'coal', 'iron' => 'raw_iron', 'copper' => 'raw_copper', 'gold' => 'raw_gold', 'diamond' => 'diamond', 'emerald' => 'emerald', 'redstone' => 'redstone', 'lapis' => 'lapis_lazuli'] as $ore => $item) {
-                    if (str_contains($name, $ore . '_ore')) {
-                        $drop = $item;
-                        $count = in_array($ore, ['redstone', 'lapis', 'copper'], true) ? random_int(2, 5) : 1;
-                        if (in_array($ore, ['coal', 'diamond', 'emerald', 'redstone', 'lapis'], true)) {
-                            $c->experience += random_int(1, 4);
-                        }break;
-                    }
+            foreach ($this->blockLoot()->drops('minecraft:' . $name, array_map('strval', $properties), $toolStack, $blockAt) as [$drop, $count]) {
+                $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
+                if ($item !== null) {
+                    $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
                 }
             }
-            if ($name === 'nether_quartz_ore') {
-                $drop = 'quartz';
-                $c->experience += random_int(2, 5);
-            }
-            if ($name === 'nether_gold_ore') {
-                $drop = 'gold_nugget';
-                $count = random_int(2, 6);
-            }
-            if (str_ends_with($name, '_leaves')) {
-                $drop = random_int(1, 20) === 1 ? str_replace('_leaves', '_sapling', $name) : '';
-            }
-            if (str_contains($name, 'glass') || in_array($name, ['short_grass', 'snow', 'ice'], true)) {
-                $drop = '';
-            }
-            $item = $this->version->blocks['items'][$drop] ?? null;
-            if ($item !== null) {
-                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+            // DropExperienceBlock and RedStoneOreBlock experience, which silk touch prevents.
+            $experience = ['coal_ore' => [0, 2], 'deepslate_coal_ore' => [0, 2], 'diamond_ore' => [3, 7], 'deepslate_diamond_ore' => [3, 7], 'emerald_ore' => [3, 7], 'deepslate_emerald_ore' => [3, 7], 'lapis_ore' => [2, 5], 'deepslate_lapis_ore' => [2, 5], 'nether_quartz_ore' => [2, 5], 'nether_gold_ore' => [0, 1], 'redstone_ore' => [1, 5], 'deepslate_redstone_ore' => [1, 5]][$name] ?? null;
+            if ($experience !== null && !isset($toolStack['enchantments']['minecraft:silk_touch'])) {
+                $c->experience += random_int(...$experience);
             }
         }
         $slot = 36 + $c->heldSlot;

@@ -14,7 +14,7 @@ final class Version
     public readonly Catalog $catalog;
     /** The pinned server's version metadata (name, protocol, data version, build time, pack formats). */
     public readonly array $info;
-    private ?array $blockTags = null;
+    private array $registryTags = [];
     public function __construct(public readonly string $directory = __DIR__ . '/../../reference/26.3') {
         $this->packets = $this->json('packets.json');
         $this->dynamic = $this->json('dynamic-registries.json');
@@ -54,24 +54,37 @@ final class Version
      * @return array<string, list<string>>
      */
     public function blockTags(): array {
-        if ($this->blockTags !== null) { return $this->blockTags; }
-        $names = array_keys($this->catalog->blocks);
+        return $this->registryTags('minecraft:block');
+    }
+    /**
+     * A registry's tags from the update_tags payload: tag => entry names without "minecraft:".
+     * Blocks are numbered in catalog order, items by their protocol IDs.
+     *
+     * @return array<string, list<string>>
+     */
+    public function registryTags(string $registry): array {
+        if (isset($this->registryTags[$registry])) { return $this->registryTags[$registry]; }
+        $names = match ($registry) {
+            'minecraft:block' => array_keys($this->catalog->blocks),
+            'minecraft:item' => array_flip($this->blocks['items']),
+            default => throw new \InvalidArgumentException('Unsupported tag registry ' . $registry),
+        };
         $reader = new Binary($this->tags());
         $tags = [];
         for ($registries = $reader->varInt(); $registries > 0; --$registries) {
-            $registry = $reader->string();
+            $name = $reader->string();
             for ($count = $reader->varInt(); $count > 0; --$count) {
                 $tag = $reader->string();
                 $entries = [];
                 for ($size = $reader->varInt(); $size > 0; --$size) {
                     $entries[] = $reader->varInt();
                 }
-                if ($registry === 'minecraft:block') {
+                if ($name === $registry) {
                     $tags[$tag] = array_map(static fn (int $id): string => $names[$id], $entries);
                 }
             }
         }
-        return $this->blockTags = $tags;
+        return $this->registryTags[$registry] = $tags;
     }
     public function registryCount(string $name): int { return count($this->dynamic['minecraft:'.$name]??[]); }
     public function registryPackets(): iterable {

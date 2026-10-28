@@ -76,6 +76,18 @@ def timelines(inner):
     return result
 
 
+def block_loot(inner):
+    """Vanilla block loot tables and the named predicates they reference, evaluated by World\\BlockLoot."""
+    tables, predicates = {}, {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith('data/minecraft/loot_table/blocks/') and name.endswith('.json'):
+                tables['minecraft:' + Path(name).stem] = json.loads(archive.read(name))
+            elif name.startswith('data/minecraft/predicate/') and name.endswith('.json'):
+                predicates['minecraft:' + name[len('data/minecraft/predicate/'):-5]] = json.loads(archive.read(name))
+    return {'tables': tables, 'predicates': predicates}
+
+
 def generate_tags(inner, registries, dynamic):
     tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
               for name, registry in registries.items()}
@@ -223,6 +235,7 @@ def main():
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
+    write_json(out / 'block-loot.json', block_loot(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)
