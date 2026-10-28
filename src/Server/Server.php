@@ -557,8 +557,12 @@ final class Server
             case 'accept_teleportation':
                 $confirmation = Packets::readTeleportConfirmation($r);
                 $id = $confirmation['id'];
-                if ($c->teleport === null || $id !== $c->teleport) {
+                if ($c->teleport === null) {
                     throw new ProtocolException('Invalid teleport confirmation');
+                }
+                // Like vanilla, a confirmation of an earlier teleport is ignored while a newer one is awaited.
+                if ($id !== $c->teleport) {
+                    return;
                 }
                 $c->teleport = null;
                 return;

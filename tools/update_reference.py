@@ -144,6 +144,7 @@ def main():
         'ExportMobEquipment.java', 'ExportEnchanting.java', 'ExportEnchantmentComponents.java',
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
+        'ExportDisplayNames.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -168,6 +169,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportEntitySectionQueries', str(out / 'entity-section-queries.json')], check=True, cwd=cache)
     # Also writes the sibling push-eligibility-rules.json used at runtime.
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportPushEligibility', str(out / 'push-eligibility.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportDisplayNames', str(out / 'display-names.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())

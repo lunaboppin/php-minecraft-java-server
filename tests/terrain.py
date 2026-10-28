@@ -71,7 +71,7 @@ def main():
                 command(b, 'gamemode creative', 'insufficient permission')
                 command(a, 'gamemode creative')
                 a.until('game_event', lambda p: p[0] == 3 and struct.unpack('>f', p[1:])[0] == 1)
-                command(a, 'give @s oak_log 2', 'Gave 2 oak_log')
+                command(a, 'give @s oak_log 2', 'commands.give.success.single')
                 net.check(total(a, 'oak_log') == 2, 'give updates authoritative inventory')
                 # Craft two logs into eight planks in the player's actual 2x2 menu.
                 source = find(a, 'oak_log')
@@ -110,7 +110,7 @@ def main():
                 # Recover planks, then craft a wooden pickaxe in a 3x3 crafting table.
                 click(a, 0, mode=1)
                 close(a)
-                command(a, 'give @s stick 2', 'Gave 2 stick')
+                command(a, 'give @s stick 2', 'commands.give.success.single')
                 command(a, 'setblock 2 65 1 crafting_table', 'commands.setblock.success')
                 use_block(a, 2, 65, 1)
                 source = find(a, 'oak_planks', 10)
@@ -129,8 +129,8 @@ def main():
                 close(a)
                 net.check(total(a, 'wooden_pickaxe') == 1, 'crafted tool placed into player inventory')
                 # A real 200-tick furnace recipe with real fuel consumption.
-                command(a, 'give @s raw_iron 1', 'Gave 1 raw_iron')
-                command(a, 'give @s coal 1', 'Gave 1 coal')
+                command(a, 'give @s raw_iron 1', 'commands.give.success.single')
+                command(a, 'give @s coal 1', 'commands.give.success.single')
                 command(a, 'setblock 2 65 2 furnace', 'commands.setblock.success')
                 use_block(a, 2, 65, 2)
                 click(a, find(a, 'raw_iron', 3), mode=1)
@@ -159,10 +159,10 @@ def main():
                 health = b.until('set_health', lambda p: struct.unpack_from('>f', p)[0] < 20)
                 net.check(struct.unpack_from('>f', health)[0] == 19, 'player combat applies health damage')
                 # Summoned passive animals use the same validated entity protocol and drop food.
-                command(a, 'give @s iron_sword 1', 'Gave 1 iron_sword')
+                command(a, 'give @s iron_sword 1', 'commands.give.success.single')
                 sword = find(a, 'iron_sword')
                 a.send('set_carried_item', struct.pack('>h', sword - 36))
-                command(a, 'summon cow 1.5 65 0.5', 'Summoned cow')
+                command(a, 'summon cow 1.5 65 0.5', 'commands.summon.success')
                 cow_id = None
                 for name, payload in reversed(a.seen):
                     if name == 'add_entity':
@@ -213,7 +213,7 @@ def main():
                 net.check(struct.unpack_from('>ddd', pos, off) == (1.5, 65., .5), 'position survives process restart')
                 net.check(total(a, 'wooden_pickaxe') == 1 and total(a, 'iron_ingot') == 1, 'inventory survives process restart')
                 command(a, 'time query', 'Daytime: 13000')
-                command(a, 'give @s bread 1', 'Gave 1 bread')
+                command(a, 'give @s bread 1', 'commands.give.success.single')
                 bread = find(a, 'bread')
                 net.check(36 <= bread <= 44, 'food placed in hotbar')
                 a.send('set_carried_item', struct.pack('>h', bread - 36))

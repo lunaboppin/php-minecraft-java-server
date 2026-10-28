@@ -9,6 +9,8 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
+import struct
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -33,6 +35,10 @@ SCRIPT = [
     ('spawnpoint Witness 3 64 4', False), ('spawnpoint @a 3 64 4 45 0', False),
     ('setblock 5 64 5 minecraft:stone', False), ('setblock 5 64 5 minecraft:stone', False), ('setblock 5 64 5 minecraft:air', False),
     ('fill 6 64 6 7 64 7 minecraft:dirt', False), ('fill 6 64 6 7 64 7 minecraft:dirt', False), ('fill 6 64 6 7 65 7 minecraft:air', False),
+    ('give Witness minecraft:dirt 3', False), ('give @a minecraft:dirt 2', False), ('give Witness minecraft:diamond_sword 2', False),
+    ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
+    ('tp Witness 0 70 0', False), ('tp 1 70 1', False), ('tp Witness ParityProbe', False), ('teleport @a 2 70 2', False), ('tp @s ~ ~1 ~', False),
+    ('kill Witness', False), ('kill Witness', False),
     ('list', False),
 ]
 
@@ -72,13 +78,23 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
     return results
 
 
+def normalize_uuids(items):
+    """Zero random entity UUIDs (int-array tags and dashed insertion strings) for comparison."""
+    uuid_tag = re.compile(r'0b0004' + b'uuid'.hex() + r'00000004[0-9a-f]{32}')
+    insertion = re.compile(r'08' + struct.pack('>H', 9).hex() + b'insertion'.hex() + r'0024[0-9a-f]{72}')
+    return [{**item, 'hex': insertion.sub('08' + struct.pack('>H', 9).hex() + b'insertion'.hex() + '0024' + '30' * 36,
+                                         uuid_tag.sub('0b0004' + b'uuid'.hex() + '00000004' + '0' * 32, item['hex']))} for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
+        # A summoned entity has a random UUID on each server.
+        random_ids = expected['command'].startswith('summon ')
         for role in ('operator', 'witness'):
-            key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (lambda items: items)
+            key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
             if key(expected[role]) != key(actual[role]):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
