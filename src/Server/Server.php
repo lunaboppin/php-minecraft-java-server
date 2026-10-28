@@ -804,7 +804,7 @@ final class Server
                 throw new ProtocolException('Non-finite movement');
             }
         }
-        if (abs($x) > 29999900 || abs($z) > 29999900 || abs($y) > 20000000 || $flags > 3) {
+        if (abs($x) > 30000000 || abs($z) > 30000000 || abs($y) > 20000000 || $flags > 3) {
             throw new ProtocolException('Movement out of bounds');
         }
         if ($c->teleport !== null) {

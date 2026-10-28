@@ -42,6 +42,7 @@ final class ArgumentReader
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
+            'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
         ];
     }
 
@@ -339,6 +340,10 @@ final class ArgumentReader
         if ($tags && $reader->canRead() && $reader->peek() === '#') {
             $reader->skip();
             $id = $reader->readIdentifier();
+            if (!isset($this->registries['block_tag'][$id])) {
+                $reader->cursor = $start;
+                throw $reader->error('arguments.block.tag.unknown', [$id]);
+            }
         } else {
             $id = $reader->readIdentifier();
             $properties = $this->registries['block'][$id] ?? null;

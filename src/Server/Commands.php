@@ -455,6 +455,36 @@ trait Commands
         $client->send($this->version, 'commands', $packets[spl_object_id($tree)]);
     }
 
+    /**
+     * LocalCoordinates.getPosition: "^left ^up ^forwards" from the sender's feet and rotation,
+     * with Mth's float sine table; null unless every coordinate is local.
+     *
+     * @return array{float, float, float}|null
+     */
+    private function localPosition(array $arguments, Client $sender): ?array
+    {
+        if (count($arguments) !== 3 || array_filter($arguments, static fn (string $text): bool => !str_starts_with($text, '^')) !== []) {
+            return null;
+        }
+        [$left, $up, $forwards] = array_map(static fn (string $text): float => (float) substr($text, 1), $arguments);
+        $f32 = static fn (float $value): float => unpack('G', pack('G', $value))[1];
+        $sin = static fn (float $value): float => $f32(sin((((int) $f32($value * 10430.378)) & 65535) * M_PI * 2 / 65536));
+        $cos = static fn (float $value): float => $f32(sin((((int) $f32($f32($value * 10430.378) + 16384.0)) & 65535) * M_PI * 2 / 65536));
+        $radians = $f32(M_PI / 180.0);
+        $yaw = $f32($f32($sender->yaw + 90.0) * $radians);
+        $pitch = $f32(-$f32($sender->pitch) * $radians);
+        $upPitch = $f32($f32(-$f32($sender->pitch) + 90.0) * $radians);
+        $forward = [$f32($cos($yaw) * $cos($pitch)), $sin($pitch), $f32($sin($yaw) * $cos($pitch))];
+        $upward = [$f32($cos($yaw) * $cos($upPitch)), $sin($upPitch), $f32($sin($yaw) * $cos($upPitch))];
+        $leftward = [
+            -($forward[1] * $upward[2] - $forward[2] * $upward[1]),
+            -($forward[2] * $upward[0] - $forward[0] * $upward[2]),
+            -($forward[0] * $upward[1] - $forward[1] * $upward[0]),
+        ];
+        $origin = [$sender->x, $sender->y, $sender->z];
+        return array_map(static fn (int $axis): float => $origin[$axis] + ($forward[$axis] * $forwards + $upward[$axis] * $up + $leftward[$axis] * $left), [0, 1, 2]);
+    }
+
     private function coordinate(string $text, float $relative): float
     {
         if (str_starts_with($text, '~')) {
@@ -469,7 +499,7 @@ trait Commands
             }
             $value = (float) $text;
         }
-        if (!is_finite($value) || abs($value) > 29999900) {
+        if (!is_finite($value)) {
             throw new \InvalidArgumentException('Coordinate out of bounds');
         }
         return $value;
@@ -489,6 +519,30 @@ trait Commands
     }
 
     /**
+     * BlockPosArgument.getLoadedBlockPos: the block coordinates, which must be in a loaded chunk
+     * and inside the build height and the horizontal world bounds.
+     *
+     * @return array{int, int, int}
+     */
+    private function loadedBlockPosition(array $arguments, Client $client): array
+    {
+        if (count($arguments) !== 3) {
+            throw new \InvalidArgumentException('Expected x y z coordinates');
+        }
+        $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $client->x), $this->coordinate($arguments[1], $client->y), $this->coordinate($arguments[2], $client->z)]);
+        // A chunk is loaded while a player in the dimension has it loaded.
+        $key = ($position[0] >> 4) . ':' . ($position[2] >> 4);
+        if (array_filter($this->players(), static fn (Client $player): bool => $player->dimension === $client->dimension && isset($player->loadedChunks[$key])) === []) {
+            throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
+        }
+        $world = $this->worlds[$client->dimension];
+        if ($position[1] < $world->minY || $position[1] >= $world->minY + $world->height || abs($position[0] + 0.5) > 30000000 || abs($position[2] + 0.5) > 30000000) {
+            throw new CommandModules\CommandFailure(['translate' => 'argument.pos.outofworld']);
+        }
+        return $position;
+    }
+
+    /**
      * Vec3Argument relative to the command's sender: absolute X and Z written without a decimal
      * point are centred on the block, and Y may be anywhere within the world's spawnable bounds.
      *
@@ -499,13 +553,16 @@ trait Commands
         if (count($arguments) !== 3) {
             throw new \InvalidArgumentException('Expected x y z coordinates');
         }
+        $local = $this->localPosition($arguments, $sender);
         $center = static fn (string $text): float => !str_starts_with($text, '~') && !str_contains($text, '.') ? 0.5 : 0.0;
-        $position = [
+        $position = $local ?? [
             $this->coordinate($arguments[0], $sender->x) + $center($arguments[0]),
             $this->coordinate($arguments[1], $sender->y),
             $this->coordinate($arguments[2], $sender->z) + $center($arguments[2]),
         ];
-        if (abs($position[1]) > 20000000) {
+        // Level.isInSpawnableBounds for the block containing the position.
+        [$blockX, $blockY, $blockZ] = array_map(static fn (float $value): float => floor($value), $position);
+        if ($blockY < -20000000 || $blockY >= 20000000 || $blockX < -30000000 || $blockX >= 30000000 || $blockZ < -30000000 || $blockZ >= 30000000) {
             throw new CommandModules\CommandFailure(['translate' => 'commands.teleport.invalidPosition']);
         }
         return $position;

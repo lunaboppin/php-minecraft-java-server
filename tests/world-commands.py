@@ -28,6 +28,11 @@ def failure(key, *arguments):
     return chat({'text': '', 'color': 'red', 'extra': [translate(key, *arguments)]})
 
 
+def reply(packets):
+    [message] = named(packets, 'system_chat')
+    return message
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, help='Write PHP packet traces for the official codec verifier')
@@ -73,6 +78,18 @@ def main():
                 assert named(run(op, 'fill 6 64 6 7 64 7 minecraft:dirt'), 'system_chat') == [failure('commands.fill.failed')]
                 assert named(run(op, 'fill 6 64 6 7 65 7 minecraft:dirt'), 'system_chat') == [chat(translate('commands.fill.success', 4))], 'only changed blocks are counted'
                 assert named(run(op, 'fill 0 0 0 40 40 40 minecraft:dirt'), 'system_chat') == [failure('commands.fill.toobig', 32768, 68921)]
+                # Placement modes, counted as the official server counts them. The idle witness answers
+                # its keep-alives first.
+                witness.tick_barrier()
+                assert reply(run(op, 'setblock 1 100 1 stone keep')) == chat(translate('commands.setblock.success', 1, 100, 1))
+                assert reply(run(op, 'setblock 1 100 1 dirt keep')) == failure('commands.setblock.failed')
+                destroyed = run(op, 'setblock 1 100 1 air destroy')
+                assert reply(destroyed) == chat(translate('commands.setblock.success', 1, 100, 1)) and named(destroyed, 'level_event'), 'destroy sends the break event'
+                assert reply(run(op, 'fill 0 100 0 2 102 2 stone outline')) == chat(translate('commands.fill.success', 26))
+                assert reply(run(op, 'fill 0 100 0 2 102 2 dirt hollow')) == chat(translate('commands.fill.success', 26)), 'the core was already air'
+                assert reply(run(op, 'fill 0 100 0 2 102 2 glass replace dirt')) == chat(translate('commands.fill.success', 26))
+                assert reply(run(op, 'fill 0 100 0 2 102 2 stone keep')) == chat(translate('commands.fill.success', 1))
+                assert reply(run(op, 'setblock 1 400 1 stone')) == failure('argument.pos.outofworld')
             finally:
                 for client in (op, witness):
                     traces.extend(client.trace)

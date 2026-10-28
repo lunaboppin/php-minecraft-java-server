@@ -176,7 +176,7 @@ final class Packets
                 throw new ProtocolException('Non-finite teleport confirmation');
             }
         }
-        if ($id < 0 || abs($x) > 29999900 || abs($z) > 29999900 || abs($y) > 20000000) {
+        if ($id < 0 || abs($x) > 30000000 || abs($z) > 30000000 || abs($y) > 20000000) {
             throw new ProtocolException('Teleport confirmation out of bounds');
         }
         return ['id' => $id, 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => $yaw, 'pitch' => $pitch];
