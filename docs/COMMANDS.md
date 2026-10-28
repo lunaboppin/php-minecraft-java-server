@@ -40,6 +40,15 @@ Damage uses vanilla's damage types from `reference/26.3/damage-types.json`, copi
 
 Fall-location variants (ladders, vines, water) and weapon-name `.item` variants are not modelled yet. `/damage <target> <amount> [<damageType> [by <entity>]]` reports `commands.damage.success` or `commands.damage.invulnerable`; its `at` and `from` forms are not supported yet. Void damage now starts 64 blocks below the world, as in vanilla. `tests/death-messages.py` checks every case.
 
+`/time` follows 26.3's world clocks: the Overworld clock, which is PHP's day time, and the End's separate clock. Without `of <clock>`, it uses the sender's dimension's default clock; the Nether has none (`commands.time.no_default_clock`):
+- **Forms:** `query time|gametime`, `set <time>|<marker>`, `add <time>`, `pause`, `resume`, `rate <rate>`, optionally through `of <clock>`.
+- **Markers:** come from the `minecraft:day` timeline in `reference/26.3/timelines.json` (copied from the JAR by `update_reference.py`), and `set` moves forward to a marker's next occurrence.
+- **Replies:** clock totals and game time are reported as Java longs. Queries are not echoed; changes are.
+- **Ticking:** each clock ticks with vanilla's float partial tick and rate while `advance_time` is on and it isn't paused. Pause, rate and partial tick are saved with the world. A new world's clocks start at 0, as in vanilla (PHP previously started at noon); an existing world's End clock starts at its age.
+- **Packets:** `set_time` follows vanilla. A join or dimension change sends every clock, a clock change sends that clock to everyone, and the periodic sync sends only the game time. The rate sent is the effective one.
+
+Timeline queries and `time query daytime`'s parse error are not modelled yet. `tests/time-command.py` checks the replies, packets and restart.
+
 `tools/parity/command_feedback.py` runs one command script against PHP and the official server (with an accepted EULA) and compares every `system_chat` and `disconnect` payload byte for byte, for the operator and a non-operator witness. It covers `/list`, `/seed`, `/difficulty`, `/defaultgamemode`, `/save-all`, `/save-on`, `/save-off`, `/op`, `/deop`, `/kick`, `/weather`, `/gamemode`, `/setworldspawn`, `/spawnpoint`, `/setblock`, `/fill`, `/give`, `/summon`, `/tp`, `/kill`, `/version`, `/gamerule` and `/damage` with death messages, including their failures and echoes; all 132 observations are identical. A `!respawn` line makes the witness respawn between deaths. Random entity UUIDs in `/summon` replies are normalized before comparison. `--commands FILE` runs another list of commands. The kick report and leave message are compared without order, because vanilla races them against the network thread. CI runs it in the multiplayer parity job.
 
 Run `python3 tools/php_style.py` to format command modules and `python3 tools/php_style.py --check` to check them. Optional paths apply the same configuration to other changed PHP files. The helper verifies the pinned official PHP CS Fixer PHAR checksum and does not add a runtime dependency. CI checks command formatting.

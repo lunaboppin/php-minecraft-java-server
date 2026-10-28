@@ -11,7 +11,24 @@ use PhpMinecraftJavaServer\World\Inventory;
 
 trait Survival
 {
-    private int $dayTime = 6000;
+    /** The overworld clock's total ticks; a new vanilla world's clock starts at 0. */
+    private int $dayTime = 0;
+
+    /** ServerClockInstance: a paused clock does not advance; its rate is a Java float. */
+    private bool $clockPaused = false;
+
+    private float $clockRate = 1.0;
+
+    private float $clockPartial = 0.0;
+
+    /** The End's own clock (minecraft:the_end), which runs alongside the Overworld's. */
+    private ?int $endClockTicks = null;
+
+    private bool $endClockPaused = false;
+
+    private float $endClockRate = 1.0;
+
+    private float $endClockPartial = 0.0;
 
     private int $worldAge = 0;
 
@@ -78,7 +95,7 @@ trait Survival
         foreach ($this->players() as $player) {
             $this->savePlayer($player);
         }
-        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs'] as $key) {
+        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $this->worlds['overworld']->setting($key, $this->$key);
         }
         foreach (array_keys($this->worlds) as $dimension) {

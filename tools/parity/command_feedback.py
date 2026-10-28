@@ -49,6 +49,10 @@ SCRIPT = [
     ('damage Witness 100 player_attack by ParityProbe', False), ('!respawn', False),
     ('damage Witness 1 player_attack by ParityProbe', False), ('damage Witness 100 drown', False), ('!respawn', False),
     ('damage Witness 100 out_of_world', False), ('!respawn', False), ('damage ParityProbe 5', False),
+    # /time cases whose replies do not depend on how many ticks pass between commands.
+    ('time set 1000', False), ('time set minecraft:night', False), ('time set noon', False),
+    ('time pause', False), ('time pause', False), ('time resume', False), ('time resume', False),
+    ('time rate 2', False), ('time rate 2', False), ('time rate 1', False),
     ('list', False),
 ]
 

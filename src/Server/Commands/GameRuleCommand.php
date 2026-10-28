@@ -35,8 +35,9 @@ trait GameRuleCommand
             $this->world->setting('gameRules', $rules);
         }
         $this->saveWorld();
+        // advance_time changes every clock's effective rate.
         foreach ($this->players() as $player) {
-            $this->sendClock($player);
+            $player->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
         }
         $this->sendSuccess($sender, ['translate' => 'commands.gamerule.set', 'with' => [['text' => $id], ['text' => $value]]], true);
     }

@@ -81,12 +81,14 @@ final class Server
             });
         }
         $this->crafting = new \PhpMinecraftJavaServer\World\Crafting($version->directory);
-        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs'] as $key) {
+        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $saved = $this->world->setting($key);
             if ($saved !== null) {
                 $this->$key = $saved;
             }
         }
+        // Both clocks start with the world; a world saved before the End clock existed takes its age.
+        $this->endClockTicks ??= $this->worldAge;
     }
 
     public function stop(): void
@@ -441,7 +443,7 @@ final class Server
         $this->health($c);
         $this->syncInventory($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
-        $this->sendClock($c);
+        $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
         $this->sendWeather($c);
         $this->sendPermissionLevel($c);
         foreach ($this->players() as $other) {
@@ -1082,8 +1084,18 @@ final class Server
             $this->broadcast($announcement);
         }
         ++$this->worldAge;
+        // ServerClockManager.tick: while advance_time is on, each unpaused clock adds its rate to a
+        // float partial tick and moves on by the whole ticks.
         if ($this->daylightCycle) {
-            ++$this->dayTime;
+            foreach (self::CLOCKS as [$total, $paused, $rate, $partial]) {
+                if ($this->$paused) {
+                    continue;
+                }
+                $this->$partial = unpack('G', pack('G', $this->$partial + $this->$rate))[1];
+                $whole = (int) floor($this->$partial);
+                $this->$partial = unpack('G', pack('G', $this->$partial - $whole))[1];
+                $this->$total += $whole;
+            }
         }
         $this->tickDimensions();
         foreach ($this->clients as $id => $c) {

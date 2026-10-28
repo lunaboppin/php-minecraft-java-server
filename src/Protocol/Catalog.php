@@ -43,6 +43,9 @@ final class Catalog
     /** Vanilla damage types (message IDs and death message types) and resolved damage type tags. */
     public readonly array $damageTypes;
 
+    /** Vanilla timelines: their clocks, periods and time markers. */
+    public readonly array $timelines;
+
     public readonly array $items;
 
     public readonly array $flags;
@@ -81,6 +84,7 @@ final class Catalog
         $this->displayNames = json_decode(file_get_contents($directory . '/display-names.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->gameRules = json_decode(file_get_contents($directory . '/gamerules.json'), true, 512, JSON_THROW_ON_ERROR)['rules'];
         $this->damageTypes = json_decode(file_get_contents($directory . '/damage-types.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->timelines = json_decode(file_get_contents($directory . '/timelines.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->entityMetadata = $data['entity_metadata'];
         $this->itemMetadataIndex = $data['item_metadata_index'];
         $this->itemMetadataSerializer = $data['item_metadata_serializer'];

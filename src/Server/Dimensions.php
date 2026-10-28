@@ -104,7 +104,7 @@ trait Dimensions
             $this->abilities($c);
             $this->health($c);
             $this->syncInventory($c);
-            $this->sendClock($c);
+            $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
             $this->sendWeather($c);
             $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
             $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));

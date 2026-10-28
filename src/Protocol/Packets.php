@@ -201,10 +201,18 @@ final class Packets
         return pack('J', $ticks) . "\0";
     }
 
-    public static function clockTime(Version $version, int $ticks, ?int $dayTime = null, bool $advancing = true): string
+    /**
+     * set_time: the game time and, for each listed clock, its total ticks, partial tick and rate.
+     *
+     * @param list<array{string, int, float, float}> $clocks
+     */
+    public static function clockTime(Version $version, int $ticks, array $clocks = []): string
     {
-        return pack('J', $ticks) . "\1" . Binary::writeVarInt($version->registryId('world_clock', 'overworld'))
-            . Binary::writeVarLong($dayTime ?? ($ticks + 6000)) . pack('GG', 0, $advancing ? 1 : 0);
+        $payload = pack('J', $ticks) . Binary::writeVarInt(count($clocks));
+        foreach ($clocks as [$clock, $total, $partialTick, $rate]) {
+            $payload .= Binary::writeVarInt($version->registryId('world_clock', $clock)) . Binary::writeVarLong($total) . pack('GG', $partialTick, $rate);
+        }
+        return $payload;
     }
 
     public static function playerInfo(string $uuid, string $name, int $gameMode = 1, bool $hat = true, array $properties = []): string

@@ -62,6 +62,20 @@ def damage_types(inner):
     return {'types': types, 'tags': {tag: sorted(set(members(tag))) for tag in sorted(tags)}}
 
 
+def timelines(inner):
+    """Vanilla timelines' clocks, periods and time markers, used by /time."""
+    result = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith('data/minecraft/timeline/') and name.endswith('.json'):
+                data = json.loads(archive.read(name))
+                # A marker is either a tick count or an object with ticks and show_in_commands.
+                markers = {key: value if isinstance(value, dict) else {'ticks': value}
+                           for key, value in data.get('time_markers', {}).items()}
+                result['minecraft:' + Path(name).stem] = {'clock': data.get('clock'), 'period_ticks': data.get('period_ticks'), 'time_markers': markers}
+    return result
+
+
 def generate_tags(inner, registries, dynamic):
     tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
               for name, registry in registries.items()}
@@ -208,6 +222,7 @@ def main():
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
+    write_json(out / 'timelines.json', timelines(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)
