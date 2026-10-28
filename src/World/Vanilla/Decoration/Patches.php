@@ -269,18 +269,8 @@ final class Patches
 
     public function underwaterMagma(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
     {
-        // Column.scan: water up to the search range, ending on a non-water floor.
-        $floor = null;
-        $range = $feature['floor_search_range'];
-        if ($this->blocks->name($region->get($x, $y, $z)) === 'water') {
-            for ($i = 1; $i <= $range; ++$i) {
-                $state = $region->get($x, $y - $i, $z);
-                if ($this->blocks->name($state) !== 'water') {
-                    $floor = $y - $i;
-                    break;
-                }
-            }
-        }
+        $water = fn (int $state): bool => $this->blocks->name($state) === 'water';
+        [, $floor] = self::columnScan($region, $x, $y, $z, $feature['floor_search_range'], $water, fn (int $state): bool => !$water($state)) ?? [null, null];
         if ($floor === null) {
             return false;
         }
@@ -734,6 +724,227 @@ final class Patches
             }
         }
         return true;
+    }
+
+    /**
+     * Column.scan: from a position inside the column, the nearest valid edge above and below
+     * within the search range, or null when the position is not inside.
+     *
+     * @return array{0: ?int, 1: ?int}|null ceiling and floor Y
+     */
+    private static function columnScan(Region $region, int $x, int $y, int $z, int $range, \Closure $inside, \Closure $edge): ?array
+    {
+        if (!$inside($region->get($x, $y, $z))) {
+            return null;
+        }
+        $out = [];
+        foreach ([1, -1] as $step) {
+            $py = $y;
+            for ($i = 1; $i < $range && $inside($region->get($x, $py, $z)); ++$i) {
+                $py += $step;
+            }
+            $out[] = $edge($region->get($x, $py, $z)) ? $py : null;
+        }
+        return $out;
+    }
+
+    private function emptyOrWater(int $state): bool
+    {
+        return $this->blocks->isAir($state) || $this->blocks->name($state) === 'water';
+    }
+
+    private function speleothemBase(array $feature, int $state): bool
+    {
+        return $this->blocks->is($state, $feature['base_block']) || $this->blocks->is($state, $feature['replaceable_blocks']);
+    }
+
+    private function placeBaseBlock(array $feature, Region $region, int $x, int $y, int $z): bool
+    {
+        if (!$this->blocks->is($region->get($x, $y, $z), $feature['replaceable_blocks'])) {
+            return false;
+        }
+        $region->set($x, $y, $z, $this->blocks->parse($feature['base_block']));
+        return true;
+    }
+
+    /** SpeleothemUtils.growSpeleothem */
+    private function growSpeleothem(array $feature, Region $region, int $x, int $y, int $z, int $direction, int $height, bool $merged): void
+    {
+        if (!$this->speleothemBase($feature, $region->get($x, $y - $direction, $z))) {
+            return;
+        }
+        $pointed = $this->blocks->parse($feature['pointed_block']);
+        $tip = $direction > 0 ? 'up' : 'down';
+        $thicknesses = [];
+        if ($height >= 3) {
+            $thicknesses[] = 'base';
+            for ($i = 0; $i < $height - 3; ++$i) {
+                $thicknesses[] = 'middle';
+            }
+        }
+        if ($height >= 2) {
+            $thicknesses[] = 'frustum';
+        }
+        if ($height >= 1) {
+            $thicknesses[] = $merged ? 'tip_merge' : 'tip';
+        }
+        foreach ($thicknesses as $thickness) {
+            $state = $this->blocks->with($this->blocks->with($pointed, 'tip_direction', $tip), 'thickness', $thickness);
+            $here = $region->get($x, $y, $z);
+            $state = $this->blocks->with($state, 'waterlogged', $this->blocks->isWater($here) ? 'true' : 'false');
+            $region->set($x, $y, $z, $state);
+            $y += $direction;
+        }
+    }
+
+    /** SpeleothemFeature: one pointed block or two on a patch of base blocks. */
+    public function speleothem(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $above = $this->speleothemBase($feature, $region->get($x, $y + 1, $z));
+        $below = $this->speleothemBase($feature, $region->get($x, $y - 1, $z));
+        if ($above && $below) {
+            $direction = $random->nextBoolean() ? -1 : 1;
+        } elseif ($above) {
+            $direction = -1;
+        } elseif ($below) {
+            $direction = 1;
+        } else {
+            return false;
+        }
+        $rootY = $y - $direction;
+        $this->placeBaseBlock($feature, $region, $x, $rootY, $z);
+        foreach (self::HORIZONTAL as [$dx, $dz]) {
+            if ($random->nextFloat() > F32::r((float) ($feature['chance_of_directional_spread'] ?? 0.7))) {
+                continue;
+            }
+            [$x1, $y1, $z1] = [$x + $dx, $rootY, $z + $dz];
+            $this->placeBaseBlock($feature, $region, $x1, $y1, $z1);
+            if ($random->nextFloat() > F32::r((float) ($feature['chance_of_spread_radius2'] ?? 0.5))) {
+                continue;
+            }
+            [$ox, $oy, $oz] = Blocks::OFFSETS[$random->nextInt(6)];
+            [$x2, $y2, $z2] = [$x1 + $ox, $y1 + $oy, $z1 + $oz];
+            $this->placeBaseBlock($feature, $region, $x2, $y2, $z2);
+            if ($random->nextFloat() > F32::r((float) ($feature['chance_of_spread_radius3'] ?? 0.5))) {
+                continue;
+            }
+            [$ox, $oy, $oz] = Blocks::OFFSETS[$random->nextInt(6)];
+            $this->placeBaseBlock($feature, $region, $x2 + $ox, $y2 + $oy, $z2 + $oz);
+        }
+        $height = $random->nextFloat() < F32::r((float) ($feature['chance_of_taller_generation'] ?? 0.2)) && $this->emptyOrWater($region->get($x, $y + $direction, $z)) ? 2 : 1;
+        $this->growSpeleothem($feature, $region, $x, $y, $z, $direction, $height, false);
+        return true;
+    }
+
+    /** SpeleothemClusterFeature: stalactites and stalagmites across a cave, with pools. */
+    public function speleothemCluster(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        if (!$this->emptyOrWater($region->get($x, $y, $z))) {
+            return false;
+        }
+        $height = Providers::int($feature['height'], $random);
+        $wetness = Providers::float($feature['wetness'], $random);
+        $density = Providers::float($feature['density'], $random);
+        $xRadius = Providers::int($feature['radius'], $random);
+        $zRadius = Providers::int($feature['radius'], $random);
+        for ($dx = -$xRadius; $dx <= $xRadius; ++$dx) {
+            for ($dz = -$zRadius; $dz <= $zRadius; ++$dz) {
+                $fromEdge = min($xRadius - abs($dx), $zRadius - abs($dz));
+                // Mth.clampedMap over floats.
+                $t = F32::r($fromEdge / (float) $feature['max_distance_from_edge_affecting_chance_of_speleothem']);
+                $atMax = F32::r((float) $feature['chance_of_speleothem_at_max_distance_from_center']);
+                $chance = $t < 0.0 ? $atMax : ($t > 1.0 ? 1.0 : F32::r($atMax + F32::r($t * F32::r(1.0 - $atMax))));
+                $this->speleothemColumn($feature, $region, $random, $x + $dx, $y, $z + $dz, $dx, $dz, $wetness, $chance, $height, $density);
+            }
+        }
+        return true;
+    }
+
+    private function speleothemColumn(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z, int $dx, int $dz, float $wetness, float $chance, int $clusterHeight, float $density): void
+    {
+        $scan = self::columnScan($region, $x, $y, $z, $feature['floor_to_ceiling_search_range'], $this->emptyOrWater(...), fn (int $s): bool => !$this->emptyOrWater($s));
+        if ($scan === null) {
+            return;
+        }
+        [$ceiling, $floor] = $scan;
+        if ($ceiling === null && $floor === null) {
+            return;
+        }
+        $isLava = fn (int $py): bool => $this->blocks->name($region->get($x, $py, $z)) === 'lava';
+        if ($random->nextFloat() < $wetness && $floor !== null && $this->canPlacePool($feature, $region, $x, $floor, $z)) {
+            $region->set($x, $floor, $z, $this->blocks->state('water'));
+            --$floor;
+        }
+        $stalactite = 0;
+        if ($ceiling !== null && $random->nextDouble() < $chance && !$isLava($ceiling)) {
+            $this->replaceWithBase($feature, $region, $x, $ceiling, $z, Providers::int($feature['speleothem_block_layer_thickness'], $random), 1);
+            $max = $floor !== null ? min($clusterHeight, $ceiling - $floor) : $clusterHeight;
+            $stalactite = $this->speleothemHeight($feature, $random, $dx, $dz, $density, $max);
+        }
+        $stalagmite = 0;
+        if ($floor !== null && $random->nextDouble() < $chance && !$isLava($floor)) {
+            $this->replaceWithBase($feature, $region, $x, $floor, $z, Providers::int($feature['speleothem_block_layer_thickness'], $random), -1);
+            $diff = $feature['max_stalagmite_stalactite_height_diff'];
+            $stalagmite = $ceiling !== null
+                ? max(0, $stalactite + $random->nextInt(2 * $diff + 1) - $diff)
+                : $this->speleothemHeight($feature, $random, $dx, $dz, $density, $clusterHeight);
+        }
+        if ($ceiling !== null && $floor !== null && $ceiling - $stalactite <= $floor + $stalagmite) {
+            $lowest = max($ceiling - $stalactite, $floor + 1);
+            $highest = min($floor + $stalagmite, $ceiling - 1);
+            $bottom = $random->nextInt($highest + 1 - $lowest + 1) + $lowest;
+            $stalactite = $ceiling - $bottom;
+            $stalagmite = $bottom - 1 - $floor;
+        }
+        $merge = $random->nextBoolean() && $stalactite > 0 && $stalagmite > 0 && $ceiling !== null && $floor !== null
+            && $stalactite + $stalagmite === $ceiling - $floor - 1;
+        if ($ceiling !== null) {
+            $this->growSpeleothem($feature, $region, $x, $ceiling - 1, $z, -1, $stalactite, $merge);
+        }
+        if ($floor !== null) {
+            $this->growSpeleothem($feature, $region, $x, $floor + 1, $z, 1, $stalagmite, $merge);
+        }
+    }
+
+    private function speleothemHeight(array $feature, RandomSource $random, int $dx, int $dz, float $density, int $max): int
+    {
+        if ($random->nextFloat() > $density) {
+            return 0;
+        }
+        $distance = abs($dx) + abs($dz);
+        // Mth.clampedMap(distance, 0, maxDistance, max / 2, 0), as a float mean.
+        $t = $distance / (float) $feature['max_distance_from_center_affecting_height_bias'];
+        $mean = F32::r($t < 0.0 ? $max / 2.0 : ($t > 1.0 ? 0.0 : $max / 2.0 + $t * (0.0 - $max / 2.0)));
+        $value = F32::r($mean + F32::r(F32::r($random->nextGaussian()) * F32::r((float) $feature['height_deviation'])));
+        return (int) ($value < 0.0 ? 0.0 : min($value, (float) $max));
+    }
+
+    private function canPlacePool(array $feature, Region $region, int $x, int $y, int $z): bool
+    {
+        $state = $region->get($x, $y, $z);
+        if ($this->blocks->name($state) === 'water' || $this->blocks->is($state, $feature['base_block']) || $this->blocks->is($state, $feature['pointed_block'])) {
+            return false;
+        }
+        if ($this->blocks->isWater($region->get($x, $y + 1, $z))) {
+            return false;
+        }
+        $adjacent = fn (int $s): bool => $this->blocks->inTag($s, 'base_stone_overworld') || $this->blocks->isWater($s);
+        foreach (self::HORIZONTAL as [$dx, $dz]) {
+            if (!$adjacent($region->get($x + $dx, $y, $z + $dz))) {
+                return false;
+            }
+        }
+        return $adjacent($region->get($x, $y - 1, $z));
+    }
+
+    private function replaceWithBase(array $feature, Region $region, int $x, int $y, int $z, int $count, int $step): void
+    {
+        for ($i = 0; $i < $count; ++$i) {
+            if (!$this->placeBaseBlock($feature, $region, $x, $y, $z)) {
+                return;
+            }
+            $y += $step;
+        }
     }
 
     /** Util.toShuffledList */

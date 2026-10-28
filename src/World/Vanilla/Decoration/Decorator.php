@@ -273,6 +273,10 @@ final class Decorator
                 return ($this->trees ??= new Trees($this))->fallenTree($feature, $region, $random, $x, $y, $z);
             case 'bamboo':
                 return ($this->patches ??= new Patches($this))->bamboo($feature, $region, $random, $x, $y, $z);
+            case 'speleothem':
+                return ($this->patches ??= new Patches($this))->speleothem($feature, $region, $random, $x, $y, $z);
+            case 'speleothem_cluster':
+                return ($this->patches ??= new Patches($this))->speleothemCluster($feature, $region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }
