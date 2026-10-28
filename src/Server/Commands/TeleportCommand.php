@@ -71,7 +71,8 @@ trait TeleportCommand
     /** EntityDimensions eye height: a player's standing eyes, or the mob type's. */
     private function eyeHeight(array $entity): float
     {
-        return isset($entity['client']) ? 1.62 : (float) $this->version->catalog->mobs['entities'][substr($entity['type'], 10)]['eye_height'];
+        // EntityDimensions.eyeHeight is a float: the player's standing 1.62f.
+        return isset($entity['client']) ? unpack('G', pack('G', 1.62))[1] : (float) $this->version->catalog->mobs['entities'][substr($entity['type'], 10)]['eye_height'];
     }
 
     private function rotateEntity(array $target, float $yaw, float $pitch): void

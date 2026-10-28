@@ -236,6 +236,10 @@ SCRIPT = [
     ('gamerule limited_crafting true', False), ('gamerule limited_crafting false', False), ('gamerule send_command_feedback false', False),
     ('time set 100', False), ('seed', False), ('gamerule send_command_feedback true', False),
     ('gamerule log_admin_commands false', False), ('time set 200', False), ('gamerule log_admin_commands true', False),
+    # /rotate, with its rotation and look-at packets.
+    ('tp Witness 0 100 0 0 0', False), ('tp ParityProbe 3 100 3 0 0', False), ('rotate Witness 90 45', False),
+    ('rotate Witness ~10 ~-5', False), ('rotate Witness facing 0 64 0', False), ('rotate Witness facing entity ParityProbe', False),
+    ('rotate Witness facing entity ParityProbe eyes', False), ('rotate @a 0 0', False), ('rotate @s 400 100', False),
     ('list', False),
 ]
 
@@ -246,7 +250,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
+EXTRA = {'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

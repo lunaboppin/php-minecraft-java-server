@@ -58,6 +58,7 @@ final class CommandRegistry
             new CommandDefinition('effect', 'executeEffect', true),
             new CommandDefinition('playsound', 'executePlaySound', true),
             new CommandDefinition('stopsound', 'executeStopSound', true),
+            new CommandDefinition('rotate', 'executeRotate', true),
         ];
     }
 

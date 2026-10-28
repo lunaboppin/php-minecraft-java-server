@@ -104,6 +104,8 @@ trait Commands
 
     use CommandModules\StopSoundCommand;
 
+    use CommandModules\RotateCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
