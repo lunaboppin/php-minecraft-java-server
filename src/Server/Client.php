@@ -87,6 +87,8 @@ final class Client
     public int $unacknowledgedBatches = 0;
     public float $batchQuota = 0.0;
     public float $batchAt = 0;
+    /** Whether the attributes changed during creation have been sent, on the first tick after joining. */
+    public bool $attributesSent = false;
     public int $heldSlot = 0;
     public array $inventory = [];
     public array $lastEquipment = [];

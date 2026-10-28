@@ -58,6 +58,30 @@ def main():
                 expected = {(x, z) for x in range(-5, 6) for z in range(-5, 6) if max(0, abs(x) - 2) ** 2 + max(0, abs(z) - 2) ** 2 < 4}
                 assert loaded == expected and len(loaded) == 49, sorted(loaded ^ expected)
 
+                # update_attributes on the first tick: both interaction ranges and the movement speed,
+                # in the official server's hash order (compared here as a set).
+                def attributes(client):
+                    payload = next(p for n, p in client.seen if n == 'update_attributes' and p[:1] == bytes([client.entity_id]))
+                    count, offset = wire.read_vi(payload, len(wire.vi(client.entity_id)))
+                    found = set()
+                    for _ in range(count):
+                        attribute, offset = wire.read_vi(payload, offset)
+                        base = struct.unpack_from('>d', payload, offset)[0]; offset += 8
+                        modifiers, offset = wire.read_vi(payload, offset)
+                        entries = []
+                        for _ in range(modifiers):
+                            length, offset = wire.read_vi(payload, offset)
+                            name = payload[offset:offset + length].decode(); offset += length
+                            entries.append((name, struct.unpack_from('>d', payload, offset)[0], payload[offset + 8])); offset += 9
+                        found.add((attribute, base, tuple(entries)))
+                    return found
+                speed = (26, struct.unpack('>f', struct.pack('>f', 0.1))[0], ())
+                assert attributes(first) == {(8, 4.5, ()), (13, 3.0, ()), speed}, attributes(first)
+                first.send('chat_command', wire.string('gamemode creative'))
+                first.tick_barrier()
+                changed = [p for n, p in first.seen if n == 'update_attributes'][-1]
+                assert b'minecraft:creative_mode_block_range' in changed and b'minecraft:creative_mode_entity_range' in changed, 'creative mode adds the range modifiers'
+
                 second = Probe(port, 'second').login('Second')
                 try:
                     second.tick_barrier()

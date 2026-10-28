@@ -145,18 +145,47 @@ trait Survival
             $this->withDimension($c->dimension, fn () => $this->setGameMode($c, $mode));
             return;
         }
+        $previous = $c->gameMode;
         $c->gameMode = $mode;
         $c->flying = $mode === 3;
         $c->fallDistance = 0;
         $c->mining = null;
         $this->abilities($c);
         $c->send($this->version, 'game_event', "\3" . pack('G', $mode));
+        // Creative mode adds the interaction range modifiers, which are then sent as changed.
+        if (($previous === 1) !== ($mode === 1)) {
+            $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $c->entityId, $this->interactionRanges($c)));
+        }
         foreach ($this->players() as $p) {
             $p->send($this->version, 'player_info_update', "\4\1" . $c->uuid . Binary::writeVarInt($mode));
             $this->refreshTracking($p);
         }
         $this->syncPlayerMetadata($c);
         $this->savePlayer($c);
+    }
+
+    /**
+     * Player interaction ranges: base values, with Player's creative mode modifiers. Vanilla lists
+     * changed attributes in hash order; these follow the order the official server sends.
+     */
+    private function interactionRanges(Client $c): array
+    {
+        $creative = $c->gameMode === 1;
+        return [
+            ['entity_interaction_range', 3.0, $creative ? [['minecraft:creative_mode_entity_range', 2.0, 0]] : []],
+            ['block_interaction_range', 4.5, $creative ? [['minecraft:creative_mode_block_range', 0.5, 0]] : []],
+        ];
+    }
+
+    /**
+     * The attributes changed while a player is created: both interaction ranges, as the game
+     * mode's modifiers are applied, and the movement speed set from the abilities' walking speed.
+     */
+    private function joinAttributes(Client $c): string
+    {
+        $speed = ['movement_speed', (float) unpack('G', pack('G', 0.1))[1], []];
+        $ranges = $this->interactionRanges($c);
+        return Packets::attributeModifiers($this->version->catalog, $c->entityId, $c->gameMode === 1 ? [$speed, ...$ranges] : [...array_reverse($ranges), $speed]);
     }
 
     /**

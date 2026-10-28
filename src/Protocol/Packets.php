@@ -103,6 +103,24 @@ final class Packets
         return $out;
     }
 
+    /**
+     * ClientboundUpdateAttributesPacket with modifiers: each attribute's base value and its
+     * (identifier, amount, operation) modifiers.
+     *
+     * @param list<array{string, float, list<array{string, float, int}>}> $attributes
+     */
+    public static function attributeModifiers(Catalog $catalog, int $entityId, array $attributes): string
+    {
+        $out = Binary::writeVarInt($entityId) . Binary::writeVarInt(count($attributes));
+        foreach ($attributes as [$name, $base, $modifiers]) {
+            $out .= Binary::writeVarInt($catalog->mobs['attribute_ids'][$name]) . pack('E', $base) . Binary::writeVarInt(count($modifiers));
+            foreach ($modifiers as [$id, $amount, $operation]) {
+                $out .= Binary::writeString($id) . pack('E', $amount) . Binary::writeVarInt($operation);
+            }
+        }
+        return $out;
+    }
+
     /** EquipmentSlot ordinal with the high bit marking another slot, per the 26.3 codec. */
     public static function equipment(
         int $entityId,

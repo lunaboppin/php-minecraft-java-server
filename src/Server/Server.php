@@ -1197,6 +1197,10 @@ final class Server
                         $this->sendClock($c);
                     }
                     $this->sendNextChunks($c, $now);
+                    if (!$c->attributesSent) {
+                        $c->send($this->version, 'update_attributes', $this->joinAttributes($c));
+                        $c->attributesSent = true;
+                    }
                     $this->refreshTracking($c);
                 });
             } catch (ProtocolException $e) {

@@ -15,10 +15,10 @@
 
 The world border is vanilla's default. The tick rate is 20, unfrozen, with no pending steps. The recipe book's filters are all off. These payloads, and the player list entries, are byte-identical to the official server's. The join message is broadcast before the joining player is added, so they don't receive it, as in vanilla. There is no extra welcome message.
 
-Not sent yet, because their systems aren't implemented:
+Not sent yet, or only partly, because their systems aren't implemented:
 - `update_recipes` and `recipe_book_add` (#24)
 - `update_advancements` (#42)
-- `update_attributes` (#23)
+- the remaining player attributes and attribute modifiers (#23)
 
 Chunks are sent the way vanilla's `PlayerChunkSender` sends them:
 - **First batch:** up to nine chunks, with one unacknowledged batch allowed.
@@ -26,6 +26,8 @@ Chunks are sent the way vanilla's `PlayerChunkSender` sends them:
 - **Order:** the nearest pending chunks first.
 
 Vanilla only sends chunks that are already loaded, and generation there runs on worker threads. Here generation and packet building are synchronous, so a batch also stops after 25 ms to keep the tick rate up. Building a chunk packet currently takes about 15 ms (#111).
+
+On the first tick after joining (or respawning), `update_attributes` carries the attributes changed while the player was created: both interaction ranges and the movement speed (the float 0.1). In creative mode the ranges include vanilla's `creative_mode_block_range` (+0.5) and `creative_mode_entity_range` (+2.0) modifiers, and entering or leaving creative mode resends them. Contents match the official server's; it lists attributes in hash order, which varies between runs.
 
 PHP also sends a second `set_entity_data` for the player's metadata.
 
