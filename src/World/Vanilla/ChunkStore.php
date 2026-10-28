@@ -23,12 +23,17 @@ final class ChunkStore
     public const DECORATED = 2;
 
     private ?OverworldGenerator $generator = null;
+
     private ?Decorator $decorator = null;
+
     private ?Blocks $blocks = null;
+
     /** @var array<string, array{0: list<int>, 1: list<string>}> */
     private array $final = [];
+
     /** @var array<string, true> chunks known to be final */
     private array $readyChunks = [];
+
     /** @var array<string, float> when a not-ready chunk may be checked or requested again */
     private array $recheck = [];
 

@@ -16,17 +16,26 @@ final class Decorator
 {
     /** @var list<list<string>> */
     private readonly array $order;
+
     /** @var array<string, array<string, true>> biome => placed features */
     private array $biomeFeatures = [];
+
     /** @var array<string, list<list<string>>> */
     private array $biomeSteps = [];
+
     /** @var array<string, array> */
     private array $json = [];
+
     public readonly Predicates $predicates;
+
     public readonly Providers $providers;
+
     public readonly Survival $survival;
+
     private ?Trees $trees = null;
+
     private ?Patches $patches = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 

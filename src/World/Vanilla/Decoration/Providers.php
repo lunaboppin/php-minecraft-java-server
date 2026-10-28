@@ -18,6 +18,7 @@ final class Providers
 {
     /** @var array<string, array> */
     private array $stateProviders = [];
+
     /** @var array<string, NoiseStack> */
     private array $noises = [];
 

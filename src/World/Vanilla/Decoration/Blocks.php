@@ -32,8 +32,10 @@ final class Blocks
 
     /** @var list<int> */
     private readonly array $flags;
+
     /** @var array<string, array<string, true>> tag => block names */
     private array $tags = [];
+
     /** @var array<string, int> */
     private array $stateCache = [];
 

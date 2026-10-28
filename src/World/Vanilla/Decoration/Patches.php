@@ -20,6 +20,7 @@ final class Patches
     private const DIRECTIONS = ['down', 'up', 'north', 'south', 'west', 'east'];
 
     private readonly Blocks $blocks;
+
     private ?NoiseStack $geodeNoise = null;
 
     public function __construct(private readonly Decorator $decorator)

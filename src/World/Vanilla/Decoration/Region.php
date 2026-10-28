@@ -21,7 +21,9 @@ final class Region
     public const MOTION_BLOCKING_NO_LEAVES = 'MOTION_BLOCKING_NO_LEAVES';
 
     private readonly int $voidAir;
+
     private readonly int $air;
+
     /** @var array<string, int> heightmap cache: "type,x,z" => first free Y */
     private array $heights = [];
 

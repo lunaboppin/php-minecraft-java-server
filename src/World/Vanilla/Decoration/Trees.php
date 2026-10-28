@@ -17,21 +17,29 @@ final class Trees
     private const HORIZONTAL = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
     private readonly Blocks $blocks;
+
     private readonly Providers $providers;
+
     /** @var list<float> */
     private static ?array $sine = null;
 
     // Per-tree state.
     private array $feature = [];
+
     /** @var array<string, array{0: int, 1: int, 2: int}> */
     private array $trunks = [];
+
     /** @var array<string, array{0: int, 1: int, 2: int}> */
     private array $foliage = [];
+
     /** @var array<string, array{0: int, 1: int, 2: int}> */
     private array $roots = [];
+
     /** @var array<string, array{0: int, 1: int, 2: int}> */
     private array $decorations = [];
+
     private Region $region;
+
     private RandomSource $random;
 
     public function __construct(private readonly Decorator $decorator)
