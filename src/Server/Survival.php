@@ -197,6 +197,12 @@ trait Survival
         if ($c->dead || (in_array($c->gameMode, [1, 3], true) && !in_array($type, $tags['minecraft:bypasses_invulnerability'], true))) {
             return false;
         }
+        // Player.isInvulnerableTo: the damage-type game rules.
+        foreach (['minecraft:is_drowning' => 'drowning_damage', 'minecraft:is_fall' => 'fall_damage', 'minecraft:is_fire' => 'fire_damage', 'minecraft:is_freezing' => 'freeze_damage'] as $tag => $rule) {
+            if (in_array($type, $tags[$tag], true) && $this->gameRule($rule) !== 'true') {
+                return false;
+            }
+        }
         // LivingEntity.hurtServer: fire resistance ignores fire damage entirely.
         if (isset($c->effects['minecraft:fire_resistance']) && in_array($type, $tags['minecraft:is_fire'], true)) {
             return false;
@@ -222,9 +228,29 @@ trait Survival
         }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
+        // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
+        // the death event when the hit was lethal.
+        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10));
+        $effects = $this->version->catalog->damageTypes['types'][$type]['effects'] ?? 'hurt';
+        $sound = $c->health <= 0 ? 'entity.player.death' : match ($effects) {
+            'drowning' => 'entity.player.hurt_drown',
+            'burning' => 'entity.player.hurt_on_fire',
+            'freezing' => 'entity.player.hurt_freeze',
+            'poking' => 'entity.player.hurt_sweet_berry_bush',
+            default => 'entity.player.hurt',
+        };
+        $random = static fn (): float => mt_rand() / (mt_getrandmax() + 1);
+        $pitch = unpack('G', pack('G', ($random() - $random()) * 0.2 + 1.0))[1];
+        $noise = Packets::sound($this->version->blocks['sounds'][$sound], 7, $c->x, $c->y, $c->z, 1.0, $pitch, unpack('J', random_bytes(8))[1]);
         foreach ($this->localPlayers() as $p) {
             if ($p === $c || isset($p->entities[$c->entityId])) {
-                $p->send($this->version, 'entity_event', pack('N', $c->entityId) . chr($c->health <= 0 ? 3 : 2));
+                $p->send($this->version, 'damage_event', $event);
+            }
+            if ($p !== $c && ($p->x - $c->x) ** 2 + ($p->y - $c->y) ** 2 + ($p->z - $c->z) ** 2 < 16 ** 2) {
+                $p->send($this->version, 'sound', $noise);
+            }
+            if ($c->health <= 0 && ($p === $c || isset($p->entities[$c->entityId]))) {
+                $p->send($this->version, 'entity_event', pack('N', $c->entityId) . "\3");
             }
         }
         if ($c->health <= 0) {
@@ -628,7 +654,7 @@ trait Survival
         }
         foreach ($this->localPlayers() as $target) {
             // Player.canHarmPlayer: PvP must be on, and team mates without friendly fire are spared.
-            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp || $this->friendlyFireBlocked($attacker, $target)) {
+            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp || $this->gameRule('pvp') !== 'true' || $this->friendlyFireBlocked($attacker, $target)) {
                 continue;
             }
             if (($target->x - $attacker->x) ** 2 + ($target->y - $attacker->y) ** 2 + ($target->z - $attacker->z) ** 2 > 4.5 ** 2) {

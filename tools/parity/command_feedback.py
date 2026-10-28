@@ -226,17 +226,31 @@ SCRIPT = [
     ('playsound minecraft:entity.player.levelup nope', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ -1', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ 1 3', False),
     ('stopsound @s', False), ('stopsound @a master', False), ('stopsound Witness * minecraft:entity.player.levelup', False),
     ('stopsound @s player minecraft:entity.player.levelup', False),
+    # Game rules with server behaviour: damage types, respawn and debug flags, command feedback.
+    ('gamemode survival Witness', False), ('gamerule fall_damage false', False), ('damage Witness 2 fall', False),
+    ('gamerule fall_damage true', False), ('damage Witness 2 fall', False), ('gamerule fire_damage false', False),
+    ('damage Witness 2 on_fire', False), ('gamerule drowning_damage false', False), ('damage Witness 2 drown', False),
+    ('gamerule freeze_damage false', False), ('damage Witness 2 freeze', False), ('gamerule fire_damage true', False),
+    ('gamerule drowning_damage true', False), ('gamerule freeze_damage true', False), ('gamerule immediate_respawn true', False),
+    ('gamerule immediate_respawn false', False), ('gamerule reduced_debug_info true', False), ('gamerule reduced_debug_info false', False),
+    ('gamerule limited_crafting true', False), ('gamerule limited_crafting false', False), ('gamerule send_command_feedback false', False),
+    ('time set 100', False), ('seed', False), ('gamerule send_command_feedback true', False),
+    ('gamerule log_admin_commands false', False), ('time set 200', False), ('gamerule log_admin_commands true', False),
     ('list', False),
 ]
 
 
-def collect(client, since):
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED]
+def collect(client, since, command=''):
+    extra = next((packets for prefix, packets in EXTRA.items() if command.removeprefix('!witness ').startswith(prefix)), ())
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED or name in extra]
 
+
+# Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
+EXTRA = {'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
-            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect', 'sound', 'stop_sound',
+            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect',
             'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 
 
@@ -285,7 +299,7 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 other.tick_barrier()
             except (AssertionError, EOFError, OSError, TimeoutError):
                 pass  # The witness may have been kicked.
-            results.append({'command': command, 'operator': collect(operator, marks[0]), 'witness': collect(witness, marks[1])})
+            results.append({'command': command, 'operator': collect(operator, marks[0], command), 'witness': collect(witness, marks[1], command)})
         operator.close()
         witness.close()
     finally:

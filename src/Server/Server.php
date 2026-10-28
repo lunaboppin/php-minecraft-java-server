@@ -484,7 +484,7 @@ final class Server
     /** PlayerList.placeNewPlayer and sendLevelInfo, in vanilla's packet order. */
     private function joinWorld(Client $c): void
     {
-        $c->send($this->version, 'login', Packets::playLogin($this->version, $c->entityId, $this->config->maxPlayers, $this->viewDistance($c), $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension, array_keys($this->worlds), $this->config->viewDistance));
+        $c->send($this->version, 'login', Packets::playLogin($this->version, $c->entityId, $this->config->maxPlayers, $this->viewDistance($c), $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension, array_keys($this->worlds), $this->config->viewDistance, $this->gameRule('reduced_debug_info') === 'true', $this->gameRule('immediate_respawn') === 'true', $this->gameRule('limited_crafting') === 'true'));
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));

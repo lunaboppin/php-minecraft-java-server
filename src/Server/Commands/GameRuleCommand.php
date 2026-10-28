@@ -9,6 +9,9 @@ use PhpMinecraftJavaServer\Server\Client;
 trait GameRuleCommand
 {
     /** Rules with server behavior, mapped to the fields that implement them. */
+    /** Stored values of the rules without a field, read once from the Overworld. */
+    private ?array $storedGameRules = null;
+
     private const IMPLEMENTED_GAME_RULES = ['advance_time' => 'daylightCycle', 'keep_inventory' => 'keepInventory', 'natural_health_regeneration' => 'naturalRegeneration', 'spawn_mobs' => 'spawnMobs'];
 
     private function executeGameRule(Client $sender, array $arguments): void
@@ -30,10 +33,12 @@ trait GameRuleCommand
             $this->{self::IMPLEMENTED_GAME_RULES[$id]} = $value === 'true';
         } else {
             // Rules without behavior here are still stored and reported, as vanilla saves them.
-            $rules = $this->world->setting('gameRules') ?? [];
+            $rules = $this->worlds['overworld']->setting('gameRules') ?? [];
             $rules[$id] = $value;
-            $this->world->setting('gameRules', $rules);
+            $this->worlds['overworld']->setting('gameRules', $rules);
+            $this->storedGameRules = $rules;
         }
+        $this->gameRuleChanged($id, $value);
         $this->saveWorld();
         // advance_time changes every clock's effective rate.
         foreach ($this->players() as $player) {
@@ -48,7 +53,26 @@ trait GameRuleCommand
         if (isset(self::IMPLEMENTED_GAME_RULES[$id])) {
             return $this->{self::IMPLEMENTED_GAME_RULES[$id]} ? 'true' : 'false';
         }
-        return ($this->world->setting('gameRules') ?? [])[$id] ?? $this->version->catalog->gameRules[$id]['default'];
+        // Stored values are read once and kept until a rule changes.
+        $this->storedGameRules ??= $this->worlds['overworld']->setting('gameRules') ?? [];
+        return $this->storedGameRules[$id] ?? $this->version->catalog->gameRules[$id]['default'];
+    }
+
+    /**
+     * GameRules change callbacks that reach clients: immediate respawn and limited crafting as game
+     * events, reduced debug info as an entity event for each player.
+     */
+    private function gameRuleChanged(string $id, string $value): void
+    {
+        $enabled = $value === 'true';
+        foreach ($this->players() as $player) {
+            match ($id) {
+                'immediate_respawn' => $player->send($this->version, 'game_event', "\x0b" . pack('G', $enabled ? 1.0 : 0.0)),
+                'limited_crafting' => $player->send($this->version, 'game_event', "\x0c" . pack('G', $enabled ? 1.0 : 0.0)),
+                'reduced_debug_info' => $player->send($this->version, 'entity_event', pack('N', $player->entityId) . chr($enabled ? 22 : 23)),
+                default => null,
+            };
+        }
     }
 
     private function booleanRuleValue(string $text): string
