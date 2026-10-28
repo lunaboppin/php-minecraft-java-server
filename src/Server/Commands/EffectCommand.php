@@ -14,21 +14,24 @@ trait EffectCommand
         if (($arguments[0] ?? '') === 'clear') {
             $targets = $this->selectPlayers($arguments[1] ?? '@s', $sender);
             $effect = isset($arguments[2]) ? $this->effectId($arguments[2]) : null;
-            $cleared = 0;
+            // CommandResponseTracker: only targets that lost an effect count, and one of them is named.
+            $cleared = [];
             foreach ($targets as $target) {
                 $removed = false;
                 foreach ($effect === null ? array_keys($target->effects) : [$effect] as $id) {
                     $removed = $this->removeEffect($target, $id) || $removed;
                 }
-                $cleared += $removed ? 1 : 0;
+                if ($removed) {
+                    $cleared[] = $target;
+                }
             }
-            if ($cleared === 0) {
+            if ($cleared === []) {
                 throw new CommandFailure(['translate' => $effect === null ? 'commands.effect.clear.everything.failed' : 'commands.effect.clear.specific.failed']);
             }
-            $single = count($targets) === 1;
+            $single = count($cleared) === 1;
             $this->sendSuccess($sender, $effect === null
-                ? ($single ? ['translate' => 'commands.effect.clear.everything.success.single', 'with' => [$this->displayName($targets[0])]] : ['translate' => 'commands.effect.clear.everything.success.multiple', 'with' => [count($targets)]])
-                : ($single ? ['translate' => 'commands.effect.clear.specific.success.single', 'with' => [$this->effectName($effect), $this->displayName($targets[0])]] : ['translate' => 'commands.effect.clear.specific.success.multiple', 'with' => [$this->effectName($effect), count($targets)]]), true);
+                ? ($single ? ['translate' => 'commands.effect.clear.everything.success.single', 'with' => [$this->displayName($cleared[0])]] : ['translate' => 'commands.effect.clear.everything.success.multiple', 'with' => [count($cleared)]])
+                : ($single ? ['translate' => 'commands.effect.clear.specific.success.single', 'with' => [$this->effectName($effect), $this->displayName($cleared[0])]] : ['translate' => 'commands.effect.clear.specific.success.multiple', 'with' => [$this->effectName($effect), count($cleared)]]), true);
             return;
         }
         if (($arguments[0] ?? '') !== 'give') {
@@ -58,9 +61,9 @@ trait EffectCommand
             throw new CommandFailure(['translate' => 'commands.effect.give.failed']);
         }
         $seconds = intdiv($duration, 20);
-        $this->sendSuccess($sender, count($targets) === 1
-            ? ['translate' => 'commands.effect.give.success.single', 'with' => [$this->effectName($effect), $this->displayName($targets[0]), $seconds]]
-            : ['translate' => 'commands.effect.give.success.multiple', 'with' => [$this->effectName($effect), count($targets), $seconds]], true);
+        $this->sendSuccess($sender, count($given) === 1
+            ? ['translate' => 'commands.effect.give.success.single', 'with' => [$this->effectName($effect), $this->displayName($given[0]), $seconds]]
+            : ['translate' => 'commands.effect.give.success.multiple', 'with' => [$this->effectName($effect), count($given), $seconds]], true);
     }
 
     private function effectId(string $text): string

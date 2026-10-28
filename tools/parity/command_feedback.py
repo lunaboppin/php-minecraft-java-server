@@ -173,8 +173,8 @@ SCRIPT = [
     ('scoreboard objectives list', False),
     ('!respawn', False),
     # Summoned mobs with NBT, named and tagged selection; their random loot is cleared quietly.
-    # The operator stands on the ground first, so the mobs neither fall to their deaths nor touch the border.
-    ('!quiet tp @s 3 64 4', False),
+    # The operator stands on a stone floor in open air first, so the mobs neither fall, suffocate nor touch the border.
+    ('!quiet tp @s 3 101 4', False), ('!quiet fill 2 100 3 4 100 5 minecraft:stone', False), ('!quiet fill 2 101 3 4 103 5 minecraft:air', False),
     ('summon pig ~ ~ ~ {NoAI:1b}', False), ('summon pig ~ ~ ~ {CustomName:"Bob"}', False), ('summon pig ~ ~ ~ {CustomName:{text:"Red",color:"red"}}', False),
     ('summon cow ~ ~ ~ {Age:-24000}', False), ('summon cow ~ ~ ~ {Silent:1b,Invulnerable:1b,PersistenceRequired:1b}', False), ('summon pig ~ ~ ~ {Tags:["a","b"]}', False),
     ('summon pig ~ ~ ~ {Health:5f}', False), ('summon pig ~ ~ ~ {Rotation:[90f,0f]}', False), ('summon pig ~ ~ ~ {NoAI:1b', False),
@@ -206,7 +206,7 @@ SCRIPT = [
     ('scoreboard objectives remove d', False),
     # Status effects and their packets; long effects are infinite so no 30-second resync lands mid-script.
     ('effect give Witness speed', False), ('effect give Witness speed infinite 1', False), ('effect give Witness speed infinite 1', False),
-    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision 1000', False), ('effect give Witness speed 0', False),
+    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision infinite', False), ('effect give Witness speed 0', False),
     ('effect give Witness speed 1000001', False), ('effect give Witness speed 10 256', False), ('effect give Witness nope', False),
     ('effect clear Witness speed', False), ('effect clear Witness speed', False), ('effect clear Witness night_vision', False),
     ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
