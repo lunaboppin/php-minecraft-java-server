@@ -106,6 +106,17 @@ SCRIPT = [
     ('clear Witness', False), ('give @a dirt 4', False), ('clear @a dirt', False),
     ('clear @a', False), ('give Witness dirt 64', False), ('clear Witness dirt 100', False),
     ('clear Witness #minecraft:logs', False), ('clear Witness stone[foo=bar]', False), ('clear Witness nope', False),
+    # The world border, restored to its default size and centre afterwards.
+    ('worldborder get', False), ('worldborder set 100', False), ('worldborder set 100', False),
+    ('worldborder get', False), ('worldborder set 0.5', False), ('worldborder set 59999969', False),
+    ('worldborder set 50 10', False), ('worldborder set 200 2s', False), ('worldborder add 10', False),
+    ('worldborder add -1000', False), ('worldborder set 1000.25', False), ('worldborder get', False),
+    ('worldborder center 0 0', False), ('worldborder center 10 20', False), ('worldborder center 10 20', False),
+    ('worldborder center 10.7 -20.2', False), ('worldborder center 30000000 0', False), ('worldborder damage amount 0.2', False),
+    ('worldborder damage amount 1.5', False), ('worldborder damage amount 1.5', False), ('worldborder damage buffer 5', False),
+    ('worldborder damage buffer 2.5', False), ('worldborder warning distance 5', False), ('worldborder warning distance 10', False),
+    ('worldborder warning time 15', False), ('worldborder warning time 300', False), ('worldborder warning time 20s', False),
+    ('worldborder set 59999968', False), ('worldborder center 0 0', False),
     ('list', False),
 ]
 

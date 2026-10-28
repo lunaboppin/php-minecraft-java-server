@@ -106,6 +106,8 @@ trait Dimensions
             $this->abilities($c);
             $this->health($c);
             $this->syncInventory($c);
+            // PlayerList.sendLevelInfo: the new dimension's border, then time, spawn and weather.
+            $this->sendBorder($c);
             $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
             $this->sendWeather($c);
             $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());

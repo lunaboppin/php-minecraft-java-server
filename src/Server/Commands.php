@@ -76,6 +76,8 @@ trait Commands
 
     use CommandModules\ClearCommand;
 
+    use CommandModules\WorldBorderCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

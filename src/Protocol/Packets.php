@@ -255,12 +255,6 @@ final class Packets
         return Nbt::component(['text' => $motd]) . "\0";
     }
 
-    /** ClientboundInitializeBorderPacket for vanilla's default world border. */
-    public static function defaultWorldBorder(): string
-    {
-        return pack('EEEE', 0.0, 0.0, 59999968.0, 59999968.0) . Binary::writeVarLong(0) . Binary::writeVarInt(29999984) . Binary::writeVarInt(5) . Binary::writeVarInt(300);
-    }
-
     public static function damageEvent(Version $version, int $id, int $cause = -1): string
     {
         return Binary::writeVarInt($id) . Binary::writeVarInt($version->registryId('damage_type', 'player_attack')) . Binary::writeVarInt($cause + 1) . Binary::writeVarInt($cause + 1) . "\0";

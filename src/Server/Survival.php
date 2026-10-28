@@ -483,6 +483,9 @@ trait Survival
                 $c->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x09");
             }$c->eating = null;
         }
+        if (!$c->dead && in_array($c->gameMode, [0, 2], true)) {
+            $this->borderDamage($c);
+        }
         if ($c->gameMode !== 0 || $this->ticks % 20 !== 0) {
             return;
         }

@@ -58,18 +58,20 @@ final class Nbt
      */
     private static function componentList(array $components): string
     {
-        $types = array_map(static fn (int|float|NbtLong|array $component): int => match (true) {
+        $types = array_map(static fn (int|float|NbtLong|NbtDouble|array $component): int => match (true) {
             is_int($component) => 3,
             $component instanceof NbtLong => 4,
+            $component instanceof NbtDouble => 6,
             is_float($component) => 5,
             array_keys($component) === ['text'] => 8,
             default => 10,
         }, $components);
         $type = $components === [] ? 10 : (count(array_unique($types)) === 1 ? $types[0] : 10);
-        $elements = array_map(static function (int|float|NbtLong|array $component) use ($type): string {
+        $elements = array_map(static function (int|float|NbtLong|NbtDouble|array $component) use ($type): string {
             $payload = match (true) {
                 is_int($component) => pack('N', $component),
                 $component instanceof NbtLong => pack('J', $component->value),
+                $component instanceof NbtDouble => pack('E', $component->value),
                 // Float translation arguments are single precision, as Java's Float.
                 is_float($component) => pack('G', $component),
                 array_keys($component) === ['text'] => self::string($component['text']),
@@ -81,6 +83,7 @@ final class Nbt
             $tag = match (true) {
                 is_int($component) => "\x03",
                 $component instanceof NbtLong => "\x04",
+                $component instanceof NbtDouble => "\x06",
                 is_float($component) => "\x05",
                 default => "\x08",
             };

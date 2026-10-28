@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server\Commands;
 
+use PhpMinecraftJavaServer\Protocol\NbtDouble;
 use PhpMinecraftJavaServer\Protocol\Version;
 
 /**
@@ -125,6 +126,9 @@ final class ArgumentReader
             case 'minecraft:vec3':
                 $this->coordinates($reader, 3, false);
                 return;
+            case 'minecraft:vec2':
+                $this->vec2($reader);
+                return;
             case 'minecraft:rotation':
                 $this->rotation($reader);
                 return;
@@ -159,7 +163,9 @@ final class ArgumentReader
             }
             if ($bound === 'min' ? $value < $limit : $value > $limit) {
                 $reader->cursor = $start;
-                throw $reader->error('argument.' . $kind . '.' . $suffix, [$limit, $value]);
+                // Double bounds are Java doubles; PHP floats otherwise encode as Java floats.
+                $arguments = $kind === 'double' ? [new NbtDouble($limit), new NbtDouble($value)] : [$limit, $value];
+                throw $reader->error('argument.' . $kind . '.' . $suffix, $arguments);
             }
         }
     }
@@ -268,6 +274,22 @@ final class ArgumentReader
         if ($reader->canRead() && $reader->peek() !== ' ') {
             $reader->readDouble();
         }
+    }
+
+    /** Vec2Argument: two world coordinates, X and Z. */
+    private function vec2(StringReader $reader): void
+    {
+        $start = $reader->cursor;
+        if (!$reader->canRead()) {
+            throw $reader->error('argument.pos2d.incomplete');
+        }
+        $this->worldCoordinate($reader, false);
+        if (!$reader->canRead() || $reader->peek() !== ' ') {
+            $reader->cursor = $start;
+            throw $reader->error('argument.pos2d.incomplete');
+        }
+        $reader->skip();
+        $this->worldCoordinate($reader, false);
     }
 
     /** RotationArgument: two world coordinates. */
