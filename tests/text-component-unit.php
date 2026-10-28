@@ -28,7 +28,14 @@ $join = ['color' => 'yellow', 'translate' => 'multiplayer.player.joined', 'with'
 $textCheck(bin2hex(Packets::systemChat($join)) === $vanillaJoin, 'join message is byte-identical to the official server');
 $textCheck(bin2hex(Nbt::component(['text' => 'plain'])) === bin2hex(Nbt::text('plain')), 'text-only component stays a bare string');
 $textCheck(bin2hex(Nbt::component(['translate' => 'a', 'with' => [['text' => 'x'], ['text' => 'y']]])) === '0a0900047769746808000000020001780001790800097472616e736c61746500016100', 'plain arguments form a string list');
-foreach ([['with' => [['text' => 'x'], ['translate' => 'y']]], ['uuid' => 'short'], ['size' => 1]] as $invalid) {
+// Mixed plain and styled arguments: ListTag writes a compound list and wraps the bare string as {"": "x"}.
+$nbtString = static fn (string $value): string => pack('n', strlen($value)) . $value;
+$mixed = "\x0a" . "\x09" . $nbtString('with') . "\x0a" . pack('N', 2)
+    . "\x08" . $nbtString('') . $nbtString('x') . "\0"
+    . "\x08" . $nbtString('translate') . $nbtString('y') . "\0"
+    . "\x08" . $nbtString('translate') . $nbtString('k') . "\0";
+$textCheck(Nbt::component(['translate' => 'k', 'with' => [['text' => 'x'], ['translate' => 'y']]]) === $mixed, 'mixed arguments use wrapped compound list entries');
+foreach ([['uuid' => 'short'], ['size' => 1]] as $invalid) {
     try {
         Nbt::component(['translate' => 'k', ...$invalid]);
         $textCheck(false, 'rejected unsupported component ' . json_encode(array_keys($invalid)));

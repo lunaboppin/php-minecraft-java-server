@@ -13,7 +13,7 @@ $operatorCommands = [
     ...$publicCommands,
     'gamemode', 'give', 'tp', 'teleport', 'time', 'weather', 'seed', 'setworldspawn',
     'spawnpoint', 'kill', 'heal', 'setblock', 'fill', 'gamerule', 'save-all', 'summon', 'dimension',
-    'difficulty', 'defaultgamemode',
+    'difficulty', 'defaultgamemode', 'op', 'deop', 'kick',
 ];
 
 if (CommandRegistry::names(false) !== $publicCommands || CommandRegistry::names(true) !== $operatorCommands) {

@@ -116,7 +116,7 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 
 Everyone can use `/help`, `/spawn`, `/list`, `/version`, `/msg`, `/tell` and `/me`.
 
-Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. Operator commands include:
+Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. `/op` and `/deop` change the list in game and save it to `server.json` immediately, as vanilla saves `ops.json`; only the `operators` value is rewritten. Operator commands include:
 
 ```text
 /dimension overworld|the_nether|the_end
@@ -138,9 +138,14 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 /heal [player]
 /summon cow|pig|sheep|chicken [x y z]
 /save-all
+/difficulty [peaceful|easy|normal|hard]
+/defaultgamemode survival|creative|adventure|spectator
+/op player
+/deop player
+/kick player [reason]
 ```
 
-Coordinates accept `~` relative values. Fill operations are limited to 32,768 blocks. Commands and results are synchronized with the client command tree. The server does not implement vanilla command selectors beyond `@s` where a player argument is accepted.
+Coordinates accept `~` relative values. Fill operations are limited to 32,768 blocks. Commands and results are synchronized with the client command tree. Most player arguments accept a name or `@s`; `/op`, `/deop` and `/kick` also accept `@p`, `@r`, `@a` and player UUIDs. Selector arguments in brackets are not supported yet.
 
 Command handlers are organized as [individual PHP modules](docs/COMMANDS.md) under `src/Server/Commands/`, with shared registration, aliases, permissions and argument helpers. Use `python3 tools/php_style.py --check` to check their formatting; complete native command behavior remains tracked in issue #10.
 

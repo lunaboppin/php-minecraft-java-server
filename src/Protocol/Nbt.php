@@ -50,11 +50,12 @@ final class Nbt
         if ($components !== [] && !in_array(false, $plain, true)) {
             return "\x08" . pack('N', count($components)) . implode('', array_map(static fn (array $component): string => self::string($component['text']), $components));
         }
-        if (in_array(true, $plain, true)) {
-            // Vanilla wraps heterogeneous list entries; that form is not needed or verified yet.
-            throw new \InvalidArgumentException('Mixed plain and styled components in one list');
-        }
-        return "\x0a" . pack('N', count($components)) . implode('', array_map(self::compoundBody(...), $components));
+        // A list of mixed tag types is written as compounds, with every non-compound element
+        // wrapped as {"": element} (ListTag.identifyRawElementType and wrapIfNeeded).
+        return "\x0a" . pack('N', count($components)) . implode('', array_map(
+            static fn (array $component): string => array_keys($component) === ['text'] ? "\x08" . self::string('') . self::string($component['text']) . "\0" : self::compoundBody($component),
+            $components
+        ));
     }
 
     private static function uuid(string $uuid): string

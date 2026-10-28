@@ -189,6 +189,8 @@ foreach ([
     'mob-combat-unit.php',
     'mob-sounds-unit.php',
     'commands-unit.php',
+    'text-component-unit.php',
+    'operator-persistence-unit.php',
     'mob-physics-unit.php',
     'mob-motion-unit.php',
     'mob-tracking-unit.php',
@@ -254,6 +256,10 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/difficulty-commands.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/admin-commands.py'), $code);
 if ($code !== 0) {
     exit($code);
 }

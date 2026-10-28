@@ -58,6 +58,12 @@ trait Commands
 
     use CommandModules\DefaultGameModeCommand;
 
+    use CommandModules\OpCommand;
+
+    use CommandModules\DeOpCommand;
+
+    use CommandModules\KickCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -94,6 +100,84 @@ trait Commands
     private function sendFailure(Client $sender, array $message): void
     {
         $sender->send($this->version, 'system_chat', Packets::systemChat(['text' => '', 'color' => 'red', 'extra' => [$message]]));
+    }
+
+    /**
+     * EntityArgument.players for names, UUIDs and the @s, @p, @r and @a selectors. Selector
+     * arguments in brackets are not parsed yet (#10). An empty result is vanilla's failure.
+     *
+     * @return list<Client>
+     */
+    private function selectPlayers(string $selector, Client $sender): array
+    {
+        $players = array_values($this->players());
+        $selected = match ($selector) {
+            '@s' => [$sender],
+            // The executing player is always the nearest to its own position.
+            '@p' => [$sender],
+            '@r' => $players === [] ? [] : [$players[array_rand($players)]],
+            '@a' => $players,
+            default => null,
+        };
+        if ($selected === null) {
+            if (str_starts_with($selector, '@')) {
+                throw new \InvalidArgumentException('Unsupported selector: ' . $selector);
+            }
+            $uuid = preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/iD', $selector) === 1 ? hex2bin(str_replace('-', '', $selector)) : null;
+            $selected = array_values(array_filter($players, static fn (Client $player): bool => $uuid !== null ? $player->uuid === $uuid : strcasecmp($player->name, $selector) === 0));
+        }
+        if ($selected === []) {
+            throw new CommandModules\CommandFailure(['translate' => 'argument.entity.notfound.player']);
+        }
+        return $selected;
+    }
+
+    /**
+     * GameProfileArgument: online players by selector or name, otherwise a valid offline username.
+     * Unlike vanilla, unknown names are not checked against Mojang's profile service.
+     *
+     * @return list<string>
+     */
+    private function selectProfiles(string $selector, Client $sender): array
+    {
+        if (str_starts_with($selector, '@')) {
+            return array_map(static fn (Client $player): string => $player->name, $this->selectPlayers($selector, $sender));
+        }
+        foreach ($this->players() as $player) {
+            if (strcasecmp($player->name, $selector) === 0) {
+                return [$player->name];
+            }
+        }
+        if (preg_match('/\A[A-Za-z0-9_]{1,16}\z/D', $selector) !== 1) {
+            throw new CommandModules\CommandFailure(['translate' => 'argument.player.unknown']);
+        }
+        return [$selector];
+    }
+
+    /** PlayerList.sendPlayerPermissionLevel: entity event 24 + level, then the command tree. */
+    private function sendPermissionLevel(Client $client): void
+    {
+        // Operators from server.json have vanilla's default op-permission-level of 4.
+        $client->send($this->version, 'entity_event', pack('N', $client->entityId) . chr($this->operator($client) ? 28 : 24));
+        $this->commands($client);
+    }
+
+    /** Replace the operator list, persisting it to server.json as vanilla persists ops.json. */
+    private function setOperators(array $operators): void
+    {
+        $this->config = $this->config->with(['operators' => array_values($operators)]);
+        if ($this->configPath === null) {
+            return;
+        }
+        $settings = json_decode((string) file_get_contents($this->configPath), true, 512, JSON_THROW_ON_ERROR);
+        $settings['operators'] = $this->config->operators;
+        $json = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        // Keep server.json's two-space indentation.
+        $json = preg_replace_callback('/^( +)/m', static fn (array $match): string => str_repeat(' ', intdiv(strlen($match[1]), 2)), $json) . "\n";
+        $temporary = $this->configPath . '.tmp';
+        if (file_put_contents($temporary, $json) === false || !rename($temporary, $this->configPath)) {
+            throw new \RuntimeException('Cannot save operators to ' . $this->configPath);
+        }
     }
 
     private function playerByName(string $name, Client $sender): Client
@@ -195,7 +279,10 @@ trait Commands
                 throw new \InvalidArgumentException('Unknown command or insufficient permission. Use /help.');
             }
             $handler = $definition->handler;
-            $this->$handler($sender, $arguments);
+            // Handlers that need verbatim input, such as a message argument, read the raw text.
+            $this->$handler($sender, $arguments, $text);
+        } catch (CommandModules\CommandFailure $failure) {
+            $this->sendFailure($sender, $failure->component);
         } catch (\InvalidArgumentException $error) {
             $this->tell($sender, $error->getMessage());
         }
