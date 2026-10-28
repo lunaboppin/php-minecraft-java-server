@@ -38,6 +38,8 @@ final class Decorator
 
     private ?Ice $ice = null;
 
+    private ?Sculk $sculk = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -329,6 +331,8 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->speleothem($feature, $region, $random, $x, $y, $z);
             case 'iceberg':
                 return ($this->ice ??= new Ice($this))->iceberg($feature, $region, $random, $x, $z);
+            case 'sculk_patch':
+                return ($this->sculk ??= new Sculk($this))->patch($feature, $region, $random, $x, $y, $z);
             case 'spike':
                 return ($this->ice ??= new Ice($this))->spike($feature, $region, $random, $x, $y, $z);
             case 'blue_ice':
