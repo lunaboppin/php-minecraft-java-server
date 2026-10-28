@@ -63,9 +63,10 @@ trait Scoreboards
                 $packets[] = ['set_display_objective', Binary::writeVarInt(Scoreboard::SLOTS[$slot]) . Binary::writeString($objective)];
             }
         }
-        foreach ($this->scoreboard()->scores as $holder => $scores) {
-            if (isset($scores[$objective])) {
-                $packets[] = ['set_score', $this->scorePacket((string) $holder, $objective, $scores[$objective]['value'])];
+        $scores = $this->scoreboard()->scores;
+        foreach ($this->scoreboard()->scoreHolderOrder() as $holder) {
+            if (isset($scores[$holder][$objective])) {
+                $packets[] = ['set_score', $this->scorePacket($holder, $objective, $scores[$holder][$objective]['value'])];
             }
         }
         return $packets;

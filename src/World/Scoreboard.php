@@ -153,6 +153,19 @@ final class Scoreboard
         return \PhpMinecraftJavaServer\Protocol\Nbt::hashMapOrder($this->teams[$team]['players']);
     }
 
+    /**
+     * Holders with any score in Scoreboard.playerScores order (an Object2ObjectOpenHashMap), as
+     * if inserted in the order they first got a score.
+     */
+    public function scoreHolderOrder(): array
+    {
+        $order = new OpenHashOrder();
+        foreach (array_keys($this->scores) as $holder) {
+            $order->insert((string) $holder);
+        }
+        return $order->keys();
+    }
+
     /** Holders with any score, in java.util.HashMap order as the players list reports them. */
     public function holders(): array
     {

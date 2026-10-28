@@ -173,6 +173,8 @@ SCRIPT = [
     ('scoreboard objectives list', False),
     ('!respawn', False),
     # Summoned mobs with NBT, named and tagged selection; their random loot is cleared quietly.
+    # The operator stands on the ground first, so the mobs neither fall to their deaths nor touch the border.
+    ('!quiet tp @s 3 64 4', False),
     ('summon pig ~ ~ ~ {NoAI:1b}', False), ('summon pig ~ ~ ~ {CustomName:"Bob"}', False), ('summon pig ~ ~ ~ {CustomName:{text:"Red",color:"red"}}', False),
     ('summon cow ~ ~ ~ {Age:-24000}', False), ('summon cow ~ ~ ~ {Silent:1b,Invulnerable:1b,PersistenceRequired:1b}', False), ('summon pig ~ ~ ~ {Tags:["a","b"]}', False),
     ('summon pig ~ ~ ~ {Health:5f}', False), ('summon pig ~ ~ ~ {Rotation:[90f,0f]}', False), ('summon pig ~ ~ ~ {NoAI:1b', False),
@@ -204,7 +206,7 @@ SCRIPT = [
     ('scoreboard objectives remove d', False),
     # Status effects and their packets; long effects are infinite so no 30-second resync lands mid-script.
     ('effect give Witness speed', False), ('effect give Witness speed infinite 1', False), ('effect give Witness speed infinite 1', False),
-    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision 30', False), ('effect give Witness speed 0', False),
+    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision 1000', False), ('effect give Witness speed 0', False),
     ('effect give Witness speed 1000001', False), ('effect give Witness speed 10 256', False), ('effect give Witness nope', False),
     ('effect clear Witness speed', False), ('effect clear Witness speed', False), ('effect clear Witness night_vision', False),
     ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
@@ -284,6 +286,23 @@ def normalize_uuids(items):
                                          uuid_tag.sub('0b0004' + b'uuid'.hex() + '00000004' + '0' * 32, item['hex']))} for item in items]
 
 
+# Packets that start with the affected entity's network ID as a VarInt.
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes')
+
+
+def normalize_entity_ids(items):
+    """Zero the entity network ID that entity-addressed packets start with.
+
+    Each server numbers entities from its own counter, so IDs drift apart once the scripts have
+    created different numbers of short-lived entities (loot, summons, reconnected players).
+    """
+    def strip(payload):
+        data = bytes.fromhex(payload)
+        end = next(i for i, byte in enumerate(data) if byte < 0x80) + 1
+        return '00' + data[end:].hex()
+    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
@@ -293,7 +312,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(expected[role]) != key(actual[role]):
+            if key(normalize_entity_ids(expected[role])) != key(normalize_entity_ids(actual[role])):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
