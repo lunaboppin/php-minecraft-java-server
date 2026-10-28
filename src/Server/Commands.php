@@ -111,33 +111,164 @@ trait Commands
     }
 
     /**
-     * EntityArgument.players for names, UUIDs and the @s, @p, @r and @a selectors. Selector
-     * arguments in brackets are not parsed yet (#10). An empty result is vanilla's failure.
+     * EntityArgument.players: the players matching a name, UUID or selector. An empty result is
+     * vanilla's failure.
      *
      * @return list<Client>
      */
-    private function selectPlayers(string $selector, Client $sender): array
+    private function selectPlayers(string $selector, Client $sender, bool $single = false): array
     {
-        $players = array_values($this->players());
-        $selected = match ($selector) {
-            '@s' => [$sender],
-            // The executing player is always the nearest to its own position.
-            '@p' => [$sender],
-            '@r' => $players === [] ? [] : [$players[array_rand($players)]],
-            '@a' => $players,
-            default => null,
-        };
-        if ($selected === null) {
-            if (str_starts_with($selector, '@')) {
-                throw new \InvalidArgumentException('Unsupported selector: ' . $selector);
+        return array_map(static fn (array $entity): Client => $entity['client'], $this->selectEntities($selector, $sender, true, $single));
+    }
+
+    /**
+     * EntitySelector.findEntities over online players and the sender's dimension's mobs: kind
+     * defaults, options, sort and limit as in vanilla. Mobs in other dimensions are not searched.
+     *
+     * @return list<array{client?: Client, mob?: int, x: float, y: float, z: float, yaw: float, pitch: float, type: string, width: float, height: float}>
+     */
+    private function selectEntities(string $text, Client $sender, bool $playersOnly = false, bool $single = false): array
+    {
+        $selector = CommandModules\EntitySelector::parse($text);
+        if ($playersOnly && !$selector->playersOnly()) {
+            throw new CommandModules\CommandFailure(['translate' => 'argument.player.entities']);
+        }
+        if ($single && !$selector->single()) {
+            throw new CommandModules\CommandFailure(['translate' => $playersOnly ? 'argument.player.toomany' : 'argument.entity.toomany']);
+        }
+        $player = static fn (Client $client): array => ['client' => $client, 'x' => $client->x, 'y' => $client->y, 'z' => $client->z, 'yaw' => $client->yaw, 'pitch' => $client->pitch, 'type' => 'minecraft:player', 'width' => 0.6, 'height' => 1.8, 'id' => $client->entityId];
+        $players = array_map($player, array_values($this->players()));
+        $mobs = [];
+        if (!$playersOnly && $sender->dimension === $this->world->dimension) {
+            foreach ($this->animals as $id => $animal) {
+                if (!isset($animal['deadAt'])) {
+                    $info = $this->version->catalog->mobs['entities'][$animal['kind']];
+                    $mobs[] = ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0, 'type' => 'minecraft:' . $animal['kind'], 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
+                }
             }
-            $uuid = preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/iD', $selector) === 1 ? hex2bin(str_replace('-', '', $selector)) : null;
-            $selected = array_values(array_filter($players, static fn (Client $player): bool => $uuid !== null ? $player->uuid === $uuid : strcasecmp($player->name, $selector) === 0));
         }
-        if ($selected === []) {
-            throw new CommandModules\CommandFailure(['translate' => 'argument.entity.notfound.player']);
+        $candidates = match ($selector->kind) {
+            '' => array_values(array_filter($players, static fn (array $entity): bool => strcasecmp($entity['client']->name, (string) $selector->name) === 0)),
+            'uuid' => array_values(array_filter([...$players, ...$mobs], static fn (array $entity): bool => ($entity['uuid'] ?? $entity['client']->uuid) === $selector->uuid)),
+            's' => [$player($sender)],
+            'p', 'a', 'r' => $players,
+            // @e and @n consider living entities only.
+            default => [...array_values(array_filter($players, static fn (array $entity): bool => !$entity['client']->dead)), ...$mobs],
+        };
+        $options = $selector->options;
+        $origin = [$options['x'][0][1] ?? $sender->x, $options['y'][0][1] ?? $sender->y, $options['z'][0][1] ?? $sender->z];
+        $distanceSquared = static fn (array $entity): float => ($entity['x'] - $origin[0]) ** 2 + ($entity['y'] - $origin[1]) ** 2 + ($entity['z'] - $origin[2]) ** 2;
+        $matches = array_values(array_filter($candidates, function (array $entity) use ($options, $origin, $distanceSquared): bool {
+            $client = $entity['client'] ?? null;
+            foreach ($options['type'] ?? [] as [$negated, $type]) {
+                if (($entity['type'] === $type) === $negated) {
+                    return false;
+                }
+            }
+            foreach ($options['name'] ?? [] as [$negated, $name]) {
+                // Unnamed mobs have no player name to match.
+                if (($client !== null && $client->name === $name) === $negated) {
+                    return false;
+                }
+            }
+            foreach (['tag', 'team'] as $key) {
+                // Nothing carries tags or teams yet: "x" matches none and "" (no tag/team) matches all.
+                foreach ($options[$key] ?? [] as [$negated, $value]) {
+                    if (($value === '') === $negated) {
+                        return false;
+                    }
+                }
+            }
+            foreach ($options['gamemode'] ?? [] as [$negated, $mode]) {
+                if ($client === null || ($client->gameMode === $mode) === $negated) {
+                    return false;
+                }
+            }
+            if (isset($options['level']) && ($client === null || !self::inRange((float) $this->experienceLevel($client), $options['level'][0][1]))) {
+                return false;
+            }
+            if (isset($options['distance'])) {
+                [$minimum, $maximum] = $options['distance'][0][1];
+                $distance = $distanceSquared($entity);
+                if (($minimum !== null && $distance < $minimum * $minimum) || ($maximum !== null && $distance > $maximum * $maximum)) {
+                    return false;
+                }
+            }
+            if (isset($options['dx']) || isset($options['dy']) || isset($options['dz'])) {
+                // EntitySelectorParser.createAabb: from the origin to the offset, one block beyond.
+                $box = [];
+                foreach (['dx', 'dy', 'dz'] as $axis => $key) {
+                    $delta = $options[$key][0][1] ?? 0.0;
+                    $box[$axis] = [$origin[$axis] + min(0.0, $delta), $origin[$axis] + max(0.0, $delta) + 1.0];
+                }
+                $half = $entity['width'] / 2;
+                if (!($entity['x'] - $half < $box[0][1] && $entity['x'] + $half > $box[0][0] && $entity['y'] < $box[1][1] && $entity['y'] + $entity['height'] > $box[1][0] && $entity['z'] - $half < $box[2][1] && $entity['z'] + $half > $box[2][0])) {
+                    return false;
+                }
+            }
+            if (isset($options['x_rotation']) && !self::inRange($entity['pitch'], $options['x_rotation'][0][1], true)) {
+                return false;
+            }
+            if (isset($options['y_rotation']) && !self::inRange($entity['yaw'], $options['y_rotation'][0][1], true)) {
+                return false;
+            }
+            return true;
+        }));
+        $sort = $options['sort'][0][1] ?? match ($selector->kind) {
+            'p', 'n' => 'nearest',
+            'r' => 'random',
+            default => 'arbitrary',
+        };
+        if ($sort === 'nearest' || $sort === 'furthest') {
+            usort($matches, static fn (array $a, array $b): int => $sort === 'nearest' ? $distanceSquared($a) <=> $distanceSquared($b) : $distanceSquared($b) <=> $distanceSquared($a));
+        } elseif ($sort === 'random') {
+            shuffle($matches);
+        } else {
+            // Arbitrary order: players, then mobs, as each list is kept.
+            usort($matches, static fn (array $a, array $b): int => isset($a['mob']) <=> isset($b['mob']));
         }
-        return $selected;
+        $limit = $options['limit'][0][1] ?? (in_array($selector->kind, ['p', 'r', 'n', 's', '', 'uuid'], true) ? 1 : PHP_INT_MAX);
+        $matches = array_slice($matches, 0, $limit);
+        if ($matches === []) {
+            throw new CommandModules\CommandFailure(['translate' => $playersOnly || $selector->playersOnly() && in_array($selector->kind, ['p', 'a', 'r', 's', ''], true) ? 'argument.entity.notfound.player' : 'argument.entity.notfound.entity']);
+        }
+        return $matches;
+    }
+
+    /** MinMaxBounds.matches, or WrappedMinMaxBounds for rotations (degrees wrapped to [-180, 180)). */
+    private static function inRange(float $value, array $bounds, bool $wrapped = false): bool
+    {
+        [$minimum, $maximum] = $bounds;
+        if ($wrapped) {
+            $wrap = static fn (float $angle): float => fmod(fmod($angle + 180.0, 360.0) + 360.0, 360.0) - 180.0;
+            $value = $wrap($value);
+            [$minimum, $maximum] = [$minimum === null ? null : $wrap($minimum), $maximum === null ? null : $wrap($maximum)];
+            if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
+                return $value >= $minimum || $value <= $maximum;
+            }
+        }
+        return ($minimum === null || $value >= $minimum) && ($maximum === null || $value <= $maximum);
+    }
+
+    /** The player's experience level, from the experience points this server stores. */
+    private function experienceLevel(Client $client): int
+    {
+        $remaining = $client->experience;
+        $level = 0;
+        while (true) {
+            $needed = $level < 15 ? 2 * $level + 7 : ($level < 30 ? 5 * $level - 38 : 9 * $level - 158);
+            if ($remaining < $needed) {
+                return $level;
+            }
+            $remaining -= $needed;
+            ++$level;
+        }
+    }
+
+    /** An entity's display name: the player name or the mob's type description. */
+    private function entityName(array $entity): array
+    {
+        return isset($entity['client']) ? Packets::playerName($entity['client']->name, $entity['client']->uuid) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid']);
     }
 
     /**
