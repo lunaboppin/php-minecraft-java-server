@@ -378,6 +378,94 @@ final class Patches
         return false;
     }
 
+    /** HugeRedMushroomFeature and HugeBrownMushroomFeature. */
+    public function hugeMushroom(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z, bool $red): bool
+    {
+        $height = $random->nextInt(3) + 4;
+        if ($random->nextInt(12) === 0) {
+            $height *= 2;
+        }
+        $radius = $feature['foliage_radius'] ?? 2;
+        if ($y < $region->minY + 1 || $y + $height + 1 > $region->maxY()) {
+            return false;
+        }
+        if (!$this->decorator->predicates->test($feature['can_place_on'], $region, $x, $y - 1, $z)) {
+            return false;
+        }
+        for ($dy = 0; $dy <= $height; ++$dy) {
+            // The red mushroom checks with trunk and tree heights of -1, so only its column is tested.
+            $r = $red ? 0 : ($dy <= 3 ? 0 : $radius);
+            for ($dx = -$r; $dx <= $r; ++$dx) {
+                for ($dz = -$r; $dz <= $r; ++$dz) {
+                    $state = $region->get($x + $dx, $y + $dy, $z + $dz);
+                    if (!$this->blocks->isAir($state) && !$this->blocks->inTag($state, 'leaves')) {
+                        return false;
+                    }
+                }
+            }
+        }
+        $providers = $this->decorator->providers;
+        $place = function (int $px, int $py, int $pz, int $state) use ($region): void {
+            $current = $region->get($px, $py, $pz);
+            if ($this->blocks->isAir($current) || $this->blocks->inTag($current, 'replaceable_by_mushrooms')) {
+                $region->set($px, $py, $pz, $state);
+            }
+        };
+        $faces = function (int $state, array $values): int {
+            foreach ($values as $face => $value) {
+                $state = $this->blocks->with($state, $face, $value ? 'true' : 'false');
+            }
+            return $state;
+        };
+        if ($red) {
+            for ($dy = $height - 3; $dy <= $height; ++$dy) {
+                $r = $dy < $height ? $radius : $radius - 1;
+                $center = $radius - 2;
+                for ($dx = -$r; $dx <= $r; ++$dx) {
+                    for ($dz = -$r; $dz <= $r; ++$dz) {
+                        $xEdge = $dx === -$r || $dx === $r;
+                        $zEdge = $dz === -$r || $dz === $r;
+                        if ($dy >= $height || $xEdge !== $zEdge) {
+                            $state = $providers->state($feature['cap_provider'], $region, $random, $x, $y, $z);
+                            if ($this->blocks->has($state, 'up') && $this->blocks->has($state, 'west')) {
+                                $state = $faces($state, ['up' => $dy >= $height - 1, 'west' => $dx < -$center, 'east' => $dx > $center, 'north' => $dz < -$center, 'south' => $dz > $center]);
+                            }
+                            $place($x + $dx, $y + $dy, $z + $dz, $state);
+                        }
+                    }
+                }
+            }
+        } else {
+            for ($dx = -$radius; $dx <= $radius; ++$dx) {
+                for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                    $minX = $dx === -$radius;
+                    $maxX = $dx === $radius;
+                    $minZ = $dz === -$radius;
+                    $maxZ = $dz === $radius;
+                    $xEdge = $minX || $maxX;
+                    $zEdge = $minZ || $maxZ;
+                    if ($xEdge && $zEdge) {
+                        continue;
+                    }
+                    $state = $providers->state($feature['cap_provider'], $region, $random, $x, $y, $z);
+                    if ($this->blocks->has($state, 'west')) {
+                        $state = $faces($state, [
+                            'west' => $minX || ($zEdge && $dx === 1 - $radius),
+                            'east' => $maxX || ($zEdge && $dx === $radius - 1),
+                            'north' => $minZ || ($xEdge && $dz === 1 - $radius),
+                            'south' => $maxZ || ($xEdge && $dz === $radius - 1),
+                        ]);
+                    }
+                    $place($x + $dx, $y + $height, $z + $dz, $state);
+                }
+            }
+        }
+        for ($dy = 0; $dy < $height; ++$dy) {
+            $place($x, $y + $dy, $z, $providers->state($feature['stem_provider'], $region, $random, $x, $y, $z));
+        }
+        return true;
+    }
+
     /** Util.toShuffledList */
     private function shuffle(array $list, RandomSource $random): array
     {

@@ -262,6 +262,9 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->underwaterMagma($feature, $region, $random, $x, $y, $z);
             case 'multiface_growth':
                 return ($this->patches ??= new Patches($this))->multifaceGrowth($feature, $region, $random, $x, $y, $z);
+            case 'huge_red_mushroom':
+            case 'huge_brown_mushroom':
+                return ($this->patches ??= new Patches($this))->hugeMushroom($feature, $region, $random, $x, $y, $z, $type === 'huge_red_mushroom');
             case 'no_op':
                 return false;
         }

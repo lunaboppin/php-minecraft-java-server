@@ -337,6 +337,8 @@ final class Trees
                 return $attachments;
             case 'fancy_trunk_placer':
                 return $this->fancyTrunk($height, $x, $y, $z);
+            case 'cherry_trunk_placer':
+                return $this->cherryTrunk($trunk, $height, $x, $y, $z);
             case 'bending_trunk_placer':
                 $direction = self::HORIZONTAL[$random->nextInt(4)];
                 $logHeight = $height - 1;
@@ -369,6 +371,69 @@ final class Trees
         }
         $this->decorator->skipped['trunk ' . $trunk['type']] = ($this->decorator->skipped['trunk ' . $trunk['type']] ?? 0) + 1;
         return [];
+    }
+
+    private function cherryTrunk(array $trunk, int $height, int $x, int $y, int $z): array
+    {
+        $random = $this->random;
+        $this->placeBelowTrunk($x, $y - 1, $z);
+        $start = $trunk['branch_start_offset_from_top'];
+        $first = max(0, $height - 1 + Providers::int($start, $random));
+        $second = max(0, $height - 1 + Providers::int(['type' => 'uniform', 'min_inclusive' => $start['min_inclusive'], 'max_inclusive' => $start['max_inclusive'] - 1], $random));
+        if ($second >= $first) {
+            ++$second;
+        }
+        $branches = Providers::int($trunk['branch_count'], $random);
+        $middle = $branches === 3;
+        $both = $branches >= 2;
+        $trunkHeight = $middle ? $height : ($both ? max($first, $second) + 1 : $first + 1);
+        for ($i = 0; $i < $trunkHeight; ++$i) {
+            $this->placeLog($x, $y + $i, $z);
+        }
+        $attachments = [];
+        if ($middle) {
+            $attachments[] = [[$x, $y + $trunkHeight, $z], 0, false, 0];
+        }
+        $index = $random->nextInt(4);
+        $direction = self::HORIZONTAL[$index];
+        $axis = $direction[0] !== 0 ? 'x' : 'z';
+        $attachments[] = $this->cherryBranch($trunk, $height, $x, $y, $z, $axis, $direction, $first, $first < $trunkHeight - 1);
+        if ($both) {
+            $attachments[] = $this->cherryBranch($trunk, $height, $x, $y, $z, $axis, [-$direction[0], -$direction[1]], $second, $second < $trunkHeight - 1);
+        }
+        return $attachments;
+    }
+
+    private function cherryBranch(array $trunk, int $height, int $x, int $y, int $z, string $axis, array $direction, int $offset, bool $continues): array
+    {
+        $random = $this->random;
+        [$lx, $ly, $lz] = [$x, $y + $offset, $z];
+        $endOffset = $height - 1 + Providers::int($trunk['branch_end_offset_from_top'], $random);
+        $away = $continues || $endOffset < $offset;
+        $distance = Providers::int($trunk['branch_horizontal_length'], $random) + ($away ? 1 : 0);
+        $end = [$x + $direction[0] * $distance, $y + $endOffset, $z + $direction[1] * $distance];
+        for ($i = 0; $i < ($away ? 2 : 1); ++$i) {
+            $lx += $direction[0];
+            $lz += $direction[1];
+            $this->placeLog($lx, $ly, $lz, $axis);
+        }
+        $vertical = $end[1] > $ly ? 1 : -1;
+        while (true) {
+            $manhattan = abs($end[0] - $lx) + abs($end[1] - $ly) + abs($end[2] - $lz);
+            if ($manhattan === 0) {
+                return [[$end[0], $end[1] + 1, $end[2]], 0, false, 0];
+            }
+            $chance = F32::r(abs($end[1] - $ly) / $manhattan);
+            $up = $random->nextFloat() < $chance;
+            if ($up) {
+                $ly += $vertical;
+                $this->placeLog($lx, $ly, $lz);
+            } else {
+                $lx += $direction[0];
+                $lz += $direction[1];
+                $this->placeLog($lx, $ly, $lz, $axis);
+            }
+        }
     }
 
     private function giantTrunk(int $height, int $x, int $y, int $z): array
@@ -582,6 +647,17 @@ final class Trees
                     $this->leavesRow($type, $base, $leafRadius + 1, 0, false);
                 }
                 return;
+            case 'cherry_foliage_placer':
+                $base = [$pos[0], $pos[1] + $offset, $pos[2]];
+                $radius = $leafRadius + $radiusOffset - 1;
+                $this->leavesRow($type, $base, $radius - 2, $withOffset - 3, $doubleTrunk, $foliage);
+                $this->leavesRow($type, $base, $radius - 1, $withOffset - 4, $doubleTrunk, $foliage);
+                for ($yy = $withOffset - 5; $yy >= 0; --$yy) {
+                    $this->leavesRow($type, $base, $radius, $yy, $doubleTrunk, $foliage);
+                }
+                $this->hangingLeavesRow($type, $base, $radius, -1, $doubleTrunk, $foliage);
+                $this->hangingLeavesRow($type, $base, $radius - 1, -2, $doubleTrunk, $foliage);
+                return;
             case 'random_spread_foliage_placer':
                 for ($i = 0; $i < $foliage['leaf_placement_attempts']; ++$i) {
                     $dx = $random->nextInt($leafRadius) - $random->nextInt($leafRadius);
@@ -594,9 +670,18 @@ final class Trees
         $this->decorator->skipped['foliage ' . $type] = ($this->decorator->skipped['foliage ' . $type] ?? 0) + 1;
     }
 
-    private function skipLocation(string $type, int $dx, int $y, int $dz, int $radius, bool $doubleTrunk): bool
+    private function skipLocation(string $type, int $dx, int $y, int $dz, int $radius, bool $doubleTrunk, array $foliage = []): bool
     {
         $random = $this->random;
+        if ($type === 'cherry_foliage_placer') {
+            if ($y === -1 && ($dx === $radius || $dz === $radius) && $random->nextFloat() < F32::r((float) $foliage['wide_bottom_layer_hole_chance'])) {
+                return true;
+            }
+            $corner = $dx === $radius && $dz === $radius;
+            return $radius > 2
+                ? $corner || ($dx + $dz > $radius * 2 - 2 && $random->nextFloat() < F32::r((float) $foliage['corner_hole_chance']))
+                : $corner && $random->nextFloat() < F32::r((float) $foliage['corner_hole_chance']);
+        }
         return match ($type) {
             'blob_foliage_placer' => $dx === $radius && $dz === $radius && ($random->nextInt(2) === 0 || $y === 0),
             'bush_foliage_placer' => $dx === $radius && $dz === $radius && $random->nextInt(2) === 0,
@@ -609,7 +694,7 @@ final class Trees
         };
     }
 
-    private function skipSigned(string $type, int $dx, int $y, int $dz, int $radius, bool $doubleTrunk): bool
+    private function skipSigned(string $type, int $dx, int $y, int $dz, int $radius, bool $doubleTrunk, array $foliage = []): bool
     {
         if ($type === 'dark_oak_foliage_placer' && $y === 0 && $doubleTrunk
             && ($dx === -$radius || $dx >= $radius) && ($dz === -$radius || $dz >= $radius)) {
@@ -617,15 +702,48 @@ final class Trees
         }
         $minX = $doubleTrunk ? min(abs($dx), abs($dx - 1)) : abs($dx);
         $minZ = $doubleTrunk ? min(abs($dz), abs($dz - 1)) : abs($dz);
-        return $this->skipLocation($type, $minX, $y, $minZ, $radius, $doubleTrunk);
+        return $this->skipLocation($type, $minX, $y, $minZ, $radius, $doubleTrunk, $foliage);
     }
 
-    private function leavesRow(string $type, array $origin, int $radius, int $y, bool $doubleTrunk): void
+    /** FoliagePlacer.placeLeavesRowWithHangingLeavesBelow */
+    private function hangingLeavesRow(string $type, array $origin, int $radius, int $y, bool $doubleTrunk, array $foliage): void
+    {
+        $this->leavesRow($type, $origin, $radius, $y, $doubleTrunk, $foliage);
+        $offset = $doubleTrunk ? 1 : 0;
+        [$ox, $oy, $oz] = $origin;
+        $logY = $oy - 1;
+        $chance = F32::r((float) $foliage['hanging_leaves_chance']);
+        $extension = F32::r((float) $foliage['hanging_leaves_extension_chance']);
+        // Plane.HORIZONTAL (north, east, south, west), each with its clockwise edge.
+        foreach ([[[0, -1], [1, 0], true], [[1, 0], [0, 1], true], [[0, 1], [-1, 0], false], [[-1, 0], [0, -1], false]] as [$along, $toEdge, $positive]) {
+            $toEdgeOffset = $positive ? $radius + $offset : $radius;
+            $px = $ox + $toEdge[0] * $toEdgeOffset - $along[0] * $radius;
+            $py = $oy + $y - 1;
+            $pz = $oz + $toEdge[1] * $toEdgeOffset - $along[1] * $radius;
+            for ($i = -$radius; $i < $radius + $offset; ++$i) {
+                if (isset($this->foliage[$px . ',' . ($py + 1) . ',' . $pz]) && $this->tryExtension($chance, $ox, $logY, $oz, $px, $py, $pz)) {
+                    $this->tryExtension($extension, $ox, $logY, $oz, $px, $py - 1, $pz);
+                }
+                $px += $along[0];
+                $pz += $along[1];
+            }
+        }
+    }
+
+    private function tryExtension(float $chance, int $lx, int $ly, int $lz, int $x, int $y, int $z): bool
+    {
+        if (abs($x - $lx) + abs($y - $ly) + abs($z - $lz) >= 7) {
+            return false;
+        }
+        return !($this->random->nextFloat() > $chance) && $this->tryPlaceLeaf($x, $y, $z);
+    }
+
+    private function leavesRow(string $type, array $origin, int $radius, int $y, bool $doubleTrunk, array $foliage = []): void
     {
         $offset = $doubleTrunk ? 1 : 0;
         for ($dx = -$radius; $dx <= $radius + $offset; ++$dx) {
             for ($dz = -$radius; $dz <= $radius + $offset; ++$dz) {
-                if (!$this->skipSigned($type, $dx, $y, $dz, $radius, $doubleTrunk)) {
+                if (!$this->skipSigned($type, $dx, $y, $dz, $radius, $doubleTrunk, $foliage)) {
                     $this->tryPlaceLeaf($origin[0] + $dx, $origin[1] + $y, $origin[2] + $dz);
                 }
             }

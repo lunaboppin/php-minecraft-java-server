@@ -72,7 +72,8 @@ final class Providers
         if (is_int($json)) {
             return $json;
         }
-        $type = preg_replace('/^minecraft:/', '', $json['type']);
+        // A bare {min_inclusive, max_inclusive} object is a UniformInt.
+        $type = preg_replace('/^minecraft:/', '', $json['type'] ?? 'uniform');
         $min = $json['min_inclusive'] ?? 0;
         $max = $json['max_inclusive'] ?? 0;
         switch ($type) {
