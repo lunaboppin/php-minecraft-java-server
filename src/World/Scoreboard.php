@@ -22,8 +22,12 @@ final class Scoreboard
     /** @var array<string, array{criteria: string, displayName: array, renderType: string, displayAutoUpdate: bool}> */
     public array $objectives = [];
 
-    /** @var list<?string> the objective map's open-addressing table */
-    private array $table;
+    private OpenHashOrder $objectiveOrder;
+
+    /** @var array<string, array{displayName: array, color: ?string, prefix: array, suffix: array, friendlyFire: bool, seeFriendlyInvisibles: bool, nametagVisibility: string, deathMessageVisibility: string, collisionRule: string, players: list<string>}> */
+    public array $teams = [];
+
+    private OpenHashOrder $teamOrder;
 
     /** @var array<string, array<string, array{value: int, locked: bool}>> holder => objective => score */
     public array $scores = [];
@@ -33,7 +37,8 @@ final class Scoreboard
 
     public function __construct()
     {
-        $this->table = array_fill(0, 32, null);
+        $this->objectiveOrder = new OpenHashOrder();
+        $this->teamOrder = new OpenHashOrder();
     }
 
     public static function fromArray(?array $data): self
@@ -41,6 +46,10 @@ final class Scoreboard
         $scoreboard = new self();
         foreach ($data['objectives'] ?? [] as $name => $objective) {
             $scoreboard->addObjective((string) $name, $objective);
+        }
+        foreach ($data['teams'] ?? [] as $name => $team) {
+            $scoreboard->teams[(string) $name] = $team;
+            $scoreboard->teamOrder->insert((string) $name);
         }
         $scoreboard->scores = $data['scores'] ?? [];
         $scoreboard->display = $data['display'] ?? [];
@@ -54,19 +63,23 @@ final class Scoreboard
         foreach ($this->objectiveNames() as $name) {
             $objectives[$name] = $this->objectives[$name];
         }
-        return ['objectives' => $objectives, 'scores' => $this->scores, 'display' => $this->display];
+        $teams = [];
+        foreach ($this->teamNames() as $name) {
+            $teams[$name] = $this->teams[$name];
+        }
+        return ['objectives' => $objectives, 'teams' => $teams, 'scores' => $this->scores, 'display' => $this->display];
     }
 
     public function addObjective(string $name, array $objective): void
     {
         $this->objectives[$name] = $objective;
-        $this->insert($name);
+        $this->objectiveOrder->insert($name);
     }
 
     public function removeObjective(string $name): void
     {
         unset($this->objectives[$name]);
-        $this->delete($name);
+        $this->objectiveOrder->delete($name);
         foreach ($this->scores as $holder => $scores) {
             unset($this->scores[$holder][$name]);
             if ($this->scores[$holder] === []) {
@@ -76,10 +89,68 @@ final class Scoreboard
         $this->display = array_filter($this->display, static fn (string $objective): bool => $objective !== $name);
     }
 
-    /** Object2ObjectOpenHashMap iteration: the table from its last slot to its first. */
+    /** Object2ObjectOpenHashMap iteration order. */
     public function objectiveNames(): array
     {
-        return array_values(array_filter(array_reverse($this->table), static fn (?string $name): bool => $name !== null));
+        return $this->objectiveOrder->keys();
+    }
+
+    /** Scoreboard.addPlayerTeam with PlayerTeam's defaults. */
+    public function addTeam(string $name, array $displayName): void
+    {
+        $this->teams[$name] = ['displayName' => $displayName, 'color' => null, 'prefix' => ['text' => ''], 'suffix' => ['text' => ''], 'friendlyFire' => true, 'seeFriendlyInvisibles' => true, 'nametagVisibility' => 'always', 'deathMessageVisibility' => 'always', 'collisionRule' => 'always', 'players' => []];
+        $this->teamOrder->insert($name);
+    }
+
+    public function removeTeam(string $name): void
+    {
+        unset($this->teams[$name]);
+        $this->teamOrder->delete($name);
+    }
+
+    /** @return list<string> */
+    public function teamNames(): array
+    {
+        return $this->teamOrder->keys();
+    }
+
+    public function teamOf(string $holder): ?string
+    {
+        foreach ($this->teams as $name => $team) {
+            if (in_array($holder, $team['players'], true)) {
+                return (string) $name;
+            }
+        }
+        return null;
+    }
+
+    /** Scoreboard.addPlayerToTeam: leaving any previous team first. */
+    public function joinTeam(string $holder, string $team): bool
+    {
+        $current = $this->teamOf($holder);
+        if ($current === $team) {
+            return false;
+        }
+        if ($current !== null) {
+            $this->leaveTeam($holder);
+        }
+        $this->teams[$team]['players'][] = $holder;
+        return true;
+    }
+
+    public function leaveTeam(string $holder): ?string
+    {
+        $team = $this->teamOf($holder);
+        if ($team !== null) {
+            $this->teams[$team]['players'] = array_values(array_filter($this->teams[$team]['players'], static fn (string $player): bool => $player !== $holder));
+        }
+        return $team;
+    }
+
+    /** A team's members in java.util.HashSet order. */
+    public function members(string $team): array
+    {
+        return \PhpMinecraftJavaServer\Protocol\Nbt::hashMapOrder($this->teams[$team]['players']);
     }
 
     /** Holders with any score, in java.util.HashMap order as the players list reports them. */
@@ -88,83 +159,4 @@ final class Scoreboard
         return \PhpMinecraftJavaServer\Protocol\Nbt::hashMapOrder(array_map('strval', array_keys($this->scores)));
     }
 
-    private function insert(string $key): void
-    {
-        $mask = count($this->table) - 1;
-        $position = self::mix(self::hash($key)) & $mask;
-        while ($this->table[$position] !== null) {
-            if ($this->table[$position] === $key) {
-                return;
-            }
-            $position = ($position + 1) & $mask;
-        }
-        $this->table[$position] = $key;
-        // maxFill(n, 0.5): rehash to twice the size once half full.
-        if (count(array_filter($this->table, static fn (?string $name): bool => $name !== null)) >= intdiv(count($this->table), 2)) {
-            $keys = $this->objectiveNames();
-            $this->table = array_fill(0, count($this->table) * 2, null);
-            foreach ($keys as $existing) {
-                $this->place($existing);
-            }
-        }
-    }
-
-    private function place(string $key): void
-    {
-        $mask = count($this->table) - 1;
-        $position = self::mix(self::hash($key)) & $mask;
-        while ($this->table[$position] !== null) {
-            $position = ($position + 1) & $mask;
-        }
-        $this->table[$position] = $key;
-    }
-
-    /** Removal with fastutil's shiftKeys, which moves later entries of the run back. */
-    private function delete(string $key): void
-    {
-        $mask = count($this->table) - 1;
-        $position = self::mix(self::hash($key)) & $mask;
-        while ($this->table[$position] !== $key) {
-            if ($this->table[$position] === null) {
-                return;
-            }
-            $position = ($position + 1) & $mask;
-        }
-        while (true) {
-            $last = $position;
-            $position = ($position + 1) & $mask;
-            while (true) {
-                $current = $this->table[$position];
-                if ($current === null) {
-                    $this->table[$last] = null;
-                    return;
-                }
-                $slot = self::mix(self::hash($current)) & $mask;
-                if ($last <= $position ? ($last >= $slot || $slot > $position) : ($last >= $slot && $slot > $position)) {
-                    break;
-                }
-                $position = ($position + 1) & $mask;
-            }
-            $this->table[$last] = $this->table[$position];
-        }
-    }
-
-    /** String.hashCode */
-    private static function hash(string $key): int
-    {
-        $hash = 0;
-        foreach (unpack('n*', iconv('UTF-8', 'UTF-16BE', $key)) ?: [] as $unit) {
-            $hash = (31 * $hash + $unit) & 0xffffffff;
-        }
-        return $hash;
-    }
-
-    /** HashCommon.mix */
-    private static function mix(int $value): int
-    {
-        // 32-bit multiplication in halves, as the 64-bit product could overflow PHP's integers.
-        $phi = 0x9E3779B9;
-        $product = (($value * ($phi & 0xffff)) + ((($value * ($phi >> 16)) & 0xffff) << 16)) & 0xffffffff;
-        return ($product ^ ($product >> 16)) & 0xffffffff;
-    }
 }

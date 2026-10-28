@@ -71,9 +71,75 @@ trait Scoreboards
         return $packets;
     }
 
+    private const TEAM_COLORS = ['black', 'dark_blue', 'dark_green', 'dark_aqua', 'dark_red', 'dark_purple', 'gold', 'gray', 'dark_gray', 'blue', 'green', 'aqua', 'red', 'light_purple', 'yellow', 'white'];
+
+    private const TEAM_VISIBILITY = ['always' => 0, 'never' => 1, 'hideForOtherTeams' => 2, 'hideForOwnTeam' => 3];
+
+    private const TEAM_COLLISION = ['always' => 0, 'never' => 1, 'pushOtherTeams' => 2, 'pushOwnTeam' => 3];
+
+    /**
+     * ClientboundSetPlayerTeamPacket: 0 adds (with members), 1 removes, 2 updates the parameters,
+     * 3 and 4 add and remove members.
+     */
+    private function teamPacket(string $name, int $method, array $players = []): string
+    {
+        $payload = Binary::writeString($name) . chr($method);
+        if ($method === 0 || $method === 2) {
+            $team = $this->scoreboard()->teams[$name];
+            // Parameters: names, visibility and collision ids, an optional colour, then the option bits.
+            $payload .= Nbt::component($team['displayName']) . Nbt::component($team['prefix']) . Nbt::component($team['suffix'])
+                . Binary::writeVarInt(self::TEAM_VISIBILITY[$team['nametagVisibility']]) . Binary::writeVarInt(self::TEAM_COLLISION[$team['collisionRule']])
+                . ($team['color'] === null ? "\0" : "\1" . Binary::writeVarInt(array_search($team['color'], self::TEAM_COLORS, true)))
+                . chr(($team['friendlyFire'] ? 1 : 0) | ($team['seeFriendlyInvisibles'] ? 2 : 0));
+        }
+        if ($method === 0 || $method === 3 || $method === 4) {
+            $payload .= Binary::writeVarInt(count($players)) . implode('', array_map(static fn (string $player): string => Binary::writeString($player), $players));
+        }
+        return $payload;
+    }
+
+    /** Team.getFormattedDisplayName: the bracketed display name, hovering and inserting the team's name, in its colour. */
+    private function teamComponent(string $name): array
+    {
+        $team = $this->scoreboard()->teams[$name];
+        $display = $team['displayName'];
+        $display['insertion'] = $name;
+        $display['hover_event'] = ['action' => 'show_text', 'value' => ['text' => $name]];
+        return ['translate' => 'chat.square_brackets', 'with' => [$display]] + ($team['color'] === null ? [] : ['color' => $team['color']]);
+    }
+
+    /** Team.isAlliedTo and isAllowFriendlyFire: members of a team without friendly fire cannot hurt each other. */
+    private function friendlyFireBlocked(Client $attacker, Client $target): bool
+    {
+        $team = $this->scoreboard()->teamOf($attacker->name);
+        return $team !== null && $team === $this->scoreboard()->teamOf($target->name) && !$this->scoreboard()->teams[$team]['friendlyFire'];
+    }
+
+    /**
+     * ServerPlayer.die: who sees a death message under the team's deathMessageVisibility.
+     *
+     * @return list<Client>
+     */
+    private function deathMessageRecipients(Client $victim): array
+    {
+        $team = $this->scoreboard()->teamOf($victim->name);
+        $visibility = $team === null ? 'always' : $this->scoreboard()->teams[$team]['deathMessageVisibility'];
+        return array_values(array_filter($this->players(), fn (Client $player): bool => match ($visibility) {
+            'never' => false,
+            // PlayerList.broadcastSystemToTeam leaves out the dying player.
+            'hideForOtherTeams' => $player !== $victim && $this->scoreboard()->teamOf($player->name) === $team,
+            'hideForOwnTeam' => $this->scoreboard()->teamOf($player->name) !== $team,
+            default => true,
+        }));
+    }
+
     /** PlayerList.updateEntireScoreboard for a joining player. */
     private function sendScoreboard(Client $c): void
     {
+        // Teams first, with their members.
+        foreach ($this->scoreboard()->teamNames() as $team) {
+            $c->send($this->version, 'set_player_team', $this->teamPacket($team, 0, $this->scoreboard()->members($team)));
+        }
         foreach (array_unique($this->scoreboard()->display) as $objective) {
             foreach ($this->startTrackingPackets($objective) as [$packet, $payload]) {
                 $c->send($this->version, $packet, $payload);
@@ -167,6 +233,18 @@ trait Scoreboards
         $this->saveScoreboard();
     }
 
+    /** Player.getDisplayName, formatted for the player's team. */
+    private function displayName(Client $c): array
+    {
+        return \PhpMinecraftJavaServer\Protocol\Packets::playerName($c->name, $c->uuid, $this->teamFormat($c->name));
+    }
+
+    private function teamFormat(string $holder): ?array
+    {
+        $team = $this->scoreboard()->teamOf($holder);
+        return $team === null ? null : $this->scoreboard()->teams[$team];
+    }
+
     /** Objective.getFormattedDisplayName: the bracketed display name, hovering the objective's name. */
     private function objectiveComponent(string $name): array
     {
@@ -180,7 +258,8 @@ trait Scoreboards
     {
         foreach ($this->players() as $player) {
             if ($player->name === $holder) {
-                return ['text' => $holder, 'insertion' => $holder, 'click_event' => ['action' => 'suggest_command', 'command' => '/tell ' . $holder . ' '], 'hover_event' => ['action' => 'show_text', 'value' => ['text' => $holder]]];
+                // Player.getFeedbackDisplayName: team-formatted, hovering the plain name.
+                return ['hover_event' => ['action' => 'show_text', 'value' => ['text' => $holder]]] + $this->displayName($player);
             }
         }
         return ['text' => $holder];

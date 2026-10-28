@@ -229,7 +229,11 @@ trait Survival
             $message = $this->deathMessage($c, $type, $attacker);
             if ($this->gameRule('show_death_messages') === 'true') {
                 $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component($message));
-                $this->broadcastComponent($message, $c->name . ' died: ' . $message['translate']);
+                // The team's deathMessageVisibility decides who else sees it.
+                $this->log('[CHAT] ' . $c->name . ' died: ' . $message['translate']);
+                foreach ($this->deathMessageRecipients($c) as $player) {
+                    $player->send($this->version, 'system_chat', Packets::systemChat($message));
+                }
             } else {
                 $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component(['text' => '']));
             }
@@ -249,7 +253,7 @@ trait Survival
     private function deathMessage(Client $c, string $type, ?Client $attacker): array
     {
         $data = $this->version->catalog->damageTypes['types'][$type] ?? throw new \LogicException('Unknown damage type ' . $type);
-        $victim = Packets::playerName($c->name, $c->uuid);
+        $victim = $this->displayName($c);
         // Fall variants apply to a significant fall of more than five blocks; there is no
         // ladder, vine or water fall location yet, so it is the generic accident.
         if (($data['death_message_type'] ?? 'default') === 'fall_variants' && $c->fallDistance > 5) {
@@ -257,13 +261,13 @@ trait Survival
         }
         $key = 'death.attack.' . $data['message_id'];
         if ($attacker !== null) {
-            return ['translate' => $key, 'with' => [$victim, Packets::playerName($attacker->name, $attacker->uuid)]];
+            return ['translate' => $key, 'with' => [$victim, $this->displayName($attacker)]];
         }
         // Without a direct attacker, a player who hurt the victim in the last 100 ticks is credited.
         $credit = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
         return $credit === null
             ? ['translate' => $key, 'with' => [$victim]]
-            : ['translate' => $key . '.player', 'with' => [$victim, Packets::playerName($credit->name, $credit->uuid)]];
+            : ['translate' => $key . '.player', 'with' => [$victim, $this->displayName($credit)]];
     }
 
     private function respawnPlayer(Client $c): void
@@ -600,7 +604,8 @@ trait Survival
             return;
         }
         foreach ($this->localPlayers() as $target) {
-            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp) {
+            // Player.canHarmPlayer: PvP must be on, and team mates without friendly fire are spared.
+            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp || $this->friendlyFireBlocked($attacker, $target)) {
                 continue;
             }
             if (($target->x - $attacker->x) ** 2 + ($target->y - $attacker->y) ** 2 + ($target->z - $attacker->z) ** 2 > 4.5 ** 2) {

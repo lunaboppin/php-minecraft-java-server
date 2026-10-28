@@ -193,10 +193,16 @@ final class Packets
     }
 
     /** Player.getDisplayName() without team styling: click-to-message, insertion and entity hover. */
-    public static function playerName(string $name, string $uuid): array
+    /**
+     * Player.getDisplayName: the name, formatted for the player's team (PlayerTeam.formatNameForTeam:
+     * prefix, name and suffix in the team colour), then clickable, insertable and hoverable.
+     *
+     * @param array{prefix: array, suffix: array, color: ?string}|null $team
+     */
+    public static function playerName(string $name, string $uuid, ?array $team = null): array
     {
-        return [
-            'text' => $name,
+        $formatted = $team === null ? ['text' => $name] : ['text' => '', 'extra' => [$team['prefix'], ['text' => $name], $team['suffix']]] + ($team['color'] === null ? [] : ['color' => $team['color']]);
+        return $formatted + [
             'insertion' => $name,
             'click_event' => ['action' => 'suggest_command', 'command' => '/tell ' . $name . ' '],
             'hover_event' => ['action' => 'show_entity', 'id' => 'minecraft:player', 'uuid' => $uuid, 'name' => $name],

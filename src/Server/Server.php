@@ -492,7 +492,7 @@ final class Server
         // PlayerList.updateEntireScoreboard: displayed objectives and their scores.
         $this->sendScoreboard($c);
         // The join message reaches players already online, not the one joining.
-        $this->broadcastComponent(['translate' => 'multiplayer.player.joined', 'with' => [Packets::playerName($c->name, $c->uuid)], 'color' => 'yellow'], $c->name . ' joined the game', $c);
+        $this->broadcastComponent(['translate' => 'multiplayer.player.joined', 'with' => [$this->displayName($c)], 'color' => 'yellow'], $c->name . ' joined the game', $c);
         $this->sendPosition($c, [$c->x, $c->y, $c->z]);
         $c->send($this->version, 'server_data', Packets::serverData($this->config->motd));
         $info = static fn (Client $player): array => ['uuid' => $player->uuid, 'name' => $player->name, 'gameMode' => $player->gameMode, 'hat' => (($player->information['skinParts'] ?? 0) & 64) !== 0, 'properties' => $player->profileProperties];
@@ -1277,7 +1277,7 @@ final class Server
                     $this->closeAfterWrite($other);
                 }
             }
-            $this->broadcastComponent(['translate' => 'multiplayer.player.left', 'with' => [Packets::playerName($c->name, $c->uuid)], 'color' => 'yellow'], $c->name . ' left the game');
+            $this->broadcastComponent(['translate' => 'multiplayer.player.left', 'with' => [$this->displayName($c)], 'color' => 'yellow'], $c->name . ' left the game');
             $this->log($c->name . ' disconnected');
         }
     }

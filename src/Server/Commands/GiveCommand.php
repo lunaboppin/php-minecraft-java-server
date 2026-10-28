@@ -42,7 +42,7 @@ trait GiveCommand
             }
         }
         $message = count($targets) === 1
-            ? ['translate' => 'commands.give.success.single', 'with' => [$count, $display, Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            ? ['translate' => 'commands.give.success.single', 'with' => [$count, $display, $this->displayName($targets[0])]]
             : ['translate' => 'commands.give.success.multiple', 'with' => [$count, $display, count($targets)]];
         $this->sendSuccess($sender, $message, true);
     }

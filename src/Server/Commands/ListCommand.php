@@ -18,7 +18,7 @@ trait ListCommand
         $players = array_values($this->players());
         $entries = array_map(fn (Client $player): array => $withUuids
             ? ['translate' => 'commands.list.nameAndId', 'with' => [['text' => $player->name], ['text' => $this->formatUuid($player->uuid)]]]
-            : Packets::playerName($player->name, $player->uuid), $players);
+            : $this->displayName($player), $players);
         $this->sendSuccess($sender, ['translate' => 'commands.list.players', 'with' => [count($players), $this->config->maxPlayers, $this->formatList($entries)]], false);
     }
 

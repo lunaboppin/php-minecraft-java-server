@@ -53,6 +53,7 @@ final class CommandRegistry
             new CommandDefinition('tellraw', 'executeTellraw', true),
             new CommandDefinition('title', 'executeTitle', true),
             new CommandDefinition('scoreboard', 'executeScoreboard', true),
+            new CommandDefinition('team', 'executeTeam', true),
         ];
     }
 

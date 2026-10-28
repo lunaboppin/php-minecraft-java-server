@@ -40,6 +40,6 @@ trait DamageCommand
         if (!$this->damage($target, $amount, $type, $attacker)) {
             throw new CommandFailure(['translate' => 'commands.damage.invulnerable']);
         }
-        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, Packets::playerName($target->name, $target->uuid)]], true);
+        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, $this->displayName($target)]], true);
     }
 }

@@ -30,7 +30,7 @@ trait GameModeCommand
             }
             // The target is told first while the sendCommandFeedback gamerule is on (its default).
             $target->send($this->version, 'system_chat', Packets::systemChat(['translate' => 'gameMode.changed', 'with' => [$modeName]]));
-            $this->sendSuccess($sender, ['translate' => 'commands.gamemode.success.other', 'with' => [Packets::playerName($target->name, $target->uuid), $modeName]], true);
+            $this->sendSuccess($sender, ['translate' => 'commands.gamemode.success.other', 'with' => [$this->displayName($target), $modeName]], true);
         }
     }
 }

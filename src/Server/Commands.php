@@ -94,6 +94,8 @@ trait Commands
 
     use CommandModules\ScoreboardCommand;
 
+    use CommandModules\TeamCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -118,7 +120,7 @@ trait Commands
         if (!$broadcastToOperators) {
             return;
         }
-        $admin = ['translate' => 'chat.type.admin', 'with' => [Packets::playerName($sender->name, $sender->uuid), $message], 'color' => 'gray', 'italic' => true];
+        $admin = ['translate' => 'chat.type.admin', 'with' => [$this->displayName($sender), $message], 'color' => 'gray', 'italic' => true];
         foreach ($this->players() as $player) {
             if ($player !== $sender && $this->operator($player)) {
                 $player->send($this->version, 'system_chat', Packets::systemChat($admin));
@@ -211,8 +213,9 @@ trait Commands
                 }
             }
             foreach ($options['team'] ?? [] as [$negated, $value]) {
-                // Nothing joins teams yet: "x" matches none and "" (no team) matches all.
-                if (($value === '') === $negated) {
+                // "" matches entities without a team; mobs join teams by UUID.
+                $team = $this->scoreboard()->teamOf(self::scoreboardName($entity));
+                if (($value === '' ? $team === null : $team === $value) === $negated) {
                     return false;
                 }
             }
@@ -309,7 +312,7 @@ trait Commands
             $stack = $this->itemEntities[$entity['item']]['stack'];
             return $this->entityComponent('item', $entity['uuid'], $this->version->catalog->displayNames['items']['minecraft:' . $this->version->catalog->itemName($stack['item'])]['name']);
         }
-        return isset($entity['client']) ? Packets::playerName($entity['client']->name, $entity['client']->uuid) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], $this->animals[$entity['mob']]['customName'] ?? null);
+        return isset($entity['client']) ? $this->displayName($entity['client']) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], $this->animals[$entity['mob']]['customName'] ?? null);
     }
 
     /**

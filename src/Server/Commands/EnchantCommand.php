@@ -61,7 +61,7 @@ trait EnchantCommand
         }
         $name = $this->enchantmentName($id, $level);
         $message = count($enchanted) === 1
-            ? ['translate' => 'commands.enchant.success.single', 'with' => [$name, Packets::playerName($enchanted[0]['client']->name, $enchanted[0]['client']->uuid)]]
+            ? ['translate' => 'commands.enchant.success.single', 'with' => [$name, $this->displayName($enchanted[0]['client'])]]
             : ['translate' => 'commands.enchant.success.multiple', 'with' => [$name, count($enchanted)]];
         $this->sendSuccess($sender, $message, true);
     }

@@ -21,7 +21,7 @@ trait KickCommand
             // Like vanilla, the leave message follows once the connection closes, normally after the
             // report below (vanilla can rarely reverse the two if Netty closes the channel first).
             $this->disconnect($target, $reason);
-            $this->sendSuccess($sender, ['translate' => 'commands.kick.success', 'with' => [Packets::playerName($target->name, $target->uuid), $reason]], true);
+            $this->sendSuccess($sender, ['translate' => 'commands.kick.success', 'with' => [$this->displayName($target), $reason]], true);
         }
     }
 }

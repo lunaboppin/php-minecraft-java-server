@@ -179,6 +179,21 @@ SCRIPT = [
     ('summon pig ~ ~ ~ {}', False), ('summon minecraft:player', False), ('summon pig 0 -10000 0', False),
     ('kill @e[name=Bob]', False), ('kill @e[name=Red]', False), ('kill @e[tag=a]', False),
     ('kill @e[tag=!a,type=pig,name=Pig]', False), ('!quiet kill @e[type=!player]', False),
+    # Teams: packets, team-formatted names, selectors and death message visibility.
+    ('team list', False), ('team add red', False), ('team add red', False),
+    ('team add blue {text:"Blue Team",color:"blue"}', False), ('team list', False), ('team list red', False),
+    ('team join red', False), ('team join red Witness', False), ('team join blue Witness', False),
+    ('team list red', False), ('team list blue', False), ('team modify red color red', False),
+    ('team modify red color red', False), ('team modify red prefix {text:"[R] "}', False), ('team modify red suffix " !"', False),
+    ('team modify red friendlyFire false', False), ('team modify red seeFriendlyInvisibles false', False), ('team modify red nametagVisibility hideForOtherTeams', False),
+    ('team modify red deathMessageVisibility never', False), ('team modify red collisionRule pushOwnTeam', False), ('team modify red displayName {text:"Reds"}', False),
+    ('team modify nope color red', False), ('list', False), ('tellraw @a {selector:"@a[team=red]"}', False),
+    ('kill @a[team=blue]', False), ('!respawn', False), ('team join red Witness', False),
+    ('kill Witness', False), ('!respawn', False), ('team modify red deathMessageVisibility hideForOwnTeam', False),
+    ('kill Witness', False), ('!respawn', False), ('team modify red deathMessageVisibility hideForOtherTeams', False),
+    ('kill Witness', False), ('!respawn', False), ('team leave Witness', False),
+    ('team leave Witness', False), ('team empty red', False), ('team empty red', False),
+    ('team remove blue', False), ('team remove red', False), ('team list', False),
     ('list', False),
 ]
 
@@ -187,8 +202,8 @@ def collect(client, since):
     return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED]
 
 
-# Chat, disconnects, and the packets commands send directly: scoreboard, titles and the world border.
-COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective',
+# Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
+COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
             'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles',
             'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 

@@ -30,7 +30,7 @@ trait SpawnPointCommand
         }
         $common = [...$position, $yaw, $pitch, ['text' => 'minecraft:overworld']];
         $message = count($targets) === 1
-            ? ['translate' => 'commands.spawnpoint.success.single', 'with' => [...$common, Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            ? ['translate' => 'commands.spawnpoint.success.single', 'with' => [...$common, $this->displayName($targets[0])]]
             : ['translate' => 'commands.spawnpoint.success.multiple', 'with' => [...$common, count($targets)]];
         $this->sendSuccess($sender, $message, true);
     }

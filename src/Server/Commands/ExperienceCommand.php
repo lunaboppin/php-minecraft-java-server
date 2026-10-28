@@ -16,7 +16,7 @@ trait ExperienceCommand
         if ($action === 'query') {
             $player = $this->selectPlayers((string) $target, $sender, true)[0];
             $value = $amount === 'levels' ? $player->experienceLevel : $this->experiencePoints($player);
-            $this->sendSuccess($sender, ['translate' => 'commands.experience.query.' . $amount, 'with' => [Packets::playerName($player->name, $player->uuid), $value]], false);
+            $this->sendSuccess($sender, ['translate' => 'commands.experience.query.' . $amount, 'with' => [$this->displayName($player), $value]], false);
             return;
         }
         if (!in_array($action, ['add', 'set'], true) || $amount === null) {
@@ -44,7 +44,7 @@ trait ExperienceCommand
         }
         $key = 'commands.experience.' . $action . '.' . $type . '.success.';
         $message = count($targets) === 1
-            ? ['translate' => $key . 'single', 'with' => [$amount, Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            ? ['translate' => $key . 'single', 'with' => [$amount, $this->displayName($targets[0])]]
             : ['translate' => $key . 'multiple', 'with' => [$amount, count($targets)]];
         $this->sendSuccess($sender, $message, true);
     }

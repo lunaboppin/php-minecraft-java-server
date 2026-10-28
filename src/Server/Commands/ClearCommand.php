@@ -24,12 +24,12 @@ trait ClearCommand
         }
         if ($total === 0) {
             throw new CommandFailure(count($targets) === 1
-                ? ['translate' => 'clear.failed.single', 'with' => [Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+                ? ['translate' => 'clear.failed.single', 'with' => [$this->displayName($targets[0])]]
                 : ['translate' => 'clear.failed.multiple', 'with' => [count($targets)]]);
         }
         $key = $maximum === 0 ? 'commands.clear.test.' : 'commands.clear.success.';
         $message = count($targets) === 1
-            ? ['translate' => $key . 'single', 'with' => [$total, Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            ? ['translate' => $key . 'single', 'with' => [$total, $this->displayName($targets[0])]]
             : ['translate' => $key . 'multiple', 'with' => [$total, count($targets)]];
         $this->sendSuccess($sender, $message, true);
     }

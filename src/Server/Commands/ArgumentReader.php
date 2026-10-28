@@ -130,7 +130,14 @@ final class ArgumentReader
                 $this->coordinates($reader, 3, false);
                 return;
             case 'minecraft:objective':
+            case 'minecraft:team':
                 $reader->readUnquotedString();
+                return;
+            case 'minecraft:color':
+                $color = $reader->readUnquotedString();
+                if (!in_array($color, ['black', 'dark_blue', 'dark_green', 'dark_aqua', 'dark_red', 'dark_purple', 'gold', 'gray', 'dark_gray', 'blue', 'green', 'aqua', 'red', 'light_purple', 'yellow', 'white', 'reset'], true)) {
+                    throw $reader->error('argument.color.invalid', [$color]);
+                }
                 return;
             case 'minecraft:objective_criteria':
                 $this->criteria($reader);
