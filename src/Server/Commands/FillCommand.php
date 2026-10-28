@@ -16,9 +16,9 @@ trait FillCommand
         $start = array_map('intval', array_map('floor', $this->coordinates(array_slice($arguments, 0, 3), $sender)));
         $end = array_map('intval', array_map('floor', $this->coordinates(array_slice($arguments, 3, 3), $sender)));
         $volume = (abs($start[0] - $end[0]) + 1) * (abs($start[1] - $end[1]) + 1) * (abs($start[2] - $end[2]) + 1);
-        // The commandModificationBlockLimit gamerule defaults to 32768.
-        if ($volume > 32768) {
-            throw new CommandFailure(['translate' => 'commands.fill.toobig', 'with' => [32768, $volume]]);
+        $limit = (int) $this->gameRule('max_block_modifications');
+        if ($volume > $limit) {
+            throw new CommandFailure(['translate' => 'commands.fill.toobig', 'with' => [$limit, $volume]]);
         }
         $state = $this->blockArgument($arguments[6]);
         $chunks = [];

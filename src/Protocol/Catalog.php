@@ -34,6 +34,12 @@ final class Catalog
 
     public readonly array $blocks;
 
+    /** Default item hover names and rarity colors, and entity type descriptions. */
+    public readonly array $displayNames;
+
+    /** Vanilla game rules: value type, default, integer bounds and whether they need experimental features. */
+    public readonly array $gameRules;
+
     public readonly array $items;
 
     public readonly array $flags;
@@ -69,6 +75,8 @@ final class Catalog
         $this->movement = json_decode(file_get_contents($directory . '/movement.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->mobSounds = json_decode(file_get_contents($directory . '/mob-sounds.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->collision = json_decode(file_get_contents($directory . '/collision.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->displayNames = json_decode(file_get_contents($directory . '/display-names.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->gameRules = json_decode(file_get_contents($directory . '/gamerules.json'), true, 512, JSON_THROW_ON_ERROR)['rules'];
         $this->entityMetadata = $data['entity_metadata'];
         $this->itemMetadataIndex = $data['item_metadata_index'];
         $this->itemMetadataSerializer = $data['item_metadata_serializer'];

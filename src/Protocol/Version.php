@@ -12,10 +12,13 @@ final class Version
     private array $reverse = [];
     public readonly array $blocks;
     public readonly Catalog $catalog;
+    /** The pinned server's version metadata (name, protocol, data version, build time, pack formats). */
+    public readonly array $info;
     public function __construct(public readonly string $directory = __DIR__ . '/../../reference/26.3') {
         $this->packets = $this->json('packets.json');
         $this->dynamic = $this->json('dynamic-registries.json');
         $this->blocks = $this->json('blocks.json');
+        $this->info = $this->json('version.json');
         $this->catalog = new Catalog($directory);
         foreach ($this->packets as $state => $directions) {
             foreach ($directions['serverbound'] ?? [] as $name => $entry) {

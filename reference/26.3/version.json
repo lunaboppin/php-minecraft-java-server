@@ -2,5 +2,10 @@
   "name": "26.3",
   "protocol": 777,
   "data_version": 5023,
-  "server_sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c"
+  "server_sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c",
+  "series": "main",
+  "stable": true,
+  "build_time": "2026-09-15T11:20:48+00:00",
+  "resource_pack": "97.1",
+  "data_pack": "121.0"
 }

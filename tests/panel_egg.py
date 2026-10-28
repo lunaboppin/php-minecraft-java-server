@@ -105,7 +105,7 @@ def container():
                 c.send('chat_command',net.string('setblock 1 65 1 diamond_block'))
                 c.until('system_chat',lambda p:b'commands.setblock.success' in p)
                 c.send('chat_command',net.string('give @s diamond 3'))
-                c.until('system_chat',lambda p:b'Gave' in p)
+                c.until('system_chat',lambda p:b'commands.give.success' in p)
             finally:c.close()
             stop(active);active=None
             config=(server/'server.json').read_bytes()

@@ -4,36 +4,38 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server\Commands;
 
+use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Server\Client;
 
 trait GiveCommand
 {
     private function executeGive(Client $sender, array $arguments): void
     {
-        if (count($arguments) < 2) {
-            throw new \InvalidArgumentException('Usage: /give player item [count]');
+        if (count($arguments) < 2 || count($arguments) > 3) {
+            throw new \InvalidArgumentException('Usage: /give targets item [count]');
         }
-        $target = $this->playerByName($arguments[0], $sender);
+        $targets = $this->selectPlayers($arguments[0], $sender);
         $itemName = preg_replace('/^minecraft:/', '', $arguments[1]);
         $item = $this->version->blocks['items'][$itemName] ?? throw new \InvalidArgumentException('Unknown item');
         $count = isset($arguments[2]) ? filter_var($arguments[2], FILTER_VALIDATE_INT) : 1;
-        if ($count === false || $count < 1 || $count > 2304) {
-            throw new \InvalidArgumentException('Count must be 1–2304');
+        if ($count === false || $count < 1) {
+            throw new \InvalidArgumentException('Count must be at least 1');
         }
-        $left = $this->giveStack($target, ['item' => $item, 'count' => $count]);
-        $this->syncInventory($target);
-        if ($left > 0) {
-            $this->withDimension(
-                $target->dimension,
-                fn () => $this->dropStack(
-                    $target->x,
-                    $target->y + 0.5,
-                    $target->z,
-                    ['item' => $item, 'count' => $left]
-                )
-            );
+        $display = $this->itemComponent($itemName);
+        $limit = $this->version->catalog->items[$itemName]['max_stack'] * 100;
+        if ($count > $limit) {
+            throw new CommandFailure(['translate' => 'commands.give.failed.toomanyitems', 'with' => [$limit, $display]]);
         }
-        $this->tell($sender, 'Gave ' . $count . ' ' . $itemName . ' to ' . $target->name);
-        return;
+        foreach ($targets as $target) {
+            $left = $this->giveStack($target, ['item' => $item, 'count' => $count]);
+            $this->syncInventory($target);
+            if ($left > 0) {
+                $this->withDimension($target->dimension, fn () => $this->dropStack($target->x, $target->y + 0.5, $target->z, ['item' => $item, 'count' => $left]));
+            }
+        }
+        $message = count($targets) === 1
+            ? ['translate' => 'commands.give.success.single', 'with' => [$count, $display, Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            : ['translate' => 'commands.give.success.multiple', 'with' => [$count, $display, count($targets)]];
+        $this->sendSuccess($sender, $message, true);
     }
 }

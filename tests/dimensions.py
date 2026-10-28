@@ -78,7 +78,7 @@ def main():
                 ping(b)
                 net.check(not any(n in ('block_update', 'teleport_entity') for n, _ in b.seen[first:]),
                           'blocks and player movement do not leak between dimensions')
-                command(a, 'give @s diamond 3', 'Gave')
+                command(a, 'give @s diamond 3', 'commands.give.success.single')
                 ping(a)
                 net.check(any(s and s['item'] == net.BLOCKS['items']['diamond'] and s['count'] == 3 for s in a.inventory),
                           'inventory available in Nether')
@@ -94,7 +94,7 @@ def main():
                 a = net.Client(port, terrain=True).login('Admin')
                 net.check(a.dimension == 'the_end', 'rejoining restores saved dimension')
                 net.check(any(s and s['item'] == net.BLOCKS['items']['diamond'] for s in a.inventory), 'dimension travel preserves inventory')
-                command(a, 'kill', 'Admin was killed')
+                command(a, 'kill', 'death.attack.genericKill')
                 a.send('client_command', net.vi(0))
                 a.until('respawn')
                 a.until('player_position')

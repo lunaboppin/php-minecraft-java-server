@@ -283,6 +283,50 @@ trait Commands
         return $result;
     }
 
+    /**
+     * Vec3Argument relative to the command's sender: absolute X and Z written without a decimal
+     * point are centred on the block, and Y may be anywhere within the world's spawnable bounds.
+     *
+     * @return array{float, float, float}
+     */
+    private function positionArguments(array $arguments, Client $sender): array
+    {
+        if (count($arguments) !== 3) {
+            throw new \InvalidArgumentException('Expected x y z coordinates');
+        }
+        $center = static fn (string $text): float => !str_starts_with($text, '~') && !str_contains($text, '.') ? 0.5 : 0.0;
+        $position = [
+            $this->coordinate($arguments[0], $sender->x) + $center($arguments[0]),
+            $this->coordinate($arguments[1], $sender->y),
+            $this->coordinate($arguments[2], $sender->z) + $center($arguments[2]),
+        ];
+        if (abs($position[1]) > 20000000) {
+            throw new CommandModules\CommandFailure(['translate' => 'commands.teleport.invalidPosition']);
+        }
+        return $position;
+    }
+
+    /** ItemStack.getDisplayName for a default stack: its bracketed, rarity-colored hover name. */
+    private function itemComponent(string $item): array
+    {
+        $display = $this->version->catalog->displayNames['items']['minecraft:' . $item];
+        return [
+            'translate' => 'chat.square_brackets',
+            'with' => [['text' => '', 'extra' => [$display['name']]]],
+            'color' => $display['color'],
+            'hover_event' => ['action' => 'show_item', 'id' => 'minecraft:' . $item],
+        ];
+    }
+
+    /** Entity.getDisplayName for an unnamed non-player entity. */
+    private function entityComponent(string $kind, string $uuid): array
+    {
+        $name = $this->version->catalog->displayNames['entities']['minecraft:' . $kind];
+        $hex = bin2hex($uuid);
+        return [...$name, 'insertion' => substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20),
+            'hover_event' => ['action' => 'show_entity', 'id' => 'minecraft:' . $kind, 'uuid' => $uuid, 'name' => $name]];
+    }
+
     private function blockArgument(string $text): int
     {
         $text = preg_replace('/^minecraft:/', '', $text);

@@ -144,6 +144,7 @@ def main():
         'ExportMobEquipment.java', 'ExportEnchanting.java', 'ExportEnchantmentComponents.java',
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
+        'ExportDisplayNames.java', 'ExportGameRules.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -168,6 +169,8 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportEntitySectionQueries', str(out / 'entity-section-queries.json')], check=True, cwd=cache)
     # Also writes the sibling push-eligibility-rules.json used at runtime.
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportPushEligibility', str(out / 'push-eligibility.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportDisplayNames', str(out / 'display-names.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportGameRules', str(out / 'gamerules.json')], check=True, cwd=cache)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
     registries = json.loads((reports / 'registries.json').read_text())
@@ -206,7 +209,11 @@ def main():
     write_json(out / 'gameplay.json', gameplay)
 
     shutil.copyfile(metadata, out / 'mojang-version.json')
-    write_json(out / 'version.json', {'name': VERSION, 'protocol': PROTOCOL, 'data_version': DATA_VERSION, 'server_sha1': SERVER_SHA1})
+    pack = actual['pack_version']
+    # /version reports these from the JAR's own version.json.
+    write_json(out / 'version.json', {'name': VERSION, 'protocol': PROTOCOL, 'data_version': DATA_VERSION, 'server_sha1': SERVER_SHA1,
+                                      'series': actual['series_id'], 'stable': actual['stable'], 'build_time': actual['build_time'],
+                                      'resource_pack': f"{pack['resource_major']}.{pack['resource_minor']}", 'data_pack': f"{pack['data_major']}.{pack['data_minor']}"})
     (out / 'tags.bin').write_bytes(generate_tags(inner, registries, json.loads((out / 'dynamic-registries.json').read_text())))
     if capture:
         subprocess.run(cmd + [str(capture)], check=True, cwd=cache)

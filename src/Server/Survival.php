@@ -142,7 +142,8 @@ trait Survival
         $this->savePlayer($c);
     }
 
-    private function damage(Client $c, float $amount, string $reason, bool $force = false): void
+    /** @param string|array $reason English text after the name, or a vanilla death message component */
+    private function damage(Client $c, float $amount, string|array $reason, bool $force = false): void
     {
         if ($c->dimension !== $this->world->dimension) {
             $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $reason, $force));
@@ -170,9 +171,18 @@ trait Survival
                 }$c->inventory = [];
                 $c->experience = 0;
             }
-            $message = $c->name . ' ' . $reason;
-            $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::text($message));
-            $this->broadcast($message);
+            if (is_array($reason)) {
+                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component($reason));
+                // The console shows the English death message, as vanilla's does.
+                $this->broadcastComponent($reason, $c->name . ' ' . match ($reason['translate']) {
+                    'death.attack.genericKill' => 'was killed',
+                    default => 'died',
+                });
+            } else {
+                $message = $c->name . ' ' . $reason;
+                $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::text($message));
+                $this->broadcast($message);
+            }
             $this->savePlayer($c);
         }
     }
