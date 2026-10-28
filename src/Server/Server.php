@@ -22,6 +22,8 @@ final class Server
 
     use Experience;
 
+    use Borders;
+
     use Commands;
 
     use Animals;
@@ -492,7 +494,7 @@ final class Server
         foreach ($this->players() as $player) {
             $player->send($this->version, 'player_info_update', Packets::playerInfoInitializing([$info($c)]));
         }
-        $c->send($this->version, 'initialize_border', Packets::defaultWorldBorder());
+        $this->sendBorder($c);
         $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
         $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
         $this->sendJoinWeather($c);

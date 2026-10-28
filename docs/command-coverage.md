@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **33** have an existing PHP handler; **59** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **34** have an existing PHP handler; **58** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -105,7 +105,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/waypoint` | — | Unimplemented | — |
 | `/weather` | [WeatherCommand.php](../src/Server/Commands/WeatherCommand.php) | Partial handler; native behavior incomplete | — |
 | `/whitelist` | — | Unimplemented | — |
-| `/worldborder` | — | Unimplemented | — |
+| `/worldborder` | [WorldBorderCommand.php](../src/Server/Commands/WorldBorderCommand.php) | Partial handler; native behavior incomplete | — |
 | `/xp` | [ExperienceCommand.php](../src/Server/Commands/ExperienceCommand.php) | Partial handler; native behavior incomplete | `/experience` |
 
 Existing additional project commands: `/dimension`, `/heal`, `/spawn`.
