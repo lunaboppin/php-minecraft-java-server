@@ -96,6 +96,8 @@ trait Commands
 
     use CommandModules\TeamCommand;
 
+    use CommandModules\TriggerCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

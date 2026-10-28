@@ -194,6 +194,14 @@ SCRIPT = [
     ('kill Witness', False), ('!respawn', False), ('team leave Witness', False),
     ('team leave Witness', False), ('team empty red', False), ('team empty red', False),
     ('team remove blue', False), ('team remove red', False), ('team list', False),
+    # /trigger by the non-operator, enabled by the operator.
+    ('scoreboard objectives add t trigger', False), ('scoreboard objectives add d dummy', False), ('!witness trigger t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t', False), ('!witness trigger t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t add 5', False), ('scoreboard players enable Witness t', False),
+    ('!witness trigger t set 42', False), ('scoreboard players get Witness t', False), ('!witness trigger d', False),
+    ('!witness trigger nope', False), ('!witness trigger t set', False), ('scoreboard objectives setdisplay sidebar t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t add -3', False), ('scoreboard objectives remove t', False),
+    ('scoreboard objectives remove d', False),
     ('list', False),
 ]
 
