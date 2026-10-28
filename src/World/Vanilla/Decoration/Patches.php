@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\World\Vanilla\Decoration;
 
+use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
+use PhpMinecraftJavaServer\World\Vanilla\Noise\NoiseStack;
+use PhpMinecraftJavaServer\World\Vanilla\Noise\NormalNoise;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 
 /**
@@ -17,6 +20,7 @@ final class Patches
     private const DIRECTIONS = ['down', 'up', 'north', 'south', 'west', 'east'];
 
     private readonly Blocks $blocks;
+    private ?NoiseStack $geodeNoise = null;
 
     public function __construct(private readonly Decorator $decorator)
     {
@@ -585,6 +589,114 @@ final class Patches
             $facing = ($facing + 2) % 4;
         }
         return $blocks->with($chest, 'facing', self::FACINGS[$facing]);
+    }
+
+    /** GeodeFeature: layered shells around random points, cracked open, with crystals inside. */
+    public function geode(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $blocks = $this->blocks;
+        $settings = $feature['blocks'];
+        $layers = ($feature['layers'] ?? []) + ['filling' => 1.7, 'inner_layer' => 2.2, 'middle_layer' => 3.2, 'outer_layer' => 4.2];
+        $crack = ($feature['crack'] ?? []) + ['generate_crack_chance' => 1.0, 'base_crack_size' => 2.0, 'crack_point_offset' => 2];
+        $outerWall = $feature['outer_wall_distance'] ?? ['type' => 'uniform', 'min_inclusive' => 4, 'max_inclusive' => 5];
+        $points = Providers::int($feature['distribution_points'] ?? ['type' => 'uniform', 'min_inclusive' => 3, 'max_inclusive' => 4], $random);
+        // NormalNoise.createParity(-4, 1.0), seeded from the world seed.
+        $this->geodeNoise ??= NormalNoise::create(new LegacyRandom($region->seed), ['base_amplitude' => 0.955388882960065, 'base_octave' => -4, 'octave_count' => 1]);
+        $adjust = $points / ($outerWall['max_inclusive'] ?? 5);
+        $innerAir = 1.0 / sqrt($layers['filling']);
+        $innermost = 1.0 / sqrt($layers['inner_layer'] + $adjust);
+        $innerCrust = 1.0 / sqrt($layers['middle_layer'] + $adjust);
+        $outerCrust = 1.0 / sqrt($layers['outer_layer'] + $adjust);
+        $crackSize = 1.0 / sqrt($crack['base_crack_size'] + $random->nextDouble() / 2.0 + ($points > 3 ? $adjust : 0.0));
+        $cracked = $random->nextFloat() < F32::r((float) $crack['generate_crack_chance']);
+        $invalid = 0;
+        $pointList = [];
+        for ($i = 0; $i < $points; ++$i) {
+            $px = $x + Providers::int($outerWall, $random);
+            $py = $y + Providers::int($outerWall, $random);
+            $pz = $z + Providers::int($outerWall, $random);
+            $state = $region->get($px, $py, $pz);
+            if (($blocks->isAir($state) || $blocks->is($state, $settings['invalid_blocks'])) && ++$invalid > ($feature['invalid_blocks_threshold'] ?? 0)) {
+                return false;
+            }
+            $pointList[] = [$px, $py, $pz, Providers::int($feature['point_offset'] ?? ['type' => 'uniform', 'min_inclusive' => 1, 'max_inclusive' => 2], $random)];
+        }
+        $crackPoints = [];
+        if ($cracked) {
+            $index = $random->nextInt(4);
+            $offset = $points * 2 + 1;
+            [$cx, $cz] = [[$offset, 0], [0, $offset], [$offset, $offset], [0, 0]][$index];
+            foreach ([7, 5, 1] as $dy) {
+                $crackPoints[] = [$x + $cx, $y + $dy, $z + $cz];
+            }
+        }
+        $cannot = $settings['cannot_replace'];
+        $canReplace = fn (int $state): bool => !$blocks->is($state, $cannot);
+        $set = function (int $px, int $py, int $pz, int $state) use ($region, $canReplace): void {
+            if ($canReplace($region->get($px, $py, $pz))) {
+                $region->set($px, $py, $pz, $state);
+            }
+        };
+        $providers = $this->decorator->providers;
+        $multiplier = $feature['noise_multiplier'] ?? 0.05;
+        $alternateChance = F32::r((float) ($feature['use_alternate_layer0_chance'] ?? 0.0));
+        $potentialChance = F32::r((float) ($feature['use_potential_placements_chance'] ?? 0.35));
+        $requireAlternate = $feature['placements_require_layer0_alternate'] ?? true;
+        $min = $feature['min_gen_offset'] ?? -16;
+        $max = $feature['max_gen_offset'] ?? 16;
+        $crystals = [];
+        for ($pz = $z + $min; $pz <= $z + $max; ++$pz) {
+            for ($py = $y + $min; $py <= $y + $max; ++$py) {
+                for ($px = $x + $min; $px <= $x + $max; ++$px) {
+                    $noise = $this->geodeNoise->get($px, $py, $pz) * $multiplier;
+                    $shell = 0.0;
+                    foreach ($pointList as [$qx, $qy, $qz, $qo]) {
+                        $shell += 1.0 / sqrt(($px - $qx) ** 2 + ($py - $qy) ** 2 + ($pz - $qz) ** 2 + $qo) + $noise;
+                    }
+                    if ($shell < $outerCrust) {
+                        continue;
+                    }
+                    if ($shell >= $innerAir) {
+                        $set($px, $py, $pz, $providers->state($settings['filling_provider'], $region, $random, $px, $py, $pz));
+                        continue;
+                    }
+                    $crackSum = 0.0;
+                    foreach ($crackPoints as [$qx, $qy, $qz]) {
+                        $crackSum += 1.0 / sqrt(($px - $qx) ** 2 + ($py - $qy) ** 2 + ($pz - $qz) ** 2 + $crack['crack_point_offset']) + $noise;
+                    }
+                    if ($cracked && $crackSum >= $crackSize) {
+                        $set($px, $py, $pz, $blocks->state('air'));
+                    } elseif ($shell >= $innermost) {
+                        $alternate = $random->nextFloat() < $alternateChance;
+                        $set($px, $py, $pz, $providers->state($alternate ? $settings['alternate_inner_layer_provider'] : $settings['inner_layer_provider'], $region, $random, $px, $py, $pz));
+                        if ((!$requireAlternate || $alternate) && $random->nextFloat() < $potentialChance) {
+                            $crystals[] = [$px, $py, $pz];
+                        }
+                    } elseif ($shell >= $innerCrust) {
+                        $set($px, $py, $pz, $providers->state($settings['middle_layer_provider'], $region, $random, $px, $py, $pz));
+                    } else {
+                        $set($px, $py, $pz, $providers->state($settings['outer_layer_provider'], $region, $random, $px, $py, $pz));
+                    }
+                }
+            }
+        }
+        $placements = $settings['inner_placements'];
+        foreach ($crystals as [$px, $py, $pz]) {
+            $state = $blocks->parse($placements[$random->nextInt(count($placements))]);
+            foreach (self::DIRECTIONS as $direction => $face) {
+                $state = $blocks->with($state, 'facing', $face);
+                [$dx, $dy, $dz] = Blocks::OFFSETS[$direction];
+                $place = $region->get($px + $dx, $py + $dy, $pz + $dz);
+                if ($blocks->has($state, 'waterlogged')) {
+                    $state = $blocks->with($state, 'waterlogged', $blocks->isSource($place) ? 'true' : 'false');
+                }
+                if ($blocks->isAir($place) || ($blocks->name($place) === 'water' && $blocks->isSource($place))) {
+                    $set($px + $dx, $py + $dy, $pz + $dz, $state);
+                    break;
+                }
+            }
+        }
+        return true;
     }
 
     /** Util.toShuffledList */
