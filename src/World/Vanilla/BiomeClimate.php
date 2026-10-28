@@ -36,6 +36,12 @@ final class BiomeClimate
         $this->infoNoise = new SimplexNoise2D(new LegacyRandom(2345));
     }
 
+    /** Biome.BIOME_INFO_NOISE */
+    public function infoNoise(float $x, float $z): float
+    {
+        return $this->infoNoise->get($x, $z);
+    }
+
     /** @return array{0: float, 1: string} the base temperature and temperature modifier */
     public function climate(string $biome): array
     {

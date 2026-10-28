@@ -52,7 +52,8 @@ WORLDGEN_FIXTURE_CHUNKS = {
 
 def worldgen_resources(inner, out):
     """Copy the official Overworld worldgen registries the native generator reads at runtime."""
-    folders = ('density_function', 'noise', 'noise_settings', 'material_rule', 'material_condition', 'carver', 'biome')
+    folders = ('density_function', 'noise', 'noise_settings', 'material_rule', 'material_condition', 'carver', 'biome',
+               'placed_feature', 'feature', 'block_state_provider')
     target = out / 'worldgen'
     for folder in folders:
         shutil.rmtree(target / folder, ignore_errors=True)
