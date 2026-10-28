@@ -55,9 +55,12 @@ trait Dimensions
                 $this->tickFurnaces();
                 $this->tickAnimals();
                 foreach (array_slice($this->pendingLight, 0, 1, true) as $key => [$cx,$cz]) {
-                    $payload = Binary::writeVarInt($cx) . Binary::writeVarInt($cz) . $this->world->chunkLight($cx, $cz);
-                    foreach ($this->localPlayers() as $p) {
-                        if (isset($p->loadedChunks[$key])) {
+                    // Relighting rebuilds the whole chunk, so skip it when no player would receive it.
+                    // A player who loads the chunk later gets its current light with the chunk.
+                    $viewers = array_filter($this->localPlayers(), static fn (Client $p): bool => isset($p->loadedChunks[$key]));
+                    if ($viewers !== []) {
+                        $payload = Binary::writeVarInt($cx) . Binary::writeVarInt($cz) . $this->world->chunkLight($cx, $cz);
+                        foreach ($viewers as $p) {
                             $p->send($this->version, 'light_update', $payload);
                         }
                     }

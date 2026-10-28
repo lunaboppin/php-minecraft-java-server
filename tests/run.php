@@ -203,6 +203,7 @@ foreach ([
     'entity-pushing-world-unit.php',
     'push-eligibility-unit.php',
     'mob-pushing-backend.php',
+    'tick-cost-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
