@@ -73,15 +73,16 @@ SCRIPT = [
     ('give @s diamond_sword[damage=5 1', False), ('gamerule keep_inventory "true"', False), ('!witness gamemode creative', False), ('!witness foo', False),
     ('!witness msg @a hi', False),
     # Block modes and teleport forms above the terrain; local coordinates start from a zero rotation.
+    # Destroyed blocks are glass, which drops nothing for players to pick up.
     # Creative players survive falling from y=200 between commands.
     ('gamemode creative @a', False),
-    ('setblock 1 200 1 stone keep', False), ('setblock 1 200 1 dirt keep', False), ('setblock 1 200 1 dirt replace', False),
-    ('setblock 1 200 1 dirt destroy', False), ('setblock 1 200 1 air destroy', False), ('setblock 1 200 1 air destroy', False),
+    ('setblock 1 200 1 stone keep', False), ('setblock 1 200 1 dirt keep', False), ('setblock 1 200 1 glass replace', False),
+    ('setblock 1 200 1 dirt destroy', False), ('setblock 1 200 1 glass replace', False), ('setblock 1 200 1 air destroy', False), ('setblock 1 200 1 air destroy', False),
     ('setblock 1 200 1 stone strict', False), ('setblock 1 200 1 stone strict', False), ('setblock 1 400 1 stone', False),
     ('setblock 1 -100 1 stone', False), ('fill 0 200 0 2 202 2 stone outline', False), ('fill 0 200 0 2 202 2 dirt hollow', False),
     ('fill 0 200 0 2 202 2 dirt hollow', False), ('fill 0 200 0 2 202 2 glass replace dirt', False), ('fill 0 200 0 2 202 2 glass replace dirt', False),
     ('fill 0 200 0 2 202 2 oak_log[axis=x]', False), ('fill 0 200 0 2 202 2 glass replace #minecraft:logs', False), ('fill 0 200 0 2 202 2 dirt replace glass destroy', False),
-    ('fill 0 200 0 2 202 2 air keep', False), ('fill 0 200 0 2 202 2 stone keep', False), ('fill 0 200 0 2 202 2 air destroy', False),
+    ('fill 0 200 0 2 202 2 air keep', False), ('fill 0 200 0 2 202 2 stone keep', False), ('fill 0 200 0 2 202 2 glass', False), ('fill 0 200 0 2 202 2 air destroy', False),
     ('fill 0 200 0 2 202 2 air strict', False), ('fill 0 200 0 2 400 2 stone', False), ('fill 0 200 0 2 202 2 oak_stairs[facing=east] replace #minecraft:nope', False),
     ('tp @s 0 200 0 90 45', False), ('tp @s ~ ~ ~ ~10 ~-5', False), ('tp @s 0 200 0 facing 5 200 5', False),
     ('tp @s 0 200 0 facing entity Witness', False), ('tp @s 0 200 0 facing entity Witness eyes', False), ('tp Witness 3 200 3 0 0', False),
@@ -90,6 +91,21 @@ SCRIPT = [
     ('tp @s 0 200 0 0 0', False), ('tp @s ^ ^1 ^1', False), ('tp @s 0 200 0 0 0', False),
     ('tp @s ^0.3 ^-0.7 ^1.25', False), ('tp @s 30000000 200 0', False), ('tp @s 29999999 200 0', False),
     ('tp @s 0 20000000 0', False),
+    # Experience points, levels and progress, and clearing inventories, from empty inventories.
+    ('!quiet clear @a', False), ('!quiet xp set @a 0 levels', False), ('!quiet xp set @a 0 points', False),
+    ('xp query Witness points', False), ('xp query Witness levels', False), ('xp add Witness 10', False),
+    ('xp query Witness points', False), ('xp query Witness levels', False), ('xp add Witness 5 levels', False),
+    ('xp query Witness levels', False), ('xp query Witness points', False), ('xp set Witness 3 points', False),
+    ('xp set Witness 100 points', False), ('xp set Witness 0 levels', False), ('xp query Witness points', False),
+    ('xp add @a 7', False), ('xp add @a 2 levels', False), ('xp set @a 1 levels', False),
+    ('xp add Witness -1000', False), ('xp query Witness levels', False), ('xp add Witness -5 levels', False),
+    ('experience add Witness 30 levels', False), ('xp query Witness levels', False), ('xp set Witness 7 points', False),
+    ('xp set Witness 99999 points', False), ('xp set @a 3 points', False), ('xp add @e 1', False),
+    ('clear Witness', False), ('give Witness dirt 5', False), ('give Witness stone 3', False),
+    ('clear Witness dirt 2', False), ('clear Witness dirt 0', False), ('clear Witness', False),
+    ('clear Witness', False), ('give @a dirt 4', False), ('clear @a dirt', False),
+    ('clear @a', False), ('give Witness dirt 64', False), ('clear Witness dirt 100', False),
+    ('clear Witness #minecraft:logs', False), ('clear Witness stone[foo=bar]', False), ('clear Witness nope', False),
     ('list', False),
 ]
 
@@ -118,6 +134,12 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 witness.send('client_command', wire.vi(0))
                 witness.tick_barrier()
                 operator.tick_barrier()
+                continue
+            if command.startswith('!quiet '):
+                # A reset whose reply depends on earlier timing: run by the operator, not compared.
+                operator.send('chat_command', wire.string(command.removeprefix('!quiet ')))
+                operator.tick_barrier()
+                witness.tick_barrier()
                 continue
             marks = (len(operator.seen), len(witness.seen))
             # "!witness <command>" runs the command as the non-operator witness.
@@ -178,7 +200,7 @@ def main():
     reference = record('java', args.output, args.java, args.jar, args.eula_file, script)
     differences = compare(reference, php)
     (args.output / 'differences.json').write_text(json.dumps(differences, indent=1))
-    observed = sum(command != '!respawn' for command, _ in script) * 2
+    observed = sum(command != '!respawn' and not command.startswith('!quiet ') for command, _ in script) * 2
     print(f'{observed - len(differences)}/{observed} command observations identical; differences in {args.output / "differences.json"}')
     sys.exit(1 if differences else 0)
 

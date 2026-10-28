@@ -76,6 +76,18 @@ def timelines(inner):
     return result
 
 
+def loot(inner):
+    """Vanilla block and entity loot tables and the named predicates they reference, evaluated by World\\Loot."""
+    tables, predicates = {}, {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith(('data/minecraft/loot_table/blocks/', 'data/minecraft/loot_table/entities/')) and name.endswith('.json'):
+                tables['minecraft:' + name[len('data/minecraft/loot_table/'):-5]] = json.loads(archive.read(name))
+            elif name.startswith('data/minecraft/predicate/') and name.endswith('.json'):
+                predicates['minecraft:' + name[len('data/minecraft/predicate/'):-5]] = json.loads(archive.read(name))
+    return {'tables': tables, 'predicates': predicates}
+
+
 def generate_tags(inner, registries, dynamic):
     tables = {name: {key: value['protocol_id'] for key, value in registry['entries'].items()}
               for name, registry in registries.items()}
@@ -221,8 +233,11 @@ def main():
     data['component_damage'] = registries['minecraft:data_component_type']['entries']['minecraft:damage']['protocol_id']
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
+    # Sound events the server plays outside mob audio.
+    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['entity.player.levelup']}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
+    write_json(out / 'loot.json', loot(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)

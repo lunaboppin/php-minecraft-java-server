@@ -35,9 +35,7 @@ trait SetBlockCommand
         $this->sendSuccess($sender, ['translate' => 'commands.setblock.success', 'with' => [$x, $y, $z]], true);
     }
 
-    /**
-     * Level.destroyBlock: the break event and air. Loot tables are not modelled, so nothing drops.
-     */
+    /** Level.destroyBlock: the break event, air, then the block's loot without a tool or entity. */
     private function destroyBlock(int $x, int $y, int $z): bool
     {
         $state = $this->world->get($x, $y, $z);
@@ -46,6 +44,27 @@ trait SetBlockCommand
         }
         $this->levelEvent(2001, [$x, $y, $z], $state);
         $this->setBlock($x, $y, $z, 0);
+        $this->dropBlockLoot($x, $y, $z, $state);
         return true;
+    }
+
+    /** Block.dropResources without a tool: the loot table's stacks at the block's centre. */
+    private function dropBlockLoot(int $x, int $y, int $z, int $state): void
+    {
+        if ($this->gameRule('block_drops') !== 'true') {
+            return;
+        }
+        $blockAt = function (int $offset) use ($x, $y, $z): array {
+            $other = $this->world->get($x, $y + $offset, $z);
+            return ['minecraft:' . $this->version->catalog->blockName($other), array_map('strval', $this->version->catalog->properties($other))];
+        };
+        $properties = array_map('strval', $this->version->catalog->properties($state));
+        $name = 'minecraft:' . $this->version->catalog->blockName($state);
+        foreach ($this->loot()->drops('minecraft:blocks/' . substr($name, 10), ['block' => $name, 'state' => $properties, 'blockAt' => $blockAt]) as [$drop, $count]) {
+            $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
+            if ($item !== null) {
+                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+            }
+        }
     }
 }

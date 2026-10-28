@@ -20,6 +20,8 @@ final class Server
 
     use Survival;
 
+    use Experience;
+
     use Commands;
 
     use Animals;

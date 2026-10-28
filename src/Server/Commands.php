@@ -72,6 +72,10 @@ trait Commands
 
     use CommandModules\DamageCommand;
 
+    use CommandModules\ExperienceCommand;
+
+    use CommandModules\ClearCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -253,19 +257,9 @@ trait Commands
         return ($minimum === null || $value >= $minimum) && ($maximum === null || $value <= $maximum);
     }
 
-    /** The player's experience level, from the experience points this server stores. */
     private function experienceLevel(Client $client): int
     {
-        $remaining = $client->experience;
-        $level = 0;
-        while (true) {
-            $needed = $level < 15 ? 2 * $level + 7 : ($level < 30 ? 5 * $level - 38 : 9 * $level - 158);
-            if ($remaining < $needed) {
-                return $level;
-            }
-            $remaining -= $needed;
-            ++$level;
-        }
+        return $client->experienceLevel;
     }
 
     /** An entity's display name: the player name or the mob's type description. */

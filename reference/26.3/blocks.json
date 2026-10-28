@@ -3302,5 +3302,8 @@
     "zombie_nautilus": 156,
     "zombie_villager": 157,
     "zombified_piglin": 158
+  },
+  "sounds": {
+    "entity.player.levelup": 1321
   }
 }

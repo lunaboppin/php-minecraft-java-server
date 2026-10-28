@@ -79,6 +79,7 @@ trait FillCommand
         });
         foreach ($destroyed as [$position, $previous]) {
             $this->levelEvent(2001, $position, $previous);
+            $this->dropBlockLoot(...$position, state: $previous);
         }
         foreach ($this->localPlayers() as $player) {
             foreach ($chunks as $key => $chunk) {

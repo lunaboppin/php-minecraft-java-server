@@ -1,6 +1,6 @@
 {
   "authentication.json": "ef5507d383a4b7a17472c1486b10dc9cbb7072037c310ba0ec4301c5a2c646d7",
-  "blocks.json": "8992dc7e0fb0234ba05bb34793c29d3ca131af278ce67103c74907d2a2051a49",
+  "blocks.json": "dc688f8a4fbc2c45e4d5684fee1b1af7a73b69466f8cbd52fc1b545edf935e45",
   "collision.json": "313b9612cfa392577c56691681f84097447832460fe222afc1f36ced35721415",
   "combat.json": "7a5583c985f2b80705f617815e07bde66e31bdc04926e160ed1c9469e8ad5ca6",
   "commands-all-features.json": "ebd870981c4318decf2a27e241c0dc10f742821abdcbe8ce14569e78672287e3",
@@ -21,6 +21,7 @@
   "fixtures.json": "6e909bbb8201fafc97c62ef9c6f72e19a1f3844ba1e172c3c80077c4a5270d27",
   "gameplay.json": "37b61e4ba8c0a3681d57b5eab6612e42bcfcdaa85e90c28a13ec5b7c73503ad1",
   "gamerules.json": "629adb21bf3c0c5d61401be49a36626124b3642371306a5c90b67f65b09285c1",
+  "loot.json": "d5d1c4f950d368b4bca3dc9911baf2a31b45e7642e471feb6b8760e1befed308",
   "mob-equipment.json": "4178bee6e14073504332fcc9de4eec2419791b0d807b7aa7605023e8fe78ca71",
   "mob-initialization.json": "27e0362ba4f7507ab48ac7b713a3e244abacc4f0411d4429f4e0acc4255fa37b",
   "mob-motion-trajectories.json": "21f670b0df8cf43f38bd2433414ccca6f75cf99a1603e3e4395f72bcada476b5",
