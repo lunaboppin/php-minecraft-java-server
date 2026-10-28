@@ -27,6 +27,11 @@ final class Config
         foreach($operators as $operator){if(!is_string($operator) || preg_match('/\A[A-Za-z0-9_]{1,16}\z/D',$operator)!==1){throw new \InvalidArgumentException('Invalid operator username');}}
         if (filter_var($host,FILTER_VALIDATE_IP) === false || $port < 0 || $port > 65535 || $maxPlayers < 1 || $maxPlayers > 100 || $viewDistance < 2 || $viewDistance > 4 || $compressionThreshold < -1 || $compressionThreshold > 1048576 || strlen($motd) > 4096 || preg_match('//u',$motd) !== 1 || $worldPath === '') { throw new \InvalidArgumentException('Invalid server configuration'); }
     }
+    /** Runtime changes such as /difficulty replace the active copy; server.json is not rewritten. */
+    public function with(array $changes): self
+    {
+        return new self(...array_replace(get_object_vars($this), $changes));
+    }
     public static function load(?string $path, array $overrides = []): self {
         $values = [];
         if ($path !== null) {

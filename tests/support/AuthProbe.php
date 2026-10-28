@@ -31,9 +31,9 @@ final class AuthProbe {
         for($i=0;$i<1000;++$i){[$id,$payload]=$this->receive();if($id===$this->version->id($this->state,$name)){return $payload;}}
         throw new RuntimeException('Missing packet '.$name);
     }
-    public function challenge(bool $invalid=false,?string $replayed=null):string {
+    public function challenge(bool $invalid=false,?string $replayed=null,string $name='ParityProbe'):string {
         $this->send('intention',Binary::writeVarInt(777).Binary::writeString('localhost').pack('n',25565)."\2");$this->state='login';
-        $this->send('hello',Binary::writeString('ParityProbe').str_repeat("\x44",16));
+        $this->send('hello',Binary::writeString($name).str_repeat("\x44",16));
         $r=new Binary($this->until('hello'));authNetworkCheck($r->string()==='','Empty official server ID');$der=$r->bytes($r->varInt());$nonce=$r->bytes($r->varInt());authNetworkCheck($r->bool(),'Server requires authentication');$r->end();
         $public="-----BEGIN PUBLIC KEY-----\n".chunk_split(base64_encode($der),64,"\n")."-----END PUBLIC KEY-----\n";
         $secret=random_bytes(16);openssl_public_encrypt($secret,$encrypted,$public,OPENSSL_PKCS1_PADDING);openssl_public_encrypt($invalid?str_repeat("\0",4):$nonce,$token,$public,OPENSSL_PKCS1_PADDING);
@@ -42,8 +42,9 @@ final class AuthProbe {
         if(!$invalid && $replayed===null){$this->encrypt=new Cfb8($secret);$this->decrypt=new Cfb8($secret,true);$this->buffer=$this->decrypt->transform($this->buffer);}
         return $packet;
     }
-    public function configure():void {
-        $this->send('login_acknowledged');$this->state='configuration';$this->until('select_known_packs');$this->send('select_known_packs',"\0");$this->until('finish_configuration');$this->send('finish_configuration');$this->state='play';$this->until('login');
+    /** Returns the play login payload, which starts with the entity ID. */
+    public function configure():string {
+        $this->send('login_acknowledged');$this->state='configuration';$this->until('select_known_packs');$this->send('select_known_packs',"\0");$this->until('finish_configuration');$this->send('finish_configuration');$this->state='play';return $this->until('login');
     }
     public function close():void{fclose($this->socket);}
 }

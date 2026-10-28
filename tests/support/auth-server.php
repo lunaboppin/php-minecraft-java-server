@@ -11,7 +11,9 @@ final class FixtureSessions implements SessionVerifier {
     public function cancel(int $connection):void{unset($this->pending[$connection]);}
     public function poll():array {
         $out=[];foreach($this->pending as $id=>[$name,$at]){if(microtime(true)<$at){continue;}
-            $out[$id]=$this->mode==='verified'?['profile'=>Profile::parse(json_encode(['id'=>'112233445566778899aabbccddeeff00','name'=>$name,'properties'=>[['name'=>'textures','value'=>'fixture-value','signature'=>'fixture-signature']]]),$name)]:['error'=>'Authentication servers are unavailable. Please try again later.'];unset($this->pending[$id]);
+            // ParityProbe keeps the original identity; other names get distinct, stable profiles.
+            $suffix=$name==='ParityProbe'?'':'-'.$name;$uuid=$suffix===''?'112233445566778899aabbccddeeff00':md5('fixture:'.$name);
+            $out[$id]=$this->mode==='verified'?['profile'=>Profile::parse(json_encode(['id'=>$uuid,'name'=>$name,'properties'=>[['name'=>'textures','value'=>'fixture-value'.$suffix,'signature'=>'fixture-signature'.$suffix]]]),$name)]:['error'=>'Authentication servers are unavailable. Please try again later.'];unset($this->pending[$id]);
         }return $out;
     }
 }
