@@ -197,6 +197,10 @@ passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__DIR__ . '/authentic
 if ($code !== 0) {
     exit($code);
 }
+passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__DIR__ . '/profile-lifecycle.php'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/mob-combat.py'), $code);
 if ($code !== 0) {
     exit($code);
