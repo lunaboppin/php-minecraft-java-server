@@ -195,6 +195,52 @@ final class Trees
         return true;
     }
 
+    /** FallenTreeFeature: a stump and, when the ground allows, a log lying beside it. */
+    public function fallenTree(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $this->feature = $feature;
+        $this->region = $region;
+        $this->random = $random;
+        $place = function (int $px, int $py, int $pz, ?string $axis) use ($feature): array {
+            $state = $this->providers->state($feature['trunk_provider'], $this->region, $this->random, $px, $py, $pz);
+            $this->region->set($px, $py, $pz, $axis === null ? $state : $this->blocks->with($state, 'axis', $axis));
+            return [$px, $py, $pz];
+        };
+        $this->trunks = ["$x,$y,$z" => $place($x, $y, $z, null)];
+        $this->foliage = $this->roots = $this->decorations = [];
+        $this->decorate($feature['stump_decorators'] ?? []);
+        $direction = self::HORIZONTAL[$random->nextInt(4)];
+        $length = Providers::int($feature['log_length'], $random) - 2;
+        $distance = 2 + $random->nextInt(2);
+        $lx = $x + $direction[0] * $distance;
+        $ly = $y + 1;
+        $lz = $z + $direction[1] * $distance;
+        $solidBelow = fn (int $px, int $py, int $pz): bool => $this->blocks->sturdy($region->get($px, $py - 1, $pz), Blocks::UP);
+        for ($i = 0; $i < 6; ++$i) {
+            if ($this->validTreePos($lx, $ly, $lz) && $solidBelow($lx, $ly, $lz)) {
+                break;
+            }
+            --$ly;
+        }
+        $gap = 0;
+        for ($i = 0, $px = $lx, $pz = $lz; $i < $length; ++$i, $px += $direction[0], $pz += $direction[1]) {
+            if (!$this->validTreePos($px, $ly, $pz)) {
+                return true;
+            }
+            $gap = $solidBelow($px, $ly, $pz) ? 0 : $gap + 1;
+            if ($gap > 2) {
+                return true;
+            }
+        }
+        $axis = $direction[0] !== 0 ? 'x' : 'z';
+        $this->trunks = [];
+        for ($i = 0, $px = $lx, $pz = $lz; $i < $length; ++$i, $px += $direction[0], $pz += $direction[1]) {
+            $this->trunks["$px,$ly,$pz"] = $place($px, $ly, $pz, $axis);
+        }
+        $this->decorate($feature['log_decorators'] ?? []);
+        return true;
+    }
+
     private function treeHeight(array $trunk): int
     {
         return $trunk['base_height'] + $this->random->nextInt($trunk['height_rand_a'] + 1) + $this->random->nextInt($trunk['height_rand_b'] + 1);
@@ -764,9 +810,9 @@ final class Trees
         return true;
     }
 
-    private function decorate(): void
+    private function decorate(?array $decorators = null): void
     {
-        $decorators = $this->feature['decorators'] ?? [];
+        $decorators ??= $this->feature['decorators'] ?? [];
         if ($decorators === []) {
             return;
         }
