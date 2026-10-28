@@ -587,8 +587,13 @@ final class Server
         $wanted = [];
         $queue = [];
         $view = $this->viewDistance($c);
-        for ($z = $cz - $view; $z <= $cz + $view; ++$z) {
-            for ($x = $cx - $view; $x <= $cx + $view; ++$x) {
+        // ChunkTrackingView.isWithinDistance with the chunks adjacent to the view border: a
+        // cylinder two chunks wider than the view distance.
+        for ($z = $cz - $view - 2; $z <= $cz + $view + 2; ++$z) {
+            for ($x = $cx - $view - 2; $x <= $cx + $view + 2; ++$x) {
+                if (max(0, abs($x - $cx) - 2) ** 2 + max(0, abs($z - $cz) - 2) ** 2 >= $view * $view) {
+                    continue;
+                }
                 $key = $x . ':' . $z;
                 $wanted[$key] = true;
                 if (!isset($c->loadedChunks[$key])) {

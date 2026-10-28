@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import struct
 import sys
 import tempfile
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +53,10 @@ def main():
                     elif name == 'chunk_batch_finished':
                         sizes.append(current)
                 assert sizes and 1 <= sizes[0] <= 9 and all(1 <= size <= 20 for size in sizes), sizes
+                # ChunkTrackingView with the border ring: view distance 2 covers vanilla's 7x7 chunks.
+                loaded = {struct.unpack_from('>ii', payload) for name, payload in first.seen if name == 'level_chunk_with_light'}
+                expected = {(x, z) for x in range(-5, 6) for z in range(-5, 6) if max(0, abs(x) - 2) ** 2 + max(0, abs(z) - 2) ** 2 < 4}
+                assert loaded == expected and len(loaded) == 49, sorted(loaded ^ expected)
 
                 second = Probe(port, 'second').login('Second')
                 try:

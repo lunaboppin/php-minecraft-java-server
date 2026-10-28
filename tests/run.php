@@ -208,6 +208,7 @@ foreach ([
     'mob-pushing-backend.php',
     'tick-cost-unit.php',
     'terrain-generator-unit.php',
+    'chunk-packet-unit.php',
 ] as $suite) {
     (static function (string $suite): void {
         require __DIR__ . "/" . $suite;
