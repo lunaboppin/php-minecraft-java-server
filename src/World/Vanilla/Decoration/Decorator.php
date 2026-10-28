@@ -265,6 +265,8 @@ final class Decorator
             case 'huge_red_mushroom':
             case 'huge_brown_mushroom':
                 return ($this->patches ??= new Patches($this))->hugeMushroom($feature, $region, $random, $x, $y, $z, $type === 'huge_red_mushroom');
+            case 'monster_room':
+                return ($this->patches ??= new Patches($this))->monsterRoom($region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }

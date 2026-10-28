@@ -466,6 +466,127 @@ final class Patches
         return true;
     }
 
+    /**
+     * MonsterRoomFeature: a cobblestone dungeon with a spawner and up to two chests. Chest loot
+     * and the spawner's mob are drawn from the random as vanilla does but not stored yet.
+     */
+    public function monsterRoom(Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        $blocks = $this->blocks;
+        $replaceable = fn (int $state): bool => !$blocks->inTag($state, 'features_cannot_replace');
+        $safeSet = function (int $px, int $py, int $pz, int $state) use ($region, $replaceable): void {
+            if ($replaceable($region->get($px, $py, $pz))) {
+                $region->set($px, $py, $pz, $state);
+            }
+        };
+        $xr = $random->nextInt(2) + 2;
+        $zr = $random->nextInt(2) + 2;
+        $minX = -$xr - 1;
+        $maxX = $xr + 1;
+        $minZ = -$zr - 1;
+        $maxZ = $zr + 1;
+        $holes = 0;
+        for ($dx = $minX; $dx <= $maxX; ++$dx) {
+            for ($dy = -1; $dy <= 4; ++$dy) {
+                for ($dz = $minZ; $dz <= $maxZ; ++$dz) {
+                    $solid = $blocks->isSolid($region->get($x + $dx, $y + $dy, $z + $dz));
+                    if (($dy === -1 || $dy === 4) && !$solid) {
+                        return false;
+                    }
+                    if (($dx === $minX || $dx === $maxX || $dz === $minZ || $dz === $maxZ) && $dy === 0
+                        && $blocks->isAir($region->get($x + $dx, $y, $z + $dz)) && $blocks->isAir($region->get($x + $dx, $y + 1, $z + $dz))) {
+                        ++$holes;
+                    }
+                }
+            }
+        }
+        if ($holes < 1 || $holes > 5) {
+            return false;
+        }
+        $air = $blocks->state('cave_air');
+        for ($dx = $minX; $dx <= $maxX; ++$dx) {
+            for ($dy = 3; $dy >= -1; --$dy) {
+                for ($dz = $minZ; $dz <= $maxZ; ++$dz) {
+                    $px = $x + $dx;
+                    $py = $y + $dy;
+                    $pz = $z + $dz;
+                    $wall = $region->get($px, $py, $pz);
+                    if ($dx === $minX || $dy === -1 || $dz === $minZ || $dx === $maxX || $dy === 4 || $dz === $maxZ) {
+                        if ($py >= $region->minY && !$blocks->isSolid($region->get($px, $py - 1, $pz))) {
+                            $region->set($px, $py, $pz, $air);
+                        } elseif ($blocks->isSolid($wall) && $blocks->name($wall) !== 'chest') {
+                            $safeSet($px, $py, $pz, $blocks->state($dy === -1 && $random->nextInt(4) !== 0 ? 'mossy_cobblestone' : 'cobblestone'));
+                        }
+                    } elseif (!in_array($blocks->name($wall), ['chest', 'spawner'], true)) {
+                        $safeSet($px, $py, $pz, $air);
+                    }
+                }
+            }
+        }
+        for ($cc = 0; $cc < 2; ++$cc) {
+            for ($i = 0; $i < 3; ++$i) {
+                $cx = $x + $random->nextInt($xr * 2 + 1) - $xr;
+                $cz = $z + $random->nextInt($zr * 2 + 1) - $zr;
+                if (!$blocks->isAir($region->get($cx, $y, $cz))) {
+                    continue;
+                }
+                $walls = 0;
+                foreach (self::HORIZONTAL as [$dx, $dz]) {
+                    $walls += $blocks->isSolid($region->get($cx + $dx, $y, $cz + $dz)) ? 1 : 0;
+                }
+                if ($walls === 1) {
+                    $safeSet($cx, $y, $cz, $this->reorientChest($region, $cx, $y, $cz));
+                    // RandomizableContainer.setBlockEntityLootTable draws the loot seed.
+                    $random->nextLong();
+                    break;
+                }
+            }
+        }
+        $safeSet($x, $y, $z, $blocks->state('spawner'));
+        $random->nextInt(4);
+        return true;
+    }
+
+    private const HORIZONTAL = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+    private const FACINGS = ['north', 'east', 'south', 'west'];
+
+    /** StructurePiece.reorient for a chest against its wall. */
+    private function reorientChest(Region $region, int $x, int $y, int $z): int
+    {
+        $blocks = $this->blocks;
+        $chest = $blocks->state('chest');
+        $solidRender = fn (int $state): bool => $blocks->flag($state, 1 << 20) && $blocks->flag($state, Blocks::FULL_CUBE);
+        $direction = null;
+        foreach (self::HORIZONTAL as $i => [$dx, $dz]) {
+            $state = $region->get($x + $dx, $y, $z + $dz);
+            if ($blocks->name($state) === 'chest') {
+                return $chest;
+            }
+            if ($solidRender($state)) {
+                if ($direction !== null) {
+                    $direction = null;
+                    break;
+                }
+                $direction = $i;
+            }
+        }
+        if ($direction !== null) {
+            return $blocks->with($chest, 'facing', self::FACINGS[($direction + 2) % 4]);
+        }
+        $facing = array_search($blocks->properties($chest)['facing'], self::FACINGS, true);
+        $solidAt = fn (int $d): bool => $solidRender($region->get($x + self::HORIZONTAL[$d][0], $y, $z + self::HORIZONTAL[$d][1]));
+        if ($solidAt($facing)) {
+            $facing = ($facing + 2) % 4;
+        }
+        if ($solidAt($facing)) {
+            $facing = ($facing + 1) % 4;
+        }
+        if ($solidAt($facing)) {
+            $facing = ($facing + 2) % 4;
+        }
+        return $blocks->with($chest, 'facing', self::FACINGS[$facing]);
+    }
+
     /** Util.toShuffledList */
     private function shuffle(array $list, RandomSource $random): array
     {
