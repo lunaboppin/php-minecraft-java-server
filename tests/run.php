@@ -210,6 +210,7 @@ foreach ([
     'mob-pushing-backend.php',
     'tick-cost-unit.php',
     'terrain-generator-unit.php',
+    'vanilla-worldgen-unit.php',
     'chunk-packet-unit.php',
     'loot-unit.php',
     'world-border-unit.php',
