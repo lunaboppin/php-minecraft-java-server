@@ -42,23 +42,24 @@ final class TerrainGenerator
         if(count($this->columns)>8192){$this->columns=[];}
         return $this->columns[$key]=$column;
     }
-    private function underground(int $x,int $y,int $z,array $column): int {
+    /** @param array{NoiseColumn,NoiseColumn,NoiseColumn,NoiseColumn} $caves samplers for this column's cave, cave-mask, tunnel and cross noise */
+    private function underground(int $x,int $y,int $z,array $column,array $caves): int {
         if($y===-64 || ($y< -60 && $this->noise->hash($x,$y,$z,7)%5< -60-$y)){return $this->states['bedrock'];}
         if($y<$column['height']-6 && $y> -60){
-            $cave=$this->noise->sample3($x/22,$y/14,$z/22,8);
-            if(abs($cave)<0.075 && $this->noise->sample3($x/39,$y/29,$z/39,9)>-0.1){
+            $cave=$caves[0]->at($y/14);
+            if(abs($cave)<0.075 && $caves[1]->at($y/29)>-0.1){
                 return $y< -54?$this->states['lava']:0;
             }
         }
         if($this->enhanced && $y> -55 && $y<$column['height']-5){
             // Narrow twisting tunnels intersect the broad v1 cave network.
-            $tunnel=abs($this->noise->sample3($x/43,$y/23,$z/43,31));
-            $cross=abs($this->noise->sample3($x/37+17,$y/31,$z/37-29,32));
+            $tunnel=abs($caves[2]->at($y/23));
+            $cross=abs($caves[3]->at($y/31));
             if($tunnel<0.055 && $cross<0.2){return $y< -48?$this->states['lava']:($y<20 && $this->noise->sample2($x/64,$z/64,33)>0.3?$this->states['water']:0);}
         }
-        $gx=$x>>2;$gy=$y>>2;$gz=$z>>2;$oreHash=$this->noise->hash($gx,$gy,$gz,10);
-        $roll=$oreHash%1000;$ore=null;
+        $ore=null;
         if(abs(($x&3)-1)+abs(($y&3)-1)+abs(($z&3)-1)<=2){
+            $roll=$this->noise->hash($x>>2,$y>>2,$z>>2,10)%1000;
             $ore=match(true){
                 $roll<15 && $y< -16=>'diamond_ore', $roll<45 && $y<16=>'redstone_ore',
                 $roll<65 && $y<32=>'gold_ore', $roll<85 && $y<32=>'lapis_ore',
@@ -69,14 +70,14 @@ final class TerrainGenerator
         if($ore!==null){return $this->states[($y<0?'deepslate_':'').$ore]??$this->states[$ore];}
         return $this->states[$y<0?'deepslate':'stone'];
     }
-    private function base(int $x,int $y,int $z,array $column): int {
+    private function base(int $x,int $y,int $z,array $column,array $caves): int {
         $h=$column['height'];
         if($y>max($h,self::SEA_LEVEL)){return 0;}
         if($y>$h){return $this->states[$column['temperature']< -0.45 && $y===63?'ice':'water'];}
         $sandy=in_array($column['biome'],['desert','beach','ocean','river'],true);
         if($y===$h){return $this->states[$sandy?'sand':'grass_block'];}
         if($y>=$h-3){return $this->states[$sandy?($this->enhanced && $y<$h-1?'sandstone':'sand'):'dirt'];}
-        return $this->underground($x,$y,$z,$column);
+        return $this->underground($x,$y,$z,$column,$caves);
     }
     private function tree(int $gx,int $gz): ?array {
         $key=$gx.':'.$gz;
@@ -147,8 +148,9 @@ final class TerrainGenerator
         $sections=array_fill(0,24,array_fill(0,4096,0));
         for($z=0;$z<16;++$z){for($x=0;$x<16;++$x){
             $wx=$cx*16+$x;$wz=$cz*16+$z;$column=$this->column($wx,$wz);
+            $caves=[$this->noise->column($wx/22,$wz/22,8),$this->noise->column($wx/39,$wz/39,9),$this->noise->column($wx/43,$wz/43,31),$this->noise->column($wx/37+17,$wz/37-29,32)];
             for($y=-64,$top=max(63,$column['height']);$y<=$top;++$y){
-                $sections[($y+64)>>4][(($y&15)<<8)|($z<<4)|$x]=$this->base($wx,$y,$wz,$column);
+                $sections[($y+64)>>4][(($y&15)<<8)|($z<<4)|$x]=$this->base($wx,$y,$wz,$column,$caves);
             }
         }}
         $this->decorate($sections,$cx,$cz);
