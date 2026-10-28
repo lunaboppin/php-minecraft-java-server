@@ -19,6 +19,10 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKETS = json.loads((ROOT / 'reference/26.3/packets.json').read_text())
 FIXTURES = json.loads((ROOT / 'reference/26.3/fixtures.json').read_text())
 BLOCKS = json.loads((ROOT / 'reference/26.3/blocks.json').read_text())
+STACK_RULES = json.loads((ROOT / 'reference/26.3/equipment-stack-rules.json').read_text())
+COMPONENT_NAMES = {value: name for name, value in STACK_RULES['component_ids'].items()}
+STACK_FIELDS = {STACK_RULES['component_ids'][name]: field for field, name in STACK_RULES['fields'].items()}
+ENCHANTMENTS = json.loads((ROOT / 'reference/26.3/dynamic-registries.json').read_text())['minecraft:enchantment']
 CAPTURE = []
 CHECKS = 0
 
@@ -65,7 +69,7 @@ def packet_id(state, direction, name):
 
 def read_stack(payload, off):
     count, off = read_vi(payload, off)
-    if count == 0:
+    if count <= 0:
         return None, off
     item, off = read_vi(payload, off)
     added, off = read_vi(payload, off)
@@ -73,11 +77,25 @@ def read_stack(payload, off):
     stack = {'item': item, 'count': count}
     for _ in range(added):
         component, off = read_vi(payload, off)
-        if component != BLOCKS['component_damage']:
+        field = STACK_FIELDS.get(component)
+        if field in ('enchantments', 'storedEnchantments'):
+            size, off = read_vi(payload, off)
+            values = {}
+            for _ in range(size):
+                holder, off = read_vi(payload, off)
+                level, off = read_vi(payload, off)
+                values[ENCHANTMENTS[holder]] = level
+            stack[field] = values
+        elif field in ('damage', 'enchantability'):
+            stack[field], off = read_vi(payload, off)
+        else:
             raise AssertionError('unexpected stack component ' + str(component))
-        stack['damage'], off = read_vi(payload, off)
-    for _ in range(removed):
-        _, off = read_vi(payload, off)
+    if removed:
+        names = []
+        for _ in range(removed):
+            component, off = read_vi(payload, off)
+            names.append(COMPONENT_NAMES[component])
+        stack['removedComponents'] = sorted(names)
     return stack, off
 
 

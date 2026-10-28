@@ -5,7 +5,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The full suite takes ~13 minutes, including live collision backend checks.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
@@ -28,8 +29,18 @@ jobs:
         run: |
           python3 tools/php_style.py --check src/Server/Tracking src/Protocol/PositionPath.php src/Protocol/RelativePositionCodec.php src/Server/MobMotion.php tests/mob-tracking-unit.php
           python3 tests/parity/entity-motion.py
+      - name: Check entity pushing PHP formatting
+        run: python3 tools/php_style.py --check src/World/EntityPushing.php src/World/EntitySectionIndex.php src/World/LivingEntityPushPhase.php src/World/EntityPushEligibility.php src/World/Pushing src/Server/MobPushing.php src/Server/Pushing src/Server/Dimensions.php tests/push-eligibility-unit.php tests/mob-pushing-backend.php
       - name: Check complete native command inventory
         run: python3 tools/command_coverage.py --check
+      - name: Check spawn initialization PHP formatting
+        run: python3 tools/php_style.py --check src/World/Spawning src/World/Generation/Float32.php tests/spawn-initialization-unit.php tests/spawn-groups-unit.php tests/spawn-equipment-unit.php tests/spawn-enchanting-unit.php
+      - name: Check item component PHP formatting
+        run: python3 tools/php_style.py --check src/Protocol/Components src/Protocol/ItemStackCodec.php src/Protocol/Packets.php src/Protocol/Catalog.php tests/enchantment-component-unit.php tests/equipment-stack-unit.php
+      - name: Check inventory bridge PHP formatting
+        run: python3 tools/php_style.py --check src/Server/Server.php src/Server/InventoryManagement.php src/Server/Entities.php src/Server/Animals.php src/Server/Survival.php src/World/Inventory.php
+      - name: Check entity pushing PHP formatting
+        run: python3 tools/php_style.py --check src/World/EntityPushing.php src/World/EntitySectionIndex.php src/World/LivingEntityPushPhase.php tests/entity-pushing-unit.php tests/entity-section-unit.php tests/entity-pushing-world-unit.php
       - name: Validate panel egg
         run: python3 tests/panel_egg.py
       - name: Run protocol and gameplay checks
@@ -131,6 +142,7 @@ jobs:
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
       - name: Compare multiplayer equipment and tracking with vanilla
         run: |
+          python3 tools/verify_equipment_stacks.py
           python3 tools/parity/run.py --scenario tests/parity/equipment.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-equipment
           python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
@@ -141,6 +153,7 @@ jobs:
           path: |
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
+            tools/.cache/equipment-stack-verification/
           retention-days: 7
 
   mob-parity:
@@ -211,6 +224,19 @@ jobs:
           python3 tools/update_reference.py
           mkdir -p tools/.cache/parity-consent
           printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
+      - name: Compare controlled native entity pushing
+        run: |
+          python3 tools/parity/entity_pushing.py --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/pushing-java --compare reference/26.3/entity-pushing-trajectories.json
+          php tests/entity-pushing-unit.php
+          php tests/entity-section-unit.php
+          php tests/entity-pushing-world-unit.php
+          python3 tools/parity/verify.py tools/.cache/pushing-java/packets.json
+      - name: Compare live player and mob collision with vanilla
+        run: |
+          php tests/push-eligibility-unit.php
+          php tests/mob-pushing-backend.php
+          python3 tests/entity-pushing-network.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/collision-network
+          python3 tools/parity/verify.py tools/.cache/collision-network/*-php/packets.json tools/.cache/collision-network/*-java/packets.json
       - name: Reproduce exact official mob trajectories
         run: |
           python3 tools/parity/mob_motion.py --jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/motion-java --compare reference/26.3/mob-motion-trajectories.json
@@ -228,6 +254,8 @@ jobs:
           path: |
             tools/.cache/motion-java/
             tools/.cache/knockback-java/
+            tools/.cache/pushing-java/
+            tools/.cache/collision-network/
           retention-days: 7
 
   docker:

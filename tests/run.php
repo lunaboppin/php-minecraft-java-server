@@ -172,8 +172,8 @@ try {
         unlink($file);
     }
 }
-rejects(fn () => new Config(port:65536), 'invalid port');
-rejects(fn () => new Config(viewDistance:1), 'invalid view distance');
+rejects(fn () => new Config(port: 65536), 'invalid port');
+rejects(fn () => new Config(viewDistance: 1), 'invalid view distance');
 check((new Config())->host === '127.0.0.1', 'loopback default');
 echo 'PASS: ' . $checks . ' PHP checks, including ' . count($fixtures) . " Mojang codec fixtures\n";
 require __DIR__ . '/world.php';
@@ -183,13 +183,31 @@ require __DIR__ . '/logging.php';
 require __DIR__ . '/restart-notice.php';
 require __DIR__ . '/authentication.php';
 require __DIR__ . '/worldgen-noise.php';
-require __DIR__ . '/worldgen-density.php';
-require __DIR__ . '/mob-combat-unit.php';
-require __DIR__ . '/mob-sounds-unit.php';
-require __DIR__ . '/commands-unit.php';
-require __DIR__ . '/mob-physics-unit.php';
-require __DIR__ . '/mob-motion-unit.php';
-require __DIR__ . '/mob-tracking-unit.php';
+// Keep large reference fixtures and helper closures local to each suite.
+foreach ([
+    'worldgen-density.php',
+    'mob-combat-unit.php',
+    'mob-sounds-unit.php',
+    'commands-unit.php',
+    'mob-physics-unit.php',
+    'mob-motion-unit.php',
+    'mob-tracking-unit.php',
+    'spawn-initialization-unit.php',
+    'spawn-groups-unit.php',
+    'spawn-equipment-unit.php',
+    'spawn-enchanting-unit.php',
+    'enchantment-component-unit.php',
+    'equipment-stack-unit.php',
+    'entity-pushing-unit.php',
+    'entity-section-unit.php',
+    'entity-pushing-world-unit.php',
+    'push-eligibility-unit.php',
+    'mob-pushing-backend.php',
+] as $suite) {
+    (static function (string $suite): void {
+        require __DIR__ . "/" . $suite;
+    })($suite);
+}
 if (in_array('--unit', $argv, true)) {
     exit(0);
 }

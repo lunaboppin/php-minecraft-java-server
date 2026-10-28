@@ -52,3 +52,7 @@ The six controlled cases prove ordinary static-block trajectories in those condi
 These controlled comparisons establish default ordinary melee motion in this fixture, not every tracking phase, mob attack, navigation controller or special species behavior. #86/#87/#13 remain open.
 
 The [ordinary movement tracker](ENTITY-TRACKING.md) now supplies native relative/stepped position updates, forced synchronization and cached pairing state for this path. Its own actual-Java frame and wire comparisons supplement the physics evidence above.
+
+A subsequent CI capture exposed the missing player/mob pushing path: a late observer spawned at `(0.5, 64, 2.5)` beside the moving Giant, and Java produced additional diagonal impulses and a different settled position. The retained movement artifact records both complete outcomes. [Issue #105](https://github.com/lunaboppin/php-minecraft-java-server/issues/105) tracks deterministic overlap/non-overlap comparisons and the native pushing implementation. Passing isolated travel checks does not satisfy that collision requirement; the failed case must not be discarded by rerunning until the spawn happens elsewhere.
+
+The [entity pushing modules and controlled-world evidence](ENTITY-PUSHING.md) now establish shared arithmetic, ordered queries and 96 actual-world ticks. Live entity integration and species/player lifecycle remain unfinished; #105 stays open.

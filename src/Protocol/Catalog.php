@@ -4,9 +4,20 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Protocol;
 
+use PhpMinecraftJavaServer\World\EntityPushEligibility;
+use PhpMinecraftJavaServer\World\Pushing\EligibilityRegistry;
+
 /** State properties and gameplay constants extracted from the pinned Mojang JAR. */
 final class Catalog
 {
+    public readonly ItemStackCodec $itemStacks;
+
+    public readonly array $pushing;
+
+    public readonly EntityPushEligibility $pushEligibility;
+
+    public readonly EligibilityRegistry $pushEligibilityRegistry;
+
     public readonly array $simulation;
 
     public readonly array $tracking;
@@ -44,6 +55,13 @@ final class Catalog
             throw new \RuntimeException('Missing gameplay reference data');
         }
         $data = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
+        $this->pushing = json_decode(file_get_contents($directory . '/entity-pushing-rules.json'), true, 512, JSON_THROW_ON_ERROR)['profiles'];
+        $pushRules = json_decode(file_get_contents($directory . '/push-eligibility-rules.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->pushEligibility = new EntityPushEligibility($pushRules);
+        $this->pushEligibilityRegistry = new EligibilityRegistry($this->pushEligibility);
+        $stackRules = json_decode(file_get_contents($directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR);
+        $enchantingRules = json_decode(file_get_contents($directory . '/enchanting-rules.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->itemStacks = new ItemStackCodec($stackRules, $enchantingRules);
         $this->simulation = json_decode(file_get_contents($directory . '/simulation.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->tracking = json_decode(file_get_contents($directory . '/tracking.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->mobs = json_decode(file_get_contents($directory . '/mobs.json'), true, 512, JSON_THROW_ON_ERROR);
@@ -61,7 +79,7 @@ final class Catalog
             $this->itemNames[$item['id']] = $name;
         }
         foreach ($this->blocks as $name => $block) {
-            for ($i = $block['first'],$end = $i + $block['count']; $i < $end; ++$i) {
+            for ($i = $block['first'], $end = $i + $block['count']; $i < $end; ++$i) {
                 $this->stateNames[$i] = $name;
             }
         }

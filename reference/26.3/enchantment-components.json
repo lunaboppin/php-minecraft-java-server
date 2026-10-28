@@ -1,0 +1,5327 @@
+{
+  "version": "26.3",
+  "protocol": 777,
+  "registry": {
+    "minecraft:aqua_affinity": 0,
+    "minecraft:bane_of_arthropods": 1,
+    "minecraft:binding_curse": 2,
+    "minecraft:blast_protection": 3,
+    "minecraft:breach": 4,
+    "minecraft:channeling": 5,
+    "minecraft:density": 6,
+    "minecraft:depth_strider": 7,
+    "minecraft:efficiency": 8,
+    "minecraft:feather_falling": 9,
+    "minecraft:fire_aspect": 10,
+    "minecraft:fire_protection": 11,
+    "minecraft:flame": 12,
+    "minecraft:fortune": 13,
+    "minecraft:frost_walker": 14,
+    "minecraft:impaling": 15,
+    "minecraft:infinity": 16,
+    "minecraft:knockback": 17,
+    "minecraft:looting": 18,
+    "minecraft:loyalty": 19,
+    "minecraft:luck_of_the_sea": 20,
+    "minecraft:lunge": 21,
+    "minecraft:lure": 22,
+    "minecraft:mending": 23,
+    "minecraft:multishot": 24,
+    "minecraft:piercing": 25,
+    "minecraft:power": 26,
+    "minecraft:projectile_protection": 27,
+    "minecraft:protection": 28,
+    "minecraft:punch": 29,
+    "minecraft:quick_charge": 30,
+    "minecraft:respiration": 31,
+    "minecraft:riptide": 32,
+    "minecraft:sharpness": 33,
+    "minecraft:silk_touch": 34,
+    "minecraft:smite": 35,
+    "minecraft:soul_speed": 36,
+    "minecraft:sweeping_edge": 37,
+    "minecraft:swift_sneak": 38,
+    "minecraft:thorns": 39,
+    "minecraft:unbreaking": 40,
+    "minecraft:vanishing_curse": 41,
+    "minecraft:wind_burst": 42
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "hex": "00",
+      "accepted": true,
+      "enchantments": {},
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/0",
+      "hex": "010000",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/1",
+      "hex": "010001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/1",
+      "hex": "010001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/127",
+      "hex": "01007f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/128",
+      "hex": "01008001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:aqua_affinity/255",
+      "hex": "0100ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/0",
+      "hex": "010100",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/1",
+      "hex": "010101",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/5",
+      "hex": "010105",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/127",
+      "hex": "01017f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/128",
+      "hex": "01018001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:bane_of_arthropods/255",
+      "hex": "0101ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:bane_of_arthropods": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/0",
+      "hex": "010200",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/1",
+      "hex": "010201",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/1",
+      "hex": "010201",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/127",
+      "hex": "01027f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/128",
+      "hex": "01028001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:binding_curse/255",
+      "hex": "0102ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:binding_curse": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/0",
+      "hex": "010300",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/1",
+      "hex": "010301",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/4",
+      "hex": "010304",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/127",
+      "hex": "01037f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/128",
+      "hex": "01038001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:blast_protection/255",
+      "hex": "0103ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:blast_protection": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/0",
+      "hex": "010400",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/1",
+      "hex": "010401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/4",
+      "hex": "010404",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/127",
+      "hex": "01047f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/128",
+      "hex": "01048001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:breach/255",
+      "hex": "0104ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:breach": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/0",
+      "hex": "010500",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/1",
+      "hex": "010501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/1",
+      "hex": "010501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/127",
+      "hex": "01057f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/128",
+      "hex": "01058001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:channeling/255",
+      "hex": "0105ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:channeling": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/0",
+      "hex": "010600",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/1",
+      "hex": "010601",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/5",
+      "hex": "010605",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/127",
+      "hex": "01067f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/128",
+      "hex": "01068001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:density/255",
+      "hex": "0106ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:density": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/0",
+      "hex": "010700",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/1",
+      "hex": "010701",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/3",
+      "hex": "010703",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/127",
+      "hex": "01077f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/128",
+      "hex": "01078001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:depth_strider/255",
+      "hex": "0107ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:depth_strider": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/0",
+      "hex": "010800",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/1",
+      "hex": "010801",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/5",
+      "hex": "010805",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/127",
+      "hex": "01087f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/128",
+      "hex": "01088001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:efficiency/255",
+      "hex": "0108ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:efficiency": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/0",
+      "hex": "010900",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/1",
+      "hex": "010901",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/4",
+      "hex": "010904",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/127",
+      "hex": "01097f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/128",
+      "hex": "01098001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:feather_falling/255",
+      "hex": "0109ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:feather_falling": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/0",
+      "hex": "010a00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/1",
+      "hex": "010a01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/2",
+      "hex": "010a02",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 2
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/127",
+      "hex": "010a7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/128",
+      "hex": "010a8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_aspect/255",
+      "hex": "010aff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_aspect": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/0",
+      "hex": "010b00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/1",
+      "hex": "010b01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/4",
+      "hex": "010b04",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/127",
+      "hex": "010b7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/128",
+      "hex": "010b8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fire_protection/255",
+      "hex": "010bff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fire_protection": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/0",
+      "hex": "010c00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/1",
+      "hex": "010c01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/1",
+      "hex": "010c01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/127",
+      "hex": "010c7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/128",
+      "hex": "010c8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:flame/255",
+      "hex": "010cff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:flame": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/0",
+      "hex": "010d00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/1",
+      "hex": "010d01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/3",
+      "hex": "010d03",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/127",
+      "hex": "010d7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/128",
+      "hex": "010d8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:fortune/255",
+      "hex": "010dff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:fortune": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/0",
+      "hex": "010e00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/1",
+      "hex": "010e01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/2",
+      "hex": "010e02",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 2
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/127",
+      "hex": "010e7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/128",
+      "hex": "010e8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:frost_walker/255",
+      "hex": "010eff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:frost_walker": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/0",
+      "hex": "010f00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/1",
+      "hex": "010f01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/5",
+      "hex": "010f05",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/127",
+      "hex": "010f7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/128",
+      "hex": "010f8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:impaling/255",
+      "hex": "010fff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:impaling": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/0",
+      "hex": "011000",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/1",
+      "hex": "011001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/1",
+      "hex": "011001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/127",
+      "hex": "01107f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/128",
+      "hex": "01108001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:infinity/255",
+      "hex": "0110ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:infinity": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/0",
+      "hex": "011100",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/1",
+      "hex": "011101",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/2",
+      "hex": "011102",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 2
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/127",
+      "hex": "01117f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/128",
+      "hex": "01118001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:knockback/255",
+      "hex": "0111ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:knockback": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/0",
+      "hex": "011200",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/1",
+      "hex": "011201",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/3",
+      "hex": "011203",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/127",
+      "hex": "01127f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/128",
+      "hex": "01128001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:looting/255",
+      "hex": "0112ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:looting": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/0",
+      "hex": "011300",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/1",
+      "hex": "011301",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/3",
+      "hex": "011303",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/127",
+      "hex": "01137f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/128",
+      "hex": "01138001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:loyalty/255",
+      "hex": "0113ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:loyalty": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/0",
+      "hex": "011400",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/1",
+      "hex": "011401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/3",
+      "hex": "011403",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/127",
+      "hex": "01147f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/128",
+      "hex": "01148001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:luck_of_the_sea/255",
+      "hex": "0114ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:luck_of_the_sea": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/0",
+      "hex": "011500",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/1",
+      "hex": "011501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/3",
+      "hex": "011503",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/127",
+      "hex": "01157f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/128",
+      "hex": "01158001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lunge/255",
+      "hex": "0115ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lunge": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/0",
+      "hex": "011600",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/1",
+      "hex": "011601",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/3",
+      "hex": "011603",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/127",
+      "hex": "01167f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/128",
+      "hex": "01168001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:lure/255",
+      "hex": "0116ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:lure": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/0",
+      "hex": "011700",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/1",
+      "hex": "011701",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/1",
+      "hex": "011701",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/127",
+      "hex": "01177f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/128",
+      "hex": "01178001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:mending/255",
+      "hex": "0117ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:mending": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/0",
+      "hex": "011800",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/1",
+      "hex": "011801",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/1",
+      "hex": "011801",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/127",
+      "hex": "01187f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/128",
+      "hex": "01188001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:multishot/255",
+      "hex": "0118ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:multishot": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/0",
+      "hex": "011900",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/1",
+      "hex": "011901",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/4",
+      "hex": "011904",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/127",
+      "hex": "01197f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/128",
+      "hex": "01198001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:piercing/255",
+      "hex": "0119ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:piercing": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/0",
+      "hex": "011a00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/1",
+      "hex": "011a01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/5",
+      "hex": "011a05",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/127",
+      "hex": "011a7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/128",
+      "hex": "011a8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:power/255",
+      "hex": "011aff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:power": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/0",
+      "hex": "011b00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/1",
+      "hex": "011b01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/4",
+      "hex": "011b04",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/127",
+      "hex": "011b7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/128",
+      "hex": "011b8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:projectile_protection/255",
+      "hex": "011bff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:projectile_protection": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/0",
+      "hex": "011c00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/1",
+      "hex": "011c01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/4",
+      "hex": "011c04",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 4
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/127",
+      "hex": "011c7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/128",
+      "hex": "011c8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:protection/255",
+      "hex": "011cff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:protection": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/0",
+      "hex": "011d00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/1",
+      "hex": "011d01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/2",
+      "hex": "011d02",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 2
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/127",
+      "hex": "011d7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/128",
+      "hex": "011d8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:punch/255",
+      "hex": "011dff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:punch": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/0",
+      "hex": "011e00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/1",
+      "hex": "011e01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/3",
+      "hex": "011e03",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/127",
+      "hex": "011e7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/128",
+      "hex": "011e8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:quick_charge/255",
+      "hex": "011eff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:quick_charge": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/0",
+      "hex": "011f00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/1",
+      "hex": "011f01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/3",
+      "hex": "011f03",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/127",
+      "hex": "011f7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/128",
+      "hex": "011f8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:respiration/255",
+      "hex": "011fff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:respiration": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/0",
+      "hex": "012000",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/1",
+      "hex": "012001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/3",
+      "hex": "012003",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/127",
+      "hex": "01207f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/128",
+      "hex": "01208001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:riptide/255",
+      "hex": "0120ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:riptide": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/0",
+      "hex": "012100",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/1",
+      "hex": "012101",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/5",
+      "hex": "012105",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/127",
+      "hex": "01217f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/128",
+      "hex": "01218001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sharpness/255",
+      "hex": "0121ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sharpness": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/0",
+      "hex": "012200",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/1",
+      "hex": "012201",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/1",
+      "hex": "012201",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/127",
+      "hex": "01227f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/128",
+      "hex": "01228001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:silk_touch/255",
+      "hex": "0122ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:silk_touch": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/0",
+      "hex": "012300",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/1",
+      "hex": "012301",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/5",
+      "hex": "012305",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 5
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/127",
+      "hex": "01237f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/128",
+      "hex": "01238001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:smite/255",
+      "hex": "0123ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:smite": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/0",
+      "hex": "012400",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/1",
+      "hex": "012401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/3",
+      "hex": "012403",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/127",
+      "hex": "01247f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/128",
+      "hex": "01248001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:soul_speed/255",
+      "hex": "0124ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:soul_speed": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/0",
+      "hex": "012500",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/1",
+      "hex": "012501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/3",
+      "hex": "012503",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/127",
+      "hex": "01257f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/128",
+      "hex": "01258001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:sweeping_edge/255",
+      "hex": "0125ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:sweeping_edge": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/0",
+      "hex": "012600",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/1",
+      "hex": "012601",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/3",
+      "hex": "012603",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/127",
+      "hex": "01267f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/128",
+      "hex": "01268001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:swift_sneak/255",
+      "hex": "0126ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:swift_sneak": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/0",
+      "hex": "012700",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/1",
+      "hex": "012701",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/3",
+      "hex": "012703",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/127",
+      "hex": "01277f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/128",
+      "hex": "01278001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:thorns/255",
+      "hex": "0127ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:thorns": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/0",
+      "hex": "012800",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/1",
+      "hex": "012801",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/3",
+      "hex": "012803",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/127",
+      "hex": "01287f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/128",
+      "hex": "01288001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:unbreaking/255",
+      "hex": "0128ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:unbreaking": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/0",
+      "hex": "012900",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/1",
+      "hex": "012901",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/1",
+      "hex": "012901",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/127",
+      "hex": "01297f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/128",
+      "hex": "01298001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:vanishing_curse/255",
+      "hex": "0129ff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:vanishing_curse": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/0",
+      "hex": "012a00",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 0
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/1",
+      "hex": "012a01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/3",
+      "hex": "012a03",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 3
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/127",
+      "hex": "012a7f",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 127
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/128",
+      "hex": "012a8001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 128
+      },
+      "remaining": 0
+    },
+    {
+      "name": "minecraft:wind_burst/255",
+      "hex": "012aff01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:wind_burst": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/0",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010aaa011454",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 0,
+        "minecraft:bane_of_arthropods": 17,
+        "minecraft:binding_curse": 34,
+        "minecraft:blast_protection": 51,
+        "minecraft:breach": 68,
+        "minecraft:channeling": 85,
+        "minecraft:density": 102,
+        "minecraft:depth_strider": 119,
+        "minecraft:efficiency": 136,
+        "minecraft:feather_falling": 153,
+        "minecraft:fire_aspect": 170,
+        "minecraft:fire_protection": 187,
+        "minecraft:flame": 204,
+        "minecraft:fortune": 221,
+        "minecraft:frost_walker": 238,
+        "minecraft:impaling": 255,
+        "minecraft:infinity": 16,
+        "minecraft:knockback": 33,
+        "minecraft:looting": 50,
+        "minecraft:loyalty": 67,
+        "minecraft:luck_of_the_sea": 84,
+        "minecraft:lunge": 101,
+        "minecraft:lure": 118,
+        "minecraft:mending": 135,
+        "minecraft:multishot": 152,
+        "minecraft:piercing": 169,
+        "minecraft:power": 186,
+        "minecraft:projectile_protection": 203,
+        "minecraft:protection": 220,
+        "minecraft:punch": 237,
+        "minecraft:quick_charge": 254,
+        "minecraft:respiration": 15,
+        "minecraft:riptide": 32,
+        "minecraft:sharpness": 49,
+        "minecraft:silk_touch": 66,
+        "minecraft:smite": 83,
+        "minecraft:soul_speed": 100,
+        "minecraft:sweeping_edge": 117,
+        "minecraft:swift_sneak": 134,
+        "minecraft:thorns": 151,
+        "minecraft:unbreaking": 168,
+        "minecraft:vanishing_curse": 185,
+        "minecraft:wind_burst": 202
+      },
+      "remaining": 0
+    },
+    {
+      "name": "truncated/0",
+      "hex": "",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/1",
+      "hex": "2b",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/2",
+      "hex": "2b26",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/3",
+      "hex": "2b2686",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/4",
+      "hex": "2b268601",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/5",
+      "hex": "2b26860116",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/6",
+      "hex": "2b2686011676",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/7",
+      "hex": "2b268601167612",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/8",
+      "hex": "2b26860116761232",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/9",
+      "hex": "2b2686011676123225",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/10",
+      "hex": "2b268601167612322575",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/11",
+      "hex": "2b2686011676123225750b",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/12",
+      "hex": "2b2686011676123225750bbb",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/13",
+      "hex": "2b2686011676123225750bbb01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/14",
+      "hex": "2b2686011676123225750bbb0111",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/15",
+      "hex": "2b2686011676123225750bbb011121",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/16",
+      "hex": "2b2686011676123225750bbb0111210c",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/17",
+      "hex": "2b2686011676123225750bbb0111210ccc",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/18",
+      "hex": "2b2686011676123225750bbb0111210ccc01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/19",
+      "hex": "2b2686011676123225750bbb0111210ccc010f",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/20",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/21",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/22",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012a",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/23",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/24",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/25",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca0100",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/26",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/27",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca01000024",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/28",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca0100002464",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/29",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/30",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca01000024642131",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/31",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/32",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/33",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/34",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f0111",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/35",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/36",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f01112242",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/37",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f0111224206",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/38",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/39",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f01112242066613",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/40",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f0111224206661343",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/41",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/42",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f01112242066613432353",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/43",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531e",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/44",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/45",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/46",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011b",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/47",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/48",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/49",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb0107",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/50",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb010777",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/51",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/52",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b9",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/53",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/54",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b90118",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/55",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b9011898",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/56",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/57",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b90118980105",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/58",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b9011898010555",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/59",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/60",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a9",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/61",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a901",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/62",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/63",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a9010888",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/64",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a901088801",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/65",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/66",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a9010888011010",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/67",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a901088801101003",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/68",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/69",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a9010888011010033309",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/70",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a901088801101003330999",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/71",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/72",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a9010888011010033309990102",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/73",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a901088801101003330999010222",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/74",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/75",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a8",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/76",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a801",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/77",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/78",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a8012797",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/79",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a801279701",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/80",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/81",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a8012797012020",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/82",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201d",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/83",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/84",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/85",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/86",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded010444",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/87",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440d",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/88",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/89",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/90",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010e",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/91",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/92",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/93",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/94",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee011787",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/95",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee01178701",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/96",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/97",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee011787011565",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/98",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651a",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/99",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/100",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/101",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011c",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/102",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/103",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/104",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010a",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/105",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010aaa",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/106",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010aaa01",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "truncated/107",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010aaa0114",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    },
+    {
+      "name": "trailing-fields",
+      "hex": "2b2686011676123225750bbb0111210ccc010fff012aca010000246421311f0f011122420666134323531efe011bcb01077729b901189801055519a90108880110100333099901022228a80127970120201ded0104440ddd010eee0117870115651aba011cdc010aaa0114541234",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 0,
+        "minecraft:bane_of_arthropods": 17,
+        "minecraft:binding_curse": 34,
+        "minecraft:blast_protection": 51,
+        "minecraft:breach": 68,
+        "minecraft:channeling": 85,
+        "minecraft:density": 102,
+        "minecraft:depth_strider": 119,
+        "minecraft:efficiency": 136,
+        "minecraft:feather_falling": 153,
+        "minecraft:fire_aspect": 170,
+        "minecraft:fire_protection": 187,
+        "minecraft:flame": 204,
+        "minecraft:fortune": 221,
+        "minecraft:frost_walker": 238,
+        "minecraft:impaling": 255,
+        "minecraft:infinity": 16,
+        "minecraft:knockback": 33,
+        "minecraft:looting": 50,
+        "minecraft:loyalty": 67,
+        "minecraft:luck_of_the_sea": 84,
+        "minecraft:lunge": 101,
+        "minecraft:lure": 118,
+        "minecraft:mending": 135,
+        "minecraft:multishot": 152,
+        "minecraft:piercing": 169,
+        "minecraft:power": 186,
+        "minecraft:projectile_protection": 203,
+        "minecraft:protection": 220,
+        "minecraft:punch": 237,
+        "minecraft:quick_charge": 254,
+        "minecraft:respiration": 15,
+        "minecraft:riptide": 32,
+        "minecraft:sharpness": 49,
+        "minecraft:silk_touch": 66,
+        "minecraft:smite": 83,
+        "minecraft:soul_speed": 100,
+        "minecraft:sweeping_edge": 117,
+        "minecraft:swift_sneak": 134,
+        "minecraft:thorns": 151,
+        "minecraft:unbreaking": 168,
+        "minecraft:vanishing_curse": 185,
+        "minecraft:wind_burst": 202
+      },
+      "remaining": 2
+    },
+    {
+      "name": "all/1",
+      "hex": "2b26761666122225650bab0111110cbc010fef012aba0100cb01245421211fff01010122320656133323431eee011bbb01076729a9011888010545199901087810000323098901021228980127870120101ddd0104340dcd010ede01177715551aaa011ccc010a9a011444",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 203,
+        "minecraft:bane_of_arthropods": 1,
+        "minecraft:binding_curse": 18,
+        "minecraft:blast_protection": 35,
+        "minecraft:breach": 52,
+        "minecraft:channeling": 69,
+        "minecraft:density": 86,
+        "minecraft:depth_strider": 103,
+        "minecraft:efficiency": 120,
+        "minecraft:feather_falling": 137,
+        "minecraft:fire_aspect": 154,
+        "minecraft:fire_protection": 171,
+        "minecraft:flame": 188,
+        "minecraft:fortune": 205,
+        "minecraft:frost_walker": 222,
+        "minecraft:impaling": 239,
+        "minecraft:infinity": 0,
+        "minecraft:knockback": 17,
+        "minecraft:looting": 34,
+        "minecraft:loyalty": 51,
+        "minecraft:luck_of_the_sea": 68,
+        "minecraft:lunge": 85,
+        "minecraft:lure": 102,
+        "minecraft:mending": 119,
+        "minecraft:multishot": 136,
+        "minecraft:piercing": 153,
+        "minecraft:power": 170,
+        "minecraft:projectile_protection": 187,
+        "minecraft:protection": 204,
+        "minecraft:punch": 221,
+        "minecraft:quick_charge": 238,
+        "minecraft:respiration": 255,
+        "minecraft:riptide": 16,
+        "minecraft:sharpness": 33,
+        "minecraft:silk_touch": 50,
+        "minecraft:smite": 67,
+        "minecraft:soul_speed": 84,
+        "minecraft:sweeping_edge": 101,
+        "minecraft:swift_sneak": 118,
+        "minecraft:thorns": 135,
+        "minecraft:unbreaking": 152,
+        "minecraft:vanishing_curse": 169,
+        "minecraft:wind_burst": 186
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/2",
+      "hex": "2b26661656121225550b9b0111010cac010fdf012aaa0100bb01244421111fef0101cc0122220646132323331ede011bab01075729990118780535198901086810f001031309790202288801277720001dcd0104240dbd010ece01176715451a9a011cbc010a8a011434",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 187,
+        "minecraft:bane_of_arthropods": 204,
+        "minecraft:binding_curse": 2,
+        "minecraft:blast_protection": 19,
+        "minecraft:breach": 36,
+        "minecraft:channeling": 53,
+        "minecraft:density": 70,
+        "minecraft:depth_strider": 87,
+        "minecraft:efficiency": 104,
+        "minecraft:feather_falling": 121,
+        "minecraft:fire_aspect": 138,
+        "minecraft:fire_protection": 155,
+        "minecraft:flame": 172,
+        "minecraft:fortune": 189,
+        "minecraft:frost_walker": 206,
+        "minecraft:impaling": 223,
+        "minecraft:infinity": 240,
+        "minecraft:knockback": 1,
+        "minecraft:looting": 18,
+        "minecraft:loyalty": 35,
+        "minecraft:luck_of_the_sea": 52,
+        "minecraft:lunge": 69,
+        "minecraft:lure": 86,
+        "minecraft:mending": 103,
+        "minecraft:multishot": 120,
+        "minecraft:piercing": 137,
+        "minecraft:power": 154,
+        "minecraft:projectile_protection": 171,
+        "minecraft:protection": 188,
+        "minecraft:punch": 205,
+        "minecraft:quick_charge": 222,
+        "minecraft:respiration": 239,
+        "minecraft:riptide": 0,
+        "minecraft:sharpness": 17,
+        "minecraft:silk_touch": 34,
+        "minecraft:smite": 51,
+        "minecraft:soul_speed": 68,
+        "minecraft:sweeping_edge": 85,
+        "minecraft:swift_sneak": 102,
+        "minecraft:thorns": 119,
+        "minecraft:unbreaking": 136,
+        "minecraft:vanishing_curse": 153,
+        "minecraft:wind_burst": 170
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/3",
+      "hex": "2b26561646120225450b8b0111f1010c9c010fcf012a9a0100ab01243421011fdf0101bc0122120636131323231ece011b9b010747298901186805251979085810e0010303096902cd012878276720f0011dbd0104140dad010ebe01175715351a8a011cac010a7a1424",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 171,
+        "minecraft:bane_of_arthropods": 188,
+        "minecraft:binding_curse": 205,
+        "minecraft:blast_protection": 3,
+        "minecraft:breach": 20,
+        "minecraft:channeling": 37,
+        "minecraft:density": 54,
+        "minecraft:depth_strider": 71,
+        "minecraft:efficiency": 88,
+        "minecraft:feather_falling": 105,
+        "minecraft:fire_aspect": 122,
+        "minecraft:fire_protection": 139,
+        "minecraft:flame": 156,
+        "minecraft:fortune": 173,
+        "minecraft:frost_walker": 190,
+        "minecraft:impaling": 207,
+        "minecraft:infinity": 224,
+        "minecraft:knockback": 241,
+        "minecraft:looting": 2,
+        "minecraft:loyalty": 19,
+        "minecraft:luck_of_the_sea": 36,
+        "minecraft:lunge": 53,
+        "minecraft:lure": 70,
+        "minecraft:mending": 87,
+        "minecraft:multishot": 104,
+        "minecraft:piercing": 121,
+        "minecraft:power": 138,
+        "minecraft:projectile_protection": 155,
+        "minecraft:protection": 172,
+        "minecraft:punch": 189,
+        "minecraft:quick_charge": 206,
+        "minecraft:respiration": 223,
+        "minecraft:riptide": 240,
+        "minecraft:sharpness": 1,
+        "minecraft:silk_touch": 18,
+        "minecraft:smite": 35,
+        "minecraft:soul_speed": 52,
+        "minecraft:sweeping_edge": 69,
+        "minecraft:swift_sneak": 86,
+        "minecraft:thorns": 103,
+        "minecraft:unbreaking": 120,
+        "minecraft:vanishing_curse": 137,
+        "minecraft:wind_burst": 154
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/4",
+      "hex": "2b264612f201163625350b7b11e1010c8c010fbf012a8a01009b01242421f1011fcf0101ac0122020626130323131ebe011b8b01073703ce01185805151969084810d0012979095902bd012868275720e0011dad0104040d9d010eae01174715251a7a1c9c010a6a1414",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 155,
+        "minecraft:bane_of_arthropods": 172,
+        "minecraft:binding_curse": 189,
+        "minecraft:blast_protection": 206,
+        "minecraft:breach": 4,
+        "minecraft:channeling": 21,
+        "minecraft:density": 38,
+        "minecraft:depth_strider": 55,
+        "minecraft:efficiency": 72,
+        "minecraft:feather_falling": 89,
+        "minecraft:fire_aspect": 106,
+        "minecraft:fire_protection": 123,
+        "minecraft:flame": 140,
+        "minecraft:fortune": 157,
+        "minecraft:frost_walker": 174,
+        "minecraft:impaling": 191,
+        "minecraft:infinity": 208,
+        "minecraft:knockback": 225,
+        "minecraft:looting": 242,
+        "minecraft:loyalty": 3,
+        "minecraft:luck_of_the_sea": 20,
+        "minecraft:lunge": 37,
+        "minecraft:lure": 54,
+        "minecraft:mending": 71,
+        "minecraft:multishot": 88,
+        "minecraft:piercing": 105,
+        "minecraft:power": 122,
+        "minecraft:projectile_protection": 139,
+        "minecraft:protection": 156,
+        "minecraft:punch": 173,
+        "minecraft:quick_charge": 190,
+        "minecraft:respiration": 207,
+        "minecraft:riptide": 224,
+        "minecraft:sharpness": 241,
+        "minecraft:silk_touch": 2,
+        "minecraft:smite": 19,
+        "minecraft:soul_speed": 36,
+        "minecraft:sweeping_edge": 53,
+        "minecraft:swift_sneak": 70,
+        "minecraft:thorns": 87,
+        "minecraft:unbreaking": 104,
+        "minecraft:vanishing_curse": 121,
+        "minecraft:wind_burst": 138
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/5",
+      "hex": "2b263612e201162625250b6b11d1010c7c0faf012a7a008b01241421e1011fbf01019c0122f201061613f30123031eae011b7b072703be01184805051959083810c0012969094902ad01285804cf01274720d0010d8d011d9d010e9e01173715151a6a1c8c010a5a1404",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 139,
+        "minecraft:bane_of_arthropods": 156,
+        "minecraft:binding_curse": 173,
+        "minecraft:blast_protection": 190,
+        "minecraft:breach": 207,
+        "minecraft:channeling": 5,
+        "minecraft:density": 22,
+        "minecraft:depth_strider": 39,
+        "minecraft:efficiency": 56,
+        "minecraft:feather_falling": 73,
+        "minecraft:fire_aspect": 90,
+        "minecraft:fire_protection": 107,
+        "minecraft:flame": 124,
+        "minecraft:fortune": 141,
+        "minecraft:frost_walker": 158,
+        "minecraft:impaling": 175,
+        "minecraft:infinity": 192,
+        "minecraft:knockback": 209,
+        "minecraft:looting": 226,
+        "minecraft:loyalty": 243,
+        "minecraft:luck_of_the_sea": 4,
+        "minecraft:lunge": 21,
+        "minecraft:lure": 38,
+        "minecraft:mending": 55,
+        "minecraft:multishot": 72,
+        "minecraft:piercing": 89,
+        "minecraft:power": 106,
+        "minecraft:projectile_protection": 123,
+        "minecraft:protection": 140,
+        "minecraft:punch": 157,
+        "minecraft:quick_charge": 174,
+        "minecraft:respiration": 191,
+        "minecraft:riptide": 208,
+        "minecraft:sharpness": 225,
+        "minecraft:silk_touch": 242,
+        "minecraft:smite": 3,
+        "minecraft:soul_speed": 20,
+        "minecraft:sweeping_edge": 37,
+        "minecraft:swift_sneak": 54,
+        "minecraft:thorns": 71,
+        "minecraft:unbreaking": 88,
+        "minecraft:vanishing_curse": 105,
+        "minecraft:wind_burst": 122
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/6",
+      "hex": "2b262612d201161625150b5b11c1010c6c0f9f012a6a007b240421d1011faf01018c0122e201060613e30123f30107171b6b1e9e0105d00103ae0118381949082810b00129590939029d01284804bf01273720c0010d7d1d8d010e8e01172715051a5a1c7c0a4a14f401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 123,
+        "minecraft:bane_of_arthropods": 140,
+        "minecraft:binding_curse": 157,
+        "minecraft:blast_protection": 174,
+        "minecraft:breach": 191,
+        "minecraft:channeling": 208,
+        "minecraft:density": 6,
+        "minecraft:depth_strider": 23,
+        "minecraft:efficiency": 40,
+        "minecraft:feather_falling": 57,
+        "minecraft:fire_aspect": 74,
+        "minecraft:fire_protection": 91,
+        "minecraft:flame": 108,
+        "minecraft:fortune": 125,
+        "minecraft:frost_walker": 142,
+        "minecraft:impaling": 159,
+        "minecraft:infinity": 176,
+        "minecraft:knockback": 193,
+        "minecraft:looting": 210,
+        "minecraft:loyalty": 227,
+        "minecraft:luck_of_the_sea": 244,
+        "minecraft:lunge": 5,
+        "minecraft:lure": 22,
+        "minecraft:mending": 39,
+        "minecraft:multishot": 56,
+        "minecraft:piercing": 73,
+        "minecraft:power": 90,
+        "minecraft:projectile_protection": 107,
+        "minecraft:protection": 124,
+        "minecraft:punch": 141,
+        "minecraft:quick_charge": 158,
+        "minecraft:respiration": 175,
+        "minecraft:riptide": 192,
+        "minecraft:sharpness": 209,
+        "minecraft:silk_touch": 226,
+        "minecraft:smite": 243,
+        "minecraft:soul_speed": 4,
+        "minecraft:sweeping_edge": 21,
+        "minecraft:swift_sneak": 38,
+        "minecraft:thorns": 55,
+        "minecraft:unbreaking": 72,
+        "minecraft:vanishing_curse": 89,
+        "minecraft:wind_burst": 106
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/7",
+      "hex": "2b261612c201160625050b4b11b1010c5c0f8f012a5a006b24f40121c1011f9f01017c22d20106d10113d30123e30107071b5b1e8e0105c001039e0118281939081810a00129490929028d01283804af01272720b0010d6d1d7d0e7e171715f5011a4a1c6c0a3a14e401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 107,
+        "minecraft:bane_of_arthropods": 124,
+        "minecraft:binding_curse": 141,
+        "minecraft:blast_protection": 158,
+        "minecraft:breach": 175,
+        "minecraft:channeling": 192,
+        "minecraft:density": 209,
+        "minecraft:depth_strider": 7,
+        "minecraft:efficiency": 24,
+        "minecraft:feather_falling": 41,
+        "minecraft:fire_aspect": 58,
+        "minecraft:fire_protection": 75,
+        "minecraft:flame": 92,
+        "minecraft:fortune": 109,
+        "minecraft:frost_walker": 126,
+        "minecraft:impaling": 143,
+        "minecraft:infinity": 160,
+        "minecraft:knockback": 177,
+        "minecraft:looting": 194,
+        "minecraft:loyalty": 211,
+        "minecraft:luck_of_the_sea": 228,
+        "minecraft:lunge": 245,
+        "minecraft:lure": 6,
+        "minecraft:mending": 23,
+        "minecraft:multishot": 40,
+        "minecraft:piercing": 57,
+        "minecraft:power": 74,
+        "minecraft:projectile_protection": 91,
+        "minecraft:protection": 108,
+        "minecraft:punch": 125,
+        "minecraft:quick_charge": 142,
+        "minecraft:respiration": 159,
+        "minecraft:riptide": 176,
+        "minecraft:sharpness": 193,
+        "minecraft:silk_touch": 210,
+        "minecraft:smite": 227,
+        "minecraft:soul_speed": 244,
+        "minecraft:sweeping_edge": 5,
+        "minecraft:swift_sneak": 22,
+        "minecraft:thorns": 39,
+        "minecraft:unbreaking": 56,
+        "minecraft:vanishing_curse": 73,
+        "minecraft:wind_burst": 90
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/8",
+      "hex": "2b260612b20116f60125f5010b3b11a1010c4c0f7f2a4a005b24e40121b1011f8f01016c22c20106c10113c30107d20123d3011b4b1e7e05b001038e0118181929080810900129390919027d2828049f0127170e6e0d5d1d6d170720a00115e5011a3a1c5c0a2a14d401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 91,
+        "minecraft:bane_of_arthropods": 108,
+        "minecraft:binding_curse": 125,
+        "minecraft:blast_protection": 142,
+        "minecraft:breach": 159,
+        "minecraft:channeling": 176,
+        "minecraft:density": 193,
+        "minecraft:depth_strider": 210,
+        "minecraft:efficiency": 8,
+        "minecraft:feather_falling": 25,
+        "minecraft:fire_aspect": 42,
+        "minecraft:fire_protection": 59,
+        "minecraft:flame": 76,
+        "minecraft:fortune": 93,
+        "minecraft:frost_walker": 110,
+        "minecraft:impaling": 127,
+        "minecraft:infinity": 144,
+        "minecraft:knockback": 161,
+        "minecraft:looting": 178,
+        "minecraft:loyalty": 195,
+        "minecraft:luck_of_the_sea": 212,
+        "minecraft:lunge": 229,
+        "minecraft:lure": 246,
+        "minecraft:mending": 7,
+        "minecraft:multishot": 24,
+        "minecraft:piercing": 41,
+        "minecraft:power": 58,
+        "minecraft:projectile_protection": 75,
+        "minecraft:protection": 92,
+        "minecraft:punch": 109,
+        "minecraft:quick_charge": 126,
+        "minecraft:respiration": 143,
+        "minecraft:riptide": 160,
+        "minecraft:sharpness": 177,
+        "minecraft:silk_touch": 194,
+        "minecraft:smite": 211,
+        "minecraft:soul_speed": 228,
+        "minecraft:sweeping_edge": 245,
+        "minecraft:swift_sneak": 6,
+        "minecraft:thorns": 23,
+        "minecraft:unbreaking": 40,
+        "minecraft:vanishing_curse": 57,
+        "minecraft:wind_burst": 74
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/9",
+      "hex": "2b26f60112a20116e60125e5010b2b1191010c3c0f6f2a3a004b24d4011f7f21a101015c22b20106b10113b30107c20123c3011b3b1e6e08d30105a0011808037e108001191929290909026d2818048f0127070e5e0d4d1d5d17f70120900115d5011a2a1c4c0a1a14c401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 75,
+        "minecraft:bane_of_arthropods": 92,
+        "minecraft:binding_curse": 109,
+        "minecraft:blast_protection": 126,
+        "minecraft:breach": 143,
+        "minecraft:channeling": 160,
+        "minecraft:density": 177,
+        "minecraft:depth_strider": 194,
+        "minecraft:efficiency": 211,
+        "minecraft:feather_falling": 9,
+        "minecraft:fire_aspect": 26,
+        "minecraft:fire_protection": 43,
+        "minecraft:flame": 60,
+        "minecraft:fortune": 77,
+        "minecraft:frost_walker": 94,
+        "minecraft:impaling": 111,
+        "minecraft:infinity": 128,
+        "minecraft:knockback": 145,
+        "minecraft:looting": 162,
+        "minecraft:loyalty": 179,
+        "minecraft:luck_of_the_sea": 196,
+        "minecraft:lunge": 213,
+        "minecraft:lure": 230,
+        "minecraft:mending": 247,
+        "minecraft:multishot": 8,
+        "minecraft:piercing": 25,
+        "minecraft:power": 42,
+        "minecraft:projectile_protection": 59,
+        "minecraft:protection": 76,
+        "minecraft:punch": 93,
+        "minecraft:quick_charge": 110,
+        "minecraft:respiration": 127,
+        "minecraft:riptide": 144,
+        "minecraft:sharpness": 161,
+        "minecraft:silk_touch": 178,
+        "minecraft:smite": 195,
+        "minecraft:soul_speed": 212,
+        "minecraft:sweeping_edge": 229,
+        "minecraft:swift_sneak": 246,
+        "minecraft:thorns": 7,
+        "minecraft:unbreaking": 24,
+        "minecraft:vanishing_curse": 41,
+        "minecraft:wind_burst": 58
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/10",
+      "hex": "2b26e60112920116d60125d5010b1b1181010c2c0f5f2a2a003b24c4011f6f219101014c22a20106a10113a30107b20123b3011b2b1e5e08c30105900118f801036e10701909291909d401025d2808047f27f7010e4e0d3d1d4d17e70120800115c5011a1a1c3c0a0a14b401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 59,
+        "minecraft:bane_of_arthropods": 76,
+        "minecraft:binding_curse": 93,
+        "minecraft:blast_protection": 110,
+        "minecraft:breach": 127,
+        "minecraft:channeling": 144,
+        "minecraft:density": 161,
+        "minecraft:depth_strider": 178,
+        "minecraft:efficiency": 195,
+        "minecraft:feather_falling": 212,
+        "minecraft:fire_aspect": 10,
+        "minecraft:fire_protection": 27,
+        "minecraft:flame": 44,
+        "minecraft:fortune": 61,
+        "minecraft:frost_walker": 78,
+        "minecraft:impaling": 95,
+        "minecraft:infinity": 112,
+        "minecraft:knockback": 129,
+        "minecraft:looting": 146,
+        "minecraft:loyalty": 163,
+        "minecraft:luck_of_the_sea": 180,
+        "minecraft:lunge": 197,
+        "minecraft:lure": 214,
+        "minecraft:mending": 231,
+        "minecraft:multishot": 248,
+        "minecraft:piercing": 9,
+        "minecraft:power": 26,
+        "minecraft:projectile_protection": 43,
+        "minecraft:protection": 60,
+        "minecraft:punch": 77,
+        "minecraft:quick_charge": 94,
+        "minecraft:respiration": 111,
+        "minecraft:riptide": 128,
+        "minecraft:sharpness": 145,
+        "minecraft:silk_touch": 162,
+        "minecraft:smite": 179,
+        "minecraft:soul_speed": 196,
+        "minecraft:sweeping_edge": 213,
+        "minecraft:swift_sneak": 230,
+        "minecraft:thorns": 247,
+        "minecraft:unbreaking": 8,
+        "minecraft:vanishing_curse": 25,
+        "minecraft:wind_burst": 42
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/11",
+      "hex": "2b26d60112820116c60125c5010b0b11710c1c0f4f2a1a002b24b4011f5f218101013c22920106910113930107a2011b1b1e4e23a30108b30105800118e801035e106019f901290909c401024d28f801046f27e7010e3e0d2d1d3d17d701207015b5011a0a1c2c0ad50114a401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 43,
+        "minecraft:bane_of_arthropods": 60,
+        "minecraft:binding_curse": 77,
+        "minecraft:blast_protection": 94,
+        "minecraft:breach": 111,
+        "minecraft:channeling": 128,
+        "minecraft:density": 145,
+        "minecraft:depth_strider": 162,
+        "minecraft:efficiency": 179,
+        "minecraft:feather_falling": 196,
+        "minecraft:fire_aspect": 213,
+        "minecraft:fire_protection": 11,
+        "minecraft:flame": 28,
+        "minecraft:fortune": 45,
+        "minecraft:frost_walker": 62,
+        "minecraft:impaling": 79,
+        "minecraft:infinity": 96,
+        "minecraft:knockback": 113,
+        "minecraft:looting": 130,
+        "minecraft:loyalty": 147,
+        "minecraft:luck_of_the_sea": 164,
+        "minecraft:lunge": 181,
+        "minecraft:lure": 198,
+        "minecraft:mending": 215,
+        "minecraft:multishot": 232,
+        "minecraft:piercing": 249,
+        "minecraft:power": 10,
+        "minecraft:projectile_protection": 27,
+        "minecraft:protection": 44,
+        "minecraft:punch": 61,
+        "minecraft:quick_charge": 78,
+        "minecraft:respiration": 95,
+        "minecraft:riptide": 112,
+        "minecraft:sharpness": 129,
+        "minecraft:silk_touch": 146,
+        "minecraft:smite": 163,
+        "minecraft:soul_speed": 180,
+        "minecraft:sweeping_edge": 197,
+        "minecraft:swift_sneak": 214,
+        "minecraft:thorns": 231,
+        "minecraft:unbreaking": 248,
+        "minecraft:vanishing_curse": 9,
+        "minecraft:wind_burst": 26
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/12",
+      "hex": "2b0bd601127216b60126c60125b50111610c0c0f3f2a0a001b24a4011f4f2171012c2282010681011383010792011b0b1e3e23930108a301057018d801034e105019e90129f90109b401023d28e801045f27d7010e2e0d1d1d2d17c701206015a5011afa011c1c0ac501149401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 27,
+        "minecraft:bane_of_arthropods": 44,
+        "minecraft:binding_curse": 61,
+        "minecraft:blast_protection": 78,
+        "minecraft:breach": 95,
+        "minecraft:channeling": 112,
+        "minecraft:density": 129,
+        "minecraft:depth_strider": 146,
+        "minecraft:efficiency": 163,
+        "minecraft:feather_falling": 180,
+        "minecraft:fire_aspect": 197,
+        "minecraft:fire_protection": 214,
+        "minecraft:flame": 12,
+        "minecraft:fortune": 29,
+        "minecraft:frost_walker": 46,
+        "minecraft:impaling": 63,
+        "minecraft:infinity": 80,
+        "minecraft:knockback": 97,
+        "minecraft:looting": 114,
+        "minecraft:loyalty": 131,
+        "minecraft:luck_of_the_sea": 148,
+        "minecraft:lunge": 165,
+        "minecraft:lure": 182,
+        "minecraft:mending": 199,
+        "minecraft:multishot": 216,
+        "minecraft:piercing": 233,
+        "minecraft:power": 250,
+        "minecraft:projectile_protection": 11,
+        "minecraft:protection": 28,
+        "minecraft:punch": 45,
+        "minecraft:quick_charge": 62,
+        "minecraft:respiration": 79,
+        "minecraft:riptide": 96,
+        "minecraft:sharpness": 113,
+        "minecraft:silk_touch": 130,
+        "minecraft:smite": 147,
+        "minecraft:soul_speed": 164,
+        "minecraft:sweeping_edge": 181,
+        "minecraft:swift_sneak": 198,
+        "minecraft:thorns": 215,
+        "minecraft:unbreaking": 232,
+        "minecraft:vanishing_curse": 249,
+        "minecraft:wind_burst": 10
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/13",
+      "hex": "2b0cd701126216a60126b6010bc601115125a5010f2f2afa01000b2494011f3f2161011c2272067113730782011bfb011e2e238301089301056018c801033e104019d90129e90109a401022d28d801044f27c7010e1e0d0d1d1d17b70120501595011aea011c0c0ab501148401",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 11,
+        "minecraft:bane_of_arthropods": 28,
+        "minecraft:binding_curse": 45,
+        "minecraft:blast_protection": 62,
+        "minecraft:breach": 79,
+        "minecraft:channeling": 96,
+        "minecraft:density": 113,
+        "minecraft:depth_strider": 130,
+        "minecraft:efficiency": 147,
+        "minecraft:feather_falling": 164,
+        "minecraft:fire_aspect": 181,
+        "minecraft:fire_protection": 198,
+        "minecraft:flame": 215,
+        "minecraft:fortune": 13,
+        "minecraft:frost_walker": 30,
+        "minecraft:impaling": 47,
+        "minecraft:infinity": 64,
+        "minecraft:knockback": 81,
+        "minecraft:looting": 98,
+        "minecraft:loyalty": 115,
+        "minecraft:luck_of_the_sea": 132,
+        "minecraft:lunge": 149,
+        "minecraft:lure": 166,
+        "minecraft:mending": 183,
+        "minecraft:multishot": 200,
+        "minecraft:piercing": 217,
+        "minecraft:power": 234,
+        "minecraft:projectile_protection": 251,
+        "minecraft:protection": 12,
+        "minecraft:punch": 29,
+        "minecraft:quick_charge": 46,
+        "minecraft:respiration": 63,
+        "minecraft:riptide": 80,
+        "minecraft:sharpness": 97,
+        "minecraft:silk_touch": 114,
+        "minecraft:smite": 131,
+        "minecraft:soul_speed": 148,
+        "minecraft:sweeping_edge": 165,
+        "minecraft:swift_sneak": 182,
+        "minecraft:thorns": 199,
+        "minecraft:unbreaking": 216,
+        "minecraft:vanishing_curse": 233,
+        "minecraft:wind_burst": 250
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/14",
+      "hex": "2b0cc701125216960126a6010bb60111412595010f1f2aea0100fb012484011f2f2151010c22620661136307721beb011e1e2373088301055018b801032e103019c90129d901099401021d28c8010dd801043f27b7010e0e1d0d17a70120401585011ada011cfc010aa5011474",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 251,
+        "minecraft:bane_of_arthropods": 12,
+        "minecraft:binding_curse": 29,
+        "minecraft:blast_protection": 46,
+        "minecraft:breach": 63,
+        "minecraft:channeling": 80,
+        "minecraft:density": 97,
+        "minecraft:depth_strider": 114,
+        "minecraft:efficiency": 131,
+        "minecraft:feather_falling": 148,
+        "minecraft:fire_aspect": 165,
+        "minecraft:fire_protection": 182,
+        "minecraft:flame": 199,
+        "minecraft:fortune": 216,
+        "minecraft:frost_walker": 14,
+        "minecraft:impaling": 31,
+        "minecraft:infinity": 48,
+        "minecraft:knockback": 65,
+        "minecraft:looting": 82,
+        "minecraft:loyalty": 99,
+        "minecraft:luck_of_the_sea": 116,
+        "minecraft:lunge": 133,
+        "minecraft:lure": 150,
+        "minecraft:mending": 167,
+        "minecraft:multishot": 184,
+        "minecraft:piercing": 201,
+        "minecraft:power": 218,
+        "minecraft:projectile_protection": 235,
+        "minecraft:protection": 252,
+        "minecraft:punch": 13,
+        "minecraft:quick_charge": 30,
+        "minecraft:respiration": 47,
+        "minecraft:riptide": 64,
+        "minecraft:sharpness": 81,
+        "minecraft:silk_touch": 98,
+        "minecraft:smite": 115,
+        "minecraft:soul_speed": 132,
+        "minecraft:sweeping_edge": 149,
+        "minecraft:swift_sneak": 166,
+        "minecraft:thorns": 183,
+        "minecraft:unbreaking": 200,
+        "minecraft:vanishing_curse": 217,
+        "minecraft:wind_burst": 234
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/15",
+      "hex": "2b0cb70112421686012696010ba60111312585010f0f2ada0100eb0124741f1f214101fc0122520651135307621bdb011e0e23630873054018a801031e102019b90129c901098401020d28b8010ed9010dc801042f1dfd0127a701179701203015751aca011cec010a95011464",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 235,
+        "minecraft:bane_of_arthropods": 252,
+        "minecraft:binding_curse": 13,
+        "minecraft:blast_protection": 30,
+        "minecraft:breach": 47,
+        "minecraft:channeling": 64,
+        "minecraft:density": 81,
+        "minecraft:depth_strider": 98,
+        "minecraft:efficiency": 115,
+        "minecraft:feather_falling": 132,
+        "minecraft:fire_aspect": 149,
+        "minecraft:fire_protection": 166,
+        "minecraft:flame": 183,
+        "minecraft:fortune": 200,
+        "minecraft:frost_walker": 217,
+        "minecraft:impaling": 15,
+        "minecraft:infinity": 32,
+        "minecraft:knockback": 49,
+        "minecraft:looting": 66,
+        "minecraft:loyalty": 83,
+        "minecraft:luck_of_the_sea": 100,
+        "minecraft:lunge": 117,
+        "minecraft:lure": 134,
+        "minecraft:mending": 151,
+        "minecraft:multishot": 168,
+        "minecraft:piercing": 185,
+        "minecraft:power": 202,
+        "minecraft:projectile_protection": 219,
+        "minecraft:protection": 236,
+        "minecraft:punch": 253,
+        "minecraft:quick_charge": 14,
+        "minecraft:respiration": 31,
+        "minecraft:riptide": 48,
+        "minecraft:sharpness": 65,
+        "minecraft:silk_touch": 82,
+        "minecraft:smite": 99,
+        "minecraft:soul_speed": 116,
+        "minecraft:sweeping_edge": 133,
+        "minecraft:swift_sneak": 150,
+        "minecraft:thorns": 167,
+        "minecraft:unbreaking": 184,
+        "minecraft:vanishing_curse": 201,
+        "minecraft:wind_burst": 218
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/16",
+      "hex": "2b0ca701123216762686010b9601112125750fda012aca0100db0124641f0f213101ec0122420641134307521bcb011efe01235308630530189801030e101019a90129b901097402fd0128a8010ec9010db801041f1ded01279701178701202015651aba011cdc010a85011454",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 219,
+        "minecraft:bane_of_arthropods": 236,
+        "minecraft:binding_curse": 253,
+        "minecraft:blast_protection": 14,
+        "minecraft:breach": 31,
+        "minecraft:channeling": 48,
+        "minecraft:density": 65,
+        "minecraft:depth_strider": 82,
+        "minecraft:efficiency": 99,
+        "minecraft:feather_falling": 116,
+        "minecraft:fire_aspect": 133,
+        "minecraft:fire_protection": 150,
+        "minecraft:flame": 167,
+        "minecraft:fortune": 184,
+        "minecraft:frost_walker": 201,
+        "minecraft:impaling": 218,
+        "minecraft:infinity": 16,
+        "minecraft:knockback": 33,
+        "minecraft:looting": 50,
+        "minecraft:loyalty": 67,
+        "minecraft:luck_of_the_sea": 84,
+        "minecraft:lunge": 101,
+        "minecraft:lure": 118,
+        "minecraft:mending": 135,
+        "minecraft:multishot": 152,
+        "minecraft:piercing": 169,
+        "minecraft:power": 186,
+        "minecraft:projectile_protection": 203,
+        "minecraft:protection": 220,
+        "minecraft:punch": 237,
+        "minecraft:quick_charge": 254,
+        "minecraft:respiration": 15,
+        "minecraft:riptide": 32,
+        "minecraft:sharpness": 49,
+        "minecraft:silk_touch": 66,
+        "minecraft:smite": 83,
+        "minecraft:soul_speed": 100,
+        "minecraft:sweeping_edge": 117,
+        "minecraft:swift_sneak": 134,
+        "minecraft:thorns": 151,
+        "minecraft:unbreaking": 168,
+        "minecraft:vanishing_curse": 185,
+        "minecraft:wind_burst": 202
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/17",
+      "hex": "2b0c97011222166626760b8601111125650fca012aba0100cb0124541fff01212101dc0122320631133307421bbb011eee01234310db010520188801085303fe0119990129a901096402ed012898010eb9010da801040f1ddd012787011777201015551aaa011ccc010a751444",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 203,
+        "minecraft:bane_of_arthropods": 220,
+        "minecraft:binding_curse": 237,
+        "minecraft:blast_protection": 254,
+        "minecraft:breach": 15,
+        "minecraft:channeling": 32,
+        "minecraft:density": 49,
+        "minecraft:depth_strider": 66,
+        "minecraft:efficiency": 83,
+        "minecraft:feather_falling": 100,
+        "minecraft:fire_aspect": 117,
+        "minecraft:fire_protection": 134,
+        "minecraft:flame": 151,
+        "minecraft:fortune": 168,
+        "minecraft:frost_walker": 185,
+        "minecraft:impaling": 202,
+        "minecraft:infinity": 219,
+        "minecraft:knockback": 17,
+        "minecraft:looting": 34,
+        "minecraft:loyalty": 51,
+        "minecraft:luck_of_the_sea": 68,
+        "minecraft:lunge": 85,
+        "minecraft:lure": 102,
+        "minecraft:mending": 119,
+        "minecraft:multishot": 136,
+        "minecraft:piercing": 153,
+        "minecraft:power": 170,
+        "minecraft:projectile_protection": 187,
+        "minecraft:protection": 204,
+        "minecraft:punch": 221,
+        "minecraft:quick_charge": 238,
+        "minecraft:respiration": 255,
+        "minecraft:riptide": 16,
+        "minecraft:sharpness": 33,
+        "minecraft:silk_touch": 50,
+        "minecraft:smite": 67,
+        "minecraft:soul_speed": 84,
+        "minecraft:sweeping_edge": 101,
+        "minecraft:swift_sneak": 118,
+        "minecraft:thorns": 135,
+        "minecraft:unbreaking": 152,
+        "minecraft:vanishing_curse": 169,
+        "minecraft:wind_burst": 186
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/18",
+      "hex": "2b11dc011212165626660b760c870125550fba012aaa0100bb0124441fef01211101cc0122220621132307321bab011ede01233310cb0105101878084303ee01198901299901095402dd012888010ea9010d980104ff011dcd0127771767200015451a9a011cbc010a651434",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 187,
+        "minecraft:bane_of_arthropods": 204,
+        "minecraft:binding_curse": 221,
+        "minecraft:blast_protection": 238,
+        "minecraft:breach": 255,
+        "minecraft:channeling": 16,
+        "minecraft:density": 33,
+        "minecraft:depth_strider": 50,
+        "minecraft:efficiency": 67,
+        "minecraft:feather_falling": 84,
+        "minecraft:fire_aspect": 101,
+        "minecraft:fire_protection": 118,
+        "minecraft:flame": 135,
+        "minecraft:fortune": 152,
+        "minecraft:frost_walker": 169,
+        "minecraft:impaling": 186,
+        "minecraft:infinity": 203,
+        "minecraft:knockback": 220,
+        "minecraft:looting": 18,
+        "minecraft:loyalty": 35,
+        "minecraft:luck_of_the_sea": 52,
+        "minecraft:lunge": 69,
+        "minecraft:lure": 86,
+        "minecraft:mending": 103,
+        "minecraft:multishot": 120,
+        "minecraft:piercing": 137,
+        "minecraft:power": 154,
+        "minecraft:projectile_protection": 171,
+        "minecraft:protection": 188,
+        "minecraft:punch": 205,
+        "minecraft:quick_charge": 222,
+        "minecraft:respiration": 239,
+        "minecraft:riptide": 0,
+        "minecraft:sharpness": 17,
+        "minecraft:silk_touch": 34,
+        "minecraft:smite": 51,
+        "minecraft:soul_speed": 68,
+        "minecraft:sweeping_edge": 85,
+        "minecraft:swift_sneak": 102,
+        "minecraft:thorns": 119,
+        "minecraft:unbreaking": 136,
+        "minecraft:vanishing_curse": 153,
+        "minecraft:wind_burst": 170
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/19",
+      "hex": "2b12dd0111cc01164626560b660c7725450faa012a9a0100ab0124341fdf01210101bc0122120611131307221b9b011ece01232310bb0105001868083303de011979298901094402cd0128780e99010d880104ef011dbd012767175720f00115351a8a011cac010a551424",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 171,
+        "minecraft:bane_of_arthropods": 188,
+        "minecraft:binding_curse": 205,
+        "minecraft:blast_protection": 222,
+        "minecraft:breach": 239,
+        "minecraft:channeling": 0,
+        "minecraft:density": 17,
+        "minecraft:depth_strider": 34,
+        "minecraft:efficiency": 51,
+        "minecraft:feather_falling": 68,
+        "minecraft:fire_aspect": 85,
+        "minecraft:fire_protection": 102,
+        "minecraft:flame": 119,
+        "minecraft:fortune": 136,
+        "minecraft:frost_walker": 153,
+        "minecraft:impaling": 170,
+        "minecraft:infinity": 187,
+        "minecraft:knockback": 204,
+        "minecraft:looting": 221,
+        "minecraft:loyalty": 19,
+        "minecraft:luck_of_the_sea": 36,
+        "minecraft:lunge": 53,
+        "minecraft:lure": 70,
+        "minecraft:mending": 87,
+        "minecraft:multishot": 104,
+        "minecraft:piercing": 121,
+        "minecraft:power": 138,
+        "minecraft:projectile_protection": 155,
+        "minecraft:protection": 172,
+        "minecraft:punch": 189,
+        "minecraft:quick_charge": 206,
+        "minecraft:respiration": 223,
+        "minecraft:riptide": 240,
+        "minecraft:sharpness": 1,
+        "minecraft:silk_touch": 18,
+        "minecraft:smite": 35,
+        "minecraft:soul_speed": 52,
+        "minecraft:sweeping_edge": 69,
+        "minecraft:swift_sneak": 86,
+        "minecraft:thorns": 103,
+        "minecraft:unbreaking": 120,
+        "minecraft:vanishing_curse": 137,
+        "minecraft:wind_burst": 154
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/20",
+      "hex": "2b12cd0111bc01163626460b560c6725350f9a012a8a01009b0124241fcf0121f10101ac012202060113de0107121b8b011ebe01231310ab0105f0011858082303ce0119692979093402bd0128680e89010d7804df011dad012757174720e00115251a7a1c9c010a451414",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 155,
+        "minecraft:bane_of_arthropods": 172,
+        "minecraft:binding_curse": 189,
+        "minecraft:blast_protection": 206,
+        "minecraft:breach": 223,
+        "minecraft:channeling": 240,
+        "minecraft:density": 1,
+        "minecraft:depth_strider": 18,
+        "minecraft:efficiency": 35,
+        "minecraft:feather_falling": 52,
+        "minecraft:fire_aspect": 69,
+        "minecraft:fire_protection": 86,
+        "minecraft:flame": 103,
+        "minecraft:fortune": 120,
+        "minecraft:frost_walker": 137,
+        "minecraft:impaling": 154,
+        "minecraft:infinity": 171,
+        "minecraft:knockback": 188,
+        "minecraft:looting": 205,
+        "minecraft:loyalty": 222,
+        "minecraft:luck_of_the_sea": 20,
+        "minecraft:lunge": 37,
+        "minecraft:lure": 54,
+        "minecraft:mending": 71,
+        "minecraft:multishot": 88,
+        "minecraft:piercing": 105,
+        "minecraft:power": 122,
+        "minecraft:projectile_protection": 139,
+        "minecraft:protection": 156,
+        "minecraft:punch": 173,
+        "minecraft:quick_charge": 190,
+        "minecraft:respiration": 207,
+        "minecraft:riptide": 224,
+        "minecraft:sharpness": 241,
+        "minecraft:silk_touch": 2,
+        "minecraft:smite": 19,
+        "minecraft:soul_speed": 36,
+        "minecraft:sweeping_edge": 53,
+        "minecraft:swift_sneak": 70,
+        "minecraft:thorns": 87,
+        "minecraft:unbreaking": 104,
+        "minecraft:vanishing_curse": 121,
+        "minecraft:wind_burst": 138
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/21",
+      "hex": "2b12bd0111ac01162626360b460c5725250f8a012a7a008b0124141fbf0121e101019c0122f20106f10113ce0107021eae011b7b2303109b0105e0011848081303be0119592969092402ad0128580e790d6804cf011d9d012747173720d00115151a6a1c8c0114df010a35",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 139,
+        "minecraft:bane_of_arthropods": 156,
+        "minecraft:binding_curse": 173,
+        "minecraft:blast_protection": 190,
+        "minecraft:breach": 207,
+        "minecraft:channeling": 224,
+        "minecraft:density": 241,
+        "minecraft:depth_strider": 2,
+        "minecraft:efficiency": 19,
+        "minecraft:feather_falling": 36,
+        "minecraft:fire_aspect": 53,
+        "minecraft:fire_protection": 70,
+        "minecraft:flame": 87,
+        "minecraft:fortune": 104,
+        "minecraft:frost_walker": 121,
+        "minecraft:impaling": 138,
+        "minecraft:infinity": 155,
+        "minecraft:knockback": 172,
+        "minecraft:looting": 189,
+        "minecraft:loyalty": 206,
+        "minecraft:luck_of_the_sea": 223,
+        "minecraft:lunge": 21,
+        "minecraft:lure": 38,
+        "minecraft:mending": 55,
+        "minecraft:multishot": 72,
+        "minecraft:piercing": 89,
+        "minecraft:power": 106,
+        "minecraft:projectile_protection": 123,
+        "minecraft:protection": 140,
+        "minecraft:punch": 157,
+        "minecraft:quick_charge": 174,
+        "minecraft:respiration": 191,
+        "minecraft:riptide": 208,
+        "minecraft:sharpness": 225,
+        "minecraft:silk_touch": 242,
+        "minecraft:smite": 3,
+        "minecraft:soul_speed": 20,
+        "minecraft:sweeping_edge": 37,
+        "minecraft:swift_sneak": 54,
+        "minecraft:thorns": 71,
+        "minecraft:unbreaking": 88,
+        "minecraft:vanishing_curse": 105,
+        "minecraft:wind_burst": 122
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/22",
+      "hex": "2b12ad01119c01161626260b360c4725150f7a2a6a007b24041faf0121d101018c0122e20106e10113be0107f2011e9e011b6b23f301108b0105d001183808031949295903ae010914029d0128480e690d5804bf011d8d012737172720c00115e0011a5a1c7c14cf010a25",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 123,
+        "minecraft:bane_of_arthropods": 140,
+        "minecraft:binding_curse": 157,
+        "minecraft:blast_protection": 174,
+        "minecraft:breach": 191,
+        "minecraft:channeling": 208,
+        "minecraft:density": 225,
+        "minecraft:depth_strider": 242,
+        "minecraft:efficiency": 3,
+        "minecraft:feather_falling": 20,
+        "minecraft:fire_aspect": 37,
+        "minecraft:fire_protection": 54,
+        "minecraft:flame": 71,
+        "minecraft:fortune": 88,
+        "minecraft:frost_walker": 105,
+        "minecraft:impaling": 122,
+        "minecraft:infinity": 139,
+        "minecraft:knockback": 156,
+        "minecraft:looting": 173,
+        "minecraft:loyalty": 190,
+        "minecraft:luck_of_the_sea": 207,
+        "minecraft:lunge": 224,
+        "minecraft:lure": 22,
+        "minecraft:mending": 39,
+        "minecraft:multishot": 56,
+        "minecraft:piercing": 73,
+        "minecraft:power": 90,
+        "minecraft:projectile_protection": 107,
+        "minecraft:protection": 124,
+        "minecraft:punch": 141,
+        "minecraft:quick_charge": 158,
+        "minecraft:respiration": 175,
+        "minecraft:riptide": 192,
+        "minecraft:sharpness": 209,
+        "minecraft:silk_touch": 226,
+        "minecraft:smite": 243,
+        "minecraft:soul_speed": 4,
+        "minecraft:sweeping_edge": 21,
+        "minecraft:swift_sneak": 38,
+        "minecraft:thorns": 55,
+        "minecraft:unbreaking": 72,
+        "minecraft:vanishing_curse": 89,
+        "minecraft:wind_burst": 106
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/23",
+      "hex": "2b16e101129d01118c0126160b260c3725050f6a2a5a006b24f4011f9f0121c101017c22d20106d10113ae0107e2011e8e011b5b23e301107b05c001182808f30119392949039e010904028d0128380e590d4817171d7d272720b00104af0115d0011a4a1c6c14bf010a15",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 107,
+        "minecraft:bane_of_arthropods": 124,
+        "minecraft:binding_curse": 141,
+        "minecraft:blast_protection": 158,
+        "minecraft:breach": 175,
+        "minecraft:channeling": 192,
+        "minecraft:density": 209,
+        "minecraft:depth_strider": 226,
+        "minecraft:efficiency": 243,
+        "minecraft:feather_falling": 4,
+        "minecraft:fire_aspect": 21,
+        "minecraft:fire_protection": 38,
+        "minecraft:flame": 55,
+        "minecraft:fortune": 72,
+        "minecraft:frost_walker": 89,
+        "minecraft:impaling": 106,
+        "minecraft:infinity": 123,
+        "minecraft:knockback": 140,
+        "minecraft:looting": 157,
+        "minecraft:loyalty": 174,
+        "minecraft:luck_of_the_sea": 191,
+        "minecraft:lunge": 208,
+        "minecraft:lure": 225,
+        "minecraft:mending": 23,
+        "minecraft:multishot": 40,
+        "minecraft:piercing": 57,
+        "minecraft:power": 74,
+        "minecraft:projectile_protection": 91,
+        "minecraft:protection": 108,
+        "minecraft:punch": 125,
+        "minecraft:quick_charge": 142,
+        "minecraft:respiration": 159,
+        "minecraft:riptide": 176,
+        "minecraft:sharpness": 193,
+        "minecraft:silk_touch": 210,
+        "minecraft:smite": 227,
+        "minecraft:soul_speed": 244,
+        "minecraft:sweeping_edge": 5,
+        "minecraft:swift_sneak": 22,
+        "minecraft:thorns": 39,
+        "minecraft:unbreaking": 56,
+        "minecraft:vanishing_curse": 73,
+        "minecraft:wind_burst": 90
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/24",
+      "hex": "2b16d101128d01117c26060b160c2725f5010f5a2a4a005b24e4011f8f0121b101016c22c20106c101139e0107d2011e7e1b4b23d301106b181805b00108e30119292939038e0109f401027d282817e2010e490d381d6d271720a001049f0115c0011a3a1c5c14af010a05",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 91,
+        "minecraft:bane_of_arthropods": 108,
+        "minecraft:binding_curse": 125,
+        "minecraft:blast_protection": 142,
+        "minecraft:breach": 159,
+        "minecraft:channeling": 176,
+        "minecraft:density": 193,
+        "minecraft:depth_strider": 210,
+        "minecraft:efficiency": 227,
+        "minecraft:feather_falling": 244,
+        "minecraft:fire_aspect": 5,
+        "minecraft:fire_protection": 22,
+        "minecraft:flame": 39,
+        "minecraft:fortune": 56,
+        "minecraft:frost_walker": 73,
+        "minecraft:impaling": 90,
+        "minecraft:infinity": 107,
+        "minecraft:knockback": 124,
+        "minecraft:looting": 141,
+        "minecraft:loyalty": 158,
+        "minecraft:luck_of_the_sea": 175,
+        "minecraft:lunge": 192,
+        "minecraft:lure": 209,
+        "minecraft:mending": 226,
+        "minecraft:multishot": 24,
+        "minecraft:piercing": 41,
+        "minecraft:power": 58,
+        "minecraft:projectile_protection": 75,
+        "minecraft:protection": 92,
+        "minecraft:punch": 109,
+        "minecraft:quick_charge": 126,
+        "minecraft:respiration": 143,
+        "minecraft:riptide": 160,
+        "minecraft:sharpness": 177,
+        "minecraft:silk_touch": 194,
+        "minecraft:smite": 211,
+        "minecraft:soul_speed": 228,
+        "minecraft:sweeping_edge": 245,
+        "minecraft:swift_sneak": 6,
+        "minecraft:thorns": 23,
+        "minecraft:unbreaking": 40,
+        "minecraft:vanishing_curse": 57,
+        "minecraft:wind_burst": 74
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/25",
+      "hex": "2b16c101127d116c26f6010b060c1725e5010f4a2a3a004b24d4011f7f21a101015c22b20106b101138e0107c2011e6e1b3b23c30118e301105b05a00108d30119192929037e09e401026d281817d2010e390d281d5d2707209001048f0115b0011a2a1c4c149f010af501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 75,
+        "minecraft:bane_of_arthropods": 92,
+        "minecraft:binding_curse": 109,
+        "minecraft:blast_protection": 126,
+        "minecraft:breach": 143,
+        "minecraft:channeling": 160,
+        "minecraft:density": 177,
+        "minecraft:depth_strider": 194,
+        "minecraft:efficiency": 211,
+        "minecraft:feather_falling": 228,
+        "minecraft:fire_aspect": 245,
+        "minecraft:fire_protection": 6,
+        "minecraft:flame": 23,
+        "minecraft:fortune": 40,
+        "minecraft:frost_walker": 57,
+        "minecraft:impaling": 74,
+        "minecraft:infinity": 91,
+        "minecraft:knockback": 108,
+        "minecraft:looting": 125,
+        "minecraft:loyalty": 142,
+        "minecraft:luck_of_the_sea": 159,
+        "minecraft:lunge": 176,
+        "minecraft:lure": 193,
+        "minecraft:mending": 210,
+        "minecraft:multishot": 227,
+        "minecraft:piercing": 25,
+        "minecraft:power": 42,
+        "minecraft:projectile_protection": 59,
+        "minecraft:protection": 76,
+        "minecraft:punch": 93,
+        "minecraft:quick_charge": 110,
+        "minecraft:respiration": 127,
+        "minecraft:riptide": 144,
+        "minecraft:sharpness": 161,
+        "minecraft:silk_touch": 178,
+        "minecraft:smite": 195,
+        "minecraft:soul_speed": 212,
+        "minecraft:sweeping_edge": 229,
+        "minecraft:swift_sneak": 246,
+        "minecraft:thorns": 7,
+        "minecraft:unbreaking": 24,
+        "minecraft:vanishing_curse": 41,
+        "minecraft:wind_burst": 58
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/26",
+      "hex": "2b16b101126d115c26e6010bf6010c0725d5010f3a2a2a003b24c4011f6f219101014c22a20106a101137e1e5e1b2b23b30107b20119e40118d301059001104b08c3012919036e09d401025d280817c2010e290d181d4d27f701208001047f15a0011a1a1c3c148f010ae501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 59,
+        "minecraft:bane_of_arthropods": 76,
+        "minecraft:binding_curse": 93,
+        "minecraft:blast_protection": 110,
+        "minecraft:breach": 127,
+        "minecraft:channeling": 144,
+        "minecraft:density": 161,
+        "minecraft:depth_strider": 178,
+        "minecraft:efficiency": 195,
+        "minecraft:feather_falling": 212,
+        "minecraft:fire_aspect": 229,
+        "minecraft:fire_protection": 246,
+        "minecraft:flame": 7,
+        "minecraft:fortune": 24,
+        "minecraft:frost_walker": 41,
+        "minecraft:impaling": 58,
+        "minecraft:infinity": 75,
+        "minecraft:knockback": 92,
+        "minecraft:looting": 109,
+        "minecraft:loyalty": 126,
+        "minecraft:luck_of_the_sea": 143,
+        "minecraft:lunge": 160,
+        "minecraft:lure": 177,
+        "minecraft:mending": 194,
+        "minecraft:multishot": 211,
+        "minecraft:piercing": 228,
+        "minecraft:power": 26,
+        "minecraft:projectile_protection": 43,
+        "minecraft:protection": 60,
+        "minecraft:punch": 77,
+        "minecraft:quick_charge": 94,
+        "minecraft:respiration": 111,
+        "minecraft:riptide": 128,
+        "minecraft:sharpness": 145,
+        "minecraft:silk_touch": 162,
+        "minecraft:smite": 179,
+        "minecraft:soul_speed": 196,
+        "minecraft:sweeping_edge": 213,
+        "minecraft:swift_sneak": 230,
+        "minecraft:thorns": 247,
+        "minecraft:unbreaking": 8,
+        "minecraft:vanishing_curse": 25,
+        "minecraft:wind_burst": 42
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/27",
+      "hex": "2b16a101125d114c26d6010be6010cf70125c5010f2a2a1a002b24b4011f5f218101013c229201069101136e1e4e1b1b23a30107a20119d40118c301058001103b08b3012909035e09c401024d28f80117b2010e190d081d3d27e7012070046f1590011ae5011c2c147f0ad501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 43,
+        "minecraft:bane_of_arthropods": 60,
+        "minecraft:binding_curse": 77,
+        "minecraft:blast_protection": 94,
+        "minecraft:breach": 111,
+        "minecraft:channeling": 128,
+        "minecraft:density": 145,
+        "minecraft:depth_strider": 162,
+        "minecraft:efficiency": 179,
+        "minecraft:feather_falling": 196,
+        "minecraft:fire_aspect": 213,
+        "minecraft:fire_protection": 230,
+        "minecraft:flame": 247,
+        "minecraft:fortune": 8,
+        "minecraft:frost_walker": 25,
+        "minecraft:impaling": 42,
+        "minecraft:infinity": 59,
+        "minecraft:knockback": 76,
+        "minecraft:looting": 93,
+        "minecraft:loyalty": 110,
+        "minecraft:luck_of_the_sea": 127,
+        "minecraft:lunge": 144,
+        "minecraft:lure": 161,
+        "minecraft:mending": 178,
+        "minecraft:multishot": 195,
+        "minecraft:piercing": 212,
+        "minecraft:power": 229,
+        "minecraft:projectile_protection": 27,
+        "minecraft:protection": 44,
+        "minecraft:punch": 61,
+        "minecraft:quick_charge": 78,
+        "minecraft:respiration": 95,
+        "minecraft:riptide": 112,
+        "minecraft:sharpness": 129,
+        "minecraft:silk_touch": 146,
+        "minecraft:smite": 163,
+        "minecraft:soul_speed": 180,
+        "minecraft:sweeping_edge": 197,
+        "minecraft:swift_sneak": 214,
+        "minecraft:thorns": 231,
+        "minecraft:unbreaking": 248,
+        "minecraft:vanishing_curse": 9,
+        "minecraft:wind_burst": 26
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/28",
+      "hex": "2b169101124d113c26c6010bd6010ce70125b5010f1a2a0a001b24a4011f4f2171012c228201068101135e1be6011e3e23930107920119c40118b3010570102b08a30129f901034e09b401023d28e80117a2010e090df8011d2d27d7012060045f1580011ad5011c1c146f0ac501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 27,
+        "minecraft:bane_of_arthropods": 44,
+        "minecraft:binding_curse": 61,
+        "minecraft:blast_protection": 78,
+        "minecraft:breach": 95,
+        "minecraft:channeling": 112,
+        "minecraft:density": 129,
+        "minecraft:depth_strider": 146,
+        "minecraft:efficiency": 163,
+        "minecraft:feather_falling": 180,
+        "minecraft:fire_aspect": 197,
+        "minecraft:fire_protection": 214,
+        "minecraft:flame": 231,
+        "minecraft:fortune": 248,
+        "minecraft:frost_walker": 9,
+        "minecraft:impaling": 26,
+        "minecraft:infinity": 43,
+        "minecraft:knockback": 60,
+        "minecraft:looting": 77,
+        "minecraft:loyalty": 94,
+        "minecraft:luck_of_the_sea": 111,
+        "minecraft:lunge": 128,
+        "minecraft:lure": 145,
+        "minecraft:mending": 162,
+        "minecraft:multishot": 179,
+        "minecraft:piercing": 196,
+        "minecraft:power": 213,
+        "minecraft:projectile_protection": 230,
+        "minecraft:protection": 28,
+        "minecraft:punch": 45,
+        "minecraft:quick_charge": 62,
+        "minecraft:respiration": 79,
+        "minecraft:riptide": 96,
+        "minecraft:sharpness": 113,
+        "minecraft:silk_touch": 130,
+        "minecraft:smite": 147,
+        "minecraft:soul_speed": 164,
+        "minecraft:sweeping_edge": 181,
+        "minecraft:swift_sneak": 198,
+        "minecraft:thorns": 215,
+        "minecraft:unbreaking": 232,
+        "minecraft:vanishing_curse": 249,
+        "minecraft:wind_burst": 10
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/29",
+      "hex": "2b168101123d112c26b6010bc6010cd70125a5010f0a2afa01000b2494011f3f2161011c22720671134e1bd6011e2e23830107820119b40118a3010560101b08930129e901033e09a401022d28d8011792010ef9010de8011d1d27c7012050044f15701ac5011ce701145f0ab501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 11,
+        "minecraft:bane_of_arthropods": 28,
+        "minecraft:binding_curse": 45,
+        "minecraft:blast_protection": 62,
+        "minecraft:breach": 79,
+        "minecraft:channeling": 96,
+        "minecraft:density": 113,
+        "minecraft:depth_strider": 130,
+        "minecraft:efficiency": 147,
+        "minecraft:feather_falling": 164,
+        "minecraft:fire_aspect": 181,
+        "minecraft:fire_protection": 198,
+        "minecraft:flame": 215,
+        "minecraft:fortune": 232,
+        "minecraft:frost_walker": 249,
+        "minecraft:impaling": 10,
+        "minecraft:infinity": 27,
+        "minecraft:knockback": 44,
+        "minecraft:looting": 61,
+        "minecraft:loyalty": 78,
+        "minecraft:luck_of_the_sea": 95,
+        "minecraft:lunge": 112,
+        "minecraft:lure": 129,
+        "minecraft:mending": 146,
+        "minecraft:multishot": 163,
+        "minecraft:piercing": 180,
+        "minecraft:power": 197,
+        "minecraft:projectile_protection": 214,
+        "minecraft:protection": 231,
+        "minecraft:punch": 29,
+        "minecraft:quick_charge": 46,
+        "minecraft:respiration": 63,
+        "minecraft:riptide": 80,
+        "minecraft:sharpness": 97,
+        "minecraft:silk_touch": 114,
+        "minecraft:smite": 131,
+        "minecraft:soul_speed": 148,
+        "minecraft:sweeping_edge": 165,
+        "minecraft:swift_sneak": 182,
+        "minecraft:thorns": 199,
+        "minecraft:unbreaking": 216,
+        "minecraft:vanishing_curse": 233,
+        "minecraft:wind_burst": 250
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/30",
+      "hex": "2b1671122d111c26a6010bb6010cc7012595010ffa012aea0100fb012484011f2f2151010c22620661133e1bc6011e1e2373077219a4011893010550100b08830129d901032e099401021d28c8011de8011782010ee9010dd80127b7012040043f15601ab5011cd701144f0aa501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 251,
+        "minecraft:bane_of_arthropods": 12,
+        "minecraft:binding_curse": 29,
+        "minecraft:blast_protection": 46,
+        "minecraft:breach": 63,
+        "minecraft:channeling": 80,
+        "minecraft:density": 97,
+        "minecraft:depth_strider": 114,
+        "minecraft:efficiency": 131,
+        "minecraft:feather_falling": 148,
+        "minecraft:fire_aspect": 165,
+        "minecraft:fire_protection": 182,
+        "minecraft:flame": 199,
+        "minecraft:fortune": 216,
+        "minecraft:frost_walker": 233,
+        "minecraft:impaling": 250,
+        "minecraft:infinity": 11,
+        "minecraft:knockback": 28,
+        "minecraft:looting": 45,
+        "minecraft:loyalty": 62,
+        "minecraft:luck_of_the_sea": 79,
+        "minecraft:lunge": 96,
+        "minecraft:lure": 113,
+        "minecraft:mending": 130,
+        "minecraft:multishot": 147,
+        "minecraft:piercing": 164,
+        "minecraft:power": 181,
+        "minecraft:projectile_protection": 198,
+        "minecraft:protection": 215,
+        "minecraft:punch": 232,
+        "minecraft:quick_charge": 30,
+        "minecraft:respiration": 47,
+        "minecraft:riptide": 64,
+        "minecraft:sharpness": 81,
+        "minecraft:silk_touch": 98,
+        "minecraft:smite": 115,
+        "minecraft:soul_speed": 132,
+        "minecraft:sweeping_edge": 149,
+        "minecraft:swift_sneak": 166,
+        "minecraft:thorns": 183,
+        "minecraft:unbreaking": 200,
+        "minecraft:vanishing_curse": 217,
+        "minecraft:wind_burst": 234
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/31",
+      "hex": "2b1661121d110c2696010ba6012585010cb7010fea012ada0100eb0124741f1f214101fc0122520651132e1ee9011bb60123630762199401188301054010fb01087329c901031e098401020d28b8011dd80117720ed9010dc80127a7012030042f15501aa5011cc701143f0a9501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 235,
+        "minecraft:bane_of_arthropods": 252,
+        "minecraft:binding_curse": 13,
+        "minecraft:blast_protection": 30,
+        "minecraft:breach": 47,
+        "minecraft:channeling": 64,
+        "minecraft:density": 81,
+        "minecraft:depth_strider": 98,
+        "minecraft:efficiency": 115,
+        "minecraft:feather_falling": 132,
+        "minecraft:fire_aspect": 149,
+        "minecraft:fire_protection": 166,
+        "minecraft:flame": 183,
+        "minecraft:fortune": 200,
+        "minecraft:frost_walker": 217,
+        "minecraft:impaling": 234,
+        "minecraft:infinity": 251,
+        "minecraft:knockback": 12,
+        "minecraft:looting": 29,
+        "minecraft:loyalty": 46,
+        "minecraft:luck_of_the_sea": 63,
+        "minecraft:lunge": 80,
+        "minecraft:lure": 97,
+        "minecraft:mending": 114,
+        "minecraft:multishot": 131,
+        "minecraft:piercing": 148,
+        "minecraft:power": 165,
+        "minecraft:projectile_protection": 182,
+        "minecraft:protection": 199,
+        "minecraft:punch": 216,
+        "minecraft:quick_charge": 233,
+        "minecraft:respiration": 31,
+        "minecraft:riptide": 48,
+        "minecraft:sharpness": 65,
+        "minecraft:silk_touch": 82,
+        "minecraft:smite": 99,
+        "minecraft:soul_speed": 116,
+        "minecraft:sweeping_edge": 133,
+        "minecraft:swift_sneak": 150,
+        "minecraft:thorns": 167,
+        "minecraft:unbreaking": 184,
+        "minecraft:vanishing_curse": 201,
+        "minecraft:wind_burst": 218
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/32",
+      "hex": "2b1651120d11fc012686010b960125750ca7010fda012aca0100db0124641fea01213101ec0122420641131e1ed9011ba601235307521984011873053010eb01086329b901030e097402fd0128a8011dc80117620ec9012797010db8012020041f15401a95011cb701142f0a8501",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 219,
+        "minecraft:bane_of_arthropods": 236,
+        "minecraft:binding_curse": 253,
+        "minecraft:blast_protection": 14,
+        "minecraft:breach": 31,
+        "minecraft:channeling": 48,
+        "minecraft:density": 65,
+        "minecraft:depth_strider": 82,
+        "minecraft:efficiency": 99,
+        "minecraft:feather_falling": 116,
+        "minecraft:fire_aspect": 133,
+        "minecraft:fire_protection": 150,
+        "minecraft:flame": 167,
+        "minecraft:fortune": 184,
+        "minecraft:frost_walker": 201,
+        "minecraft:impaling": 218,
+        "minecraft:infinity": 235,
+        "minecraft:knockback": 252,
+        "minecraft:looting": 13,
+        "minecraft:loyalty": 30,
+        "minecraft:luck_of_the_sea": 47,
+        "minecraft:lunge": 64,
+        "minecraft:lure": 81,
+        "minecraft:mending": 98,
+        "minecraft:multishot": 115,
+        "minecraft:piercing": 132,
+        "minecraft:power": 149,
+        "minecraft:projectile_protection": 166,
+        "minecraft:protection": 183,
+        "minecraft:punch": 200,
+        "minecraft:quick_charge": 217,
+        "minecraft:respiration": 234,
+        "minecraft:riptide": 32,
+        "minecraft:sharpness": 49,
+        "minecraft:silk_touch": 66,
+        "minecraft:smite": 83,
+        "minecraft:soul_speed": 100,
+        "minecraft:sweeping_edge": 117,
+        "minecraft:swift_sneak": 134,
+        "minecraft:thorns": 151,
+        "minecraft:unbreaking": 168,
+        "minecraft:vanishing_curse": 185,
+        "minecraft:wind_burst": 202
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/33",
+      "hex": "2b164112fd0111ec0126760b860125650c97010fca012aba0100cb0124541fda01212101dc0122320631130e1ec9011b96012343074219741863052010db01085329a90103fe01096402ed0128980120eb011db80117522787010da801040f0eb90115301a85011ca701141f0a75",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 203,
+        "minecraft:bane_of_arthropods": 220,
+        "minecraft:binding_curse": 237,
+        "minecraft:blast_protection": 254,
+        "minecraft:breach": 15,
+        "minecraft:channeling": 32,
+        "minecraft:density": 49,
+        "minecraft:depth_strider": 66,
+        "minecraft:efficiency": 83,
+        "minecraft:feather_falling": 100,
+        "minecraft:fire_aspect": 117,
+        "minecraft:fire_protection": 134,
+        "minecraft:flame": 151,
+        "minecraft:fortune": 168,
+        "minecraft:frost_walker": 185,
+        "minecraft:impaling": 202,
+        "minecraft:infinity": 219,
+        "minecraft:knockback": 236,
+        "minecraft:looting": 253,
+        "minecraft:loyalty": 14,
+        "minecraft:luck_of_the_sea": 31,
+        "minecraft:lunge": 48,
+        "minecraft:lure": 65,
+        "minecraft:mending": 82,
+        "minecraft:multishot": 99,
+        "minecraft:piercing": 116,
+        "minecraft:power": 133,
+        "minecraft:projectile_protection": 150,
+        "minecraft:protection": 167,
+        "minecraft:punch": 184,
+        "minecraft:quick_charge": 201,
+        "minecraft:respiration": 218,
+        "minecraft:riptide": 235,
+        "minecraft:sharpness": 33,
+        "minecraft:silk_touch": 50,
+        "minecraft:smite": 67,
+        "minecraft:soul_speed": 84,
+        "minecraft:sweeping_edge": 101,
+        "minecraft:swift_sneak": 118,
+        "minecraft:thorns": 135,
+        "minecraft:unbreaking": 152,
+        "minecraft:vanishing_curse": 169,
+        "minecraft:wind_burst": 186
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/34",
+      "hex": "2b163112ed0111dc0126660b7625550c87010fba012aaa0100bb01244421ec011fca0101cc012222062113fe011eb9011b86012333073219641853051010cb01084329990103ee01095402dd0128880120db011da801174227770d980104ff010ea90115201a751c9701140f0a65",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 187,
+        "minecraft:bane_of_arthropods": 204,
+        "minecraft:binding_curse": 221,
+        "minecraft:blast_protection": 238,
+        "minecraft:breach": 255,
+        "minecraft:channeling": 16,
+        "minecraft:density": 33,
+        "minecraft:depth_strider": 50,
+        "minecraft:efficiency": 67,
+        "minecraft:feather_falling": 84,
+        "minecraft:fire_aspect": 101,
+        "minecraft:fire_protection": 118,
+        "minecraft:flame": 135,
+        "minecraft:fortune": 152,
+        "minecraft:frost_walker": 169,
+        "minecraft:impaling": 186,
+        "minecraft:infinity": 203,
+        "minecraft:knockback": 220,
+        "minecraft:looting": 237,
+        "minecraft:loyalty": 254,
+        "minecraft:luck_of_the_sea": 15,
+        "minecraft:lunge": 32,
+        "minecraft:lure": 49,
+        "minecraft:mending": 66,
+        "minecraft:multishot": 83,
+        "minecraft:piercing": 100,
+        "minecraft:power": 117,
+        "minecraft:projectile_protection": 134,
+        "minecraft:protection": 151,
+        "minecraft:punch": 168,
+        "minecraft:quick_charge": 185,
+        "minecraft:respiration": 202,
+        "minecraft:riptide": 219,
+        "minecraft:sharpness": 236,
+        "minecraft:silk_touch": 34,
+        "minecraft:smite": 51,
+        "minecraft:soul_speed": 68,
+        "minecraft:sweeping_edge": 85,
+        "minecraft:swift_sneak": 102,
+        "minecraft:thorns": 119,
+        "minecraft:unbreaking": 136,
+        "minecraft:vanishing_curse": 153,
+        "minecraft:wind_burst": 170
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/35",
+      "hex": "2b162112dd0111cc0126560b6625450c770faa012a9a0100ab01243421dc011fba0101bc0122ed01061113ee011ea9011b762323072219541843050010bb01083329890103de01094402cd01287820cb011d9801173227670d880104ef010e990115101a651c870114ff010a55",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 171,
+        "minecraft:bane_of_arthropods": 188,
+        "minecraft:binding_curse": 205,
+        "minecraft:blast_protection": 222,
+        "minecraft:breach": 239,
+        "minecraft:channeling": 0,
+        "minecraft:density": 17,
+        "minecraft:depth_strider": 34,
+        "minecraft:efficiency": 51,
+        "minecraft:feather_falling": 68,
+        "minecraft:fire_aspect": 85,
+        "minecraft:fire_protection": 102,
+        "minecraft:flame": 119,
+        "minecraft:fortune": 136,
+        "minecraft:frost_walker": 153,
+        "minecraft:impaling": 170,
+        "minecraft:infinity": 187,
+        "minecraft:knockback": 204,
+        "minecraft:looting": 221,
+        "minecraft:loyalty": 238,
+        "minecraft:luck_of_the_sea": 255,
+        "minecraft:lunge": 16,
+        "minecraft:lure": 33,
+        "minecraft:mending": 50,
+        "minecraft:multishot": 67,
+        "minecraft:piercing": 84,
+        "minecraft:power": 101,
+        "minecraft:projectile_protection": 118,
+        "minecraft:protection": 135,
+        "minecraft:punch": 152,
+        "minecraft:quick_charge": 169,
+        "minecraft:respiration": 186,
+        "minecraft:riptide": 203,
+        "minecraft:sharpness": 220,
+        "minecraft:silk_touch": 237,
+        "minecraft:smite": 35,
+        "minecraft:soul_speed": 52,
+        "minecraft:sweeping_edge": 69,
+        "minecraft:swift_sneak": 86,
+        "minecraft:thorns": 103,
+        "minecraft:unbreaking": 120,
+        "minecraft:vanishing_curse": 137,
+        "minecraft:wind_burst": 154
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/36",
+      "hex": "2b161112cd0111bc0126460b5625350c670f9a012a8a01009b01242421cc011faa0101ac0122dd01060113de0123ee011e99011b6607121944183305f00110ab010823297903ce01093402bd01286820bb011d8801172227570d7804df010e890115001a551c7714ef010a45",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 155,
+        "minecraft:bane_of_arthropods": 172,
+        "minecraft:binding_curse": 189,
+        "minecraft:blast_protection": 206,
+        "minecraft:breach": 223,
+        "minecraft:channeling": 240,
+        "minecraft:density": 1,
+        "minecraft:depth_strider": 18,
+        "minecraft:efficiency": 35,
+        "minecraft:feather_falling": 52,
+        "minecraft:fire_aspect": 69,
+        "minecraft:fire_protection": 86,
+        "minecraft:flame": 103,
+        "minecraft:fortune": 120,
+        "minecraft:frost_walker": 137,
+        "minecraft:impaling": 154,
+        "minecraft:infinity": 171,
+        "minecraft:knockback": 188,
+        "minecraft:looting": 205,
+        "minecraft:loyalty": 222,
+        "minecraft:luck_of_the_sea": 239,
+        "minecraft:lunge": 0,
+        "minecraft:lure": 17,
+        "minecraft:mending": 34,
+        "minecraft:multishot": 51,
+        "minecraft:piercing": 68,
+        "minecraft:power": 85,
+        "minecraft:projectile_protection": 102,
+        "minecraft:protection": 119,
+        "minecraft:punch": 136,
+        "minecraft:quick_charge": 153,
+        "minecraft:respiration": 170,
+        "minecraft:riptide": 187,
+        "minecraft:sharpness": 204,
+        "minecraft:silk_touch": 221,
+        "minecraft:smite": 238,
+        "minecraft:soul_speed": 36,
+        "minecraft:sweeping_edge": 53,
+        "minecraft:swift_sneak": 70,
+        "minecraft:thorns": 87,
+        "minecraft:unbreaking": 104,
+        "minecraft:vanishing_curse": 121,
+        "minecraft:wind_burst": 138
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/37",
+      "hex": "2b160111ac0112bd0126360b4625250c570f8a012a7a008b0124ef0121bc011f9a01019c0122cd0106f10113ce0123de011e89011b5607021934182305e001109b010813296903be01092402ad01285820ab011d78171227470d6804cf010e7915f0011a451c6714df010a35",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 139,
+        "minecraft:bane_of_arthropods": 156,
+        "minecraft:binding_curse": 173,
+        "minecraft:blast_protection": 190,
+        "minecraft:breach": 207,
+        "minecraft:channeling": 224,
+        "minecraft:density": 241,
+        "minecraft:depth_strider": 2,
+        "minecraft:efficiency": 19,
+        "minecraft:feather_falling": 36,
+        "minecraft:fire_aspect": 53,
+        "minecraft:fire_protection": 70,
+        "minecraft:flame": 87,
+        "minecraft:fortune": 104,
+        "minecraft:frost_walker": 121,
+        "minecraft:impaling": 138,
+        "minecraft:infinity": 155,
+        "minecraft:knockback": 172,
+        "minecraft:looting": 189,
+        "minecraft:loyalty": 206,
+        "minecraft:luck_of_the_sea": 223,
+        "minecraft:lunge": 240,
+        "minecraft:lure": 1,
+        "minecraft:mending": 18,
+        "minecraft:multishot": 35,
+        "minecraft:piercing": 52,
+        "minecraft:power": 69,
+        "minecraft:projectile_protection": 86,
+        "minecraft:protection": 103,
+        "minecraft:punch": 120,
+        "minecraft:quick_charge": 137,
+        "minecraft:respiration": 154,
+        "minecraft:riptide": 171,
+        "minecraft:sharpness": 188,
+        "minecraft:silk_touch": 205,
+        "minecraft:smite": 222,
+        "minecraft:soul_speed": 239,
+        "minecraft:sweeping_edge": 37,
+        "minecraft:swift_sneak": 54,
+        "minecraft:thorns": 71,
+        "minecraft:unbreaking": 88,
+        "minecraft:vanishing_curse": 105,
+        "minecraft:wind_burst": 122
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/38",
+      "hex": "2b25f00116f10112ad0126260b36119c010c470f7a2a6a007b24df0121ac011f8a01018c0122bd0106e10113be0123ce011e791b4607f2011924181305d001108b010803295903ae010914029d012848209b011d68170227370d5804bf010e6915e0011a351c5714cf010a25",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 123,
+        "minecraft:bane_of_arthropods": 140,
+        "minecraft:binding_curse": 157,
+        "minecraft:blast_protection": 174,
+        "minecraft:breach": 191,
+        "minecraft:channeling": 208,
+        "minecraft:density": 225,
+        "minecraft:depth_strider": 242,
+        "minecraft:efficiency": 3,
+        "minecraft:feather_falling": 20,
+        "minecraft:fire_aspect": 37,
+        "minecraft:fire_protection": 54,
+        "minecraft:flame": 71,
+        "minecraft:fortune": 88,
+        "minecraft:frost_walker": 105,
+        "minecraft:impaling": 122,
+        "minecraft:infinity": 139,
+        "minecraft:knockback": 156,
+        "minecraft:looting": 173,
+        "minecraft:loyalty": 190,
+        "minecraft:luck_of_the_sea": 207,
+        "minecraft:lunge": 224,
+        "minecraft:lure": 241,
+        "minecraft:mending": 2,
+        "minecraft:multishot": 19,
+        "minecraft:piercing": 36,
+        "minecraft:power": 53,
+        "minecraft:projectile_protection": 70,
+        "minecraft:protection": 87,
+        "minecraft:punch": 104,
+        "minecraft:quick_charge": 121,
+        "minecraft:respiration": 138,
+        "minecraft:riptide": 155,
+        "minecraft:sharpness": 172,
+        "minecraft:silk_touch": 189,
+        "minecraft:smite": 206,
+        "minecraft:soul_speed": 223,
+        "minecraft:sweeping_edge": 240,
+        "minecraft:swift_sneak": 38,
+        "minecraft:thorns": 55,
+        "minecraft:unbreaking": 72,
+        "minecraft:vanishing_curse": 89,
+        "minecraft:wind_burst": 106
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/39",
+      "hex": "2b26f10116e101129d0125e0010b26118c010c370f6a2a5a006b24cf01219c011f7a017c22ad0106d10113ae0123be011e691b3607e2011914180305c001294908f301107b039e010904028d012838208b011d5817f20127270d4804af010e5915d0011a251c470a1514bf01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 107,
+        "minecraft:bane_of_arthropods": 124,
+        "minecraft:binding_curse": 141,
+        "minecraft:blast_protection": 158,
+        "minecraft:breach": 175,
+        "minecraft:channeling": 192,
+        "minecraft:density": 209,
+        "minecraft:depth_strider": 226,
+        "minecraft:efficiency": 243,
+        "minecraft:feather_falling": 4,
+        "minecraft:fire_aspect": 21,
+        "minecraft:fire_protection": 38,
+        "minecraft:flame": 55,
+        "minecraft:fortune": 72,
+        "minecraft:frost_walker": 89,
+        "minecraft:impaling": 106,
+        "minecraft:infinity": 123,
+        "minecraft:knockback": 140,
+        "minecraft:looting": 157,
+        "minecraft:loyalty": 174,
+        "minecraft:luck_of_the_sea": 191,
+        "minecraft:lunge": 208,
+        "minecraft:lure": 225,
+        "minecraft:mending": 242,
+        "minecraft:multishot": 3,
+        "minecraft:piercing": 20,
+        "minecraft:power": 37,
+        "minecraft:projectile_protection": 54,
+        "minecraft:protection": 71,
+        "minecraft:punch": 88,
+        "minecraft:quick_charge": 105,
+        "minecraft:respiration": 122,
+        "minecraft:riptide": 139,
+        "minecraft:sharpness": 156,
+        "minecraft:silk_touch": 173,
+        "minecraft:smite": 190,
+        "minecraft:soul_speed": 207,
+        "minecraft:sweeping_edge": 224,
+        "minecraft:swift_sneak": 241,
+        "minecraft:thorns": 39,
+        "minecraft:unbreaking": 56,
+        "minecraft:vanishing_curse": 73,
+        "minecraft:wind_burst": 90
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/40",
+      "hex": "2b26e10116d101128d0125d0010b16117c0c270f5a2a4a005b24bf01218c011f6a016c229d0106c101139e0123ae011e591b2607d201190418f30105b001293908e301106b038e0109f401027d282827f201207b1d4817e2010d38049f010e4915c0011a151c370a0514af01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 91,
+        "minecraft:bane_of_arthropods": 108,
+        "minecraft:binding_curse": 125,
+        "minecraft:blast_protection": 142,
+        "minecraft:breach": 159,
+        "minecraft:channeling": 176,
+        "minecraft:density": 193,
+        "minecraft:depth_strider": 210,
+        "minecraft:efficiency": 227,
+        "minecraft:feather_falling": 244,
+        "minecraft:fire_aspect": 5,
+        "minecraft:fire_protection": 22,
+        "minecraft:flame": 39,
+        "minecraft:fortune": 56,
+        "minecraft:frost_walker": 73,
+        "minecraft:impaling": 90,
+        "minecraft:infinity": 107,
+        "minecraft:knockback": 124,
+        "minecraft:looting": 141,
+        "minecraft:loyalty": 158,
+        "minecraft:luck_of_the_sea": 175,
+        "minecraft:lunge": 192,
+        "minecraft:lure": 209,
+        "minecraft:mending": 226,
+        "minecraft:multishot": 243,
+        "minecraft:piercing": 4,
+        "minecraft:power": 21,
+        "minecraft:projectile_protection": 38,
+        "minecraft:protection": 55,
+        "minecraft:punch": 72,
+        "minecraft:quick_charge": 89,
+        "minecraft:respiration": 106,
+        "minecraft:riptide": 123,
+        "minecraft:sharpness": 140,
+        "minecraft:silk_touch": 157,
+        "minecraft:smite": 174,
+        "minecraft:soul_speed": 191,
+        "minecraft:sweeping_edge": 208,
+        "minecraft:swift_sneak": 225,
+        "minecraft:thorns": 242,
+        "minecraft:unbreaking": 40,
+        "minecraft:vanishing_curse": 57,
+        "minecraft:wind_burst": 74
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/41",
+      "hex": "2b26d101127d16c10125c0010b06116c0c170f4a2a3a004b24af01217c1f5a015c228d0106b101138e01239e011e491b1607c20119f40118e30105a001292908d301105b037e09e401026d28f30127e201206b1d3817d2010d28048f010e3915b0011a051c270af501149f01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 75,
+        "minecraft:bane_of_arthropods": 92,
+        "minecraft:binding_curse": 109,
+        "minecraft:blast_protection": 126,
+        "minecraft:breach": 143,
+        "minecraft:channeling": 160,
+        "minecraft:density": 177,
+        "minecraft:depth_strider": 194,
+        "minecraft:efficiency": 211,
+        "minecraft:feather_falling": 228,
+        "minecraft:fire_aspect": 245,
+        "minecraft:fire_protection": 6,
+        "minecraft:flame": 23,
+        "minecraft:fortune": 40,
+        "minecraft:frost_walker": 57,
+        "minecraft:impaling": 74,
+        "minecraft:infinity": 91,
+        "minecraft:knockback": 108,
+        "minecraft:looting": 125,
+        "minecraft:loyalty": 142,
+        "minecraft:luck_of_the_sea": 159,
+        "minecraft:lunge": 176,
+        "minecraft:lure": 193,
+        "minecraft:mending": 210,
+        "minecraft:multishot": 227,
+        "minecraft:piercing": 244,
+        "minecraft:power": 5,
+        "minecraft:projectile_protection": 22,
+        "minecraft:protection": 39,
+        "minecraft:punch": 56,
+        "minecraft:quick_charge": 73,
+        "minecraft:respiration": 90,
+        "minecraft:riptide": 107,
+        "minecraft:sharpness": 124,
+        "minecraft:silk_touch": 141,
+        "minecraft:smite": 158,
+        "minecraft:soul_speed": 175,
+        "minecraft:sweeping_edge": 192,
+        "minecraft:swift_sneak": 209,
+        "minecraft:thorns": 226,
+        "minecraft:unbreaking": 243,
+        "minecraft:vanishing_curse": 41,
+        "minecraft:wind_burst": 58
+      },
+      "remaining": 0
+    },
+    {
+      "name": "all/42",
+      "hex": "2b26c101126d16b10125b0010bf601115c0c070f3a2a2a003b249f01216c1f4a014c227d06a101137e238e011e391b0607b20129f40118d30105900119e40108c301104b036e09d401025d28e30127d201205b1d28047f0d180e2917c20115a0011af5011c170ae501148f01",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 59,
+        "minecraft:bane_of_arthropods": 76,
+        "minecraft:binding_curse": 93,
+        "minecraft:blast_protection": 110,
+        "minecraft:breach": 127,
+        "minecraft:channeling": 144,
+        "minecraft:density": 161,
+        "minecraft:depth_strider": 178,
+        "minecraft:efficiency": 195,
+        "minecraft:feather_falling": 212,
+        "minecraft:fire_aspect": 229,
+        "minecraft:fire_protection": 246,
+        "minecraft:flame": 7,
+        "minecraft:fortune": 24,
+        "minecraft:frost_walker": 41,
+        "minecraft:impaling": 58,
+        "minecraft:infinity": 75,
+        "minecraft:knockback": 92,
+        "minecraft:looting": 109,
+        "minecraft:loyalty": 126,
+        "minecraft:luck_of_the_sea": 143,
+        "minecraft:lunge": 160,
+        "minecraft:lure": 177,
+        "minecraft:mending": 194,
+        "minecraft:multishot": 211,
+        "minecraft:piercing": 228,
+        "minecraft:power": 245,
+        "minecraft:projectile_protection": 6,
+        "minecraft:protection": 23,
+        "minecraft:punch": 40,
+        "minecraft:quick_charge": 57,
+        "minecraft:respiration": 74,
+        "minecraft:riptide": 91,
+        "minecraft:sharpness": 108,
+        "minecraft:silk_touch": 125,
+        "minecraft:smite": 142,
+        "minecraft:soul_speed": 159,
+        "minecraft:sweeping_edge": 176,
+        "minecraft:swift_sneak": 193,
+        "minecraft:thorns": 210,
+        "minecraft:unbreaking": 227,
+        "minecraft:vanishing_curse": 244,
+        "minecraft:wind_burst": 42
+      },
+      "remaining": 0
+    },
+    {
+      "name": "duplicate-last-wins",
+      "hex": "0300012aff010002",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 2,
+        "minecraft:wind_burst": 255
+      },
+      "remaining": 0
+    },
+    {
+      "name": "duplicate-invalid-overwritten",
+      "hex": "0200ffffffff0f0001",
+      "accepted": true,
+      "enchantments": {
+        "minecraft:aqua_affinity": 1
+      },
+      "remaining": 0
+    },
+    {
+      "name": "negative-count",
+      "hex": "ffffffff0f",
+      "accepted": false,
+      "exception": "java.lang.IllegalArgumentException"
+    },
+    {
+      "name": "negative-level",
+      "hex": "0100ffffffff0f",
+      "accepted": false,
+      "exception": "java.lang.IllegalArgumentException"
+    },
+    {
+      "name": "oversized-level",
+      "hex": "01008002",
+      "accepted": false,
+      "exception": "java.lang.IllegalArgumentException"
+    },
+    {
+      "name": "negative-holder",
+      "hex": "01ffffffff0f01",
+      "accepted": false,
+      "exception": "java.lang.IllegalArgumentException"
+    },
+    {
+      "name": "unknown-holder",
+      "hex": "012b01",
+      "accepted": false,
+      "exception": "java.lang.IllegalArgumentException"
+    },
+    {
+      "name": "huge-count-truncated",
+      "hex": "ffffffff07",
+      "accepted": false,
+      "exception": "java.lang.IndexOutOfBoundsException"
+    }
+  ]
+}
