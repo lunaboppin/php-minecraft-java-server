@@ -240,6 +240,27 @@ SCRIPT = [
     ('tp Witness 0 100 0 0 0', False), ('tp ParityProbe 3 100 3 0 0', False), ('rotate Witness 90 45', False),
     ('rotate Witness ~10 ~-5', False), ('rotate Witness facing 0 64 0', False), ('rotate Witness facing entity ParityProbe', False),
     ('rotate Witness facing entity ParityProbe eyes', False), ('rotate @a 0 0', False), ('rotate @s 400 100', False),
+    # /attribute on players and a pig, with the attribute update every tracker receives.
+    ('attribute Witness max_health get', False), ('attribute Witness minecraft:max_health get 2.5', False),
+    ('attribute Witness max_health base get', False), ('attribute Witness max_health base set 30', False),
+    ('attribute Witness max_health base get', False), ('attribute Witness max_health get', False),
+    ('attribute Witness max_health base set 2000', False), ('attribute Witness max_health base reset', False),
+    ('attribute Witness movement_speed get', False), ('attribute Witness movement_speed base get 1000', False),
+    ('attribute Witness movement_speed modifier add test:fast 0.5 add_multiplied_base', False),
+    ('attribute Witness movement_speed modifier add test:fast 0.5 add_multiplied_base', False),
+    ('attribute Witness movement_speed modifier value get test:fast', False),
+    ('attribute Witness movement_speed modifier value get test:fast 10', False), ('attribute Witness movement_speed get', False),
+    ('attribute Witness movement_speed modifier add test:plus 0.1 add_value', False),
+    ('attribute Witness movement_speed modifier add test:total 1 add_multiplied_total', False),
+    ('attribute Witness movement_speed get', False), ('attribute Witness movement_speed modifier remove test:fast', False),
+    ('attribute Witness movement_speed modifier remove test:fast', False),
+    ('attribute Witness movement_speed modifier value get test:nope', False),
+    ('attribute Witness movement_speed modifier remove test:plus', False),
+    ('attribute Witness movement_speed modifier remove test:total', False), ('attribute Witness follow_range get', False),
+    ('attribute Witness nope get', False), ('attribute Witness scale base set 2', False),
+    ('attribute Witness scale base reset', False), ('!quiet kill @e[type=!player]', False), ('summon pig 0 64 0', False),
+    ('attribute @e[type=pig,limit=1] max_health get', False), ('attribute @e[type=pig,limit=1] attack_damage get', False),
+    ('kill @e[type=pig]', False),
     ('list', False),
 ]
 
@@ -250,7 +271,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
+EXTRA = {'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

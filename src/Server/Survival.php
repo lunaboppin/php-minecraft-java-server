@@ -61,6 +61,7 @@ trait Survival
             [$c->x, $c->y, $c->z] = $this->worlds[$c->dimension]->spawn();
         }
         $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
+        $this->loadAttributes($c, $data['attributes'] ?? []);
         $c->health = max(0, min($this->maxHealth($c), (float) ($data['health'] ?? 20)));
         $c->absorption = max(0.0, (float) ($data['absorption'] ?? 0.0));
         $c->food = max(0, min(20, (int) ($data['food'] ?? 20)));
@@ -90,7 +91,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -177,7 +178,7 @@ trait Survival
      */
     private function joinAttributes(Client $c): string
     {
-        $speed = ['movement_speed', (float) unpack('G', pack('G', 0.1))[1], []];
+        $speed = $this->attributeEntry('player', $c->attributeBases, $c->attributeModifiers, 'movement_speed');
         $ranges = $this->interactionRanges($c);
         return Packets::attributeModifiers($this->version->catalog, $c->entityId, $c->gameMode === 1 ? [$speed, ...$ranges] : [...array_reverse($ranges), $speed]);
     }
@@ -257,6 +258,8 @@ trait Survival
             $c->dead = true;
             // The respawned player starts without effects or absorption.
             [$c->effects, $c->absorption] = [[], 0.0];
+            // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.
+            $c->attributeModifiers = array_filter(array_map(static fn (array $modifiers): array => array_filter($modifiers, static fn (array $modifier): bool => $modifier[2]), $c->attributeModifiers));
             $c->mining = null;
             $c->eating = null;
             $this->closeWindow($c, true);

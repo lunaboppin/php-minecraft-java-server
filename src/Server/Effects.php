@@ -72,10 +72,6 @@ trait Effects
         if ($effect === 'minecraft:absorption' && $c->absorption > 0.0) {
             $this->setAbsorption($c, 0.0);
         }
-        if ($effect === 'minecraft:health_boost' && $c->health > $this->maxHealth($c)) {
-            $c->health = $this->maxHealth($c);
-            $this->health($c);
-        }
         return true;
     }
 
@@ -88,32 +84,25 @@ trait Effects
             . Binary::writeVarInt($instance['amplifier']) . Binary::writeVarInt($instance['duration']) . chr($flags);
     }
 
-    /** The synchronized attributes an effect modifies, with every active effect's modifier on them. */
+    /**
+     * MobEffect.removeAttributeModifiers and addAttributeModifiers: the effect's modifiers are
+     * removed and, while it is active, added again for its level, then the synchronized ones
+     * are sent.
+     */
     private function syncEffectAttributes(Client $c, string $effect): void
     {
-        $definitions = $this->effectDefinitions();
-        $synced = $this->version->catalog->mobs['sync_attributes'];
-        $attributes = [];
-        foreach ($definitions[$effect]['attributes'] as $attribute => $_) {
+        $names = [];
+        foreach ($this->effectDefinitions()[$effect]['attributes'] as $attribute => $modifier) {
             $name = substr($attribute, 10);
-            if (!in_array($name, $synced, true)) {
-                continue;
+            unset($c->attributeModifiers[$name][$modifier['id']]);
+            if (isset($c->effects[$effect])) {
+                // AttributeTemplate.create: the amount per level, times the level.
+                $amount = $modifier['amounts'][0] * ($c->effects[$effect]['amplifier'] + 1);
+                $c->attributeModifiers[$name][$modifier['id']] = [$amount, ['add_value' => 0, 'add_multiplied_base' => 1, 'add_multiplied_total' => 2][$modifier['operation']], false];
             }
-            $modifiers = [];
-            foreach ($c->effects as $active => $instance) {
-                $modifier = $definitions[$active]['attributes'][$attribute] ?? null;
-                if ($modifier !== null) {
-                    // AttributeTemplate.create: the amount per level, times the level.
-                    $amount = $modifier['amounts'][0] * ($instance['amplifier'] + 1);
-                    $modifiers[] = [$modifier['id'], $amount, ['add_value' => 0, 'add_multiplied_base' => 1, 'add_multiplied_total' => 2][$modifier['operation']]];
-                }
-            }
-            $base = $this->version->catalog->mobs['entities']['player']['attributes'][$name];
-            $attributes[] = [$name, $name === 'movement_speed' ? (float) unpack('G', pack('G', 0.1))[1] : (float) $base, $modifiers];
+            $names[] = $name;
         }
-        if ($attributes !== []) {
-            $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $c->entityId, $attributes));
-        }
+        $this->syncPlayerAttributes($c, $names);
     }
 
     /**
@@ -195,10 +184,10 @@ trait Effects
         }
     }
 
-    /** The max_health attribute: 20, plus four per health boost level. */
+    /** LivingEntity.getMaxHealth: the max_health attribute as a float. */
     private function maxHealth(Client $c): float
     {
-        return 20.0 + (isset($c->effects['minecraft:health_boost']) ? 4.0 * ($c->effects['minecraft:health_boost']['amplifier'] + 1) : 0.0);
+        return (float) unpack('G', pack('G', $this->playerAttribute($c, 'max_health')))[1];
     }
 
     /** Player.setAbsorptionAmount, shown to the player and those tracking them. */

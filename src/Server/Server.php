@@ -30,6 +30,8 @@ final class Server
 
     use Effects;
 
+    use Attributes;
+
     use Commands;
 
     use Animals;

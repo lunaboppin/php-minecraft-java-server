@@ -100,6 +100,8 @@ trait Commands
 
     use CommandModules\EffectCommand;
 
+    use CommandModules\AttributeCommand;
+
     use CommandModules\PlaySoundCommand;
 
     use CommandModules\StopSoundCommand;
@@ -131,12 +133,12 @@ trait Commands
             $sender->send($this->version, 'system_chat', Packets::systemChat($message));
         }
         if (!$broadcastToOperators) {
-            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
             return;
         }
         // The server console sees admin messages only while log_admin_commands is on.
         if ($this->gameRule('log_admin_commands') === 'true') {
-            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
         }
         if (!$feedback) {
             return;
