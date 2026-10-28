@@ -64,9 +64,8 @@ def observe(server, case, output):
             execute('gamerule minecraft:respawn_radius 0')
             execute('setworldspawn 8 64 8')
         else:
-            # Establish the same final collider position despite incomplete
-            # native block-centering/respawn-radius command behavior in PHP.
-            execute('setworldspawn 8.5 64 8.5')
+            # PHP has no respawn radius; the spawn is the block centre, as vanilla's with radius 0.
+            execute('setworldspawn 8 64 8')
         positions = [[2.5, 64, .5]]
         if case == 'two-giants':
             execute('fill -2 64 -12 -2 82 12 minecraft:stone')
