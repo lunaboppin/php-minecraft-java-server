@@ -229,7 +229,7 @@ def main():
         'ExportMobEquipment.java', 'ExportEnchanting.java', 'ExportEnchantmentComponents.java',
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
-        'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java',
+        'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
         'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportWorldgenChunks.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
@@ -258,6 +258,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportDisplayNames', str(out / 'display-names.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportGameRules', str(out / 'gamerules.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobEffects', str(out / 'mob-effects.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportConsumables', str(out / 'consumables.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order.json')], check=True, cwd=cache)

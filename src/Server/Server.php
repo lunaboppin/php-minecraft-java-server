@@ -524,6 +524,9 @@ final class Server
             $c->send($this->version, 'update_mob_effect', $this->effectPacket($c, $effect, false));
             $this->syncEffectAttributes($c, $effect);
         }
+        if ($c->absorption > 0.0) {
+            $this->setAbsorption($c, $c->absorption);
+        }
         $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $this->health($c);
         if ($c->dead) {

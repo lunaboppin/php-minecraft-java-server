@@ -60,11 +60,12 @@ trait Survival
         if (abs($c->x) > 29999900 || abs($c->z) > 29999900 || $c->y < $this->worlds[$c->dimension]->minY || $c->y >= $this->worlds[$c->dimension]->minY + $this->worlds[$c->dimension]->height) {
             [$c->x, $c->y, $c->z] = $this->worlds[$c->dimension]->spawn();
         }
-        $c->health = max(0, min(20, (float) ($data['health'] ?? 20)));
+        $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
+        $c->health = max(0, min($this->maxHealth($c), (float) ($data['health'] ?? 20)));
+        $c->absorption = max(0.0, (float) ($data['absorption'] ?? 0.0));
         $c->food = max(0, min(20, (int) ($data['food'] ?? 20)));
         $c->saturation = max(0, min($c->food, (float) ($data['saturation'] ?? 5)));
         $c->experience = max(0, (int) ($data['experience'] ?? 0));
-        $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
         [$c->experienceLevel, $c->experienceProgress] = isset($data['experienceLevel']) ? [max(0, (int) $data['experienceLevel']), max(0.0, min(1.0, (float) $data['experienceProgress']))] : self::experienceFromTotal($c->experience);
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
@@ -89,7 +90,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -212,8 +213,13 @@ trait Survival
         if ($attacker !== null) {
             [$c->lastHurtByPlayer, $c->lastHurtByPlayerTick] = [$attacker, $this->ticks];
         }
-        // getDamageAfterMagicAbsorb: resistance reduces what is taken.
+        // getDamageAfterMagicAbsorb: resistance reduces what is taken, then absorption takes its share.
         $amount = $this->effectDamage($c, $amount, $type);
+        if ($c->absorption > 0.0) {
+            $absorbed = min($c->absorption, $amount);
+            $this->setAbsorption($c, $c->absorption - $absorbed);
+            $amount -= $absorbed;
+        }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
         foreach ($this->localPlayers() as $p) {
@@ -223,8 +229,8 @@ trait Survival
         }
         if ($c->health <= 0) {
             $c->dead = true;
-            // The respawned player starts without effects.
-            $c->effects = [];
+            // The respawned player starts without effects or absorption.
+            [$c->effects, $c->absorption] = [[], 0.0];
             $c->mining = null;
             $c->eating = null;
             $this->closeWindow($c, true);
@@ -503,6 +509,7 @@ trait Survival
                 if ($c->gameMode === 0) {
                     Inventory::consume($c->inventory, $slot);
                 }$this->health($c);
+                $this->applyConsumeEffects($c, 'minecraft:' . $this->version->catalog->itemName($c->eating['item']));
                 $this->syncInventory($c);
                 $c->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x09");
             }$c->eating = null;
@@ -548,12 +555,12 @@ trait Survival
         }
         if ($this->config->difficulty === 0) {
             $c->food = 20;
-            if ($c->health < 20) {
-                $c->health = min(20, $c->health + 1);
+            if ($c->health < $this->maxHealth($c)) {
+                $c->health = min($this->maxHealth($c), $c->health + 1);
             }
         } elseif ($this->ticks % 80 === 0) {
-            if ($this->naturalRegeneration && $c->food >= 18 && $c->health < 20) {
-                $c->health = min(20, $c->health + 1);
+            if ($this->naturalRegeneration && $c->food >= 18 && $c->health < $this->maxHealth($c)) {
+                $c->health = min($this->maxHealth($c), $c->health + 1);
                 $c->exhaustion += 6;
             } elseif ($c->food === 0 && ($this->config->difficulty === 3 || $c->health > ($this->config->difficulty === 1 ? 10 : 1))) {
                 $this->damage($c, 1, 'starve');
@@ -575,8 +582,11 @@ trait Survival
             return;
         }
         $info = $this->version->catalog->item($stack['item']);
-        if (isset($info['nutrition']) && $c->food < 20) {
-            $c->eating = ['slot' => $slot, 'item' => $stack['item'], 'complete' => $this->ticks + 32];
+        // Foods with canAlwaysEat are eaten at full hunger; Consumable.consumeTicks sets the time.
+        $name = 'minecraft:' . $this->version->catalog->itemName($stack['item']);
+        if (isset($info['nutrition']) && ($c->food < 20 || in_array($name, $this->consumables()['always_edible'], true))) {
+            $ticks = (int) (($this->consumables()['items'][$name]['consume_seconds'] ?? 1.6) * 20);
+            $c->eating = ['slot' => $slot, 'item' => $stack['item'], 'complete' => $this->ticks + $ticks];
             return;
         }
         if ($this->version->catalog->itemName($stack['item']) === 'bucket') {
