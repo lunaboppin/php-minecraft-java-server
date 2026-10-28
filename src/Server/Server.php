@@ -28,6 +28,8 @@ final class Server
 
     use Scoreboards;
 
+    use Effects;
+
     use Commands;
 
     use Animals;
@@ -517,6 +519,11 @@ final class Server
         }
         $c->send($this->version, 'post_effects', Binary::writeVarInt(0));
         $this->syncInventory($c);
+        // PlayerList.sendActivePlayerEffects: saved effects, without blending in.
+        foreach (array_keys($c->effects) as $effect) {
+            $c->send($this->version, 'update_mob_effect', $this->effectPacket($c, $effect, false));
+            $this->syncEffectAttributes($c, $effect);
+        }
         $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $this->health($c);
         if ($c->dead) {

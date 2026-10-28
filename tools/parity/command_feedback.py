@@ -202,6 +202,14 @@ SCRIPT = [
     ('!witness trigger nope', False), ('!witness trigger t set', False), ('scoreboard objectives setdisplay sidebar t', False),
     ('scoreboard players enable Witness t', False), ('!witness trigger t add -3', False), ('scoreboard objectives remove t', False),
     ('scoreboard objectives remove d', False),
+    # Status effects and their packets; long effects are infinite so no 30-second resync lands mid-script.
+    ('effect give Witness speed', False), ('effect give Witness speed infinite 1', False), ('effect give Witness speed infinite 1', False),
+    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision 30', False), ('effect give Witness speed 0', False),
+    ('effect give Witness speed 1000001', False), ('effect give Witness speed 10 256', False), ('effect give Witness nope', False),
+    ('effect clear Witness speed', False), ('effect clear Witness speed', False), ('effect clear Witness night_vision', False),
+    ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
+    ('effect give Witness instant_health 1 0', False), ('effect give Witness instant_damage 1 0', False), ('effect give Witness poison 5', False),
+    ('effect clear Witness poison', False), ('effect clear', False),
     ('list', False),
 ]
 
@@ -212,7 +220,7 @@ def collect(client, since):
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
-            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles',
+            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect',
             'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 
 

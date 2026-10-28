@@ -1,0 +1,457 @@
+{
+  "version": "26.3",
+  "effects": {
+    "minecraft:speed": {
+      "id": 0,
+      "category": "beneficial",
+      "color": 3402751,
+      "instant": false,
+      "description": "effect.minecraft.speed",
+      "attributes": {
+        "minecraft:movement_speed": {
+          "id": "minecraft:effect.speed",
+          "operation": "add_multiplied_total",
+          "amounts": [
+            0.20000000298023224,
+            0.4000000059604645,
+            0.6000000089406967,
+            0.800000011920929
+          ]
+        }
+      }
+    },
+    "minecraft:slowness": {
+      "id": 1,
+      "category": "harmful",
+      "color": 9154528,
+      "instant": false,
+      "description": "effect.minecraft.slowness",
+      "attributes": {
+        "minecraft:movement_speed": {
+          "id": "minecraft:effect.slowness",
+          "operation": "add_multiplied_total",
+          "amounts": [
+            -0.15000000596046448,
+            -0.30000001192092896,
+            -0.45000001788139343,
+            -0.6000000238418579
+          ]
+        }
+      }
+    },
+    "minecraft:haste": {
+      "id": 2,
+      "category": "beneficial",
+      "color": 14270531,
+      "instant": false,
+      "description": "effect.minecraft.haste",
+      "attributes": {
+        "minecraft:attack_speed": {
+          "id": "minecraft:effect.haste",
+          "operation": "add_multiplied_total",
+          "amounts": [
+            0.10000000149011612,
+            0.20000000298023224,
+            0.30000000447034836,
+            0.4000000059604645
+          ]
+        }
+      }
+    },
+    "minecraft:mining_fatigue": {
+      "id": 3,
+      "category": "harmful",
+      "color": 4866583,
+      "instant": false,
+      "description": "effect.minecraft.mining_fatigue",
+      "attributes": {
+        "minecraft:attack_speed": {
+          "id": "minecraft:effect.mining_fatigue",
+          "operation": "add_multiplied_total",
+          "amounts": [
+            -0.10000000149011612,
+            -0.20000000298023224,
+            -0.30000000447034836,
+            -0.4000000059604645
+          ]
+        }
+      }
+    },
+    "minecraft:strength": {
+      "id": 4,
+      "category": "beneficial",
+      "color": 16762624,
+      "instant": false,
+      "description": "effect.minecraft.strength",
+      "attributes": {
+        "minecraft:attack_damage": {
+          "id": "minecraft:effect.strength",
+          "operation": "add_value",
+          "amounts": [
+            3.0,
+            6.0,
+            9.0,
+            12.0
+          ]
+        }
+      }
+    },
+    "minecraft:instant_health": {
+      "id": 5,
+      "category": "beneficial",
+      "color": 16262179,
+      "instant": true,
+      "description": "effect.minecraft.instant_health",
+      "attributes": {}
+    },
+    "minecraft:instant_damage": {
+      "id": 6,
+      "category": "harmful",
+      "color": 11101546,
+      "instant": true,
+      "description": "effect.minecraft.instant_damage",
+      "attributes": {}
+    },
+    "minecraft:jump_boost": {
+      "id": 7,
+      "category": "beneficial",
+      "color": 16646020,
+      "instant": false,
+      "description": "effect.minecraft.jump_boost",
+      "attributes": {
+        "minecraft:safe_fall_distance": {
+          "id": "minecraft:effect.jump_boost",
+          "operation": "add_value",
+          "amounts": [
+            1.0,
+            2.0,
+            3.0,
+            4.0
+          ]
+        }
+      }
+    },
+    "minecraft:nausea": {
+      "id": 8,
+      "category": "harmful",
+      "color": 5578058,
+      "instant": false,
+      "description": "effect.minecraft.nausea",
+      "attributes": {}
+    },
+    "minecraft:regeneration": {
+      "id": 9,
+      "category": "beneficial",
+      "color": 13458603,
+      "instant": false,
+      "description": "effect.minecraft.regeneration",
+      "attributes": {}
+    },
+    "minecraft:resistance": {
+      "id": 10,
+      "category": "beneficial",
+      "color": 9520880,
+      "instant": false,
+      "description": "effect.minecraft.resistance",
+      "attributes": {}
+    },
+    "minecraft:fire_resistance": {
+      "id": 11,
+      "category": "beneficial",
+      "color": 16750848,
+      "instant": false,
+      "description": "effect.minecraft.fire_resistance",
+      "attributes": {}
+    },
+    "minecraft:water_breathing": {
+      "id": 12,
+      "category": "beneficial",
+      "color": 10017472,
+      "instant": false,
+      "description": "effect.minecraft.water_breathing",
+      "attributes": {}
+    },
+    "minecraft:invisibility": {
+      "id": 13,
+      "category": "beneficial",
+      "color": 16185078,
+      "instant": false,
+      "description": "effect.minecraft.invisibility",
+      "attributes": {
+        "minecraft:waypoint_transmit_range": {
+          "id": "minecraft:effect.waypoint_transmit_range_hide",
+          "operation": "add_multiplied_total",
+          "amounts": [
+            -1.0,
+            -2.0,
+            -3.0,
+            -4.0
+          ]
+        }
+      }
+    },
+    "minecraft:blindness": {
+      "id": 14,
+      "category": "harmful",
+      "color": 2039587,
+      "instant": false,
+      "description": "effect.minecraft.blindness",
+      "attributes": {}
+    },
+    "minecraft:night_vision": {
+      "id": 15,
+      "category": "beneficial",
+      "color": 12779366,
+      "instant": false,
+      "description": "effect.minecraft.night_vision",
+      "attributes": {}
+    },
+    "minecraft:hunger": {
+      "id": 16,
+      "category": "harmful",
+      "color": 5797459,
+      "instant": false,
+      "description": "effect.minecraft.hunger",
+      "attributes": {}
+    },
+    "minecraft:weakness": {
+      "id": 17,
+      "category": "harmful",
+      "color": 4738376,
+      "instant": false,
+      "description": "effect.minecraft.weakness",
+      "attributes": {
+        "minecraft:attack_damage": {
+          "id": "minecraft:effect.weakness",
+          "operation": "add_value",
+          "amounts": [
+            -4.0,
+            -8.0,
+            -12.0,
+            -16.0
+          ]
+        }
+      }
+    },
+    "minecraft:poison": {
+      "id": 18,
+      "category": "harmful",
+      "color": 8889187,
+      "instant": false,
+      "description": "effect.minecraft.poison",
+      "attributes": {}
+    },
+    "minecraft:wither": {
+      "id": 19,
+      "category": "harmful",
+      "color": 7561558,
+      "instant": false,
+      "description": "effect.minecraft.wither",
+      "attributes": {}
+    },
+    "minecraft:health_boost": {
+      "id": 20,
+      "category": "beneficial",
+      "color": 16284963,
+      "instant": false,
+      "description": "effect.minecraft.health_boost",
+      "attributes": {
+        "minecraft:max_health": {
+          "id": "minecraft:effect.health_boost",
+          "operation": "add_value",
+          "amounts": [
+            4.0,
+            8.0,
+            12.0,
+            16.0
+          ]
+        }
+      }
+    },
+    "minecraft:absorption": {
+      "id": 21,
+      "category": "beneficial",
+      "color": 2445989,
+      "instant": false,
+      "description": "effect.minecraft.absorption",
+      "attributes": {
+        "minecraft:max_absorption": {
+          "id": "minecraft:effect.absorption",
+          "operation": "add_value",
+          "amounts": [
+            4.0,
+            8.0,
+            12.0,
+            16.0
+          ]
+        }
+      }
+    },
+    "minecraft:saturation": {
+      "id": 22,
+      "category": "beneficial",
+      "color": 16262179,
+      "instant": true,
+      "description": "effect.minecraft.saturation",
+      "attributes": {}
+    },
+    "minecraft:glowing": {
+      "id": 23,
+      "category": "neutral",
+      "color": 9740385,
+      "instant": false,
+      "description": "effect.minecraft.glowing",
+      "attributes": {}
+    },
+    "minecraft:levitation": {
+      "id": 24,
+      "category": "harmful",
+      "color": 13565951,
+      "instant": false,
+      "description": "effect.minecraft.levitation",
+      "attributes": {}
+    },
+    "minecraft:luck": {
+      "id": 25,
+      "category": "beneficial",
+      "color": 5882118,
+      "instant": false,
+      "description": "effect.minecraft.luck",
+      "attributes": {
+        "minecraft:luck": {
+          "id": "minecraft:effect.luck",
+          "operation": "add_value",
+          "amounts": [
+            1.0,
+            2.0,
+            3.0,
+            4.0
+          ]
+        }
+      }
+    },
+    "minecraft:unluck": {
+      "id": 26,
+      "category": "harmful",
+      "color": 12624973,
+      "instant": false,
+      "description": "effect.minecraft.unluck",
+      "attributes": {
+        "minecraft:luck": {
+          "id": "minecraft:effect.unluck",
+          "operation": "add_value",
+          "amounts": [
+            -1.0,
+            -2.0,
+            -3.0,
+            -4.0
+          ]
+        }
+      }
+    },
+    "minecraft:slow_falling": {
+      "id": 27,
+      "category": "beneficial",
+      "color": 15978425,
+      "instant": false,
+      "description": "effect.minecraft.slow_falling",
+      "attributes": {}
+    },
+    "minecraft:conduit_power": {
+      "id": 28,
+      "category": "beneficial",
+      "color": 1950417,
+      "instant": false,
+      "description": "effect.minecraft.conduit_power",
+      "attributes": {}
+    },
+    "minecraft:dolphins_grace": {
+      "id": 29,
+      "category": "beneficial",
+      "color": 8954814,
+      "instant": false,
+      "description": "effect.minecraft.dolphins_grace",
+      "attributes": {}
+    },
+    "minecraft:bad_omen": {
+      "id": 30,
+      "category": "neutral",
+      "color": 745784,
+      "instant": false,
+      "description": "effect.minecraft.bad_omen",
+      "attributes": {}
+    },
+    "minecraft:hero_of_the_village": {
+      "id": 31,
+      "category": "beneficial",
+      "color": 4521796,
+      "instant": false,
+      "description": "effect.minecraft.hero_of_the_village",
+      "attributes": {}
+    },
+    "minecraft:darkness": {
+      "id": 32,
+      "category": "harmful",
+      "color": 2696993,
+      "instant": false,
+      "description": "effect.minecraft.darkness",
+      "attributes": {}
+    },
+    "minecraft:trial_omen": {
+      "id": 33,
+      "category": "neutral",
+      "color": 1484454,
+      "instant": false,
+      "description": "effect.minecraft.trial_omen",
+      "attributes": {}
+    },
+    "minecraft:raid_omen": {
+      "id": 34,
+      "category": "neutral",
+      "color": 14565464,
+      "instant": false,
+      "description": "effect.minecraft.raid_omen",
+      "attributes": {}
+    },
+    "minecraft:wind_charged": {
+      "id": 35,
+      "category": "harmful",
+      "color": 12438015,
+      "instant": false,
+      "description": "effect.minecraft.wind_charged",
+      "attributes": {}
+    },
+    "minecraft:weaving": {
+      "id": 36,
+      "category": "harmful",
+      "color": 7891290,
+      "instant": false,
+      "description": "effect.minecraft.weaving",
+      "attributes": {}
+    },
+    "minecraft:oozing": {
+      "id": 37,
+      "category": "harmful",
+      "color": 10092451,
+      "instant": false,
+      "description": "effect.minecraft.oozing",
+      "attributes": {}
+    },
+    "minecraft:infested": {
+      "id": 38,
+      "category": "harmful",
+      "color": 9214860,
+      "instant": false,
+      "description": "effect.minecraft.infested",
+      "attributes": {}
+    },
+    "minecraft:breath_of_the_nautilus": {
+      "id": 39,
+      "category": "beneficial",
+      "color": 65518,
+      "instant": false,
+      "description": "effect.minecraft.breath_of_the_nautilus",
+      "attributes": {}
+    }
+  }
+}

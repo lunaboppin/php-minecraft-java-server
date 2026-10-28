@@ -64,6 +64,7 @@ trait Survival
         $c->food = max(0, min(20, (int) ($data['food'] ?? 20)));
         $c->saturation = max(0, min($c->food, (float) ($data['saturation'] ?? 5)));
         $c->experience = max(0, (int) ($data['experience'] ?? 0));
+        $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
         [$c->experienceLevel, $c->experienceProgress] = isset($data['experienceLevel']) ? [max(0, (int) $data['experienceLevel']), max(0.0, min(1.0, (float) $data['experienceProgress']))] : self::experienceFromTotal($c->experience);
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
@@ -88,7 +89,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -195,6 +196,10 @@ trait Survival
         if ($c->dead || (in_array($c->gameMode, [1, 3], true) && !in_array($type, $tags['minecraft:bypasses_invulnerability'], true))) {
             return false;
         }
+        // LivingEntity.hurtServer: fire resistance ignores fire damage entirely.
+        if (isset($c->effects['minecraft:fire_resistance']) && in_array($type, $tags['minecraft:is_fire'], true)) {
+            return false;
+        }
         // During the invulnerability window only a stronger hit lands, for the difference.
         if ($this->ticks - $c->lastDamageTick < 10) {
             if ($amount <= $c->lastDamageAmount) {
@@ -207,6 +212,8 @@ trait Survival
         if ($attacker !== null) {
             [$c->lastHurtByPlayer, $c->lastHurtByPlayerTick] = [$attacker, $this->ticks];
         }
+        // getDamageAfterMagicAbsorb: resistance reduces what is taken.
+        $amount = $this->effectDamage($c, $amount, $type);
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
         foreach ($this->localPlayers() as $p) {
@@ -216,6 +223,8 @@ trait Survival
         }
         if ($c->health <= 0) {
             $c->dead = true;
+            // The respawned player starts without effects.
+            $c->effects = [];
             $c->mining = null;
             $c->eating = null;
             $this->closeWindow($c, true);
@@ -466,6 +475,10 @@ trait Survival
         if ($c->dead) {
             return;
         }
+        $this->tickEffects($c);
+        if ($c->dead) {
+            return;
+        }
         if (!$this->validWindow($c)) {
             $this->closeWindow($c, true);
             $this->syncInventory($c);
@@ -620,7 +633,7 @@ trait Survival
                     'wooden','golden' => 4,'stone' => 5,'iron' => 6,'diamond' => 7,'netherite' => 8,default => 1
                 };
             }
-            $this->damage($target, $damage, 'player_attack', $attacker);
+            $this->damage($target, $this->effectAttackDamage($attacker, (float) $damage), 'player_attack', $attacker);
             $attacker->exhaustion += 0.1;
             return;
         }

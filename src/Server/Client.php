@@ -29,6 +29,8 @@ final class Client
     public int $experienceLevel = 0;
     public float $experienceProgress = 0.0;
     public int $lastLevelUpTick = -1000;
+    /** @var array<string, array{amplifier: int, duration: int, ambient: bool, particles: bool, icon: bool}> active status effects */
+    public array $effects = [];
     public int $lastDamageTick = -20;
     /** The amount of the last hurt, which a hit during the invulnerability window must exceed. */
     public float $lastDamageAmount = 0;

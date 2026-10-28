@@ -98,6 +98,8 @@ trait Commands
 
     use CommandModules\TriggerCommand;
 
+    use CommandModules\EffectCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {

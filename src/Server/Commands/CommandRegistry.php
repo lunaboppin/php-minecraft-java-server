@@ -55,6 +55,7 @@ final class CommandRegistry
             new CommandDefinition('title', 'executeTitle', true),
             new CommandDefinition('scoreboard', 'executeScoreboard', true),
             new CommandDefinition('team', 'executeTeam', true),
+            new CommandDefinition('effect', 'executeEffect', true),
         ];
     }
 

@@ -192,7 +192,8 @@ trait Animals
         if (Combat::strength($weapon['speed'], $elapsed, 1.0) < $weapon['minimum_charge']) {
             return true;
         }
-        $damage = Combat::attack($weapon['damage'], $weapon['speed'], $elapsed);
+        // Strength and weakness modify the attack_damage attribute before the cooldown scales it.
+        $damage = Combat::attack($this->effectAttackDamage($c, (float) $weapon['damage']), $weapon['speed'], $elapsed);
         $c->lastAttackTick = $this->ticks;
         $newWindow = $this->ticks - ($animal['lastHurtTick'] ?? -100) >= 10;
         if (!$newWindow && $damage <= ($animal['lastHurtAmount'] ?? 0)) {
