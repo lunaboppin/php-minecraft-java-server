@@ -267,6 +267,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/server-commands.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/world-commands.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/multiplayer.py'), $code);
 if ($code !== 0) {
     exit($code);

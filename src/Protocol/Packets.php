@@ -164,9 +164,9 @@ final class Packets
         return ['id' => $id, 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => $yaw, 'pitch' => $pitch];
     }
 
-    public static function spawn(array $position = [0, 64, 0], string $dimension = 'overworld'): string
+    public static function spawn(array $position = [0, 64, 0], string $dimension = 'overworld', float $yaw = 0.0, float $pitch = 0.0): string
     {
-        return Binary::writeString('minecraft:' . $dimension) . Binary::writePosition((int) floor($position[0]), (int) floor($position[1]), (int) floor($position[2])) . pack('GG', 0, 0);
+        return Binary::writeString('minecraft:' . $dimension) . Binary::writePosition((int) floor($position[0]), (int) floor($position[1]), (int) floor($position[2])) . pack('GG', $yaw, $pitch);
     }
 
     public static function chat(string $text): string

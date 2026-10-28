@@ -129,8 +129,8 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 /time query
 /weather clear|rain|thunder
 /seed
-/setworldspawn [x y z]
-/spawnpoint [x y z]
+/setworldspawn [x y z [yaw pitch]]
+/spawnpoint [player [x y z [yaw pitch]]]
 /setblock x y z block[property=value]
 /fill x1 y1 z1 x2 y2 z2 block
 /gamerule doDaylightCycle|keepInventory|naturalRegeneration [true|false]

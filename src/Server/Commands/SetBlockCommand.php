@@ -13,10 +13,12 @@ trait SetBlockCommand
         if (count($arguments) !== 4) {
             throw new \InvalidArgumentException('Usage: /setblock x y z block[properties]');
         }
-        $position = $this->coordinates(array_slice($arguments, 0, 3), $sender);
-        [$x, $y, $z] = array_map('intval', array_map('floor', $position));
-        $this->setBlock($x, $y, $z, $this->blockArgument($arguments[3]));
-        $this->tell($sender, 'Block updated');
-        return;
+        [$x, $y, $z] = array_map(static fn (float $value): int => (int) floor($value), $this->coordinates(array_slice($arguments, 0, 3), $sender));
+        $state = $this->blockArgument($arguments[3]);
+        if ($this->world->get($x, $y, $z) === $state) {
+            throw new CommandFailure(['translate' => 'commands.setblock.failed']);
+        }
+        $this->setBlock($x, $y, $z, $state);
+        $this->sendSuccess($sender, ['translate' => 'commands.setblock.success', 'with' => [$x, $y, $z]], true);
     }
 }

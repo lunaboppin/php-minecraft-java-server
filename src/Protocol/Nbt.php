@@ -51,25 +51,32 @@ final class Nbt
     }
 
     /**
-     * A list of components and primitive arguments (translation arguments may be integers).
+     * A list of components and primitive arguments (translation arguments may be numbers).
      * Elements of one tag type form a plain list. Mixed types are written as compounds, with
      * every non-compound element wrapped as {"": element} (ListTag.identifyRawElementType and
      * wrapIfNeeded).
      */
     private static function componentList(array $components): string
     {
-        $types = array_map(static fn (int|array $component): int => is_int($component) ? 3 : (array_keys($component) === ['text'] ? 8 : 10), $components);
+        $types = array_map(static fn (int|float|array $component): int => match (true) {
+            is_int($component) => 3,
+            is_float($component) => 5,
+            array_keys($component) === ['text'] => 8,
+            default => 10,
+        }, $components);
         $type = $components === [] ? 10 : (count(array_unique($types)) === 1 ? $types[0] : 10);
-        $elements = array_map(static function (int|array $component) use ($type): string {
+        $elements = array_map(static function (int|float|array $component) use ($type): string {
             $payload = match (true) {
                 is_int($component) => pack('N', $component),
+                // Float translation arguments are single precision, as Java's Float.
+                is_float($component) => pack('G', $component),
                 array_keys($component) === ['text'] => self::string($component['text']),
                 default => self::compoundBody($component),
             };
             if ($type !== 10 || (is_array($component) && array_keys($component) !== ['text'])) {
                 return $payload;
             }
-            return (is_int($component) ? "\x03" : "\x08") . self::string('') . $payload . "\0";
+            return (is_int($component) ? "\x03" : (is_float($component) ? "\x05" : "\x08")) . self::string('') . $payload . "\0";
         }, $components);
         return chr($type) . pack('N', count($components)) . implode('', $elements);
     }

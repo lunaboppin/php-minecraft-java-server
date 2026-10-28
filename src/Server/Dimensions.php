@@ -106,7 +106,7 @@ trait Dimensions
             $this->syncInventory($c);
             $this->sendClock($c);
             $this->sendWeather($c);
-            $c->send($this->version, 'set_default_spawn_position', Packets::spawn($this->worlds['overworld']->spawn()));
+            $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
             $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
             $this->teleport($c, $position ?? $this->safeArrival($this->world->spawn()));
             foreach ($this->localPlayers() as $other) {

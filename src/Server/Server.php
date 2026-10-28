@@ -431,7 +431,7 @@ final class Server
         $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
-        $c->send($this->version, 'set_default_spawn_position', Packets::spawn($this->worlds['overworld']->spawn()));
+        $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
         $this->health($c);
         $this->syncInventory($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
