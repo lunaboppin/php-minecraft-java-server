@@ -207,7 +207,7 @@ trait Animals
         if ($animal['health'] <= 0) {
             $this->animalDeathLoot($animal, $c);
             if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
-                $c->experience += random_int(1, 3);
+                $this->giveExperiencePoints($c, random_int(1, 3));
             }
         }
         return true;

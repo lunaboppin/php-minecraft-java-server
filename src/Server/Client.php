@@ -24,7 +24,11 @@ final class Client
     public int $lastAttackTick = -20;
     public ?int $lastAttackItem = null;
     public bool $sprinting = false;
+    /** Total experience points collected, with the level and float progress toward the next. */
     public int $experience = 0;
+    public int $experienceLevel = 0;
+    public float $experienceProgress = 0.0;
+    public int $lastLevelUpTick = -1000;
     public int $lastDamageTick = -20;
     /** The amount of the last hurt, which a hit during the invulnerability window must exceed. */
     public float $lastDamageAmount = 0;

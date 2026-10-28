@@ -42,6 +42,8 @@ final class CommandRegistry
             new CommandDefinition('save-off', 'executeSaveOff', true),
             new CommandDefinition('stop', 'executeStop', true),
             new CommandDefinition('damage', 'executeDamage', true),
+            new CommandDefinition('experience', 'executeExperience', true, ['xp']),
+            new CommandDefinition('clear', 'executeClear', true),
         ];
     }
 

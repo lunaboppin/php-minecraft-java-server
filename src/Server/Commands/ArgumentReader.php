@@ -43,6 +43,7 @@ final class ArgumentReader
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
             'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
+            'item_tag' => array_fill_keys(array_keys($version->registryTags('minecraft:item')), true),
         ];
     }
 
@@ -129,6 +130,9 @@ final class ArgumentReader
                 return;
             case 'minecraft:item_stack':
                 $this->item($reader);
+                return;
+            case 'minecraft:item_predicate':
+                $this->itemPredicate($reader);
                 return;
             case 'minecraft:block_state':
                 $this->block($reader, false);
@@ -322,6 +326,55 @@ final class ArgumentReader
             }
             $reader->skipWhitespace();
             if (!$reader->canRead() || $reader->peek() !== ',') {
+                break;
+            }
+            $reader->skip();
+        }
+        self::expect($reader, ']');
+    }
+
+    /**
+     * ItemPredicateArgument: "*", an item or an item tag, then optional [component=value,
+     * predicate~value, !component] tests. Unlike ItemParser, errors point after what was read.
+     */
+    private function itemPredicate(StringReader $reader): void
+    {
+        if ($reader->canRead() && $reader->peek() === '*') {
+            $reader->skip();
+        } elseif ($reader->canRead() && $reader->peek() === '#') {
+            $reader->skip();
+            $tag = $reader->readIdentifier();
+            if (!isset($this->registries['item_tag'][$tag])) {
+                throw $reader->error('arguments.item.tag.unknown', [$tag]);
+            }
+        } else {
+            $id = $reader->readIdentifier();
+            if (!isset($this->registries['item'][$id])) {
+                throw $reader->error('argument.item.id.invalid', [$id]);
+            }
+        }
+        if (!$reader->canRead() || $reader->peek() !== '[') {
+            return;
+        }
+        $reader->skip();
+        while ($reader->canRead() && $reader->peek() !== ']') {
+            $reader->skipWhitespace();
+            if ($reader->canRead() && $reader->peek() === '!') {
+                $reader->skip();
+            }
+            $name = $reader->readIdentifier();
+            $reader->skipWhitespace();
+            $predicate = $reader->canRead() && $reader->peek() === '~';
+            if (!$predicate && !isset($this->registries['minecraft:data_component_type'][$name])) {
+                throw $reader->error('arguments.item.component.unknown', [$name]);
+            }
+            if ($reader->canRead() && ($reader->peek() === '=' || $reader->peek() === '~')) {
+                $reader->skip();
+                $reader->skipWhitespace();
+                self::value($reader);
+            }
+            $reader->skipWhitespace();
+            if (!$reader->canRead() || ($reader->peek() !== ',' && $reader->peek() !== '|')) {
                 break;
             }
             $reader->skip();

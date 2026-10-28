@@ -64,6 +64,7 @@ trait Survival
         $c->food = max(0, min(20, (int) ($data['food'] ?? 20)));
         $c->saturation = max(0, min($c->food, (float) ($data['saturation'] ?? 5)));
         $c->experience = max(0, (int) ($data['experience'] ?? 0));
+        [$c->experienceLevel, $c->experienceProgress] = isset($data['experienceLevel']) ? [max(0, (int) $data['experienceLevel']), max(0.0, min(1.0, (float) $data['experienceProgress']))] : self::experienceFromTotal($c->experience);
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
         $c->personalSpawn = $data['personalSpawn'] ?? null;
@@ -87,7 +88,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -116,16 +117,7 @@ trait Survival
         }
         $c->send($this->version, 'set_health', pack('G', $c->health) . Binary::writeVarInt($c->food) . pack('G', $c->saturation));
         $this->syncPlayerMetadata($c);
-        $remaining = $c->experience;
-        $level = 0;
-        while (true) {
-            $needed = $level < 15 ? 2 * $level + 7 : ($level < 30 ? 5 * $level - 38 : 9 * $level - 158);
-            if ($remaining < $needed) {
-                break;
-            }$remaining -= $needed;
-            ++$level;
-        }
-        $c->send($this->version, 'set_experience', pack('G', $remaining / $needed) . Binary::writeVarInt($level) . Binary::writeVarInt($c->experience));
+        $this->syncExperience($c);
     }
 
     private function abilities(Client $c): void
@@ -231,7 +223,7 @@ trait Survival
                 foreach ($c->inventory as $slot => $stack) {
                     $this->dropStack($c->x, $c->y + 0.5, $c->z, $stack);
                 }$c->inventory = [];
-                $c->experience = 0;
+                [$c->experience, $c->experienceLevel, $c->experienceProgress] = [0, 0, 0.0];
             }
             // ServerPlayer.die: the death screen always opens; the message is shared only if the rule allows it.
             $message = $this->deathMessage($c, $type, $attacker);
@@ -418,7 +410,7 @@ trait Survival
             // DropExperienceBlock and RedStoneOreBlock experience, which silk touch prevents.
             $experience = ['coal_ore' => [0, 2], 'deepslate_coal_ore' => [0, 2], 'diamond_ore' => [3, 7], 'deepslate_diamond_ore' => [3, 7], 'emerald_ore' => [3, 7], 'deepslate_emerald_ore' => [3, 7], 'lapis_ore' => [2, 5], 'deepslate_lapis_ore' => [2, 5], 'nether_quartz_ore' => [2, 5], 'nether_gold_ore' => [0, 1], 'redstone_ore' => [1, 5], 'deepslate_redstone_ore' => [1, 5]][$name] ?? null;
             if ($experience !== null && !isset($toolStack['enchantments']['minecraft:silk_touch'])) {
-                $c->experience += random_int(...$experience);
+                $this->giveExperiencePoints($c, random_int(...$experience));
             }
         }
         $slot = 36 + $c->heldSlot;
