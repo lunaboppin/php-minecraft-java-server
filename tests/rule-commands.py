@@ -50,7 +50,7 @@ def main():
                     translate('commands.version.pack.resource', {'text': version['resource_pack']}),
                     translate('commands.version.pack.data', {'text': version['data_pack']}),
                     translate('commands.version.stable.yes')]]
-                assert [p for p in chats(run(guest, 'version')) if b'Unknown command' in p], 'a dedicated server requires operator permission'
+                assert [p for p in chats(run(guest, 'version')) if b'command.unknown.command' in p], 'a dedicated server requires operator permission'
 
                 assert chats(run(op, 'gamerule keep_inventory')) == [rule('commands.gamerule.query', 'keep_inventory', 'false')]
                 assert chats(run(op, 'gamerule minecraft:keep_inventory true')) == [rule('commands.gamerule.set', 'keep_inventory', 'true')]
@@ -59,8 +59,8 @@ def main():
                 # A rule without behavior here is stored and reported like any other.
                 assert chats(run(op, 'gamerule random_tick_speed 5')) == [rule('commands.gamerule.set', 'random_tick_speed', '5')]
                 assert chats(run(op, 'gamerule random_tick_speed')) == [rule('commands.gamerule.query', 'random_tick_speed', '5')]
-                assert [p for p in chats(run(op, 'gamerule keepInventory true')) if b'Usage' in p], 'pre-26 rule names are unknown'
-                assert [p for p in chats(run(op, 'gamerule random_tick_speed -1')) if b'between' in p]
+                assert [p for p in chats(run(op, 'gamerule keepInventory true')) if b'command.unknown.argument' in p], 'pre-26 rule names are unknown'
+                assert [p for p in chats(run(op, 'gamerule random_tick_speed -1')) if b'argument.integer.low' in p]
                 assert chats(run(op, 'gamerule max_block_modifications 3')) == [rule('commands.gamerule.set', 'max_block_modifications', '3')]
                 too_big = chat({'text': '', 'color': 'red', 'extra': [translate('commands.fill.toobig', 3, 4)]})
                 assert chats(run(op, 'fill 0 70 0 1 70 1 minecraft:stone')) == [too_big], 'the fill limit follows the game rule'

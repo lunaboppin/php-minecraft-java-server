@@ -345,7 +345,7 @@ def main():
                 check(True, 'chat relayed to other player')
                 # As on a vanilla dedicated server, /version needs operator permission.
                 a.send('chat_command', string('version'))
-                a.until('system_chat', lambda p: b'Unknown command' in p)
+                a.until('system_chat', lambda p: b'command.unknown.command' in p)
                 a.send('set_creative_mode_slot', bytes.fromhex(FIXTURES['creative_stone']))
                 a.until('container_set_slot')
                 a.send('use_item_on', bytes.fromhex(FIXTURES['place_stone']))

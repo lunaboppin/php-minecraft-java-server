@@ -63,7 +63,7 @@ def main():
                 assert chats(run(op, 'time add -1000')) == [chat(translate('commands.time.set.absolute', overworld, Long(36000)))]
                 assert chats(run(op, 'time add 1d')) == [chat(translate('commands.time.set.absolute', overworld, Long(60000)))]
                 assert chats(run(op, 'time set 60000')) == [failure('commands.time.set.already_at_time', overworld, 60000)]
-                assert chats(run(op, 'time set minecraft:unknown')) == [failure('commands.time.no_time_marker_found', overworld, {'text': 'minecraft:unknown'})]
+                assert chats(run(op, 'time set minecraft:unknown')) == [failure('commands.time.no_time_marker_found', {'text': 'minecraft:unknown'}, overworld)]
                 assert chats(run(op, 'time rate 2')) == [chat(translate('commands.time.rate', overworld, 2.0))]
                 assert chats(run(op, 'time rate 2')) == [failure('commands.time.rate.already_same', overworld, 2.0)]
                 packets = run(op, 'time resume')
@@ -78,7 +78,7 @@ def main():
                 assert chats(run(op, 'time of minecraft:the_end pause')) == [chat(translate('commands.time.pause', the_end))]
                 ended = chats(run(op, 'time of the_end query time'))[0]
                 assert ended.startswith(chat(translate('commands.time.query.absolute', the_end, Long(0)))[:40])
-                assert chats(run(op, 'time of minecraft:the_end set day')) == [failure('commands.time.no_time_marker_found', the_end, {'text': 'minecraft:day'})]
+                assert chats(run(op, 'time of minecraft:the_end set day')) == [failure('commands.time.no_time_marker_found', {'text': 'minecraft:day'}, the_end)]
                 assert chats(run(op, 'time of minecraft:the_end resume')) == [chat(translate('commands.time.resume', the_end))]
                 # The periodic sync carries only the game time.
                 assert any(name == 'set_time' and len(payload) == 9 and payload[8] == 0 for name, payload in op.seen)

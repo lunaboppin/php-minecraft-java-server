@@ -88,7 +88,7 @@ def main():
                     net.check(db.execute('SELECT state FROM blocks WHERE x=0 AND y=70 AND z=0').fetchone()[0] == net.BLOCKS['states']['emerald_block'], 'Nether block saved separately')
                 travel(a, 'the_end')
                 net.check(position(a) == (100.5, 65., .5), 'End arrival platform coordinates')
-                command(b, 'dimension the_end', 'insufficient permission')
+                command(b, 'dimension the_end', 'command.unknown.command')
                 a.close()
                 time.sleep(.1)
                 a = net.Client(port, terrain=True).login('Admin')

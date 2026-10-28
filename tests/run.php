@@ -193,6 +193,7 @@ foreach ([
     'text-component-unit.php',
     'operator-persistence-unit.php',
     'entity-selector-unit.php',
+    'command-parse-unit.php',
     'mob-physics-unit.php',
     'mob-motion-unit.php',
     'mob-tracking-unit.php',

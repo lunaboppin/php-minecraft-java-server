@@ -53,14 +53,15 @@ def main():
                 witness.tick_barrier()
                 assert named(witness.seen[start:], 'system_chat') == [chat(translate('gameMode.changed', survival))]
                 assert named(run(op, 'gamemode creative @a'), 'system_chat') == [chat(translate('commands.gamemode.success.self', creative)), chat(translate('commands.gamemode.success.other', other, creative))]
-                assert [p for p in named(run(op, 'gamemode 1'), 'system_chat') if b'Usage' in p], 'numeric modes are not GameModeArgument input'
+                assert [p for p in named(run(op, 'gamemode 1'), 'system_chat') if b'argument.gamemode.invalid' in p], 'numeric modes are not GameModeArgument input'
 
                 overworld = {'text': 'minecraft:overworld'}
                 packets = run(op, 'setworldspawn 1 64 2 90 10')
                 assert named(packets, 'system_chat') == [chat(translate('commands.setworldspawn.success', 1, 64, 2, 90.0, 10.0, overworld))]
                 spawn = named(packets, 'set_default_spawn_position')[0]
                 assert spawn.endswith(struct.pack('>ff', 90.0, 10.0)), 'the spawn packet carries the rotation'
-                assert named(run(op, 'setworldspawn 1.7 64 -2.2'), 'system_chat') == [chat(translate('commands.setworldspawn.success', 1, 64, -3, 0.0, 0.0, overworld))]
+                # BlockPosArgument reads absolute coordinates as integers, as the official server does.
+                assert [p for p in named(run(op, 'setworldspawn 1.7 64 -2.2'), 'system_chat') if b'parsing.int.invalid' in p], 'fractional block positions are rejected'
 
                 assert named(run(op, 'spawnpoint Witness 3 64 4'), 'system_chat') == [chat(translate('commands.spawnpoint.success.single', 3, 64, 4, 0.0, 0.0, overworld, other))]
                 # The yaw wraps to [-180, 180) and the pitch clamps to [-90, 90].

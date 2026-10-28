@@ -99,8 +99,11 @@ trait TimeCommand
      */
     private function timeMarker(string $clock, string $text): ?array
     {
-        if ($text === '' || preg_match('/\A-?[0-9.]+[dst]?\z/D', $text) === 1) {
+        // Brigadier tries <time> first: a marker is only read when the text is not a valid time.
+        try {
+            $this->timeArgument($text, 0);
             return null;
+        } catch (\InvalidArgumentException) {
         }
         $name = str_contains($text, ':') ? $text : 'minecraft:' . $text;
         foreach ($this->version->catalog->timelines as $timeline) {
@@ -108,7 +111,7 @@ trait TimeCommand
                 return [$name, $timeline['time_markers'][$name]['ticks'], $timeline['period_ticks']];
             }
         }
-        throw new CommandFailure(['translate' => 'commands.time.no_time_marker_found', 'with' => [['text' => $clock], ['text' => $name]]]);
+        throw new CommandFailure(['translate' => 'commands.time.no_time_marker_found', 'with' => [['text' => $name], ['text' => $clock]]]);
     }
 
     /** TimeArgument: ticks, or seconds (s) and days (d), rounded to whole ticks. */
