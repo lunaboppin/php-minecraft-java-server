@@ -58,13 +58,16 @@ trait MobPushing
             'team' => $entity['team'] ?? null,
             'collisionRule' => $entity['collisionRule'] ?? 'ALWAYS',
         ];
-        [$x, $y, $z] = array_map(static fn (float $coordinate): int => (int) floor($coordinate), $state['position']);
-        $state['pushable'] = $this->version->catalog->pushEligibilityRegistry->test(
-            $profile['pushable'],
-            $state,
-            $this->world->get($x, $y, $z),
-            $this->world->get($x, $y - 1, $z)
-        );
+        // Eligibility consults blocks only after its ticking, alive and spectator checks.
+        // Skipping the reads otherwise keeps idle saved mobs from generating far terrain.
+        $feet = 0;
+        $below = 0;
+        if (($state['ticking'] || $state['alwaysTicking']) && $state['alive'] && !$state['spectator']) {
+            [$x, $y, $z] = array_map(static fn (float $coordinate): int => (int) floor($coordinate), $state['position']);
+            $feet = $this->world->get($x, $y, $z);
+            $below = $this->world->get($x, $y - 1, $z);
+        }
+        $state['pushable'] = $this->version->catalog->pushEligibilityRegistry->test($profile['pushable'], $state, $feet, $below);
         return $state;
     }
 
