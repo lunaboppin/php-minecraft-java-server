@@ -16,12 +16,14 @@ class World
     private array $containerPositions=[];
     private readonly TerrainGenerator|DimensionGenerator|null $terrain;
     private ?TerrainGenerator $legacyTerrain=null;
+    /** Vanilla 26.3 generation for chunks first generated after it was enabled (generation.legacy=2). */
+    public readonly ?Vanilla\ChunkStore $vanilla;
     public readonly int $minY;
     public readonly int $height;
     public readonly int $globalBits;
     public readonly int $seed;
     public readonly string $generator;
-    public function __construct(private readonly Version $version,string $path,string $generator='flat',int $seed=12345,public readonly string $dimension='overworld') {
+    public function __construct(private readonly Version $version,string $path,string $generator='flat',int $seed=12345,public readonly string $dimension='overworld',bool $vanillaTerrain=false) {
         if(!in_array($dimension,['overworld','the_nether','the_end'],true)){throw new \InvalidArgumentException('Unknown dimension');}
         $this->minY=$dimension==='overworld'?-64:0;$this->height=$dimension==='overworld'?384:256;
         if(!in_array($generator,['flat','terrain'],true)){throw new \InvalidArgumentException('Unknown world generator');}
@@ -53,6 +55,9 @@ class World
         if($dimension==='overworld' && $generator==='terrain' && $this->setting('algorithm')!==TerrainGenerator::ALGORITHM){throw new \RuntimeException('Unsupported terrain generator version');}
         $this->terrain=$dimension!=='overworld'?new DimensionGenerator($version,$seed,$dimension):($generator==='terrain'?new TerrainGenerator($version,$seed):null);
         if($dimension==='overworld' && $generator==='terrain'){$this->legacyTerrain=new TerrainGenerator($version,$seed,false);}
+        // Enabling vanilla terrain is a forward migration: chunks already recorded keep their algorithm.
+        if($dimension==='overworld' && $generator==='terrain' && $vanillaTerrain && $this->setting('vanilla')===null){$this->setting('vanilla','26.3');}
+        $this->vanilla=$dimension==='overworld' && $generator==='terrain' && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed):null;
         foreach($version->catalog->blocks as $name=>$info){
             $type=$info['block_entity_type']??(str_ends_with($name,'_bed')?'bed':(in_array($name,['chest','trapped_chest','barrel','furnace','smoker','blast_furnace'],true)?$name:null));
             if($type!==null && isset($version->blocks['block_entity_types'][$type])){for($state=$info['first'];$state<$info['first']+$info['count'];++$state){$this->blockEntityMap[$state]=$version->blocks['block_entity_types'][$type];}}
@@ -65,13 +70,28 @@ class World
     }
     public function hashedSeed():int {return unpack('P',substr(hash('sha256',pack('P',$this->seed),true),0,8))[1];}
     public function spawn():array {return $this->setting('spawn')??match($this->dimension){'the_end'=>[100.5,65.0,0.5],'the_nether'=>[0.5,72.0,0.5],default=>[0.5,$this->terrain===null?64.0:65.0,0.5]};}
-    private function generatorFor(int $cx,int $cz):TerrainGenerator|DimensionGenerator|null {
+    private function generatorFor(int $cx,int $cz):TerrainGenerator|DimensionGenerator|Vanilla\ChunkStore|null {
         if($this->legacyTerrain===null){return $this->terrain;}
         $key=$cx.':'.$cz;if(isset($this->generationCache[$key])){return $this->generationCache[$key];}
         $q=$this->db->prepare('SELECT legacy FROM generation WHERE cx=? AND cz=?');$q->execute([$cx,$cz]);$legacy=$q->fetchColumn();
-        if($legacy===false){$q=$this->db->prepare('INSERT INTO generation(cx,cz,legacy) VALUES(?,?,0)');$q->execute([$cx,$cz]);}
+        if($legacy===false){$legacy=$this->vanilla!==null?2:0;$q=$this->db->prepare('INSERT INTO generation(cx,cz,legacy) VALUES(?,?,?)');$q->execute([$cx,$cz,$legacy]);}
         if(count($this->generationCache)>=128){array_shift($this->generationCache);}
-        return $this->generationCache[$key]=$legacy!==false && (int)$legacy===1?$this->legacyTerrain:$this->terrain;
+        return $this->generationCache[$key]=match((int)$legacy){1=>$this->legacyTerrain,2=>$this->vanilla??$this->terrain,default=>$this->terrain};
+    }
+    /** Whether a chunk can be built without generating: vanilla chunks wait for the generation workers. */
+    public function ready(int $cx,int $cz):bool {
+        $generator=$this->generatorFor($cx,$cz);
+        return !$generator instanceof Vanilla\ChunkStore || $generator->ready($cx,$cz);
+    }
+    public function requestGeneration(int $cx,int $cz,int $priority):void {
+        $generator=$this->generatorFor($cx,$cz);
+        if($generator instanceof Vanilla\ChunkStore){$generator->request($cx,$cz,$priority);}
+    }
+    /** Vanilla quart biomes of a chunk as registry ids, in y, z, x order, or null for other generators. */
+    private function vanillaBiomes(int $cx,int $cz):?array {
+        $generator=$this->generatorFor($cx,$cz);
+        if(!$generator instanceof Vanilla\ChunkStore){return null;}
+        return array_map(fn(string $biome):int=>$this->version->registryId('worldgen/biome',$biome),$generator->final($cx,$cz)[1]);
     }
     public function loadPlayer(string $uuid,bool $online=false):?array {
         $q=$this->db->prepare('SELECT data FROM players WHERE uuid=?');$q->execute([($online?'online:':'').bin2hex($uuid)]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
@@ -95,12 +115,27 @@ class World
         }
     }
     public function checkpoint():void {$this->db->exec('PRAGMA wal_checkpoint(PASSIVE)');}
-    public function biome(int $x,int $z):int {return $this->generatorFor($x>>4,$z>>4)?->biome($x,$z)??$this->version->registryId('worldgen/biome','plains');}
-    public function column(int $x,int $z):array {return $this->generatorFor($x>>4,$z>>4)?->column($x,$z)??['height'=>63,'biome'=>'plains'];}
+    public function biome(int $x,int $z):int {
+        $generator=$this->generatorFor($x>>4,$z>>4);
+        if($generator instanceof Vanilla\ChunkStore){$column=$this->column($x,$z);return $this->version->registryId('worldgen/biome',$column['biome']);}
+        return $generator?->biome($x,$z)??$this->version->registryId('worldgen/biome','plains');
+    }
+    public function column(int $x,int $z):array {
+        $generator=$this->generatorFor($x>>4,$z>>4);
+        if($generator instanceof Vanilla\ChunkStore){
+            [$blocks,$biomes]=$generator->final($x>>4,$z>>4);$catalog=$this->version->catalog;$column=(($z&15)<<4)|($x&15);$height=$this->minY;
+            for($y=$this->height-1;$y>=0;--$y){$state=$blocks[($y<<8)|$column];if(!$catalog->air($state) && !$catalog->fluid($state)){$height=$y+$this->minY;break;}}
+            $quartY=min(max(($height-$this->minY)>>2,0),intdiv($this->height,4)-1);
+            return ['height'=>$height,'biome'=>$biomes[($quartY<<4)|((($z&15)>>2)<<2)|(($x&15)>>2)]];
+        }
+        return $generator?->column($x,$z)??['height'=>63,'biome'=>'plains'];
+    }
     public function base(int $y):int {return match($y){60=>$this->version->blocks['states']['bedrock'],61,62=>$this->version->blocks['states']['dirt'],63=>$this->version->blocks['states']['grass_block'],default=>0};}
     private function baseSections(int $cx,int $cz):array {
         $key=$cx.':'.$cz;if(isset($this->baseCache[$key])){return $this->baseCache[$key];}
-        if($this->terrain!==null){$sections=$this->generatorFor($cx,$cz)->chunk($cx,$cz);}
+        $generator=$this->terrain!==null?$this->generatorFor($cx,$cz):null;
+        if($generator instanceof Vanilla\ChunkStore){$sections=array_chunk($generator->final($cx,$cz)[0],4096);}
+        elseif($generator!==null){$sections=$generator->chunk($cx,$cz);}
         else{
             $sections=array_fill(0,24,array_fill(0,4096,0));
             for($y=60;$y<=63;++$y){for($index=0;$index<256;++$index){$sections[7][(($y&15)<<8)|$index]=$this->base($y);}}
@@ -113,6 +148,8 @@ class World
         $edits=$this->chunkEdits($x>>4,$z>>4);$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);
         if(isset($edits[$index])){return $edits[$index];}
         if($this->terrain===null){return $this->base($y);}
+        // Reads never start vanilla generation; a chunk still being generated reads as air.
+        if($this->vanilla!==null && !isset($this->baseCache[($x>>4).':'.($z>>4)]) && !$this->ready($x>>4,$z>>4)){return 0;}
         $sections=$this->baseSections($x>>4,$z>>4);return $sections[($y-$this->minY)>>4][(($y&15)<<8)|(($z&15)<<4)|($x&15)];
     }
     private function chunkEdits(int $cx,int $cz):array {
@@ -139,9 +176,13 @@ class World
     public function chunk(int $cx,int $cz):string {
         $key=$cx.':'.$cz;if(isset($this->cache[$key])){return $this->cache[$key];}
         $sections=$this->sections($cx,$cz);$catalog=$this->version->catalog;$surface=array_fill(0,256,0);$motion=$surface;$bytes='';$entities=[];
-        $biomes=[];
-        for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$biomes[]=$this->biome($cx*16+$bx*4+2,$cz*16+$bz*4+2);}}
-        $biomeData=Palette::biomes(array_merge($biomes,$biomes,$biomes,$biomes),(int)ceil(log($this->version->registryCount('worldgen/biome'),2)));
+        $biomeBits=(int)ceil(log($this->version->registryCount('worldgen/biome'),2));
+        $vanillaBiomes=$this->vanillaBiomes($cx,$cz);$biomeData=null;
+        if($vanillaBiomes===null){
+            $biomes=[];
+            for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$biomes[]=$this->biome($cx*16+$bx*4+2,$cz*16+$bz*4+2);}}
+            $biomeData=Palette::biomes(array_merge($biomes,$biomes,$biomes,$biomes),$biomeBits);
+        }
         // Counts come from each section's distinct states; only sections holding block entities are
         // scanned per block, and heightmaps are found top-down, skipping all-air sections.
         $flags=$catalog->flags;$empty=[];
@@ -159,7 +200,7 @@ class World
                     if(isset($this->blockEntityMap[$state]) && (($flags[$state]??0)&1)===0){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state]).$this->blockEntityNbt($cx*16+($index&15),$section*16+$this->minY+($index>>8),$cz*16+(($index>>4)&15));}
                 }
             }
-            $bytes.=pack('nn',$count,$fluids).Palette::blocks($states,$this->globalBits).$biomeData;
+            $bytes.=pack('nn',$count,$fluids).Palette::blocks($states,$this->globalBits).($biomeData??Palette::biomes(array_slice($vanillaBiomes,$section*64,64),$biomeBits));
         }
         for($column=0;$column<256;++$column){
             $needSurface=true;$needMotion=true;

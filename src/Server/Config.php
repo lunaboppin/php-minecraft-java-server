@@ -23,7 +23,12 @@ final class Config
         public readonly int $logRetentionDays = 90,
         /** server.properties white-list: only whitelisted players and operators may join. */
         public readonly bool $whiteList = false,
+        /** Generate chunks first created from now on with the official 26.3 Overworld pipeline. */
+        public readonly bool $vanillaTerrain = false,
+        /** Background processes generating vanilla chunks. */
+        public readonly int $generationWorkers = 3,
     ) {
+        if ($generationWorkers < 0 || $generationWorkers > 16) { throw new \InvalidArgumentException('Invalid generation worker count'); }
         if($logDirectory==='' || $logRetentionDays<1 || $logRetentionDays>90){throw new \InvalidArgumentException('Log retention must be between 1 and 90 days');}
         if (!in_array($generator,['flat','terrain'],true) || $seed < -2147483648 || $seed > 2147483647 || $defaultGameMode<0 || $defaultGameMode>3 || $difficulty<0 || $difficulty>3) { throw new \InvalidArgumentException('Invalid world settings'); }
         foreach($operators as $operator){if(!is_string($operator) || preg_match('/\A[A-Za-z0-9_]{1,16}\z/D',$operator)!==1){throw new \InvalidArgumentException('Invalid operator username');}}
@@ -43,7 +48,7 @@ final class Config
             if (!$object instanceof \stdClass) { throw new \InvalidArgumentException('Configuration must be a JSON object'); }
             $values = get_object_vars($object);
         }
-        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList'];
+        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList','vanillaTerrain','generationWorkers'];
         foreach ($values as $key => $_) { if (!in_array($key,$allowed,true)) { throw new \InvalidArgumentException('Unknown configuration option: ' . $key); } }
         return new self(...array_replace($values,$overrides));
     }
