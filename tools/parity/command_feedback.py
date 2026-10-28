@@ -72,6 +72,24 @@ SCRIPT = [
     ('setblock 1 2 3 minecraft:oak_stairs[facing=north,facing=south]', False), ('give @s diamond_sword[nope=5] 1', False), ('give @s diamond_sword{foo:1} 1', False), ('give @s diamond_sword[damage=5,damage=6] 1', False),
     ('give @s diamond_sword[damage=5 1', False), ('gamerule keep_inventory "true"', False), ('!witness gamemode creative', False), ('!witness foo', False),
     ('!witness msg @a hi', False),
+    # Block modes and teleport forms above the terrain; local coordinates start from a zero rotation.
+    # Creative players survive falling from y=200 between commands.
+    ('gamemode creative @a', False),
+    ('setblock 1 200 1 stone keep', False), ('setblock 1 200 1 dirt keep', False), ('setblock 1 200 1 dirt replace', False),
+    ('setblock 1 200 1 dirt destroy', False), ('setblock 1 200 1 air destroy', False), ('setblock 1 200 1 air destroy', False),
+    ('setblock 1 200 1 stone strict', False), ('setblock 1 200 1 stone strict', False), ('setblock 1 400 1 stone', False),
+    ('setblock 1 -100 1 stone', False), ('fill 0 200 0 2 202 2 stone outline', False), ('fill 0 200 0 2 202 2 dirt hollow', False),
+    ('fill 0 200 0 2 202 2 dirt hollow', False), ('fill 0 200 0 2 202 2 glass replace dirt', False), ('fill 0 200 0 2 202 2 glass replace dirt', False),
+    ('fill 0 200 0 2 202 2 oak_log[axis=x]', False), ('fill 0 200 0 2 202 2 glass replace #minecraft:logs', False), ('fill 0 200 0 2 202 2 dirt replace glass destroy', False),
+    ('fill 0 200 0 2 202 2 air keep', False), ('fill 0 200 0 2 202 2 stone keep', False), ('fill 0 200 0 2 202 2 air destroy', False),
+    ('fill 0 200 0 2 202 2 air strict', False), ('fill 0 200 0 2 400 2 stone', False), ('fill 0 200 0 2 202 2 oak_stairs[facing=east] replace #minecraft:nope', False),
+    ('tp @s 0 200 0 90 45', False), ('tp @s ~ ~ ~ ~10 ~-5', False), ('tp @s 0 200 0 facing 5 200 5', False),
+    ('tp @s 0 200 0 facing entity Witness', False), ('tp @s 0 200 0 facing entity Witness eyes', False), ('tp Witness 3 200 3 0 0', False),
+    ('setblock 30000000 200 1 stone', False), ('setblock 5000 200 5000 stone', False), ('tp @s 0 200 0 0 0', False),
+    ('tp @s ^ ^ ^2', False), ('tp @s 0 200 0 0 0', False), ('tp @s ^1 ^ ^', False),
+    ('tp @s 0 200 0 0 0', False), ('tp @s ^ ^1 ^1', False), ('tp @s 0 200 0 0 0', False),
+    ('tp @s ^0.3 ^-0.7 ^1.25', False), ('tp @s 30000000 200 0', False), ('tp @s 29999999 200 0', False),
+    ('tp @s 0 20000000 0', False),
     ('list', False),
 ]
 

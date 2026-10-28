@@ -14,6 +14,7 @@ final class Version
     public readonly Catalog $catalog;
     /** The pinned server's version metadata (name, protocol, data version, build time, pack formats). */
     public readonly array $info;
+    private ?array $blockTags = null;
     public function __construct(public readonly string $directory = __DIR__ . '/../../reference/26.3') {
         $this->packets = $this->json('packets.json');
         $this->dynamic = $this->json('dynamic-registries.json');
@@ -46,6 +47,31 @@ final class Version
         $bytes = @file_get_contents($this->directory . '/tags.bin');
         if ($bytes === false) { throw new \RuntimeException('Missing registry tags'); }
         return $bytes;
+    }
+    /**
+     * Block tags from the update_tags payload: tag => block names.
+     *
+     * @return array<string, list<string>>
+     */
+    public function blockTags(): array {
+        if ($this->blockTags !== null) { return $this->blockTags; }
+        $names = array_keys($this->catalog->blocks);
+        $reader = new Binary($this->tags());
+        $tags = [];
+        for ($registries = $reader->varInt(); $registries > 0; --$registries) {
+            $registry = $reader->string();
+            for ($count = $reader->varInt(); $count > 0; --$count) {
+                $tag = $reader->string();
+                $entries = [];
+                for ($size = $reader->varInt(); $size > 0; --$size) {
+                    $entries[] = $reader->varInt();
+                }
+                if ($registry === 'minecraft:block') {
+                    $tags[$tag] = array_map(static fn (int $id): string => $names[$id], $entries);
+                }
+            }
+        }
+        return $this->blockTags = $tags;
     }
     public function registryCount(string $name): int { return count($this->dynamic['minecraft:'.$name]??[]); }
     public function registryPackets(): iterable {
