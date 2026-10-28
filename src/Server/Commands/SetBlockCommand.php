@@ -51,12 +51,16 @@ trait SetBlockCommand
     /** Block.dropResources without a tool: the loot table's stacks at the block's centre. */
     private function dropBlockLoot(int $x, int $y, int $z, int $state): void
     {
+        if ($this->gameRule('block_drops') !== 'true') {
+            return;
+        }
         $blockAt = function (int $offset) use ($x, $y, $z): array {
             $other = $this->world->get($x, $y + $offset, $z);
             return ['minecraft:' . $this->version->catalog->blockName($other), array_map('strval', $this->version->catalog->properties($other))];
         };
         $properties = array_map('strval', $this->version->catalog->properties($state));
-        foreach ($this->blockLoot()->drops('minecraft:' . $this->version->catalog->blockName($state), $properties, null, $blockAt, false) as [$drop, $count]) {
+        $name = 'minecraft:' . $this->version->catalog->blockName($state);
+        foreach ($this->loot()->drops('minecraft:blocks/' . substr($name, 10), ['block' => $name, 'state' => $properties, 'blockAt' => $blockAt]) as [$drop, $count]) {
             $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
             if ($item !== null) {
                 $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);

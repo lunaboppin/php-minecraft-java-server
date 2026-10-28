@@ -329,13 +329,30 @@ trait Survival
         return false;
     }
 
-    private function blockLoot(): \PhpMinecraftJavaServer\World\BlockLoot
+    private function loot(): \PhpMinecraftJavaServer\World\Loot
     {
         static $loot = null;
-        $tags = fn (string $registry): \Closure => function (string $tag) use ($registry): array {
+        if ($loot !== null) {
+            return $loot;
+        }
+        $tag = function (string $registry, string $tag): array {
+            if ($registry === 'minecraft:damage_type') {
+                return $this->version->catalog->damageTypes['tags'][$tag] ?? [];
+            }
             return array_map(static fn (string $name): string => 'minecraft:' . $name, $this->version->registryTags($registry)[$tag] ?? []);
         };
-        return $loot ??= new \PhpMinecraftJavaServer\World\BlockLoot(json_decode((string) file_get_contents($this->version->directory . '/block-loot.json'), true, 512, JSON_THROW_ON_ERROR), $tags('minecraft:item'), $tags('minecraft:block'));
+        // Smelting results by input item, from the official recipes.
+        $items = array_flip($this->version->blocks['items']);
+        $smelting = [];
+        foreach (json_decode((string) file_get_contents($this->version->directory . '/recipes.json'), true, 512, JSON_THROW_ON_ERROR) as $recipe) {
+            if ($recipe['type'] === 'smelting') {
+                foreach ($recipe['ingredients'][0] as $input) {
+                    $smelting['minecraft:' . $items[$input]] ??= 'minecraft:' . $items[$recipe['result']['item']];
+                }
+            }
+        }
+        $data = json_decode((string) file_get_contents($this->version->directory . '/loot.json'), true, 512, JSON_THROW_ON_ERROR);
+        return $loot = new \PhpMinecraftJavaServer\World\Loot($data, $tag, static fn (string $item): ?string => $smelting[$item] ?? null);
     }
 
     private function breakBlock(Client $c, int $x, int $y, int $z): void
@@ -383,7 +400,7 @@ trait Survival
         }
         $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
         $required = $this->version->catalog->blocks[$name]['requires_tool'];
-        if (!$required || $this->correctTool($tool, $name)) {
+        if ((!$required || $this->correctTool($tool, $name)) && $this->gameRule('block_drops') === 'true') {
             // The block's official loot table, for the held tool.
             $held = $c->inventory[36 + $c->heldSlot] ?? null;
             $toolStack = $held === null ? null : ['item' => 'minecraft:' . $tool, 'enchantments' => $held['enchantments'] ?? []];
@@ -391,7 +408,8 @@ trait Survival
                 $above = $this->world->get($x, $y + $offset, $z);
                 return ['minecraft:' . $this->version->catalog->blockName($above), array_map('strval', $this->version->catalog->properties($above))];
             };
-            foreach ($this->blockLoot()->drops('minecraft:' . $name, array_map('strval', $properties), $toolStack, $blockAt) as [$drop, $count]) {
+            $context = ['block' => 'minecraft:' . $name, 'state' => array_map('strval', $properties), 'tool' => $toolStack, 'blockAt' => $blockAt, 'this' => $this->lootEntity($c)];
+            foreach ($this->loot()->drops('minecraft:blocks/' . $name, $context) as [$drop, $count]) {
                 $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
                 if ($item !== null) {
                     $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);

@@ -205,7 +205,7 @@ trait Animals
             }
         }
         if ($animal['health'] <= 0) {
-            $this->animalDeathLoot($animal);
+            $this->animalDeathLoot($animal, $c);
             if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
                 $c->experience += random_int(1, 3);
             }
@@ -214,17 +214,40 @@ trait Animals
     }
 
     /** Mark a mob dead and drop its loot; only kills by a player also give experience. */
-    private function animalDeathLoot(array &$animal): void
+    private function animalDeathLoot(array &$animal, ?Client $killer = null): void
     {
         $animal['deadAt'] = $this->ticks + 20;
-        $drops = match ($animal['kind']) {
-            'cow' => ['beef' => random_int(1, 3), 'leather' => random_int(0, 2)],'pig' => ['porkchop' => random_int(1, 3)],'sheep' => ['mutton' => random_int(1, 2), 'white_wool' => 1],'chicken' => ['chicken' => 1, 'feather' => random_int(0, 2)],default => []
-        };
-        foreach ($drops as $name => $count) {
-            if ($count > 0) {
-                $this->dropStack($animal['x'], $animal['y'] + 0.4, $animal['z'], ['item' => $this->version->blocks['items'][$name], 'count' => $count]);
+        // LivingEntity.shouldDropLoot: not for babies, and only while mob_drops is on.
+        if (($animal['baby'] ?? false) || $this->gameRule('mob_drops') !== 'true') {
+            return;
+        }
+        $attacker = $killer === null ? null : $this->lootEntity($killer);
+        $context = [
+            'this' => [
+                'type' => 'minecraft:' . $animal['kind'],
+                'flags' => ['is_baby' => false, 'is_on_fire' => false],
+                'components' => ['minecraft:sheep/color' => $animal['color'] ?? 'white'],
+                'type_specific' => ['sheep' => ['sheared' => $animal['sheared'] ?? false]],
+            ],
+            'attacker' => $attacker,
+            'direct_attacker' => $attacker,
+            'killed_by_player' => $killer !== null,
+            'damage' => $killer === null ? ['type' => 'minecraft:generic_kill'] : ['type' => 'minecraft:player_attack', 'source_entity' => $attacker, 'direct_entity' => $attacker],
+        ];
+        foreach ($this->loot()->drops('minecraft:entities/' . $animal['kind'], $context) as [$drop, $count]) {
+            $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
+            if ($item !== null) {
+                $this->dropStack($animal['x'], $animal['y'] + 0.4, $animal['z'], ['item' => $item, 'count' => $count]);
             }
         }
+    }
+
+    /** A player as a loot context entity: flags and the held item. */
+    private function lootEntity(Client $player): array
+    {
+        $held = $player->inventory[36 + $player->heldSlot] ?? null;
+        $stack = $held === null ? null : ['item' => 'minecraft:' . $this->version->catalog->itemName($held['item']), 'enchantments' => $held['enchantments'] ?? []];
+        return ['type' => 'minecraft:player', 'flags' => ['is_on_fire' => $player->fireTicks > 0, 'is_sneaking' => $player->sneaking, 'is_sprinting' => $player->sprinting, 'is_baby' => false], 'equipment' => ['mainhand' => $stack]];
     }
 
     /** Entity.kill for a mob: generic_kill bypasses invulnerability and drops its loot. */

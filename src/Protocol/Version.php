@@ -58,7 +58,7 @@ final class Version
     }
     /**
      * A registry's tags from the update_tags payload: tag => entry names without "minecraft:".
-     * Blocks are numbered in catalog order, items by their protocol IDs.
+     * Blocks are numbered in catalog order, items and entity types by their protocol IDs.
      *
      * @return array<string, list<string>>
      */
@@ -67,7 +67,9 @@ final class Version
         $names = match ($registry) {
             'minecraft:block' => array_keys($this->catalog->blocks),
             'minecraft:item' => array_flip($this->blocks['items']),
-            default => throw new \InvalidArgumentException('Unsupported tag registry ' . $registry),
+            'minecraft:entity_type' => array_flip($this->blocks['entity_types']),
+            // Synchronized registries are numbered in their dynamic-registries order.
+            default => array_map(static fn (string $name): string => str_starts_with($name, 'minecraft:') ? substr($name, 10) : $name, $this->dynamic[$registry] ?? throw new \InvalidArgumentException('Unsupported tag registry ' . $registry)),
         };
         $reader = new Binary($this->tags());
         $tags = [];

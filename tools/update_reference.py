@@ -76,13 +76,13 @@ def timelines(inner):
     return result
 
 
-def block_loot(inner):
-    """Vanilla block loot tables and the named predicates they reference, evaluated by World\\BlockLoot."""
+def loot(inner):
+    """Vanilla block and entity loot tables and the named predicates they reference, evaluated by World\\Loot."""
     tables, predicates = {}, {}
     with zipfile.ZipFile(inner) as archive:
         for name in sorted(archive.namelist()):
-            if name.startswith('data/minecraft/loot_table/blocks/') and name.endswith('.json'):
-                tables['minecraft:' + Path(name).stem] = json.loads(archive.read(name))
+            if name.startswith(('data/minecraft/loot_table/blocks/', 'data/minecraft/loot_table/entities/')) and name.endswith('.json'):
+                tables['minecraft:' + name[len('data/minecraft/loot_table/'):-5]] = json.loads(archive.read(name))
             elif name.startswith('data/minecraft/predicate/') and name.endswith('.json'):
                 predicates['minecraft:' + name[len('data/minecraft/predicate/'):-5]] = json.loads(archive.read(name))
     return {'tables': tables, 'predicates': predicates}
@@ -235,7 +235,7 @@ def main():
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
-    write_json(out / 'block-loot.json', block_loot(inner))
+    write_json(out / 'loot.json', loot(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
     write_json(out / 'blocks.json', data)
