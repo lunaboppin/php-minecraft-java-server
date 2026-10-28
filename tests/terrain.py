@@ -68,7 +68,7 @@ def main():
                     settings = dict(db.execute('SELECT key,value FROM metadata'))
                     net.check(json.loads(settings['generator']) == 'terrain' and json.loads(settings['seed']) == 12345,
                               'generator and seed stored with world')
-                command(b, 'gamemode creative', 'insufficient permission')
+                command(b, 'gamemode creative', 'command.unknown.command')
                 command(a, 'gamemode creative')
                 a.until('game_event', lambda p: p[0] == 3 and struct.unpack('>f', p[1:])[0] == 1)
                 command(a, 'give @s oak_log 2', 'commands.give.success.single')

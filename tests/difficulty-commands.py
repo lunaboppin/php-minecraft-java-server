@@ -86,7 +86,7 @@ def main():
 
                 guest.tick_barrier()
                 denied = run(guest, 'difficulty peaceful')
-                assert [p for p in chats(denied) if b'Unknown command' in p] and difficulties(denied) == [], 'non-operators cannot change difficulty'
+                assert [p for p in chats(denied) if b'command.unknown.command' in p] and difficulties(denied) == [], 'non-operators cannot change difficulty'
             finally:
                 for client in (op, witness, guest):
                     traces.extend(client.trace)

@@ -82,7 +82,7 @@ def main():
                 assert permission_events(guest, guest_packets) == [24]
                 assert b'deop' not in named(guest_packets, 'commands')[0]
                 assert named(run(op, 'deop NobodyHere'), 'system_chat') == [failure('commands.deop.failed')]
-                assert [p for p in named(run(guest, 'op Guest'), 'system_chat') if b'Unknown command' in p], 'non-operators cannot op themselves'
+                assert [p for p in named(run(guest, 'op Guest'), 'system_chat') if b'command.unknown.command' in p], 'non-operators cannot op themselves'
                 assert named(run(op, 'kick NobodyHere'), 'system_chat') == [failure('argument.entity.notfound.player')]
 
                 # /kick with a verbatim reason (double space preserved), then with the default reason.

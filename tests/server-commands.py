@@ -83,7 +83,7 @@ def main():
                 assert chats(run(op, 'save-off')) == [chat(translate('commands.save.disabled'))]
                 assert chats(run(op, 'save-off')) == [failure('commands.save.alreadyOff')]
                 assert chats(run(op, 'save-on')) == [chat(translate('commands.save.enabled'))]
-                assert [p for p in chats(run(guest, 'stop')) if b'Unknown command' in p], 'non-operators cannot stop the server'
+                assert [p for p in chats(run(guest, 'stop')) if b'command.unknown.command' in p], 'non-operators cannot stop the server'
 
                 stopping = translate('commands.stop.stopping')
                 op.send('chat_command', wire.string('stop'))

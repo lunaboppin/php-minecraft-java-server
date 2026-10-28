@@ -158,6 +158,86 @@ final class CommandTree
         return array_values(array_filter(array_map(fn (int $child): ?string => $this->smartUsage($child, $optional, false), $this->copies[$node]['children']), static fn (?string $usage): bool => $usage !== null));
     }
 
+    /**
+     * CommandDispatcher.parse and Commands.finishParsing: the syntax error vanilla reports before
+     * running the command, or null when the input reaches an executable node.
+     */
+    public function parse(string $input, ArgumentReader $arguments): ?CommandSyntaxException
+    {
+        [$executable, $reader, $errors, $started] = $this->parseNodes(0, new StringReader($input), $arguments, false, false);
+        // Commands.getParseException
+        if ($reader->canRead()) {
+            if (count($errors) === 1) {
+                return $errors[0];
+            }
+            return $reader->error($started ? 'command.unknown.argument' : 'command.unknown.command');
+        }
+        // ContextChain.tryFlatten fails when the last node has no command.
+        return $executable ? null : $reader->error('command.unknown.command');
+    }
+
+    /**
+     * CommandDispatcher.parseNodes: every relevant child is tried on its own reader; the best
+     * successful branch wins, otherwise the children's errors are returned at this node.
+     *
+     * @return array{bool, StringReader, list<CommandSyntaxException>, bool} whether the last node is executable, the reader, errors, and whether any node was parsed
+     */
+    private function parseNodes(int $node, StringReader $original, ArgumentReader $arguments, bool $started, bool $executable): array
+    {
+        $errors = [];
+        $potentials = [];
+        foreach ($this->relevantNodes($node, $original) as $child) {
+            $reader = clone $original;
+            try {
+                if ($this->kind($child) === 'literal') {
+                    $reader->cursor += strlen(self::name($this->copies[$child], $this->graph));
+                } elseif (isset($this->copies[$child]['source'])) {
+                    $arguments->read($reader, $this->graph[$this->copies[$child]['source']]);
+                } else {
+                    $reader->cursor = strlen($reader->string);
+                }
+                if ($reader->canRead() && $reader->peek() !== ' ') {
+                    throw $reader->error('command.expected.separator');
+                }
+            } catch (CommandSyntaxException $error) {
+                $errors[] = $error;
+                continue;
+            }
+            $redirect = $this->copies[$child]['redirect'];
+            if ($reader->canRead($redirect === null ? 2 : 1)) {
+                $reader->skip();
+                if ($redirect !== null) {
+                    // A redirect parses its target's children in a child context, which starts without a command.
+                    [$childExecutable, $childReader, $childErrors] = $this->parseNodes($redirect, $reader, $arguments, false, false);
+                    return [$childExecutable, $childReader, $childErrors, true];
+                }
+                $potentials[] = $this->parseNodes($child, $reader, $arguments, true, $this->executable($child));
+            } else {
+                $potentials[] = [$this->executable($child), $reader, [], true];
+            }
+        }
+        if ($potentials !== []) {
+            // Prefer a branch that consumed the input, then one without errors.
+            usort($potentials, static fn (array $a, array $b): int => [$a[1]->canRead(), $a[2] !== []] <=> [$b[1]->canRead(), $b[2] !== []]);
+            return $potentials[0];
+        }
+        return [$executable, $original, $errors, $started];
+    }
+
+    /** CommandNode.getRelevantNodes: the literal matching the next word, otherwise every argument. */
+    private function relevantNodes(int $node, StringReader $reader): array
+    {
+        $children = $this->copies[$node]['children'];
+        $end = strpos($reader->string, ' ', $reader->cursor);
+        $word = substr($reader->string, $reader->cursor, $end === false ? null : $end - $reader->cursor);
+        foreach ($children as $child) {
+            if ($this->kind($child) === 'literal' && self::name($this->copies[$child], $this->graph) === $word) {
+                return [$child];
+            }
+        }
+        return array_values(array_filter($children, fn (int $child): bool => $this->kind($child) === 'argument'));
+    }
+
     private function smartUsage(int $node, bool $optional, bool $deep): ?string
     {
         $self = $optional ? '[' . $this->usageText($node) . ']' : $this->usageText($node);

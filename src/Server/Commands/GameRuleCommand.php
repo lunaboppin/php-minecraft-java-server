@@ -53,7 +53,10 @@ trait GameRuleCommand
 
     private function booleanRuleValue(string $text): string
     {
-        // BoolArgumentType accepts exactly true or false.
+        // BoolArgumentType reads a string, so a quoted "true" or 'false' is accepted too.
+        if (preg_match('/\A(["\'])(true|false)\1\z/D', $text, $match) === 1) {
+            $text = $match[2];
+        }
         if ($text !== 'true' && $text !== 'false') {
             throw new \InvalidArgumentException('Invalid boolean, expected true or false but found ' . $text);
         }

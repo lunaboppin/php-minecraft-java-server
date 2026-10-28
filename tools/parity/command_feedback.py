@@ -35,8 +35,9 @@ SCRIPT = [
     ('gamemode creative', False), ('gamemode survival', False), ('gamemode survival Witness', False), ('gamemode creative @a', False),
     ('setworldspawn 1 64 2', False), ('setworldspawn 1 64 2 90 10', False),
     ('spawnpoint Witness 3 64 4', False), ('spawnpoint @a 3 64 4 45 0', False),
-    ('setblock 5 64 5 minecraft:stone', False), ('setblock 5 64 5 minecraft:stone', False), ('setblock 5 64 5 minecraft:air', False),
-    ('fill 6 64 6 7 64 7 minecraft:dirt', False), ('fill 6 64 6 7 64 7 minecraft:dirt', False), ('fill 6 64 6 7 65 7 minecraft:air', False),
+    # Above the terrain, so both seeds give the same replies.
+    ('setblock 5 200 5 minecraft:stone', False), ('setblock 5 200 5 minecraft:stone', False), ('setblock 5 200 5 minecraft:air', False),
+    ('fill 6 200 6 7 200 7 minecraft:dirt', False), ('fill 6 200 6 7 200 7 minecraft:dirt', False), ('fill 6 200 6 7 201 7 minecraft:air', False),
     ('give Witness minecraft:dirt 3', False), ('give @a minecraft:dirt 2', False), ('give Witness minecraft:diamond_sword 2', False),
     ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
     ('tp Witness 0 70 0', False), ('tp 1 70 1', False), ('tp Witness ParityProbe', False), ('teleport @a 2 70 2', False), ('tp @s ~ ~1 ~', False),
@@ -57,6 +58,20 @@ SCRIPT = [
     ('time set 1000', False), ('time set minecraft:night', False), ('time set noon', False),
     ('time pause', False), ('time pause', False), ('time resume', False), ('time resume', False),
     ('time rate 2', False), ('time rate 2', False), ('time rate 1', False),
+    # Parse errors: the message, then the input up to the cursor; "!witness" runs a command as the non-operator.
+    ('foo bar', False), ('time', False), ('time foo', False), ('time add 1.5.5', False),
+    ('time add 1q', False), ('gamemode bogus', False), ('gamemode creative @x', False), ('gamemode creative @e[foo=1]', False),
+    ('gamemode creative @a[', False), ('difficulty peaceful extra', False), ('give Witness minecraft:dirt abc', False), ('give Witness minecraft:dirt 0', False),
+    ('give Witness minecraft:dirt 5x', False), ('give Witness notanitem', False), ('gamerule keep_inventory maybe', False), ('gamerule random_tick_speed 1.5', False),
+    ('gamerule nonexistent_rule', False), ('setblock 1 2', False), ('setblock ~ ~ ^1 minecraft:stone', False), ('setblock a b c minecraft:stone', False),
+    ('setblock 1.5 2 3 stone', False), ('tp ~ ~ ~ ~ x', False), ('summon minecraft:nope', False), ('summon minecraft:pig 1 2', False),
+    ('damage Witness -1', False), ('damage Witness 5 nope', False), ('weather rain -5', False), ('weather rain 5x', False),
+    ('kill @e[type=nope]', False), ('kill @e[limit=0]', False), ('kill @a[distance=-1]', False), ('kill @s[limit=1]', False),
+    ('kill @e[type=pig]x', False), ('kill averyveryverylongplayername', False), ('list uuids extra', False), ('time set abc', False),
+    ('time set -5', False), ('setblock 1 2 3 minecraft:stone[facing=north]', False), ('setblock 1 2 3 minecraft:oak_stairs[facing=up]', False), ('setblock 1 2 3 minecraft:oak_stairs[facing]', False),
+    ('setblock 1 2 3 minecraft:oak_stairs[facing=north,facing=south]', False), ('give @s diamond_sword[nope=5] 1', False), ('give @s diamond_sword{foo:1} 1', False), ('give @s diamond_sword[damage=5,damage=6] 1', False),
+    ('give @s diamond_sword[damage=5 1', False), ('gamerule keep_inventory "true"', False), ('!witness gamemode creative', False), ('!witness foo', False),
+    ('!witness msg @a hi', False),
     ('list', False),
 ]
 
@@ -87,10 +102,12 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 operator.tick_barrier()
                 continue
             marks = (len(operator.seen), len(witness.seen))
-            operator.send('chat_command', wire.string(command))
-            operator.tick_barrier()
+            # "!witness <command>" runs the command as the non-operator witness.
+            sender, other = (witness, operator) if command.startswith('!witness ') else (operator, witness)
+            sender.send('chat_command', wire.string(command.removeprefix('!witness ')))
+            sender.tick_barrier()
             try:
-                witness.tick_barrier()
+                other.tick_barrier()
             except (AssertionError, EOFError, OSError, TimeoutError):
                 pass  # The witness may have been kicked.
             results.append({'command': command, 'operator': collect(operator, marks[0]), 'witness': collect(witness, marks[1])})

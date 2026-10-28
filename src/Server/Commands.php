@@ -130,6 +130,9 @@ trait Commands
     private function selectEntities(string $text, Client $sender, bool $playersOnly = false, bool $single = false): array
     {
         $selector = CommandModules\EntitySelector::parse($text);
+        if ($selector->unsupported() !== null) {
+            throw new \InvalidArgumentException('The ' . $selector->unsupported() . ' selector option is not supported yet');
+        }
         if ($playersOnly && !$selector->playersOnly()) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.player.entities']);
         }
@@ -230,7 +233,7 @@ trait Commands
         $limit = $options['limit'][0][1] ?? (in_array($selector->kind, ['p', 'r', 'n', 's', '', 'uuid'], true) ? 1 : PHP_INT_MAX);
         $matches = array_slice($matches, 0, $limit);
         if ($matches === []) {
-            throw new CommandModules\CommandFailure(['translate' => $playersOnly || $selector->playersOnly() && in_array($selector->kind, ['p', 'a', 'r', 's', ''], true) ? 'argument.entity.notfound.player' : 'argument.entity.notfound.entity']);
+            throw new CommandModules\CommandFailure(['translate' => $playersOnly ? 'argument.entity.notfound.player' : 'argument.entity.notfound.entity']);
         }
         return $matches;
     }
@@ -551,6 +554,15 @@ trait Commands
     private function command(Client $sender, string $text): void
     {
         try {
+            // Commands.finishParsing: syntax errors are reported with the input around the cursor.
+            $error = $this->commandTree($sender)->parse($text, new CommandModules\ArgumentReader(CommandModules\ArgumentReader::registries($this->version, array_keys(self::CLOCKS)), $this->operator($sender)));
+            if ($error !== null) {
+                $this->sendFailure($sender, $error->component);
+                if ($error->cursor >= 0) {
+                    $this->sendFailure($sender, $error->context());
+                }
+                return;
+            }
             [$name, $arguments] = CommandModules\CommandArguments::parse($text);
             $definition = CommandModules\CommandRegistry::resolve($name, $this->operator($sender));
             if ($definition === null) {

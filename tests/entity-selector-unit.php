@@ -21,8 +21,6 @@ $failure = static function (string $text): ?string {
         return null;
     } catch (CommandFailure $error) {
         return $error->component['translate'];
-    } catch (InvalidArgumentException) {
-        return 'unsupported';
     }
 };
 
@@ -34,12 +32,15 @@ $selectorCheck(EntitySelector::parse('@e[limit=1]')->single() && EntitySelector:
 $selectorCheck(EntitySelector::parse('@a[distance=..5,level=2..,x_rotation=-90..0]')->options['distance'] === [[false, [null, 5.0]]], 'ranges');
 $selectorCheck(EntitySelector::parse('0-0-0-0-1')->uuid === str_repeat("\0", 15) . "\1", 'short UUID groups are padded');
 foreach ([
-    '@x' => 'argument.entity.selector.unknown', '@p[limit=2]' => 'argument.entity.options.inapplicable', '@a[type=pig]' => 'argument.entity.options.inapplicable',
+    '@x' => 'argument.entity.selector.unknown', '@s[limit=2]' => 'argument.entity.options.inapplicable', '@a[type=pig]' => 'argument.entity.options.inapplicable',
     '@e[limit=0]' => 'argument.entity.options.limit.toosmall', '@e[distance=-1]' => 'argument.entity.options.distance.negative', '@e[color=red]' => 'argument.entity.options.unknown',
     '@e[gamemode=hard]' => 'argument.entity.options.mode.invalid', '@e[sort=up]' => 'argument.entity.options.sort.irreversible', '@e[name]' => 'argument.entity.options.valueless',
-    '@e[name=Bob' => 'argument.entity.options.unterminated', '@e[limit=1,limit=2]' => 'argument.entity.options.inapplicable', '@e[nbt={}]' => 'unsupported', 'Way_Too_Long_Name_' => 'argument.entity.invalid',
+    '@e[name=Bob' => 'argument.entity.options.unterminated', '@e[limit=1,limit=2]' => 'argument.entity.options.inapplicable', '@e[name=!a,name=b]' => 'argument.entity.options.inapplicable', 'Way_Too_Long_Name_' => 'argument.entity.invalid',
 ] as $text => $key) {
     $selectorCheck($failure($text) === $key, $text . ' fails with ' . $key);
 }
+// Vanilla limits and sorts @p, @r and @n too; only @s rejects them.
+$selectorCheck($failure('@p[limit=2,sort=furthest]') === null && $failure('@e[name=!a,name=!b]') === null, 'repeatable and kind-independent options');
+$selectorCheck(EntitySelector::parse('@e[nbt={a:[1,2]},type=pig]')->unsupported() === 'nbt' && EntitySelector::parse('@e[type=pig]')->unsupported() === null, 'unevaluated options are consumed');
 $selectorCheck(CommandArguments::parse('kill @e[type=pig, limit=2] extra')[1] === ['@e[type=pig, limit=2]', 'extra'], 'tokenizing keeps selector brackets together');
 echo "PASS: {$selectorChecks} entity selector parsing checks\n";
