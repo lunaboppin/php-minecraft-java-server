@@ -16,10 +16,10 @@ final class NoiseChunk
 
     public readonly Aquifer $aquifer;
 
-    public function __construct(public readonly OverworldSettings $settings, int $chunkX, int $chunkZ)
+    public function __construct(public readonly OverworldSettings $settings, int $chunkX, int $chunkZ, ?Volume $volume = null)
     {
         $this->context = new SamplerContext();
-        $this->volume = new Volume(16, $settings->height, 16, $chunkX * 16, $settings->minY, $chunkZ * 16);
+        $this->volume = $volume ?? new Volume(16, $settings->height, 16, $chunkX * 16, $settings->minY, $chunkZ * 16);
         $aquifers = $settings->json['aquifers'];
         $state = $settings->state;
         $this->aquifer = new Aquifer(
@@ -34,6 +34,25 @@ final class NoiseChunk
             $this->volume,
             $settings->seaLevel,
         );
+    }
+
+    /**
+     * NoiseBasedChunkGenerator.iterateNoiseColumn: the highest non-air block of one column
+     * before surface rules and carvers, and whether it is a fluid.
+     *
+     * @return array{0: int, 1: bool}
+     */
+    public static function column(OverworldSettings $settings, int $x, int $z): array
+    {
+        $chunk = new self($settings, $x >> 4, $z >> 4, new Volume(1, $settings->height, 1, $x, $settings->minY, $z));
+        $density = $settings->state->sampler($settings->json['noise_router']['final_density'])->volume($chunk->context, $chunk->volume);
+        for ($y = $settings->height - 1; $y >= 0; --$y) {
+            $state = $chunk->aquifer->computeSubstance($x, $settings->minY + $y, $z, $density[$y]) ?? 'stone';
+            if ($state !== 'air') {
+                return [$settings->minY + $y, $state !== 'stone'];
+            }
+        }
+        return [$settings->minY, false];
     }
 
     /**

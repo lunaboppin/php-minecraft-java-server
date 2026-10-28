@@ -55,14 +55,42 @@ class World
         if($dimension==='overworld' && $generator==='terrain' && $this->setting('algorithm')!==TerrainGenerator::ALGORITHM){throw new \RuntimeException('Unsupported terrain generator version');}
         $this->terrain=$dimension!=='overworld'?new DimensionGenerator($version,$seed,$dimension):($generator==='terrain'?new TerrainGenerator($version,$seed):null);
         if($dimension==='overworld' && $generator==='terrain'){$this->legacyTerrain=new TerrainGenerator($version,$seed,false);}
-        // Enabling vanilla terrain is a forward migration: chunks already recorded keep their algorithm.
-        if($dimension==='overworld' && $generator==='terrain' && $vanillaTerrain && $this->setting('vanilla')===null){$this->setting('vanilla','26.3');}
+        // Enabling vanilla terrain keeps every chunk players changed, with a margin, and the
+        // chunks players are standing in; all other chunks are generated again with vanilla.
+        if($dimension==='overworld' && $generator==='terrain' && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaTerrain());}
         $this->vanilla=$dimension==='overworld' && $generator==='terrain' && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed):null;
+        if($this->vanilla!==null && $this->setting('vanillaSpawnPending')){
+            // The spawn surface is refined to the decorated column once the chunk exists.
+            $this->setting('spawn',$this->vanilla->findSpawn());
+            $this->db->prepare('DELETE FROM metadata WHERE key=?')->execute(['vanillaSpawnPending']);
+        }
         foreach($version->catalog->blocks as $name=>$info){
             $type=$info['block_entity_type']??(str_ends_with($name,'_bed')?'bed':(in_array($name,['chest','trapped_chest','barrel','furnace','smoker','blast_furnace'],true)?$name:null));
             if($type!==null && isset($version->blocks['block_entity_types'][$type])){for($state=$info['first'];$state<$info['first']+$info['count'];++$state){$this->blockEntityMap[$state]=$version->blocks['block_entity_types'][$type];}}
         }
         $this->globalBits=(int)ceil(log($version->blocks['state_count'],2));
+    }
+    /** @return array<string,true> chunks to keep on the old terrain: edits, containers and players, each with one chunk around them */
+    private function keptChunks():array {
+        $centres=[];
+        foreach($this->db->query('SELECT DISTINCT (x >> 4) AS cx,(z >> 4) AS cz FROM blocks') as $row){$centres[]=[(int)$row['cx'],(int)$row['cz']];}
+        foreach(array_keys($this->containerPositions) as $position){$p=array_map('intval',explode(':',$position));$centres[]=[$p[0]>>4,$p[2]>>4];}
+        foreach($this->db->query('SELECT data FROM players') as $row){
+            $player=json_decode($row['data'],true);
+            if(is_array($player) && isset($player['x'],$player['z']) && ($player['dimension']??'overworld')==='overworld'){$centres[]=[((int)floor($player['x']))>>4,((int)floor($player['z']))>>4];}
+        }
+        $kept=[];
+        foreach($centres as [$cx,$cz]){for($dz=-1;$dz<=1;++$dz){for($dx=-1;$dx<=1;++$dx){$kept[($cx+$dx).':'.($cz+$dz)]=true;}}}
+        return $kept;
+    }
+    private function adoptVanillaTerrain():void {
+        $kept=$this->keptChunks();$update=$this->db->prepare('UPDATE generation SET legacy=2 WHERE cx=? AND cz=?');$moved=0;
+        foreach($this->db->query('SELECT cx,cz FROM generation WHERE legacy<>2')->fetchAll(\PDO::FETCH_NUM) as [$cx,$cz]){
+            if(!isset($kept[$cx.':'.$cz])){$update->execute([$cx,$cz]);++$moved;}
+        }
+        // Spawn moves to vanilla land unless the old spawn area was kept.
+        if($this->setting('spawn')===null && !isset($kept['0:0'])){$this->setting('vanillaSpawnPending',true);}
+        $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>$moved]);
     }
     public function setting(string $key,mixed $value=null): mixed {
         if($value!==null){$q=$this->db->prepare('INSERT INTO metadata(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');$q->execute([$key,json_encode($value,JSON_THROW_ON_ERROR)]);return $value;}

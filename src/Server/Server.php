@@ -113,7 +113,7 @@ final class Server
         }
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
             $process = proc_open(
-                [PHP_BINARY, __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed],
+                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed],
                 [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR],
                 $pipes,
             );

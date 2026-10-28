@@ -77,6 +77,31 @@ final class ChunkStore
         return $out;
     }
 
+    /**
+     * The nearest dry land to the origin on an 8-block spiral, as a spawn point standing on
+     * the column's surface.
+     *
+     * @return array{0: float, 1: float, 2: float}
+     */
+    public function findSpawn(): array
+    {
+        $settings = $this->generator()->settings;
+        for ($radius = 0; $radius <= 64; ++$radius) {
+            for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                for ($dx = -$radius; $dx <= $radius; ++$dx) {
+                    if (max(abs($dx), abs($dz)) !== $radius) {
+                        continue;
+                    }
+                    [$height, $fluid] = NoiseChunk::column($settings, $dx * 8, $dz * 8);
+                    if (!$fluid && $height >= $settings->seaLevel) {
+                        return [$dx * 8 + 0.5, (float) ($height + 1), $dz * 8 + 0.5];
+                    }
+                }
+            }
+        }
+        return [0.5, (float) ($settings->seaLevel + 1), 0.5];
+    }
+
     /** A chunk is final once it and its eight neighbours are decorated. */
     public function ready(int $cx, int $cz): bool
     {

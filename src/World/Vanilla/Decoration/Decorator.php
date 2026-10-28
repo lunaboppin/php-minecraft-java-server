@@ -26,6 +26,7 @@ final class Decorator
     public readonly Providers $providers;
     public readonly Survival $survival;
     private ?Trees $trees = null;
+    private ?Patches $patches = null;
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -248,6 +249,19 @@ final class Decorator
                     break;
                 }
                 return ($this->trees ??= new Trees($this))->tree($feature, $region, $random, $x, $y, $z);
+            case 'vegetation_patch':
+            case 'waterlogged_vegetation_patch':
+                return ($this->patches ??= new Patches($this))->vegetationPatch($feature, $region, $random, $x, $y, $z, $type === 'waterlogged_vegetation_patch');
+            case 'lake':
+                return ($this->patches ??= new Patches($this))->lake($feature, $region, $random, $x, $y, $z);
+            case 'vines':
+                return ($this->patches ??= new Patches($this))->vines($region, $x, $y, $z);
+            case 'block_blob':
+                return ($this->patches ??= new Patches($this))->blockBlob($feature, $region, $random, $x, $y, $z);
+            case 'underwater_magma':
+                return ($this->patches ??= new Patches($this))->underwaterMagma($feature, $region, $random, $x, $y, $z);
+            case 'multiface_growth':
+                return ($this->patches ??= new Patches($this))->multifaceGrowth($feature, $region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }
