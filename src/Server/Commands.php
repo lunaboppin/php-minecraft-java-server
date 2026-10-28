@@ -583,15 +583,28 @@ trait Commands
         return $position;
     }
 
-    /** ItemStack.getDisplayName for a default stack: its bracketed, rarity-colored hover name. */
-    private function itemComponent(string $item): array
+    /**
+     * ItemStack.getDisplayName: the bracketed hover name in the rarity colour (raised for enchanted
+     * items, as ItemStack.getRarity does), hovering the item with its component patch.
+     */
+    private function itemComponent(string $item, array $components = [], array $removed = []): array
     {
         $display = $this->version->catalog->displayNames['items']['minecraft:' . $item];
+        $color = ($components['minecraft:enchantments'] ?? []) === [] ? $display['color'] : match ($display['color']) {
+            'white', 'yellow' => 'aqua',
+            'aqua' => 'light_purple',
+            default => $display['color'],
+        };
+        $hover = ['action' => 'show_item', 'id' => 'minecraft:' . $item];
+        $patch = $components + array_fill_keys(array_map(static fn (string $name): string => '!' . $name, $removed), new \stdClass());
+        if ($patch !== []) {
+            $hover['components'] = $patch;
+        }
         return [
             'translate' => 'chat.square_brackets',
             'with' => [['text' => '', 'extra' => [$display['name']]]],
-            'color' => $display['color'],
-            'hover_event' => ['action' => 'show_item', 'id' => 'minecraft:' . $item],
+            'color' => $color,
+            'hover_event' => $hover,
         ];
     }
 

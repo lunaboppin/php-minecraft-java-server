@@ -44,6 +44,8 @@ final class ArgumentReader
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
             'minecraft:enchantment' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/enchantments.json'), true, 512, JSON_THROW_ON_ERROR))),
+            // Items with a default maximum damage.
+            'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),
             'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
             'item_tag' => array_fill_keys(array_keys($version->registryTags('minecraft:item')), true),
         ];
@@ -312,51 +314,10 @@ final class ArgumentReader
         $this->worldCoordinate($reader, false);
     }
 
-    /** ItemParser: a registered item, then optional [component=value,...] or [!component,...]. */
+    /** ItemParser, with the component values this server stores validated. */
     private function item(StringReader $reader): void
     {
-        $start = $reader->cursor;
-        $id = $reader->readIdentifier();
-        if (!isset($this->registries['item'][$id])) {
-            $reader->cursor = $start;
-            throw $reader->error('argument.item.id.invalid', [$id]);
-        }
-        if (!$reader->canRead() || $reader->peek() !== '[') {
-            return;
-        }
-        $reader->skip();
-        $seen = [];
-        while ($reader->canRead() && $reader->peek() !== ']') {
-            $reader->skipWhitespace();
-            $removed = $reader->canRead() && $reader->peek() === '!';
-            if ($removed) {
-                $reader->skip();
-            }
-            $componentStart = $reader->cursor;
-            $component = $reader->readIdentifier();
-            if (!isset($this->registries['minecraft:data_component_type'][$component])) {
-                $reader->cursor = $componentStart;
-                throw $reader->error('arguments.item.component.unknown', [$component]);
-            }
-            if (isset($seen[$component])) {
-                // Raised without context, so no context line follows.
-                throw new CommandSyntaxException(['translate' => 'arguments.item.component.repeated', 'with' => [['text' => $component]]], $reader->string, -1);
-            }
-            $seen[$component] = true;
-            if (!$removed) {
-                $reader->skipWhitespace();
-                self::expect($reader, '=');
-                $reader->skipWhitespace();
-                // The SNBT value is consumed but not validated.
-                self::value($reader);
-            }
-            $reader->skipWhitespace();
-            if (!$reader->canRead() || $reader->peek() !== ',') {
-                break;
-            }
-            $reader->skip();
-        }
-        self::expect($reader, ']');
+        ItemArgument::read($reader, $this->registries, fn (string $item): bool => isset($this->registries['damageable'][$item]));
     }
 
     /**

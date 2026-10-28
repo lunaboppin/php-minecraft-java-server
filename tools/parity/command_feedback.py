@@ -147,6 +147,13 @@ SCRIPT = [
     ('title @s title "Big"', False), ('title @s subtitle {text:"Small",color:"gold"}', False), ('title @s actionbar "bar"', False),
     ('title @s times 10 70 20', False), ('title @s clear', False), ('title @s reset', False),
     ('title @a title "All"', False),
+    # Item components in /give and /clear, from empty inventories.
+    ('!quiet clear @a', False), ('give Witness diamond_sword[damage=5]', False), ('give Witness diamond_sword[enchantments={sharpness:3}]', False),
+    ('give Witness diamond_sword[enchantments={"minecraft:sharpness":3,unbreaking:1}]', False), ('give Witness diamond_sword[damage=5,enchantments={sharpness:3}] 2', False), ('give Witness enchanted_book[stored_enchantments={mending:1}]', False),
+    ('give Witness stick[enchantments={sharpness:1}]', False), ('give Witness golden_apple[enchantments={sharpness:1}]', False), ('give Witness diamond_sword[!damage]', False),
+    ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
+    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
+    ('clear Witness diamond_sword', False),
     ('list', False),
 ]
 

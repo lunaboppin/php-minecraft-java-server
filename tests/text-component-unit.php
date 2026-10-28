@@ -40,7 +40,7 @@ $textCheck(Nbt::component(['translate' => 'k', 'with' => [2, 20]]) === "\x0a" . 
 $textCheck(Nbt::component(['translate' => 'k', 'with' => [2, ['text' => '']]]) === "\x0a" . "\x09" . $nbtString('with') . "\x0a" . pack('N', 2)
     . "\x03" . $nbtString('') . pack('N', 2) . "\0" . "\x08" . $nbtString('') . $nbtString('') . "\0"
     . "\x08" . $nbtString('translate') . $nbtString('k') . "\0", 'mixed integer and text arguments are wrapped');
-foreach ([['uuid' => 'short'], ['size' => 1]] as $invalid) {
+foreach ([['uuid' => 'short'], ['size' => null]] as $invalid) {
     try {
         Nbt::component(['translate' => 'k', ...$invalid]);
         $textCheck(false, 'rejected unsupported component ' . json_encode(array_keys($invalid)));
