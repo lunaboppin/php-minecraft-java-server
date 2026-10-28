@@ -183,8 +183,15 @@ final class ArgumentReader
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
                 return;
+            case 'minecraft:nbt_compound_tag':
+                $start = $reader->cursor;
+                if (Snbt::read($reader)['type'] !== 'compound') {
+                    $reader->cursor = $start;
+                    throw $reader->error('argument.nbt.expected.compound');
+                }
+                return;
             default:
-                // nbt_compound_tag and other structured values: one balanced token.
+                // Other structured values: one balanced token.
                 self::balanced($reader);
         }
     }

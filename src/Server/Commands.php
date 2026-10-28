@@ -164,7 +164,12 @@ trait Commands
         $player = static fn (Client $client): array => ['client' => $client, 'x' => $client->x, 'y' => $client->y, 'z' => $client->z, 'yaw' => $client->yaw, 'pitch' => $client->pitch, 'type' => 'minecraft:player', 'width' => 0.6, 'height' => 1.8, 'id' => $client->entityId];
         $players = array_map($player, array_values($this->players()));
         $mobs = [];
+        $items = [];
         if (!$playersOnly && $sender->dimension === $this->world->dimension) {
+            // Dropped item entities, which @e and UUIDs can select.
+            foreach ($this->itemEntities as $id => $item) {
+                $items[] = ['item' => $id, 'x' => $item['x'], 'y' => $item['y'], 'z' => $item['z'], 'yaw' => 0.0, 'pitch' => 0.0, 'type' => 'minecraft:item', 'width' => 0.25, 'height' => 0.25, 'id' => $id, 'uuid' => $item['uuid']];
+            }
             foreach ($this->animals as $id => $animal) {
                 if (!isset($animal['deadAt'])) {
                     $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -174,11 +179,11 @@ trait Commands
         }
         $candidates = match ($selector->kind) {
             '' => array_values(array_filter($players, static fn (array $entity): bool => strcasecmp($entity['client']->name, (string) $selector->name) === 0)),
-            'uuid' => array_values(array_filter([...$players, ...$mobs], static fn (array $entity): bool => ($entity['uuid'] ?? $entity['client']->uuid) === $selector->uuid)),
+            'uuid' => array_values(array_filter([...$players, ...$mobs, ...$items], static fn (array $entity): bool => ($entity['uuid'] ?? $entity['client']->uuid) === $selector->uuid)),
             's' => [$player($sender)],
             'p', 'a', 'r' => $players,
             // @e and @n consider living entities only.
-            default => [...array_values(array_filter($players, static fn (array $entity): bool => !$entity['client']->dead)), ...$mobs],
+            default => [...array_values(array_filter($players, static fn (array $entity): bool => !$entity['client']->dead)), ...$mobs, ...$items],
         };
         $options = $selector->options;
         $origin = [$options['x'][0][1] ?? $sender->x, $options['y'][0][1] ?? $sender->y, $options['z'][0][1] ?? $sender->z];
@@ -191,17 +196,24 @@ trait Commands
                 }
             }
             foreach ($options['name'] ?? [] as [$negated, $name]) {
-                // Unnamed mobs have no player name to match.
-                if (($client !== null && $client->name === $name) === $negated) {
+                // Entity.getName().getString(): a mob's custom name, otherwise its type's English name.
+                $mob = isset($entity['mob']) ? $this->animals[$entity['mob']] : null;
+                $actual = $client !== null ? $client->name : (isset($mob['customName']) ? self::plainText($mob['customName']) : $this->englishName('entity.minecraft.' . substr($entity['type'], 10)));
+                if (($actual === $name) === $negated) {
                     return false;
                 }
             }
-            foreach (['tag', 'team'] as $key) {
-                // Nothing carries tags or teams yet: "x" matches none and "" (no tag/team) matches all.
-                foreach ($options[$key] ?? [] as [$negated, $value]) {
-                    if (($value === '') === $negated) {
-                        return false;
-                    }
+            foreach ($options['tag'] ?? [] as [$negated, $value]) {
+                // "" matches entities without tags; players carry none until /tag exists.
+                $tags = isset($entity['mob']) ? ($this->animals[$entity['mob']]['tags'] ?? []) : [];
+                if (($value === '' ? $tags === [] : in_array($value, $tags, true)) === $negated) {
+                    return false;
+                }
+            }
+            foreach ($options['team'] ?? [] as [$negated, $value]) {
+                // Nothing joins teams yet: "x" matches none and "" (no team) matches all.
+                if (($value === '') === $negated) {
+                    return false;
                 }
             }
             if (isset($options['scores']) && !$this->matchesScores($options['scores'][0][1], $entity)) {
@@ -278,6 +290,12 @@ trait Commands
         return ($minimum === null || $value >= $minimum) && ($maximum === null || $value <= $maximum);
     }
 
+    /** Component.getString: the text of a component and its siblings, without translation. */
+    private static function plainText(array $component): string
+    {
+        return ($component['text'] ?? '') . implode('', array_map(self::plainText(...), $component['extra'] ?? []));
+    }
+
     private function experienceLevel(Client $client): int
     {
         return $client->experienceLevel;
@@ -286,7 +304,12 @@ trait Commands
     /** An entity's display name: the player name or the mob's type description. */
     private function entityName(array $entity): array
     {
-        return isset($entity['client']) ? Packets::playerName($entity['client']->name, $entity['client']->uuid) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid']);
+        if (isset($entity['item'])) {
+            // ItemEntity.getName: the item's name.
+            $stack = $this->itemEntities[$entity['item']]['stack'];
+            return $this->entityComponent('item', $entity['uuid'], $this->version->catalog->displayNames['items']['minecraft:' . $this->version->catalog->itemName($stack['item'])]['name']);
+        }
+        return isset($entity['client']) ? Packets::playerName($entity['client']->name, $entity['client']->uuid) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], $this->animals[$entity['mob']]['customName'] ?? null);
     }
 
     /**
@@ -614,9 +637,13 @@ trait Commands
     }
 
     /** Entity.getDisplayName for an unnamed non-player entity. */
-    private function entityComponent(string $kind, string $uuid): array
+    /**
+     * Entity.getDisplayName for a non-player entity: its custom name (keeping that name's style)
+     * or its type's name, hovering the entity and inserting its UUID.
+     */
+    private function entityComponent(string $kind, string $uuid, ?array $customName = null): array
     {
-        $name = $this->version->catalog->displayNames['entities']['minecraft:' . $kind];
+        $name = $customName ?? $this->version->catalog->displayNames['entities']['minecraft:' . $kind];
         $hex = bin2hex($uuid);
         return [...$name, 'insertion' => substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20),
             'hover_event' => ['action' => 'show_entity', 'id' => 'minecraft:' . $kind, 'uuid' => $uuid, 'name' => $name]];

@@ -26,6 +26,13 @@ trait EnchantCommand
         $single = count($targets) === 1;
         $enchanted = [];
         foreach ($targets as $target) {
+            if (isset($target['item'])) {
+                // Only living entities hold items to enchant.
+                if ($single) {
+                    throw new CommandFailure(['translate' => 'commands.enchant.failed.entity', 'with' => [['text' => self::plainText($this->entityName($target)) ?: $this->englishName($this->entityName($target)['translate'] ?? '')]]]);
+                }
+                continue;
+            }
             $player = $target['client'] ?? null;
             $stack = $player === null ? null : ($player->inventory[36 + $player->heldSlot] ?? null);
             if ($stack === null) {

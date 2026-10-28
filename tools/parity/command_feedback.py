@@ -172,6 +172,13 @@ SCRIPT = [
     ('kill @a[scores={kills=1..}]', False), ('scoreboard objectives remove kills', False), ('scoreboard objectives remove kills', False),
     ('scoreboard objectives list', False),
     ('!respawn', False),
+    # Summoned mobs with NBT, named and tagged selection; their random loot is cleared quietly.
+    ('summon pig ~ ~ ~ {NoAI:1b}', False), ('summon pig ~ ~ ~ {CustomName:"Bob"}', False), ('summon pig ~ ~ ~ {CustomName:{text:"Red",color:"red"}}', False),
+    ('summon cow ~ ~ ~ {Age:-24000}', False), ('summon cow ~ ~ ~ {Silent:1b,Invulnerable:1b,PersistenceRequired:1b}', False), ('summon pig ~ ~ ~ {Tags:["a","b"]}', False),
+    ('summon pig ~ ~ ~ {Health:5f}', False), ('summon pig ~ ~ ~ {Rotation:[90f,0f]}', False), ('summon pig ~ ~ ~ {NoAI:1b', False),
+    ('summon pig ~ ~ ~ {}', False), ('summon minecraft:player', False), ('summon pig 0 -10000 0', False),
+    ('kill @e[name=Bob]', False), ('kill @e[name=Red]', False), ('kill @e[tag=a]', False),
+    ('kill @e[tag=!a,type=pig,name=Pig]', False), ('!quiet kill @e[type=!player]', False),
     ('list', False),
 ]
 
