@@ -10,7 +10,9 @@ final class CommandArguments
     /** @return array{string, list<string>} */
     public static function parse(string $text): array
     {
-        $arguments = preg_split('/\s+/', trim($text));
+        // Whitespace separates arguments, except inside a selector's brackets or quotes.
+        preg_match_all('/(?:[^\s\[\]"\']|\[(?:[^\]"\']|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')*\]|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')+|[\[\]"\']/', trim($text), $matches);
+        $arguments = $matches[0] === [] ? [''] : $matches[0];
         $name = strtolower(array_shift($arguments) ?? '');
 
         return [$name, $arguments];

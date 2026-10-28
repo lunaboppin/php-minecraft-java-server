@@ -59,7 +59,19 @@ The exporter records each node's real child order, argument type ID, suggestion 
 
 `command_suggestion` requests for the `ask_server` arguments in these commands are answered as `ServerCommandSuggestionsProvider` answers them: `/op` with online players who aren't operators, `/deop` with operators, and `/time set` with the clock's command time markers as full IDs. Matching uses `matchesSubStr` and `filterResources`, sorted case-insensitively. The parity tool checks these replies byte for byte. Other requests get an empty reply.
 
-`tools/parity/command_feedback.py` runs one command script against PHP and the official server (with an accepted EULA) and compares every `system_chat` and `disconnect` payload byte for byte, for the operator and a non-operator witness. It covers `/list`, `/seed`, `/difficulty`, `/defaultgamemode`, `/save-all`, `/save-on`, `/save-off`, `/op`, `/deop`, `/kick`, `/weather`, `/gamemode`, `/setworldspawn`, `/spawnpoint`, `/setblock`, `/fill`, `/give`, `/summon`, `/tp`, `/kill`, `/version`, `/gamerule` and `/damage` with death messages, including their failures and echoes; all 132 observations are identical. A `!respawn` line makes the witness respawn between deaths. Random entity UUIDs in `/summon` replies are normalized before comparison. `--commands FILE` runs another list of commands. The kick report and leave message are compared without order, because vanilla races them against the network thread. CI runs it in the multiplayer parity job.
+Entity arguments use `EntitySelector`, following `EntitySelectorParser` and `EntitySelector`:
+- **Targets:** player names, UUIDs, and `@p`, `@a`, `@r`, `@s`, `@e` and `@n` with their default sorts and limits.
+- **Options:** `type` (with `!`), `name`, `limit`, `sort`, `distance`, `x`/`y`/`z`, `dx`/`dy`/`dz` (box intersection), `gamemode`, `level`, `x_rotation`/`y_rotation`, and `tag` and `team` (nothing carries tags or teams yet).
+- **Errors:** vanilla's for unknown, valueless, inapplicable or invalid options and empty results.
+- **Not yet:** `nbt`, `scores`, `advancements` and `predicate` are rejected as unsupported, and selector syntax errors are plain messages without vanilla's context line.
+- **Commands:**
+  - `/kill` and `/tp` accept mobs in the sender's dimension: mobs die with their loot and no experience, or are moved and resynchronized
+  - player-only arguments reject selectors that can match other entities (`argument.player.entities`)
+  - single-target arguments reject `@a`-style selectors
+
+Arguments are now separated by whitespace outside selector brackets and quotes. `tests/entity-selector-unit.php` checks parsing; the feedback recorder compares selector commands with the official server.
+
+`tools/parity/command_feedback.py` runs one command script against PHP and the official server (with an accepted EULA) and compares every `system_chat` and `disconnect` payload byte for byte, for the operator and a non-operator witness. It covers `/list`, `/seed`, `/difficulty`, `/defaultgamemode`, `/save-all`, `/save-on`, `/save-off`, `/op`, `/deop`, `/kick`, `/weather`, `/gamemode`, `/setworldspawn`, `/spawnpoint`, `/setblock`, `/fill`, `/give`, `/summon`, `/tp`, `/kill`, `/version`, `/gamerule`, `/damage` with death messages, `/time` and entity selectors, including their failures and echoes; all 172 observations are identical. A `!respawn` line makes the witness respawn between deaths. Random entity UUIDs in `/summon` replies are normalized before comparison. `--commands FILE` runs another list of commands. The kick report and leave message are compared without order, because vanilla races them against the network thread. CI runs it in the multiplayer parity job.
 
 Run `python3 tools/php_style.py` to format command modules and `python3 tools/php_style.py --check` to check them. Optional paths apply the same configuration to other changed PHP files. The helper verifies the pinned official PHP CS Fixer PHAR checksum and does not add a runtime dependency. CI checks command formatting.
 

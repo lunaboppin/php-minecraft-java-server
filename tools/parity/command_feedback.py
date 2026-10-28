@@ -41,6 +41,10 @@ SCRIPT = [
     ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
     ('tp Witness 0 70 0', False), ('tp 1 70 1', False), ('tp Witness ParityProbe', False), ('teleport @a 2 70 2', False), ('tp @s ~ ~1 ~', False),
     ('kill Witness', False), ('kill Witness', False), ('!respawn', False),
+    # Entity selectors (random mob UUIDs are normalized for @e commands).
+    ('summon minecraft:pig 0 64 3', False), ('summon minecraft:cow 3 64 0', False), ('tp @e[type=cow] 0 64 0', False),
+    ('kill @e[type=pig,limit=1,sort=nearest]', False), ('kill @e[type=minecraft:cow]', False), ('kill @e[type=pig]', False),
+    ('give @a[gamemode=survival] dirt 1', False), ('give @a[name=!Witness] dirt 2', False), ('give @a[limit=1,sort=furthest] dirt 3', False),
     ('version', False), ('gamerule keep_inventory', False), ('gamerule minecraft:keep_inventory true', False), ('gamerule keep_inventory true', False),
     ('gamerule random_tick_speed 5', False), ('gamerule random_tick_speed', False),
     # Death messages: the witness respawns between deaths.
@@ -112,7 +116,7 @@ def compare(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
         # A summoned entity has a random UUID on each server.
-        random_ids = expected['command'].startswith('summon ')
+        random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
             if key(expected[role]) != key(actual[role]):

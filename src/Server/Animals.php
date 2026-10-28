@@ -205,20 +205,55 @@ trait Animals
             }
         }
         if ($animal['health'] <= 0) {
-            $animal['deadAt'] = $this->ticks + 20;
-            $drops = match ($animal['kind']) {
-                'cow' => ['beef' => random_int(1, 3), 'leather' => random_int(0, 2)],'pig' => ['porkchop' => random_int(1, 3)],'sheep' => ['mutton' => random_int(1, 2), 'white_wool' => 1],'chicken' => ['chicken' => 1, 'feather' => random_int(0, 2)],default => []
-            };
-            foreach ($drops as $name => $count) {
-                if ($count > 0) {
-                    $this->dropStack($animal['x'], $animal['y'] + 0.4, $animal['z'], ['item' => $this->version->blocks['items'][$name], 'count' => $count]);
-                }
-            }
+            $this->animalDeathLoot($animal);
             if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
                 $c->experience += random_int(1, 3);
             }
         }
         return true;
+    }
+
+    /** Mark a mob dead and drop its loot; only kills by a player also give experience. */
+    private function animalDeathLoot(array &$animal): void
+    {
+        $animal['deadAt'] = $this->ticks + 20;
+        $drops = match ($animal['kind']) {
+            'cow' => ['beef' => random_int(1, 3), 'leather' => random_int(0, 2)],'pig' => ['porkchop' => random_int(1, 3)],'sheep' => ['mutton' => random_int(1, 2), 'white_wool' => 1],'chicken' => ['chicken' => 1, 'feather' => random_int(0, 2)],default => []
+        };
+        foreach ($drops as $name => $count) {
+            if ($count > 0) {
+                $this->dropStack($animal['x'], $animal['y'] + 0.4, $animal['z'], ['item' => $this->version->blocks['items'][$name], 'count' => $count]);
+            }
+        }
+    }
+
+    /** Entity.kill for a mob: generic_kill bypasses invulnerability and drops its loot. */
+    private function killAnimal(int $id): void
+    {
+        if (!isset($this->animals[$id]) || isset($this->animals[$id]['deadAt'])) {
+            return;
+        }
+        $animal = &$this->animals[$id];
+        $animal['health'] = 0.0;
+        $this->mobDamageSound($animal, true);
+        foreach ($this->localPlayers() as $p) {
+            if (isset($p->entities[$id])) {
+                $p->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, 0.0));
+                $p->send($this->version, 'entity_event', pack('N', $id) . "\3");
+            }
+        }
+        $this->animalDeathLoot($animal);
+    }
+
+    /** Entity.teleportTo for a mob: move it and resynchronize its position with viewers. */
+    private function teleportAnimal(int $id, array $position): void
+    {
+        $animal = &$this->animals[$id];
+        [$animal['x'], $animal['y'], $animal['z']] = $position;
+        [$animal['targetX'], $animal['targetY'], $animal['targetZ']] = $position;
+        $animal['velocity'] = [0.0, 0.0, 0.0];
+        $animal['needsSync'] = true;
+        $animal['syncPosition'] = true;
     }
 
     private function tickAnimals(): void
