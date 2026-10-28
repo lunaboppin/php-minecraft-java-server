@@ -143,6 +143,9 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 /op player
 /deop player
 /kick player [reason]
+/save-on
+/save-off
+/stop
 ```
 
 Coordinates accept `~` relative values. Fill operations are limited to 32,768 blocks. Commands and results are synchronized with the client command tree. Most player arguments accept a name or `@s`; `/op`, `/deop` and `/kick` also accept `@p`, `@r`, `@a` and player UUIDs. Selector arguments in brackets are not supported yet.

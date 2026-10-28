@@ -37,6 +37,9 @@ final class CommandRegistry
             new CommandDefinition('op', 'executeOp', true),
             new CommandDefinition('deop', 'executeDeOp', true),
             new CommandDefinition('kick', 'executeKick', true),
+            new CommandDefinition('save-on', 'executeSaveOn', true),
+            new CommandDefinition('save-off', 'executeSaveOff', true),
+            new CommandDefinition('stop', 'executeStop', true),
         ];
     }
 

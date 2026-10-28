@@ -191,7 +191,7 @@ def main():
                 command(a, 'gamerule doDaylightCycle false', 'doDaylightCycle = false')
                 command(a, 'weather rain', 'Weather changed to rain')
                 a.send('move_player_pos', struct.pack('>dddB', 1.5, 65, .5, 1))
-                command(a, 'save-all', 'Saved world and player data')
+                command(a, 'save-all', 'commands.save.success')
                 with sqlite3.connect(world) as db:
                     profile = json.loads(db.execute('SELECT data FROM players WHERE uuid=?', (a.uuid.hex(),)).fetchone()[0])
                     net.check(profile['gameMode'] == 0 and profile['x'] == 1.5, 'player position and mode persisted')

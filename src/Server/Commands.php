@@ -64,6 +64,12 @@ trait Commands
 
     use CommandModules\KickCommand;
 
+    use CommandModules\SaveOnCommand;
+
+    use CommandModules\SaveOffCommand;
+
+    use CommandModules\StopCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
