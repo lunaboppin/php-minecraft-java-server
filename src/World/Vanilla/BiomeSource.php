@@ -13,6 +13,8 @@ final class BiomeSource
     /** @var array{0: list<array{0: int, 1: int}>, 1: ?list<array>, 2: ?string} the root node: bounds, children, and a leaf's biome */
     private array $root;
     private ?array $lastResult = null;
+    /** @var array<string, list<string>> */
+    private array $chunks = [];
 
     public function __construct(private readonly OverworldSettings $settings, string $preset = 'overworld')
     {
@@ -167,6 +169,27 @@ final class BiomeSource
         $leaf = self::search($this->root, $target, $this->lastResult);
         $this->lastResult = $leaf;
         return $leaf[2];
+    }
+
+    /** A chunk's stored noise biome at a quart; Y is clamped to the chunk's height, as ChunkAccess.getNoiseBiome does. */
+    public function quart(int $quartX, int $quartY, int $quartZ): string
+    {
+        $chunkX = $quartX >> 2;
+        $chunkZ = $quartZ >> 2;
+        $biomes = $this->chunks["$chunkX,$chunkZ"] ??= $this->chunk($chunkX, $chunkZ);
+        if (count($this->chunks) > 256) {
+            array_shift($this->chunks);
+        }
+        $minQuartY = $this->settings->minY >> 2;
+        $y = min(max($quartY - $minQuartY, 0), intdiv($this->settings->height, 4) - 1);
+        return $biomes[($y << 4) | (($quartZ & 3) << 2) | ($quartX & 3)];
+    }
+
+    /** @return list<string> the distinct biomes of a chunk */
+    public function palette(int $chunkX, int $chunkZ): array
+    {
+        $this->quart($chunkX << 2, $this->settings->minY >> 2, $chunkZ << 2);
+        return array_values(array_unique($this->chunks["$chunkX,$chunkZ"]));
     }
 
     /**
