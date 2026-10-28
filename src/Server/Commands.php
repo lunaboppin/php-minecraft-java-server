@@ -232,24 +232,23 @@ trait Commands
         return CommandModules\CommandRegistry::names($this->operator($sender));
     }
 
+    /**
+     * The command tree: the official graph for the player's permission level (4 for operators,
+     * as vanilla's default op level, otherwise 0) for the vanilla commands implemented here, and
+     * a string argument for this server's own commands.
+     */
     private function commands(Client $client): void
     {
-        $names = $this->commandNames($client);
-        $nodes = [];
-        $children = [];
-        foreach ($names as $i => $name) {
-            $children[] = 1 + $i * 2;
+        $operator = $this->operator($client);
+        static $graph = null;
+        static $trees = [];
+        $graph ??= json_decode((string) file_get_contents($this->version->directory . '/commands.json'), true, 512, JSON_THROW_ON_ERROR)['nodes'];
+        if (!isset($trees[$operator])) {
+            $vanilla = array_map(static fn (int $child): string => $graph[$child]['name'], $graph[0]['network_children']);
+            $names = $this->commandNames($client);
+            $trees[$operator] = CommandModules\CommandTree::packet($graph, $operator ? 4 : 0, array_values(array_intersect($names, $vanilla)), array_values(array_diff($names, $vanilla)), $this->version->blocks['argument_string']);
         }
-        $root = "\0" . Binary::writeVarInt(count($children));
-        foreach ($children as $id) {
-            $root .= Binary::writeVarInt($id);
-        }
-        $nodes[] = $root;
-        foreach ($names as $i => $name) {
-            $nodes[] = "\5\1" . Binary::writeVarInt(2 + $i * 2) . Binary::writeString($name);
-            $nodes[] = "\6\0" . Binary::writeString('arguments') . Binary::writeVarInt($this->version->blocks['argument_string']) . "\2";
-        }
-        $client->send($this->version, 'commands', Binary::writeVarInt(count($nodes)) . implode('', $nodes) . "\0");
+        $client->send($this->version, 'commands', $trees[$operator]);
     }
 
     private function coordinate(string $text, float $relative): float

@@ -35,6 +35,9 @@ public class ExportCommands {
    var node=nodes.get(i);var connected=children(node);if(node.getRedirect()!=null)connected.add(node.getRedirect());
    for(var child:connected)if(!ids.containsKey(child)){ids.put(child,nodes.size());nodes.add(child);}
   }
+  var inspectorField=Commands.class.getDeclaredField("COMMAND_NODE_INSPECTOR");inspectorField.setAccessible(true);
+  var inspector=(net.minecraft.network.protocol.game.ClientboundCommandsPacket.NodeInspector<CommandSourceStack>)inspectorField.get(null);
+  var commandIds=new IdentityHashMap<Object,Integer>();var typeIds=new IdentityHashMap<Object,Integer>();
   var output=new JsonObject();output.addProperty("scope","Official Java 26.3 dedicated dispatcher; no runtime command execution");
   output.addProperty("version",SharedConstants.getCurrentVersion().id());output.addProperty("protocol",SharedConstants.getCurrentVersion().protocolVersion());output.addProperty("null_permission_result","The predicate requires a runtime source context; not accepted as verified permission behavior");
   output.addProperty("literal_sibling_order","Canonical name order only for literal-only sibling sets; argument priority and mixed sibling order preserved");
@@ -42,6 +45,11 @@ public class ExportCommands {
   for(var node:nodes){
    var row=new JsonObject();row.addProperty("name",node.getName());row.addProperty("kind",node instanceof RootCommandNode?"root":node instanceof LiteralCommandNode?"literal":"argument");row.addProperty("executable",node.getCommand()!=null);row.addProperty("fork",node.isFork());
    var childIds=new JsonArray();for(var child:children(node))childIds.add(ids.get(child));row.add("children",childIds);if(node.getRedirect()!=null)row.addProperty("redirect",ids.get(node.getRedirect()));
+   // ClientboundCommandsPacket order: registration order, as getChildren() iterates it.
+   var networkIds=new JsonArray();for(var child:node.getChildren())networkIds.add(ids.get(child));row.add("network_children",networkIds);
+   row.addProperty("restricted",inspector.isRestricted(node));
+   // CommandNode.equals compares command objects by identity; ClientboundCommandsPacket merges equal nodes.
+   if(node.getCommand()!=null){commandIds.putIfAbsent(node.getCommand(),commandIds.size());row.addProperty("command_id",commandIds.get(node.getCommand()));}
    var permissions=new JsonObject();
    for(var level:PermissionLevel.values()){
     try{permissions.addProperty(Integer.toString(level.id()),node.canUse(Commands.createCompilationContext(LevelBasedPermissionSet.forLevel(level))));}
@@ -52,6 +60,13 @@ public class ExportCommands {
     row.addProperty("argument",BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(info).toString());row.addProperty("argument_class",argument.getType().getClass().getName());row.add("properties",properties);
     var buffer=new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());info.serializeToNetwork(template,buffer);var bytes=new byte[buffer.readableBytes()];buffer.readBytes(bytes);buffer.release();row.addProperty("argument_hex",HexFormat.of().formatHex(bytes));
     row.addProperty("suggestions",argument.getCustomSuggestions()!=null);
+    row.addProperty("argument_id",BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getId(info));
+    // ArgumentCommandNode.equals uses ArgumentType.equals: by value where a type overrides it
+    // (Brigadier's primitives), otherwise by identity.
+    var type=argument.getType();var byValue=type.getClass().getMethod("equals",Object.class).getDeclaringClass()!=Object.class;
+    if(!byValue)typeIds.putIfAbsent(type,typeIds.size());
+    row.addProperty("type_key",byValue?type.getClass().getName()+":"+type:"#"+typeIds.get(type));
+    var suggestion=inspector.suggestionId(argument);if(suggestion!=null)row.addProperty("suggestion_id",suggestion.toString());
    }rows.add(row);
   }
   output.add("nodes",rows);Files.writeString(Path.of(args[0]),new GsonBuilder().setPrettyPrinting().create().toJson(output)+"\n");
