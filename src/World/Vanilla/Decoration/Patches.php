@@ -591,8 +591,12 @@ final class Patches
     /** StructurePiece.reorient for a chest against its wall. */
     private function reorientChest(Region $region, int $x, int $y, int $z): int
     {
-        $blocks = $this->blocks;
-        $chest = $blocks->state('chest');
+        return self::reorient($this->blocks, $region, $x, $y, $z, $this->blocks->state('chest'));
+    }
+
+    /** StructurePiece.reorient: a chest faces away from its one solid neighbour, or away from walls. */
+    public static function reorient(Blocks $blocks, Region $region, int $x, int $y, int $z, int $chest): int
+    {
         $solidRender = fn (int $state): bool => $blocks->flag($state, 1 << 20) && $blocks->flag($state, Blocks::FULL_CUBE);
         $direction = null;
         foreach (self::HORIZONTAL as $i => [$dx, $dz]) {
@@ -833,7 +837,7 @@ final class Patches
             $thicknesses[] = $merged ? 'tip_merge' : 'tip';
         }
         foreach ($thicknesses as $thickness) {
-            $state = $this->blocks->with($this->blocks->with($pointed, 'tip_direction', $tip), 'thickness', $thickness);
+            $state = $this->blocks->with($this->blocks->with($pointed, 'vertical_direction', $tip), 'thickness', $thickness);
             $here = $region->get($x, $y, $z);
             $state = $this->blocks->with($state, 'waterlogged', $this->blocks->isWater($here) ? 'true' : 'false');
             $region->set($x, $y, $z, $state);

@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 use PhpMinecraftJavaServer\World\Generation\Int64;
 use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeSource;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\NoiseChunk;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldSettings;
@@ -42,8 +43,11 @@ final class Structures
     /** @var array<string, int> heights by "x,z,type" */
     private array $heights = [];
 
-    public function __construct(private readonly OverworldSettings $settings, private readonly BiomeSource $biomes, private readonly string $directory, private readonly ?\PDO $db = null)
+    private readonly Blocks $blocks;
+
+    public function __construct(private readonly OverworldSettings $settings, private readonly BiomeSource $biomes, private readonly string $directory, private readonly ?\PDO $db = null, ?Blocks $blocks = null)
     {
+        $this->blocks = $blocks ?? new Blocks(new \PhpMinecraftJavaServer\Protocol\Version(), $directory . '/block-behaviour.json');
         $order = json_decode((string) file_get_contents($directory . '/structure-order.json'), true, 512, JSON_THROW_ON_ERROR);
         $byStep = [];
         foreach ($order['structures'] as [$name, $step]) {
@@ -174,6 +178,45 @@ final class Structures
         return isset($this->biomeSet($structure['biomes'])[$this->biomes->uncached($x >> 2, $y >> 2, $z >> 2)]);
     }
 
+    /** Structure.getCornerHeights at an area's corners (one past its size, as vanilla samples them). */
+    private function cornerHeights(int $minX, int $minZ, int $sizeX, int $sizeZ): array
+    {
+        return [
+            $this->firstOccupiedHeight($minX, $minZ),
+            $this->firstOccupiedHeight($minX, $minZ + $sizeZ),
+            $this->firstOccupiedHeight($minX + $sizeX, $minZ),
+            $this->firstOccupiedHeight($minX + $sizeX, $minZ + $sizeZ),
+        ];
+    }
+
+    /** Structure.getLowestY */
+    private function lowestY(int $minX, int $minZ, int $sizeX, int $sizeZ): int
+    {
+        return min($this->cornerHeights($minX, $minZ, $sizeX, $sizeZ));
+    }
+
+    /** Structure.getMeanFirstOccupiedHeight */
+    private function meanHeight(int $minX, int $minZ, int $sizeX, int $sizeZ): int
+    {
+        return intdiv(array_sum($this->cornerHeights($minX, $minZ, $sizeX, $sizeZ)), 4);
+    }
+
+    /**
+     * SinglePieceStructure.findGenerationPoint: every corner of the piece's area is at or above
+     * sea level (Structure.getLowestY), and the chunk centre's surface biome is valid.
+     */
+    private function singlePiece(array $structure, int $cx, int $cz, int $width, int $depth): bool
+    {
+        $minX = $cx * 16;
+        $minZ = $cz * 16;
+        if ($this->lowestY($minX, $minZ, $width, $depth) < $this->settings->seaLevel) {
+            return false;
+        }
+        $x = $minX + 8;
+        $z = $minZ + 8;
+        return $this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z);
+    }
+
     /**
      * Structure.generate for the structure types that are ported: the start's pieces, an empty
      * list when the structure cannot start here, or null for types not ported yet.
@@ -191,6 +234,42 @@ final class Structures
                     return [];
                 }
                 return [SwampHut::create($random, $cx * 16, $cz * 16)];
+            case 'jungle_temple':
+                return $this->singlePiece($structure, $cx, $cz, 12, 15) ? [JungleTemple::create($random, $cx * 16, $cz * 16)] : [];
+            case 'igloo':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z)) {
+                    return [];
+                }
+                // Rotation.getRandom
+                $rotation = $random->nextInt(4);
+                return Igloo::pieces($this->blocks, $this->directory, [$cx * 16, 90, $cz * 16], $rotation, $random);
+            case 'shipwreck':
+                $beached = (bool) ($structure['is_beached'] ?? false);
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, !$beached), $z)) {
+                    return [];
+                }
+                $rotation = $random->nextInt(4);
+                $piece = Shipwreck::create($this->blocks, $this->directory, $cx, $cz, $rotation, $random, $beached);
+                if ($piece->tooBig($this->blocks, $this->directory)) {
+                    [$minX, , $minZ, $maxX, , $maxZ] = $piece->box;
+                    $piece->adjustHeight($beached
+                        ? $piece->beachedHeight($this->blocks, $this->directory, $this->lowestY($minX, $minZ, $maxX - $minX + 1, $maxZ - $minZ + 1), $random)
+                        : $this->meanHeight($minX, $minZ, $maxX - $minX + 1, $maxZ - $minZ + 1));
+                }
+                return [$piece];
+            case 'buried_treasure':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, true), $z)) {
+                    return [];
+                }
+                return [new BuriedTreasure([$cx * 16 + 9, 90, $cz * 16 + 9, $cx * 16 + 9, 90, $cz * 16 + 9], null)];
+            case 'desert_pyramid':
+                return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }
         return null;
     }
@@ -252,9 +331,7 @@ final class Structures
     {
         return array_map(static fn (array $start): array => [
             'structure' => $start['structure'],
-            'pieces' => array_map(static fn (array $piece): Piece => match ($piece['type']) {
-                'swamp_hut' => new SwampHut($piece['box'], $piece['orientation'], $piece['width'], $piece['height'], $piece['depth'], $piece['hpos']),
-            }, $start['pieces']),
+            'pieces' => array_map(Piece::restore(...), $start['pieces']),
         ], json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
@@ -303,6 +380,12 @@ final class Structures
             }
         }
         return $out;
+    }
+
+    /** WorldGenRegion's random: the worldgen_region_random factory at the decorated chunk's origin. */
+    public function regionRandom(int $cx, int $cz): \PhpMinecraftJavaServer\World\Generation\RandomSource
+    {
+        return $this->settings->state->factory('minecraft:worldgen_region_random')->at($cx * 16, 0, $cz * 16);
     }
 
     /** Keep an origin chunk's starts after a chunk placed some of their pieces. */

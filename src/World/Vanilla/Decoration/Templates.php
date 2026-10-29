@@ -46,8 +46,8 @@ final class Templates
         if (isset($this->templates[$name])) {
             return $this->templates[$name];
         }
-        $json = json_decode((string) file_get_contents($this->directory . '/template/' . $name . '.json'), true, 512, JSON_THROW_ON_ERROR);
-        $palette = array_map($this->blocks->parse(...), $json['palette']);
+        $json = json_decode((string) gzdecode((string) file_get_contents($this->directory . '/template/' . $name . '.json.gz')), true, 512, JSON_THROW_ON_ERROR);
+        $palette = array_map($this->blocks->parse(...), $json['palettes'][0]);
         $lists = [[], [], []];
         foreach ($json['blocks'] as $block) {
             $state = $palette[$block[3]];

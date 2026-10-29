@@ -19,11 +19,17 @@ $checks = 0;
 foreach ([
     [-17, 22, 'swamp_hut', [-272, 64, 352, -264, 70, 358], 'east'],
     [-51, -23, 'swamp_hut', [-816, 64, -368, -808, 70, -362], 'east'],
+    [-86, -110, 'desert_pyramid', [-1376, 64, -1760, -1356, 78, -1740], 'east'],
+    [-85, 180, 'jungle_pyramid', [-1360, 64, 2880, -1346, 73, 2891], 'east'],
+    // The last piece of an igloo is its top; this one has a ladder shaft and laboratory below.
+    [208, -305, 'igloo', [3328, 90, -4880, 3334, 94, -4873], 'north'],
+    [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
     $starts = $structures->create($cx, $cz);
-    $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $starts[0]['pieces'][0]->box, $starts[0]['pieces'][0]->orientation];
+    $last = $starts === [] ? null : $starts[0]['pieces'][count($starts[0]['pieces']) - 1];
+    $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $last->box, $last->orientation];
     if ($actual !== [$structure, $box, $orientation]) {
         throw new RuntimeException("Structure start at $cx,$cz: " . json_encode($actual));
     }
