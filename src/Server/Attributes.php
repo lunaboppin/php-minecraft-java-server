@@ -75,13 +75,25 @@ trait Attributes
         return [$name, $this->attributeBase($kind, $bases, $name), $list];
     }
 
+    /** A player's attribute entry; creative mode's interaction range modifiers come first, added at join. */
+    private function playerAttributeEntry(Client $c, string $name): array
+    {
+        $entry = $this->attributeEntry('player', $c->attributeBases, $c->attributeModifiers, $name);
+        foreach ($c->gameMode === 1 ? $this->interactionRanges($c) : [] as [$range, , $modifiers]) {
+            if ($range === $name) {
+                $entry[2] = [...$modifiers, ...$entry[2]];
+            }
+        }
+        return $entry;
+    }
+
     /** Sends a player's changed synchronized attributes to them and those tracking them. */
     private function syncPlayerAttributes(Client $c, array $names): void
     {
         $entries = [];
         foreach ($names as $name) {
             if ($this->attributeDefinitions()['minecraft:' . $name]['synced']) {
-                $entries[] = $this->attributeEntry('player', $c->attributeBases, $c->attributeModifiers, $name);
+                $entries[] = $this->playerAttributeEntry($c, $name);
             }
         }
         if ($entries === []) {
@@ -96,6 +108,18 @@ trait Attributes
         if (in_array('max_health', $names, true)) {
             $this->clampPlayerHealth($c);
         }
+    }
+
+    /** ServerEntity.sendPairingData: a player's synchronized attribute instances, for a new tracker. */
+    private function pairingAttributes(Client $c): ?string
+    {
+        $entries = [];
+        foreach (array_keys($c->attributeInstances) as $name) {
+            if ($this->attributeDefinitions()['minecraft:' . $name]['synced']) {
+                $entries[] = $this->playerAttributeEntry($c, $name);
+            }
+        }
+        return $entries === [] ? null : Packets::attributeModifiers($this->version->catalog, $c->entityId, $entries);
     }
 
     /** LivingEntity.onAttributeUpdated: health falls to a lowered maximum. */
@@ -148,22 +172,31 @@ trait Attributes
     private function loadAttributes(Client $c, mixed $data): void
     {
         [$c->attributeBases, $c->attributeModifiers] = [[], []];
+        $c->attributeInstances = Client::PLAYER_ATTRIBUTE_INSTANCES;
         $definitions = $this->attributeDefinitions();
+        foreach (is_array($data['instances'] ?? null) ? $data['instances'] : [] as $name) {
+            if (is_string($name) && isset($definitions['minecraft:' . $name])) {
+                $c->attributeInstances[$name] = true;
+            }
+        }
         foreach (is_array($data['bases'] ?? null) ? $data['bases'] : [] as $name => $base) {
             if (isset($definitions['minecraft:' . $name]) && is_numeric($base)) {
                 $c->attributeBases[$name] = (float) $base;
+                $c->attributeInstances[$name] = true;
             }
         }
         foreach (is_array($data['modifiers'] ?? null) ? $data['modifiers'] : [] as $name => $modifiers) {
             foreach (isset($definitions['minecraft:' . $name]) && is_array($modifiers) ? $modifiers : [] as $id => $modifier) {
                 if (is_array($modifier) && is_numeric($modifier[0] ?? null) && in_array($modifier[1] ?? null, [0, 1, 2], true)) {
                     $c->attributeModifiers[$name][(string) $id] = [(float) $modifier[0], $modifier[1], true];
+                    $c->attributeInstances[$name] = true;
                 }
             }
         }
         foreach ($c->effects as $effect => $instance) {
             foreach ($this->effectDefinitions()[$effect]['attributes'] as $attribute => $modifier) {
                 $amount = $modifier['amounts'][0] * ($instance['amplifier'] + 1);
+                $c->attributeInstances[substr($attribute, 10)] = true;
                 $c->attributeModifiers[substr($attribute, 10)][$modifier['id']] = [$amount, ['add_value' => 0, 'add_multiplied_base' => 1, 'add_multiplied_total' => 2][$modifier['operation']], false];
             }
         }
@@ -172,6 +205,6 @@ trait Attributes
     private function savedAttributes(Client $c): array
     {
         $modifiers = array_filter(array_map(static fn (array $list): array => array_map(static fn (array $modifier): array => [$modifier[0], $modifier[1]], array_filter($list, static fn (array $modifier): bool => $modifier[2])), $c->attributeModifiers));
-        return ['bases' => $c->attributeBases, 'modifiers' => $modifiers];
+        return ['bases' => $c->attributeBases, 'modifiers' => $modifiers, 'instances' => array_keys($c->attributeInstances)];
     }
 }

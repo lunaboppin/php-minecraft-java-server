@@ -670,8 +670,11 @@ trait Commands
     private function entityComponent(string $kind, string $uuid, ?array $customName = null): array
     {
         $name = $customName ?? $this->version->catalog->displayNames['entities']['minecraft:' . $kind];
-        $hex = bin2hex($uuid);
-        return [...$name, 'insertion' => substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20),
+        $holder = Binary::formatUuid($uuid);
+        // Entity.getDisplayName: PlayerTeam.formatNameForTeam, as for players.
+        $team = $this->teamFormat($holder);
+        $formatted = $team === null ? $name : ['text' => '', 'extra' => [$team['prefix'], $name, $team['suffix']]] + ($team['color'] === null ? [] : ['color' => $team['color']]);
+        return [...$formatted, 'insertion' => $holder,
             'hover_event' => ['action' => 'show_entity', 'id' => 'minecraft:' . $kind, 'uuid' => $uuid, 'name' => $name]];
     }
 

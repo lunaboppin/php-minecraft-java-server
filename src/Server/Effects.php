@@ -94,6 +94,7 @@ trait Effects
         $names = [];
         foreach ($this->effectDefinitions()[$effect]['attributes'] as $attribute => $modifier) {
             $name = substr($attribute, 10);
+            $c->attributeInstances[$name] = true;
             unset($c->attributeModifiers[$name][$modifier['id']]);
             if (isset($c->effects[$effect])) {
                 // AttributeTemplate.create: the amount per level, times the level.

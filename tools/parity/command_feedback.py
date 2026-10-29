@@ -261,6 +261,13 @@ SCRIPT = [
     ('attribute Witness scale base reset', False), ('!quiet kill @e[type=!player]', False), ('summon pig 0 64 0', False),
     ('attribute @e[type=pig,limit=1] max_health get', False), ('attribute @e[type=pig,limit=1] attack_damage get', False),
     ('kill @e[type=pig]', False),
+    # Players paired with a tracker again receive each other's synchronized attribute instances.
+    ('!quiet tp @s 0 100 0', False), ('tp @a[name=Witness] 300 100 0', False), ('tp @a[name=Witness] 1 100 0', False),
+    # A killed mob loses its scores and team once its death animation ends and it is removed.
+    ('scoreboard objectives add dead dummy', False), ('scoreboard objectives setdisplay sidebar dead', False), ('team add gone', False),
+    ('summon pig 0 100 0', False), ('scoreboard players set @e[type=pig] dead 3', False), ('team join gone @e[type=pig]', False),
+    ('kill @e[type=pig]', False), ('scoreboard players list @e[type=pig]', False), ('scoreboard players list', False),
+    ('team list gone', False), ('scoreboard objectives remove dead', False), ('team remove gone', False),
     ('list', False),
 ]
 
@@ -271,7 +278,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
+EXTRA = {'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -342,8 +349,10 @@ def normalize_uuids(items):
     """Zero random entity UUIDs (int-array tags and dashed insertion strings) for comparison."""
     uuid_tag = re.compile(r'0b0004' + b'uuid'.hex() + r'00000004[0-9a-f]{32}')
     insertion = re.compile(r'08' + struct.pack('>H', 9).hex() + b'insertion'.hex() + r'0024[0-9a-f]{72}')
-    return [{**item, 'hex': insertion.sub('08' + struct.pack('>H', 9).hex() + b'insertion'.hex() + '0024' + '30' * 36,
-                                         uuid_tag.sub('0b0004' + b'uuid'.hex() + '00000004' + '0' * 32, item['hex']))} for item in items]
+    # Score holders and team members name entities by their dashed UUID strings.
+    dashed = re.compile(rb'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+    return [{**item, 'hex': dashed.sub(b'0' * 36, bytes.fromhex(insertion.sub('08' + struct.pack('>H', 9).hex() + b'insertion'.hex() + '0024' + '30' * 36,
+                                         uuid_tag.sub('0b0004' + b'uuid'.hex() + '00000004' + '0' * 32, item['hex'])))).hex()} for item in items]
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
@@ -365,6 +374,35 @@ def normalize_entity_ids(items):
             else {**item, 'hex': '00000000' + item['hex'][8:]} if item['packet'] == 'entity_event' else item for item in items]
 
 
+def normalize_attribute_order(items):
+    """Sort update_attributes entries: vanilla keys them by identity hash, so their order varies per run."""
+    def varint(data, at):
+        value = shift = 0
+        while True:
+            byte = data[at]
+            at += 1
+            value |= (byte & 0x7f) << shift
+            shift += 7
+            if byte < 0x80:
+                return value, at
+    def sort(payload):
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        count, at = varint(data, at)
+        head, entries = data[:at], []
+        for _ in range(count):
+            start = at
+            _, at = varint(data, at)
+            at += 8
+            modifiers, at = varint(data, at)
+            for _ in range(modifiers):
+                length, at = varint(data, at)
+                at += length + 9
+            entries.append(data[start:at])
+        return (head + b''.join(sorted(entries)) + data[at:]).hex()
+    return [{**item, 'hex': sort(item['hex'])} if item['packet'] == 'update_attributes' else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
@@ -374,7 +412,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_seeds(normalize_entity_ids(expected[role]))) != key(normalize_seeds(normalize_entity_ids(actual[role]))):
+            if key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))) != key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
