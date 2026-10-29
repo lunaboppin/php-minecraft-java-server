@@ -271,6 +271,1482 @@
       "durability_cost": 1
     }
   },
+  "item_attributes": {
+    "carved_pumpkin": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "turtle_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "wolf_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 11.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "wooden_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "wooden_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "wooden_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "wooden_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.200000047683716,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "wooden_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 2.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.200000047683716,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 2.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.200000047683716,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 3.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0999999046325684,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -1.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 4.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_sword": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 7.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_shovel": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 5.5,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_pickaxe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.799999952316284,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_axe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 9.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_hoe": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "leather_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "leather_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "leather_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "leather_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "copper_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "copper_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "copper_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "copper_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "chainmail_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "chainmail_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "chainmail_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "chainmail_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "iron_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "iron_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "iron_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "iron_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "diamond_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "diamond_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "diamond_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "diamond_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "golden_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "golden_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "golden_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "golden_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "netherite_helmet": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.helmet",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.helmet",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "head"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.helmet",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "head"
+      }
+    ],
+    "netherite_chestplate": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.chestplate",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.chestplate",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "chest"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.chestplate",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "chest"
+      }
+    ],
+    "netherite_leggings": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.leggings",
+        "amount": 6.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.leggings",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "legs"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.leggings",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "legs"
+      }
+    ],
+    "netherite_boots": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.boots",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.boots",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "feet"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.boots",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "feet"
+      }
+    ],
+    "mace": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.4000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "skeleton_skull": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "wither_skeleton_skull": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "player_head": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "zombie_head": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "creeper_head": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "dragon_head": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "piglin_head": [
+      {
+        "attribute": "waypoint_transmit_range",
+        "id": "minecraft:waypoint_transmit_range_hide",
+        "amount": -1.0,
+        "operation": 2,
+        "slot": "head"
+      }
+    ],
+    "copper_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "iron_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "golden_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 7.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "diamond_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 11.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "netherite_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 19.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.body",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "leather_horse_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "wooden_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.4615384340286255,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "stone_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.666666626930237,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "copper_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 1.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.8235294818878174,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.9473683834075928,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "golden_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.9473683834075928,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "diamond_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.0476189851760864,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "netherite_spear": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -3.13043475151062,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "trident": [
+      {
+        "attribute": "attack_damage",
+        "id": "minecraft:base_attack_damage",
+        "amount": 8.0,
+        "operation": 0,
+        "slot": "mainhand"
+      },
+      {
+        "attribute": "attack_speed",
+        "id": "minecraft:base_attack_speed",
+        "amount": -2.9000000953674316,
+        "operation": 0,
+        "slot": "mainhand"
+      }
+    ],
+    "iron_nautilus_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 5.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "golden_nautilus_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 7.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "diamond_nautilus_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 11.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 2.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "netherite_nautilus_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 19.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 3.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "knockback_resistance",
+        "id": "minecraft:armor.body",
+        "amount": 0.10000000149011612,
+        "operation": 0,
+        "slot": "body"
+      }
+    ],
+    "copper_nautilus_armor": [
+      {
+        "attribute": "armor",
+        "id": "minecraft:armor.body",
+        "amount": 4.0,
+        "operation": 0,
+        "slot": "body"
+      },
+      {
+        "attribute": "armor_toughness",
+        "id": "minecraft:armor.body",
+        "amount": 0.0,
+        "operation": 0,
+        "slot": "body"
+      }
+    ]
+  },
   "charged_attacks": [
     {
       "item": "air",

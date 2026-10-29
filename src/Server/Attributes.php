@@ -168,6 +168,47 @@ trait Attributes
         }
     }
 
+    /**
+     * LivingEntity.handleEquipmentChanges: a changed slot's previous item loses its default
+     * attribute modifiers and the new item adds them, creating the instances; changed
+     * synchronized attributes are then sent.
+     */
+    private function applyEquipmentAttributes(Client $c, array $changed): void
+    {
+        static $slots = ['mainhand', 'offhand', 'feet', 'legs', 'chest', 'head'];
+        $groups = static fn (string $slot): array => match ($slot) {
+            'mainhand', 'offhand' => ['any', $slot, 'hand'],
+            default => ['any', $slot, 'armor'],
+        };
+        $modifiers = function (?array $stack, string $slot) use ($groups): array {
+            if ($stack === null || in_array('minecraft:attribute_modifiers', $stack['removedComponents'] ?? [], true)) {
+                return [];
+            }
+            $entries = $this->version->catalog->combat['item_attributes'][$this->version->catalog->itemName($stack['item']) ?? ''] ?? [];
+            return array_values(array_filter($entries, static fn (array $entry): bool => in_array($entry['slot'], $groups($slot), true)));
+        };
+        $touched = [];
+        foreach ($changed as $index => $stack) {
+            foreach ($modifiers($c->equipmentModifierStacks[$index] ?? null, $slots[$index]) as $entry) {
+                $c->attributeInstances[$entry['attribute']] = true;
+                if (isset($c->attributeModifiers[$entry['attribute']][$entry['id']])) {
+                    unset($c->attributeModifiers[$entry['attribute']][$entry['id']]);
+                    $touched[$entry['attribute']] = true;
+                }
+            }
+            foreach ($modifiers($stack, $slots[$index]) as $entry) {
+                $c->attributeInstances[$entry['attribute']] = true;
+                $c->attributeModifiers[$entry['attribute']][$entry['id']] = [(float) $entry['amount'], $entry['operation'], false];
+                $touched[$entry['attribute']] = true;
+            }
+            $c->equipmentModifierStacks[$index] = $stack;
+        }
+        $c->attributeModifiers = array_filter($c->attributeModifiers);
+        if ($touched !== []) {
+            $this->syncPlayerAttributes($c, array_keys($touched));
+        }
+    }
+
     /** Saved base values and permanent modifiers, then the loaded effects' modifiers. */
     private function loadAttributes(Client $c, mixed $data): void
     {

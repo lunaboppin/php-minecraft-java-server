@@ -41,6 +41,7 @@ trait InventoryManagement
         if ($changed === []) {
             return;
         }
+        $this->applyEquipmentAttributes($c, $changed);
         $payload = Packets::equipment($c->entityId, $changed, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks);
         foreach ($this->players() as $viewer) {
             if (isset($viewer->entities[$c->entityId])) {

@@ -110,6 +110,8 @@ final class Client
     public int $heldSlot = 0;
     public array $inventory = [];
     public array $lastEquipment = [];
+    /** @var array<int, ?array> the equipment stacks whose attribute modifiers are applied */
+    public array $equipmentModifierStacks = [];
     public ?string $lastPlayerMetadata = null;
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;

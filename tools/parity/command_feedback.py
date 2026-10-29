@@ -274,7 +274,9 @@ SCRIPT = [
 
 def collect(client, since, command=''):
     extra = next((packets for prefix, packets in EXTRA.items() if command.removeprefix('!witness ').startswith(prefix)), ())
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED or name in extra]
+    # Rain starting, stopping or fading follows each server's random weather, not the command.
+    weather = lambda name, payload: name == 'game_event' and payload[0] in (1, 2, 7, 8) and not command.startswith('weather')
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if (name in COMPARED or name in extra) and not weather(name, payload)]
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
