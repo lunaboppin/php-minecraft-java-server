@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\Nbt;
+use PhpMinecraftJavaServer\World\Collision;
 use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Inventory;
 
@@ -490,6 +491,28 @@ trait Survival
             }$this->syncInventory($c);
         }
         $c->exhaustion += 0.005;
+    }
+
+    /**
+     * LivingEntity.travel on the server: vanilla also simulates players, moving them by their own
+     * vertical movement before the tick snaps them back to the client's position. The move decides
+     * whether they are on the ground until the client's next movement packet says otherwise.
+     */
+    private function simulatePlayerGround(Client $c): void
+    {
+        if ($c->gameMode === 3) {
+            return;
+        }
+        $velocity = $c->velocityY;
+        $box = [$c->x - 0.3, $c->y, $c->z - 0.3, $c->x + 0.3, $c->y + 1.8, $c->z + 0.3];
+        $moved = $velocity === 0.0 ? 0.0 : (new Collision($this->version->catalog))->move($this->world, $box, [0.0, $velocity, 0.0])[1];
+        // Entity.move leaves a client-authoritative player's ground alone when it does not move vertically.
+        if ($velocity !== 0.0) {
+            $c->ground = $velocity < 0.0 && $moved !== $velocity;
+        }
+        $after = $moved !== $velocity ? 0.0 : $velocity;
+        // Player.travel keeps flight level; otherwise gravity and air drag apply after the move.
+        $c->velocityY = $c->flying ? $velocity * 0.6 : ($after - 0.08) * 0.98;
     }
 
     private function survivalMovement(Client $c, float $oldY, float $distance): void

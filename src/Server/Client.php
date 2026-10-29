@@ -95,6 +95,8 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
+    public float $velocityY = 0.0;
     public int $teleportCounter = 0;
     public ?int $teleport = null;
     public float $teleportAt = 0;

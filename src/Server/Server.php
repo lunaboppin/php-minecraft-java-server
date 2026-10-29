@@ -665,6 +665,7 @@ final class Server
         [$c->x, $c->y, $c->z] = $position;
         $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
+        $c->velocityY = 0.0;
         $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportAt = self::now();
@@ -727,6 +728,8 @@ final class Server
                     return;
                 }
                 $c->teleport = null;
+                // handleAcceptTeleportPacket moves the player as a packet that is not on the ground.
+                $c->ground = false;
                 return;
             case 'keep_alive':
                 $id = $r->long();
@@ -918,7 +921,12 @@ final class Server
         $c->z = $z;
         $c->yaw = $yaw;
         $c->pitch = $pitch;
-        $c->ground = ($flags & 1) !== 0;
+        $ground = ($flags & 1) !== 0;
+        // handlePlayerPositionChange: leaving the ground upwards is a jump in the server's own simulation.
+        if ($c->ground && !$ground && $y > $oldY) {
+            $c->velocityY = max(0.42, $c->velocityY);
+        }
+        $c->ground = $ground;
         $this->survivalMovement($c, $oldY, $distance);
         $this->trackPushingPlayer($c);
         if ($y < -80 && in_array($c->gameMode, [1, 3], true)) {
@@ -1306,6 +1314,7 @@ final class Server
                     }
                     $this->refreshTracking($c);
                     $this->synchronizePlayerMotion($c);
+                    $this->simulatePlayerGround($c);
                 });
             } catch (ProtocolException $e) {
                 $this->disconnect($c, $e->getMessage());
