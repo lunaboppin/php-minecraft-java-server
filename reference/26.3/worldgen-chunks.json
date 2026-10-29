@@ -100,6 +100,46 @@
    "noise": "0ee699d44b77525f4ce656e2649063b8d4e034a9eadc49142393a7b594aeda09",
    "surface": "688b0439ed3d764763a79419a5b1a1a8bee7982b1254fd86f267bb7e3d571000",
    "carvers": "bf2e8ba6d0eac1118a43a9e3423f6b686dbdcc530ebd39751d51c268512ba0d4"
+  },
+  {
+   "seed": "42",
+   "x": 0,
+   "z": 0,
+   "biomes": "4321aed4d673adabbfe10601585e280484fc06d542165a20b6a44bae806e04b6",
+   "dimension": "the_nether",
+   "noise": "87f8ed64915e63c3881769c5adb82d2f8ef70a06127d67c3e29d4022ddb3998e",
+   "surface": "5c34bfef72f8880ec424720277029fa5a2ffd0033798ee42f05add904f4bd046",
+   "carvers": "49a3a443107fea141a151fe8d88a84a062cfe0e197a174475817b338c045267b"
+  },
+  {
+   "seed": "42",
+   "x": -1,
+   "z": -1,
+   "biomes": "3b7bd4e598e24e70bef25cf8a84f2ffa862ea12413f8140fae6d43432eba8c22",
+   "dimension": "the_nether",
+   "noise": "097437ceb2948f036dd5b30b4cc963af2c0f60475edbb81773a03f83dd9acaee",
+   "surface": "240bddc5bac8598b089d4218fa109837fb1e1ba641768e6e322bf908c743afc7",
+   "carvers": "a9ac88d1e3184622e63dda44cd3ac22810637da34a02d39ec4cc304087da9fe2"
+  },
+  {
+   "seed": "42",
+   "x": 5,
+   "z": 3,
+   "biomes": "4321aed4d673adabbfe10601585e280484fc06d542165a20b6a44bae806e04b6",
+   "dimension": "the_nether",
+   "noise": "1d5b75a164c610370a4eeddf857d0bdb41fab5841cc69d15756d32894e9d359c",
+   "surface": "f9f814177efe7ae0053c1269f9c1f6cc6370915a2e0cf7cb139b1bb7e3eda4af",
+   "carvers": "79a0e3238db77f901dd61aeb7d3d413b1b7f5899ed01e1da35dd78f1bf464959"
+  },
+  {
+   "seed": "42",
+   "x": -20,
+   "z": 14,
+   "biomes": "7d89029ecbcb2b6fa60d06d73d57b9894826e2d80d662a6858299592151271be",
+   "dimension": "the_nether",
+   "noise": "a0915e5149576c1caf9498e63a4d9ce80a1b8c82baa7058e5d4559a216d75859",
+   "surface": "27509778d71e552718ce6aa7ea74299edb7c585a92dc659967d6a6982370c5ff",
+   "carvers": "80ab1f2405b245d895c7c6752f11974effe121f3ba2cc20ebc58822eaaa07e02"
   }
  ]
 }

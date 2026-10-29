@@ -10,6 +10,7 @@ use PhpMinecraftJavaServer\Protocol\Nbt;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\ProtocolException;
 use PhpMinecraftJavaServer\Protocol\Version;
+use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\World;
 
 final class Server
@@ -51,6 +52,7 @@ final class Server
     use MobMovement;
 
     use Authentication;
+    private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
 
@@ -89,7 +91,7 @@ final class Server
         }
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
-            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension);
+            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $dimension === 'the_nether' && $config->vanillaTerrain);
         }
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
@@ -124,6 +126,9 @@ final class Server
         }
         [$spawnX, , $spawnZ] = $this->world->spawn();
         $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
+        if (($this->worlds['the_nether'] ?? null)?->vanilla !== null) {
+            $pregenerate[] = $this->config->worldPath . '.the_nether.sqlite';
+        }
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
             $process = proc_open(
                 [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate],
@@ -657,14 +662,28 @@ final class Server
     }
 
     /** ServerGamePacketListenerImpl.teleport: move the player and await their confirmation. */
+    private static function wrapDegrees(float $degrees): float
+    {
+        $wrapped = Float32::round(fmod(Float32::round($degrees), 360.0));
+        if ($wrapped >= 180.0) {
+            $wrapped = Float32::round($wrapped - 360.0);
+        }
+        if ($wrapped < -180.0) {
+            $wrapped = Float32::round($wrapped + 360.0);
+        }
+        return $wrapped;
+    }
+
     private function sendPosition(Client $c, array $position): void
     {
         [$c->x, $c->y, $c->z] = $position;
+        // ServerPlayer.teleport resets the connection's movement check to the destination.
+        $c->tickPosition = [$c->x, $c->y, $c->z];
         $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
         $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
-        $c->teleportAt = self::now();
+        $c->teleportTick = $this->ticks;
         $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
     }
 
@@ -722,15 +741,20 @@ final class Server
                 return;
             case 'accept_teleportation':
                 $confirmation = Packets::readTeleportConfirmation($r);
-                $id = $confirmation['id'];
-                if ($c->teleport === null) {
-                    throw new ProtocolException('Invalid teleport confirmation');
+                // Like vanilla, only the latest teleport is confirmed; a repeated confirmation of it,
+                // or one with NaN or infinite values, is invalid movement.
+                if ($confirmation['id'] !== $c->teleportCounter) {
+                    return;
                 }
-                // Like vanilla, a confirmation of an earlier teleport is ignored while a newer one is awaited.
-                if ($id !== $c->teleport) {
+                if ($c->teleport === null || !$confirmation['valid']) {
+                    $this->disconnect($c, self::INVALID_MOVEMENT);
                     return;
                 }
                 $c->teleport = null;
+                return;
+            case 'client_tick_end':
+                $r->end();
+                $c->positionThisTick = false;
                 return;
             case 'keep_alive':
                 $id = $r->long();
@@ -896,19 +920,42 @@ final class Server
         }
         $flags = $r->byte();
         $r->end();
-        foreach ([$x, $y, $z, $yaw, $pitch] as $v) {
-            if (!is_finite($v)) {
-                throw new ProtocolException('Non-finite movement');
-            }
-        }
-        if (abs($x) > 30000000 || abs($z) > 30000000 || abs($y) > 20000000 || $flags > 3) {
-            throw new ProtocolException('Movement out of bounds');
-        }
-        if ($c->teleport !== null) {
+        // ServerGamePacketListenerImpl.handleMovePlayer: NaN coordinates, non-finite rotations and a
+        // second position in one client tick disconnect; other coordinates are clamped.
+        if (is_nan($x) || is_nan($y) || is_nan($z) || !is_finite($yaw) || !is_finite($pitch)) {
+            $this->disconnect($c, self::INVALID_MOVEMENT);
             return;
         }
-        if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 256 ** 2) {
-            $this->teleport($c);
+        if ($name === 'move_player_pos' || $name === 'move_player_pos_rot') {
+            if ($c->positionThisTick) {
+                $this->disconnect($c, self::INVALID_MOVEMENT);
+                return;
+            }
+            $c->positionThisTick = true;
+        }
+        $x = max(-3.0E7, min(3.0E7, $x));
+        $y = max(-2.0E7, min(2.0E7, $y));
+        $z = max(-3.0E7, min(3.0E7, $z));
+        // Mth.wrapDegrees on the float rotations; Entity.setXRot keeps the pitch within ±90.
+        $yaw = self::wrapDegrees($yaw);
+        $pitch = max(-90.0, min(90.0, self::wrapDegrees($pitch)));
+        if ($c->teleport !== null) {
+            // updateAwaitingTeleport: after twenty ticks unconfirmed, a movement packet sends the
+            // teleport again; meanwhile only the player's rotation follows the client.
+            if ($this->ticks - $c->teleportTick > 20) {
+                $this->sendPosition($c, [$c->x, $c->y, $c->z]);
+            }
+            $c->yaw = $yaw;
+            $c->pitch = $pitch;
+            return;
+        }
+        // handlePlayerPositionChange: more than ten blocks from where the tick began, allowing more
+        // for each movement packet since then (as one when there are more than five), moved too quickly.
+        $packets = ++$c->movesThisTick > 5 ? 1 : $c->movesThisTick;
+        [$fromX, $fromY, $fromZ] = $c->tickPosition ?? [$c->x, $c->y, $c->z];
+        if (($x - $fromX) ** 2 + ($y - $fromY) ** 2 + ($z - $fromZ) ** 2 > 100.0 * $packets && $this->gameRule('player_movement_check') === 'true') {
+            $this->log($c->name . ' moved too quickly! ' . ($x - $fromX) . ',' . ($y - $fromY) . ',' . ($z - $fromZ));
+            $this->teleport($c, [$c->x, $c->y, $c->z]);
             return;
         }
         if ($c->dead) {
@@ -1304,7 +1351,7 @@ final class Server
                 }
                 continue;
             }
-            if (($c->state !== 'play' && $now - $c->connectedAt > 30) || $now - $c->lastRead > 60 || ($c->keepAlive !== null && $now - $c->lastKeepAlive > 30) || ($c->teleport !== null && $now - $c->teleportAt > 30) || ($c->unacknowledgedBatches > 0 && $now - $c->batchAt > 30)) {
+            if (($c->state !== 'play' && $now - $c->connectedAt > 30) || $now - $c->lastRead > 60 || ($c->keepAlive !== null && $now - $c->lastKeepAlive > 30) || ($c->unacknowledgedBatches > 0 && $now - $c->batchAt > 30)) {
                 $this->disconnect($c, 'Connection timed out');
                 continue;
             }
@@ -1317,6 +1364,9 @@ final class Server
                     $c->lastKeepAlive = $now;
                     $c->send($this->version, 'keep_alive', pack('J', $c->keepAlive));
                 }
+                // ServerGamePacketListenerImpl.tickPlayer: movement checks start again from here.
+                $c->tickPosition = [$c->x, $c->y, $c->z];
+                $c->movesThisTick = 0;
                 $this->withDimension($c->dimension, function () use ($c, $now): void {
                     $this->tickPortals($c);
                     if ($c->dimension !== $this->world->dimension) {

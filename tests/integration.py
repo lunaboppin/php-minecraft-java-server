@@ -139,6 +139,9 @@ class Client:
 
     def send(self, name, payload=b''):
         self.sock.sendall(self.frame(name, payload))
+        # A client ends each tick it moved in; vanilla allows one position per client tick.
+        if name.startswith('move_player_'):
+            self.sock.sendall(self.frame('client_tick_end'))
 
     def exact(self, length):
         result = b''
@@ -370,7 +373,10 @@ def main():
                 a.send('use_item_on', bytes.fromhex(FIXTURES['place_stone']))
                 a.until('block_changed_ack')
                 # Chunk center update after crossing a negative coordinate boundary.
-                a.send('move_player_pos', struct.pack('>dddB', -17, 64, -17, 1))
+                # Walked in steps a tick apart: vanilla teleports back anyone moving over ten blocks at once.
+                for step in (-5, -11, -17):
+                    a.send('move_player_pos', struct.pack('>dddB', step, 64, step, 1))
+                    time.sleep(0.12)
                 center = a.until('set_chunk_cache_center', lambda p: read_vi(p)[0] == -2)
                 x, off = read_vi(center)
                 z, _ = read_vi(center, off)
