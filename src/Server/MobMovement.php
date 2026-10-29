@@ -36,6 +36,8 @@ trait MobMovement
     private function moveMob(array &$mob, Noise $noise): void
     {
         if (!$this->ordinaryMobTravel($mob)) {
+            // In water (or flying and swimming) a fall ends without damage.
+            $mob['fallDistance'] = 0.0;
             unset($this->mobMovementTrackers[$mob['id']]);
             if ($this->ticks % 4 === 0) {
                 $this->moveLegacyMob($mob, $noise);
@@ -72,7 +74,9 @@ trait MobMovement
         if ($moving) {
             $mob['yaw'] = Float32::round(rad2deg(atan2(-$dx, $dz)));
         }
+        $before = $mob['y'];
         $this->mobAirTravel->step($this->world, $mob, $definition, [0.0, 0.0, $speed], $speed);
+        $this->mobFall($mob, $mob['y'] - $before);
         $this->pushAfterMobTravel($mob);
     }
 }

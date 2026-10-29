@@ -85,6 +85,8 @@ public class ExportMobSounds {
     row.add("hurt",sound((SoundEvent)method(clazz,"getHurtSound",DamageSource.class).invoke(probe,damage)));
     row.add("death",sound((SoundEvent)method(clazz,"getDeathSound").invoke(probe)));
     row.addProperty("volume",(double)(float)method(clazz,"getSoundVolume").invoke(probe));
+    // LivingEntity.getFallSounds: the small and big fall damage sounds.
+    var falls=probe.getFallSounds();row.add("small_fall",sound(falls.small()));row.add("big_fall",sound(falls.big()));
     row.addProperty("category",probe.getSoundSource().ordinal());
     row.addProperty("pitch_method",clazz.getMethod("getVoicePitch").getDeclaringClass().getSimpleName());
     var pitches=new JsonArray();for(long seed:new long[]{0,1,42,-1,Long.MIN_VALUE,Long.MAX_VALUE}){
@@ -95,6 +97,18 @@ public class ExportMobSounds {
    mobs.add(entry.getKey(),row);
   }
   root.add("mobs",mobs);
+  // LivingEntity.playBlockFallSound: each block's default sound type fall sound, volume and pitch.
+  var blocks=new JsonObject();
+  for(var block:BuiltInRegistries.BLOCK){
+   var type=block.defaultBlockState().getSoundType();var row=new JsonObject();
+   var fall=type.getFallSound();row.addProperty("name",BuiltInRegistries.SOUND_EVENT.getKey(fall).toString());row.addProperty("id",BuiltInRegistries.SOUND_EVENT.getId(fall));
+   row.add("fixed_range",fall.fixedRange().<JsonElement>map(v->new JsonPrimitive((double)v)).orElse(JsonNull.INSTANCE));
+   row.addProperty("volume",(double)type.getVolume());row.addProperty("pitch",(double)type.getPitch());
+   blocks.add(BuiltInRegistries.BLOCK.getKey(block).toString(),row);
+  }
+  root.add("block_falls",blocks);
+  // HoneyBlock.fallOn plays its slide sound on landing.
+  root.add("honey_block_slide",sound(net.minecraft.sounds.SoundEvents.HONEY_BLOCK_SLIDE));
   var serializers=new JsonObject();
   for(var f:net.minecraft.network.syncher.EntityDataSerializers.class.getFields()){
    if(Set.of("BYTE","INT","FLOAT","BOOLEAN","POSE").contains(f.getName())||f.getName().endsWith("_VARIANT"))serializers.addProperty(f.getName(),net.minecraft.network.syncher.EntityDataSerializers.getSerializedId((net.minecraft.network.syncher.EntityDataSerializer<?>)f.get(null)));

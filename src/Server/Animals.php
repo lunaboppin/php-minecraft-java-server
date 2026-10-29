@@ -248,8 +248,170 @@ trait Animals
         return true;
     }
 
+    /**
+     * LivingEntity.hurtServer for a mob hurt other than by a melee swing: the cooldown window,
+     * armor, the damage event and knockback, then the hurt or death sound. Returns whether it was hurt.
+     */
+    private function hurtMob(int $id, float $amount, string $type, ?Client $attacker = null): bool
+    {
+        if (!isset($this->animals[$id])) {
+            return false;
+        }
+        $mob = &$this->animals[$id];
+        $tags = $this->version->catalog->damageTypes['tags'];
+        $is = static fn (string $tag): bool => in_array($type, $tags[$tag] ?? [], true);
+        // Entity.isInvulnerableToBase, then isDeadOrDying.
+        if (isset($mob['deadAt']) || $mob['health'] <= 0
+            || (($mob['invulnerable'] ?? false) && !$is('minecraft:bypasses_invulnerability') && !($attacker !== null && $attacker->gameMode === 1))
+            || ($is('minecraft:is_fire') && $this->version->catalog->mobs['entities'][$mob['kind']]['fire_immune'])
+            || ($is('minecraft:is_fall') && in_array($mob['kind'], $this->version->registryTags('minecraft:entity_type')['minecraft:fall_damage_immune'] ?? [], true))) {
+            return false;
+        }
+        $amount = max(0.0, $amount);
+        $full = $this->ticks - ($mob['lastHurtTick'] ?? -100) >= 10 || $is('minecraft:bypasses_cooldown');
+        if (!$full) {
+            if ($amount <= ($mob['lastHurtAmount'] ?? 0)) {
+                return false;
+            }
+            $taken = Float32::round($amount - $mob['lastHurtAmount']);
+        } else {
+            $taken = $amount;
+            $mob['lastHurtTick'] = $this->ticks;
+        }
+        $mob['lastHurtAmount'] = $amount;
+        if (!$is('minecraft:bypasses_armor')) {
+            $value = fn (string $name): float => $this->attributeValue($mob['kind'], $mob['attributeBases'] ?? [], $mob['attributeModifiers'] ?? [], $name);
+            $taken = Combat::afterArmor($taken, $value('armor'), $value('armor_toughness'));
+        }
+        $mob['health'] = max(0.0, Float32::round($mob['health'] - $taken));
+        foreach ($this->localPlayers() as $p) {
+            if (isset($p->entities[$id])) {
+                $p->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $mob['health']));
+                if ($full) {
+                    $p->send($this->version, 'damage_event', Packets::damageEvent($this->version, $id, $attacker?->entityId ?? -1, substr($type, 10)));
+                }
+            }
+        }
+        // dealDefaultKnockback: away from the source's position, or a random way without one.
+        if ($full && !$is('minecraft:no_knockback')) {
+            $this->knockbackMobFrom($mob, $attacker === null ? 0.0 : $attacker->x - $mob['x'], $attacker === null ? 0.0 : $attacker->z - $mob['z']);
+        }
+        if ($mob['health'] > 0) {
+            if ($full) {
+                $this->mobDamageSound($mob, false);
+            }
+            return true;
+        }
+        if ($full) {
+            $this->mobDamageSound($mob, true);
+        }
+        if ($attacker !== null) {
+            $this->incrementCriteria('totalKillCount', $attacker->name);
+        }
+        // LivingEntity.die: the loot, then the death event.
+        $this->animalDeathLoot($mob, $attacker, $type);
+        if ($attacker !== null && in_array($mob['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
+            $this->giveExperiencePoints($attacker, random_int(1, 3));
+        }
+        foreach ($this->localPlayers() as $p) {
+            if (isset($p->entities[$id])) {
+                $p->send($this->version, 'entity_event', pack('N', $id) . "\3");
+            }
+        }
+        return true;
+    }
+
+    /** Entity.checkFallDamage after a mob's move: falling builds up out of water, and landing hands it to the block. */
+    private function mobFall(array &$mob, float $dy): void
+    {
+        if ($dy < 0.0) {
+            $mob['fallDistance'] = ($mob['fallDistance'] ?? 0.0) - Float32::round($dy);
+        }
+        if (!($mob['ground'] ?? false)) {
+            return;
+        }
+        $distance = $mob['fallDistance'] ?? 0.0;
+        $mob['fallDistance'] = 0.0;
+        if ($distance <= 0.0) {
+            return;
+        }
+        // Entity.getOnPosLegacy: the block 0.2 below the feet.
+        $state = $this->world->get((int) floor($mob['x']), (int) floor($mob['y'] - Float32::round(0.2)), (int) floor($mob['z']));
+        $block = $this->version->catalog->blockName($state);
+        $id = $mob['id'];
+        switch ($block) {
+            case 'hay_block':
+                $this->mobFallDamage($id, $distance, Float32::round(0.2));
+                return;
+            case 'honey_block':
+                $this->mobSound($mob, $this->version->catalog->mobSounds['honey_block_slide'], 1.0, 1.0);
+                foreach ($this->localPlayers() as $p) {
+                    if (isset($p->entities[$id])) {
+                        $p->send($this->version, 'entity_event', pack('N', $id) . "\x36");
+                    }
+                }
+                if ($this->mobFallDamage($id, $distance, Float32::round(0.2))) {
+                    $this->blockFallSound($mob, 'honey_block');
+                }
+                return;
+            case 'slime_block':
+                // Mobs never suppress the bounce, so the slime takes the whole fall.
+                return;
+            case 'powder_snow':
+                if ($distance >= 4.0) {
+                    $info = $this->version->catalog->mobSounds['mobs'][$mob['kind']];
+                    $this->mobSound($mob, $info[$distance < 7.0 ? 'small_fall' : 'big_fall'], 1.0, 1.0);
+                }
+                return;
+            case 'pointed_dripstone':
+                $properties = $this->version->catalog->properties($state);
+                if (($properties['vertical_direction'] ?? '') === 'up' && ($properties['thickness'] ?? '') === 'tip') {
+                    $this->mobFallDamage($id, $distance + 2.5, 2.0, 'minecraft:stalagmite');
+                    return;
+                }
+                break;
+            case 'farmland':
+                // FarmlandBlock.fallOn: big enough mobs may trample it while mob griefing is on.
+                $size = $this->version->catalog->mobs['entities'][$mob['kind']];
+                if (mt_rand() / (mt_getrandmax() + 1) < $distance - 0.5 && $this->gameRule('mob_griefing') === 'true'
+                    && Float32::round(Float32::round($size['width'] * $size['width']) * $size['height']) > Float32::round(0.512)) {
+                    $this->world->set((int) floor($mob['x']), (int) floor($mob['y'] - Float32::round(0.2)), (int) floor($mob['z']), $this->version->catalog->state('dirt'));
+                }
+                break;
+        }
+        $this->mobFallDamage($id, $distance, 1.0);
+    }
+
+    /** LivingEntity.causeFallDamage: the fall sound, the landing block's sound, then fall damage. */
+    private function mobFallDamage(int $id, float $distance, float $multiplier, string $type = 'minecraft:fall'): bool
+    {
+        $mob = &$this->animals[$id];
+        if (in_array($mob['kind'], $this->version->registryTags('minecraft:entity_type')['minecraft:fall_damage_immune'] ?? [], true)) {
+            return false;
+        }
+        $value = fn (string $name): float => $this->attributeValue($mob['kind'], $mob['attributeBases'] ?? [], $mob['attributeModifiers'] ?? [], $name);
+        $damage = (int) floor(($distance + 1.0E-6 - $value('safe_fall_distance')) * $multiplier * $value('fall_damage_multiplier'));
+        if ($damage <= 0) {
+            return false;
+        }
+        $this->mobSound($mob, $this->version->catalog->mobSounds['mobs'][$mob['kind']][$damage > 4 ? 'big_fall' : 'small_fall'], 1.0, 1.0);
+        $below = $this->world->get((int) floor($mob['x']), (int) floor($mob['y'] - Float32::round(0.2)), (int) floor($mob['z']));
+        if (!$this->version->catalog->air($below)) {
+            $this->blockFallSound($mob, $this->version->catalog->blockName($below));
+        }
+        $this->hurtMob($id, (float) $damage, $type);
+        return true;
+    }
+
+    /** LivingEntity.playBlockFallSound: the block's fall sound at half volume and three quarters pitch. */
+    private function blockFallSound(array $mob, string $block): void
+    {
+        $sound = $this->version->catalog->mobSounds['block_falls']['minecraft:' . $block];
+        $this->mobSound($mob, $sound, Float32::round(Float32::round($sound['volume']) * Float32::round(0.5)), Float32::round(Float32::round($sound['pitch']) * Float32::round(0.75)));
+    }
+
     /** Mark a mob dead and drop its loot; only kills by a player also give experience. */
-    private function animalDeathLoot(array &$animal, ?Client $killer = null): void
+    private function animalDeathLoot(array &$animal, ?Client $killer = null, ?string $type = null): void
     {
         $animal['deadAt'] = $this->ticks + 20;
         // LivingEntity.shouldDropLoot: not for babies, and only while mob_drops is on.
@@ -267,7 +429,7 @@ trait Animals
             'attacker' => $attacker,
             'direct_attacker' => $attacker,
             'killed_by_player' => $killer !== null,
-            'damage' => $killer === null ? ['type' => 'minecraft:generic_kill'] : ['type' => 'minecraft:player_attack', 'source_entity' => $attacker, 'direct_entity' => $attacker],
+            'damage' => ['type' => $type ?? ($killer === null ? 'minecraft:generic_kill' : 'minecraft:player_attack')] + ($killer === null ? [] : ['source_entity' => $attacker, 'direct_entity' => $attacker]),
         ];
         foreach ($this->loot()->drops('minecraft:entities/' . $animal['kind'], $context) as [$drop, $count]) {
             $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;

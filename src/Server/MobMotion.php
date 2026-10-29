@@ -52,6 +52,12 @@ trait MobMotion
 
     private function knockbackMob(array &$mob, Client $attacker): void
     {
+        $this->knockbackMobFrom($mob, $attacker->x - $mob['x'], $attacker->z - $mob['z']);
+    }
+
+    /** LivingEntity.knockback away from a direction; a zero direction picks a random one. */
+    private function knockbackMobFrom(array &$mob, float $directionX, float $directionZ): void
+    {
         if (!$this->ordinaryMobTravel($mob)) {
             return;
         }
@@ -61,8 +67,8 @@ trait MobMotion
             $this->version->catalog->movement['default_knockback_strength'],
             $attributes['knockback_resistance'] ?? 0.0,
             $mob['ground'] ?? false,
-            $attacker->x - $mob['x'],
-            $attacker->z - $mob['z'],
+            $directionX,
+            $directionZ,
             $this->mobRandom($mob['id'])
         );
         $mob['velocity'] = $this->version->catalog->movement['profiles'][$mob['kind']]['velocity'] === 'zero'

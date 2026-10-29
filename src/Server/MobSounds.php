@@ -21,6 +21,21 @@ trait MobSounds
         return MobAudio::variant($this->version->catalog->mobSounds['mobs'][$kind], $random);
     }
 
+    /** Entity.playSound: a sound at the mob in its own category, unless it is silent. */
+    private function mobSound(array $mob, array $sound, float $volume, float $pitch): void
+    {
+        if ($mob['silent'] ?? false) {
+            return;
+        }
+        $radius = MobAudio::range($sound, $volume);
+        $payload = Packets::sound($sound['id'], $this->version->catalog->mobSounds['mobs'][$mob['kind']]['category'], $mob['x'], $mob['y'], $mob['z'], $volume, $pitch, unpack('J', random_bytes(8))[1]);
+        foreach ($this->localPlayers() as $viewer) {
+            if (($viewer->x - $mob['x']) ** 2 + ($viewer->y - $mob['y']) ** 2 + ($viewer->z - $mob['z']) ** 2 < $radius ** 2) {
+                $viewer->send($this->version, 'sound', $payload);
+            }
+        }
+    }
+
     private function mobDamageSound(array $mob, bool $death): void
     {
         // The dragon has a separate damage/death lifecycle, not LivingEntity's
