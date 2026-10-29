@@ -11,13 +11,18 @@ trait Entities
 {
     private array $itemEntities = [];
 
-    private function dropStack(float $x, float $y, float $z, array $stack): void
+    /** An item entity; $age 5999 is ItemEntity.makeFakeItem's, gone on its next tick. */
+    private function dropStack(float $x, float $y, float $z, array $stack, int $age = 0): void
     {
-        if ($stack['count'] <= 0 || count($this->itemEntities) >= 256) {
+        if ($stack['count'] <= 0) {
             return;
         }
+        // The entity ID is taken even when too many items already lie around to keep this one.
         $id = $this->nextEntity++;
-        $this->itemEntities[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'stack' => $stack, 'age' => 0, 'created' => $this->ticks];
+        if (count($this->itemEntities) >= 256) {
+            return;
+        }
+        $this->itemEntities[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'stack' => $stack, 'age' => $age, 'created' => $this->ticks];
         foreach ($this->localPlayers() as $player) {
             $this->showItem($player, $this->itemEntities[$id]);
         }
@@ -41,6 +46,9 @@ trait Entities
 
     private function removeItem(int $id): void
     {
+        if (isset($this->itemEntities[$id])) {
+            $this->entityRemoved($this->itemEntities[$id]['uuid']);
+        }
         unset($this->itemEntities[$id]);
         foreach ($this->localPlayers() as $player) {
             if (isset($player->entities[$id])) {

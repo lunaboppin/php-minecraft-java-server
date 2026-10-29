@@ -34,12 +34,17 @@ trait GiveCommand
         if ($count > $limit) {
             throw new CommandFailure(['translate' => 'commands.give.failed.toomanyitems', 'with' => [$limit, $display]]);
         }
+        $maxStack = $this->version->catalog->items[$itemName]['max_stack'];
         foreach ($targets as $target) {
-            $left = $this->giveStack($target, ['item' => $item, 'count' => $count] + $patch);
-            $this->syncInventory($target);
-            if ($left > 0) {
-                $this->withDimension($target->dimension, fn () => $this->dropStack($target->x, $target->y + 0.5, $target->z, ['item' => $item, 'count' => $left] + $patch));
+            // Stack by stack: a stack that fits leaves a fake one-item drop that despawns on its next
+            // tick, and what does not fit is dropped; either way an item entity is created.
+            for ($remaining = $count; $remaining > 0; $remaining -= $size) {
+                $size = min($maxStack, $remaining);
+                $left = $this->giveStack($target, ['item' => $item, 'count' => $size] + $patch);
+                $drop = $left === 0 ? ['item' => $item, 'count' => 1] + $patch : ['item' => $item, 'count' => $left] + $patch;
+                $this->withDimension($target->dimension, fn () => $this->dropStack($target->x, $target->y + 1.32, $target->z, $drop, $left === 0 ? 5999 : 0));
             }
+            $this->syncInventory($target);
         }
         $message = count($targets) === 1
             ? ['translate' => 'commands.give.success.single', 'with' => [$count, $display, $this->displayName($targets[0])]]

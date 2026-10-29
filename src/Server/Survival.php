@@ -329,6 +329,15 @@ trait Survival
         $c->fallDistance = 0;
         $c->fireTicks = 0;
         $c->air = 300;
+        // PlayerList.respawn: the new player joins the end of the player list.
+        $key = array_search($c, $this->clients, true);
+        if ($key !== false) {
+            unset($this->clients[$key]);
+            $this->clients[$key] = $c;
+        }
+        // The respawned player applies its equipment's attribute modifiers afresh.
+        $c->equipmentModifierStacks = [];
+        $this->applyEquipmentAttributes($c, $this->playerEquipment($c));
         $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->worlds['overworld']->spawn(), true);
     }
 

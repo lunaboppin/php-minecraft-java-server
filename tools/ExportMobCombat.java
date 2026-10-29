@@ -34,6 +34,15 @@ public class ExportMobCombat {
    var row=new JsonObject();row.addProperty("damage",d);row.addProperty("speed",s);row.addProperty("minimum_charge",minimum);row.addProperty("durability_cost",cost);items.add(BuiltInRegistries.ITEM.getKey(item).getPath(),row);
   }
   root.add("items",items);
+  // Each item's default attribute modifiers, as equipping it in a slot of the group applies them.
+  var itemAttributes=new JsonObject();
+  for(var item:BuiltInRegistries.ITEM){
+   var modifiers=new ItemStack(item).getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS,ItemAttributeModifiers.EMPTY).modifiers();if(modifiers.isEmpty())continue;var list=new JsonArray();
+   for(var entry:modifiers){var row=new JsonObject();row.addProperty("attribute",entry.attribute().unwrapKey().orElseThrow().identifier().getPath());row.addProperty("id",entry.modifier().id().toString());
+    row.addProperty("amount",entry.modifier().amount());row.addProperty("operation",entry.modifier().operation().id());row.addProperty("slot",entry.slot().getSerializedName());list.add(row);}
+   itemAttributes.add(BuiltInRegistries.ITEM.getKey(item).getPath(),list);
+  }
+  root.add("item_attributes",itemAttributes);
   // Invoke the actual player charge methods with only the fields those pure
   // calculations read. This is an isolated oracle, never a running player/session.
   var unsafeField=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");unsafeField.setAccessible(true);var unsafe=(sun.misc.Unsafe)unsafeField.get(null);

@@ -35,6 +35,10 @@ final class Client
     public array $attributeBases = [];
     /** @var array<string, array<string, array{0: float, 1: int, 2: bool}>> attribute modifiers by id, in insertion order: amount, operation, permanent */
     public array $attributeModifiers = [];
+    /** @var array<string, true> AttributeMap instances created so far, in creation order: the ones pairing sends */
+    public array $attributeInstances = self::PLAYER_ATTRIBUTE_INSTANCES;
+    /** Created for every player: abilities set the speed and game modes modify the ranges. */
+    public const PLAYER_ATTRIBUTE_INSTANCES = ['movement_speed' => true, 'block_interaction_range' => true, 'entity_interaction_range' => true];
     /** Absorption hearts' health. */
     public float $absorption = 0.0;
     public int $lastDamageTick = -20;
@@ -101,9 +105,13 @@ final class Client
     public float $batchAt = 0;
     /** Whether the attributes changed during creation have been sent, on the first tick after joining. */
     public bool $attributesSent = false;
+    /** A teleport whose trackers are updated in the player's next tick. */
+    public bool $teleportBroadcastPending = false;
     public int $heldSlot = 0;
     public array $inventory = [];
     public array $lastEquipment = [];
+    /** @var array<int, ?array> the equipment stacks whose attribute modifiers are applied */
+    public array $equipmentModifierStacks = [];
     public ?string $lastPlayerMetadata = null;
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;

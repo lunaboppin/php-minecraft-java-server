@@ -165,6 +165,9 @@ trait Animals
     {
         unset($this->mobRandomSources[$id], $this->mobMovementTrackers[$id]);
         $this->forgetPushingEntity($id);
+        if (isset($this->animals[$id])) {
+            $this->entityRemoved(hex2bin($this->animals[$id]['uuid']));
+        }
         unset($this->animals[$id]);
         foreach ($this->localPlayers() as $p) {
             if (isset($p->entities[$id])) {

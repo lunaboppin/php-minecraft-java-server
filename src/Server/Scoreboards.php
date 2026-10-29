@@ -225,6 +225,21 @@ trait Scoreboards
         }
     }
 
+    /** Scoreboard.entityRemoved: a destroyed non-player entity loses its scores and team. */
+    private function entityRemoved(string $uuid): void
+    {
+        $holder = Binary::formatUuid($uuid);
+        $changed = isset($this->scoreboard()->scores[$holder]);
+        $this->resetScore($holder, null);
+        $team = $this->scoreboard()->leaveTeam($holder);
+        if ($team !== null) {
+            $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 4, [$holder]));
+        }
+        if ($changed || $team !== null) {
+            $this->saveScoreboard();
+        }
+    }
+
     /** Scoreboard.forAllObjectives(criteria, holder, ScoreAccess::increment) */
     private function incrementCriteria(string $criteria, string $holder): void
     {
@@ -264,6 +279,17 @@ trait Scoreboards
             if ($player->name === $holder) {
                 // Player.getFeedbackDisplayName: team-formatted, hovering the plain name.
                 return ['hover_event' => ['action' => 'show_text', 'value' => ['text' => $holder]]] + $this->displayName($player);
+            }
+        }
+        // Entity.getFeedbackDisplayName likewise, for a mob or item that still exists.
+        foreach ($this->animals as $mob) {
+            if (Binary::formatUuid(hex2bin($mob['uuid'])) === $holder) {
+                return ['hover_event' => ['action' => 'show_text', 'value' => ['text' => $holder]]] + $this->entityComponent($mob['kind'], hex2bin($mob['uuid']), $mob['customName'] ?? null);
+            }
+        }
+        foreach ($this->itemEntities as $id => $item) {
+            if (Binary::formatUuid($item['uuid']) === $holder) {
+                return ['hover_event' => ['action' => 'show_text', 'value' => ['text' => $holder]]] + $this->entityName(['item' => $id, 'uuid' => $item['uuid']]);
             }
         }
         return ['text' => $holder];

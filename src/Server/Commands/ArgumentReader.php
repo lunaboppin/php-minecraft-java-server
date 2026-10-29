@@ -152,7 +152,11 @@ final class ArgumentReader
                 return;
             case 'minecraft:score_holder':
                 if ($reader->canRead() && $reader->peek() === '@') {
-                    EntitySelector::read($reader, $this->selectors, $this->registries['minecraft:entity_type'] ?? null);
+                    $selector = EntitySelector::read($reader, $this->selectors, $this->registries['minecraft:entity_type'] ?? null);
+                    // ScoreHolderArgument.parse: a single holder's selector must allow one result, underlined up to here.
+                    if (($properties['amount'] ?? 'multiple') === 'single' && !$selector->single()) {
+                        throw $reader->error('argument.entity.toomany');
+                    }
                     return;
                 }
                 while ($reader->canRead() && $reader->peek() !== ' ') {

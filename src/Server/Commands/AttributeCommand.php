@@ -24,6 +24,10 @@ trait AttributeCommand
             throw new CommandFailure(['translate' => 'commands.attribute.failed.no_attribute', 'with' => [$name, $label]]);
         }
         $client = $entity['client'] ?? null;
+        // AttributeMap.getInstance creates the instance, which pairing then sends, whatever follows.
+        if ($client !== null) {
+            $client->attributeInstances[$attribute] = true;
+        }
         $state = $client !== null
             ? ['bases' => $client->attributeBases, 'modifiers' => $client->attributeModifiers]
             : ['bases' => $this->animals[$entity['mob']]['attributeBases'] ?? [], 'modifiers' => $this->animals[$entity['mob']]['attributeModifiers'] ?? []];
