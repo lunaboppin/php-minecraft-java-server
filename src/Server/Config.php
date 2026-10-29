@@ -29,7 +29,10 @@ final class Config
         public readonly int $generationWorkers = 3,
         /** Chunks around spawn that idle generation workers generate before anyone visits them. */
         public readonly int $pregenerateRadius = 32,
+        /** server.properties spawn-protection: blocks within this many of spawn are for operators only. */
+        public readonly int $spawnProtection = 16,
     ) {
+        if ($spawnProtection < 0) { throw new \InvalidArgumentException('Invalid spawn protection radius'); }
         if ($generationWorkers < 0 || $generationWorkers > 16) { throw new \InvalidArgumentException('Invalid generation worker count'); }
         if ($pregenerateRadius < 0 || $pregenerateRadius > 256) { throw new \InvalidArgumentException('Invalid pregeneration radius'); }
         if($logDirectory==='' || $logRetentionDays<1 || $logRetentionDays>90){throw new \InvalidArgumentException('Log retention must be between 1 and 90 days');}
@@ -51,7 +54,7 @@ final class Config
             if (!$object instanceof \stdClass) { throw new \InvalidArgumentException('Configuration must be a JSON object'); }
             $values = get_object_vars($object);
         }
-        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList','vanillaTerrain','generationWorkers','pregenerateRadius'];
+        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList','vanillaTerrain','generationWorkers','pregenerateRadius','spawnProtection'];
         foreach ($values as $key => $_) { if (!in_array($key,$allowed,true)) { throw new \InvalidArgumentException('Unknown configuration option: ' . $key); } }
         return new self(...array_replace($values,$overrides));
     }
