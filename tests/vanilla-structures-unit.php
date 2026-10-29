@@ -28,6 +28,8 @@ foreach ([
     [4, 0, 'mineshaft', [66, 5, 2, 76, 11, 14], 135],
     // The first stronghold ring chunk, after its biome search.
     [-25, -141, 'stronghold', [-398, -27, -2254, -394, -17, -2250], 97],
+    // A cold ruin's three layers; the last is its mossy layer, before settling on the floor.
+    [3, 10, 'ocean_ruin_cold', [43, 90, 154, 48, 96, 160], 'north'],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {

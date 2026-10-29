@@ -84,12 +84,22 @@ Starts and their pieces' state live in the world database (`vanilla_structure_st
 
 Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+Ported so far: ocean ruins, strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
 - the hut at chunk -17, 22, including its stair shapes and fence connections;
 - the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
 - the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
 - the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
 - the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
+
+Ocean ruins (`OceanRuin`) port `OceanRuinPieces`:
+- Warm sandstone ruins.
+- Cold stone brick ruins in brick, cracked and mossy layers of falling integrity.
+- Clusters of small ruins around large ones.
+- Settling to the ocean floor (`getHeight`).
+- The capped processor that turns five sand or gravel blocks into suspicious blocks with archaeology loot.
+- Chest markers.
+
+For seed 42, the cold ruin at chunk 3, 10 uses the official templates and boxes, and its blocks match apart from kelp. Drowned are not spawned yet.
 
 Strongholds (`StrongholdPiece`) port `StrongholdPieces` and `StrongholdStructure`:
 - Every piece kind, grown from the start stairs by piece weight, including vanilla's fall-through when a chosen piece does not fit and the imposed five-way crossing after the start.

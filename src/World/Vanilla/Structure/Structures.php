@@ -418,6 +418,13 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'ocean_ruin':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, true), $z)) {
+                    return [];
+                }
+                return OceanRuin::pieces($this->blocks, $this->directory, $structure, [$cx * 16, 90, $cz * 16], $random->nextInt(4), $random);
             case 'stronghold':
                 // The start is checked at the chunk's corner, y 0.
                 if (!$this->validBiome($structure, $cx * 16, 0, $cz * 16)) {
