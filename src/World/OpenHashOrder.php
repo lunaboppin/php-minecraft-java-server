@@ -35,13 +35,24 @@ final class OpenHashOrder
             $position = ($position + 1) & $mask;
         }
         $this->table[$position] = $key;
-        // maxFill(n, 0.5): rehash to twice the size once half full.
-        if (count(array_filter($this->table, static fn (?string $name): bool => $name !== null)) >= intdiv(count($this->table), 2)) {
-            $keys = $this->keys();
-            $this->table = array_fill(0, count($this->table) * 2, null);
-            foreach ($keys as $existing) {
-                $this->place($existing);
-            }
+        // insert: if (size++ >= maxFill) rehash, with maxFill(n, 0.5) = n / 2.
+        if ($this->size() > intdiv(count($this->table), 2)) {
+            $this->rehash(count($this->table) * 2);
+        }
+    }
+
+    private function size(): int
+    {
+        return count(array_filter($this->table, static fn (?string $name): bool => $name !== null));
+    }
+
+    /** rehash walks the old table from its last slot, placing each key in the new one. */
+    private function rehash(int $size): void
+    {
+        $keys = $this->keys();
+        $this->table = array_fill(0, $size, null);
+        foreach ($keys as $existing) {
+            $this->place($existing);
         }
     }
 
@@ -73,6 +84,10 @@ final class OpenHashOrder
                 $current = $this->table[$position];
                 if ($current === null) {
                     $this->table[$last] = null;
+                    // removeEntry: shrink by half once under a quarter of maxFill, never below the initial 32.
+                    if (count($this->table) > 32 && $this->size() < intdiv(intdiv(count($this->table), 2), 4)) {
+                        $this->rehash(intdiv(count($this->table), 2));
+                    }
                     return;
                 }
                 $slot = self::mix(self::hash($current)) & $mask;

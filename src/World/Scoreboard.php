@@ -29,6 +29,9 @@ final class Scoreboard
 
     private OpenHashOrder $teamOrder;
 
+    /** playerScores' table, which keeps the capacity earlier holders grew it to. */
+    private OpenHashOrder $holderOrder;
+
     /** @var array<string, array<string, array{value: int, locked: bool}>> holder => objective => score */
     public array $scores = [];
 
@@ -39,6 +42,7 @@ final class Scoreboard
     {
         $this->objectiveOrder = new OpenHashOrder();
         $this->teamOrder = new OpenHashOrder();
+        $this->holderOrder = new OpenHashOrder();
     }
 
     public static function fromArray(?array $data): self
@@ -80,11 +84,9 @@ final class Scoreboard
     {
         unset($this->objectives[$name]);
         $this->objectiveOrder->delete($name);
+        // Holders left without scores stay tracked, as PlayerScores.remove leaves them in the map.
         foreach ($this->scores as $holder => $scores) {
             unset($this->scores[$holder][$name]);
-            if ($this->scores[$holder] === []) {
-                unset($this->scores[$holder]);
-            }
         }
         $this->display = array_filter($this->display, static fn (string $objective): bool => $objective !== $name);
     }
@@ -154,22 +156,34 @@ final class Scoreboard
     }
 
     /**
-     * Holders with any score in Scoreboard.playerScores order (an Object2ObjectOpenHashMap), as
-     * if inserted in the order they first got a score.
+     * Tracked holders in Scoreboard.playerScores order (an Object2ObjectOpenHashMap), inserted in
+     * the order they first got a score and removed as they lose them.
      */
     public function scoreHolderOrder(): array
     {
-        $order = new OpenHashOrder();
-        foreach (array_keys($this->scores) as $holder) {
-            $order->insert((string) $holder);
-        }
-        return $order->keys();
+        $this->syncHolderOrder();
+        return $this->holderOrder->keys();
     }
 
-    /** Holders with any score, in java.util.HashMap order as the players list reports them. */
+    /** Applies holders removed from and added to $scores since the last call to the hash table. */
+    public function syncHolderOrder(): void
+    {
+        $current = array_map('strval', array_keys($this->scores));
+        $known = $this->holderOrder->keys();
+        foreach (array_diff($known, $current) as $removed) {
+            $this->holderOrder->delete($removed);
+        }
+        foreach (array_diff($current, $known) as $added) {
+            $this->holderOrder->insert($added);
+        }
+    }
+
+    /**
+     * Tracked holders as getTrackedPlayers streams playerScores' keys for the players list and "*":
+     * fastutil's spliterator walks the table from its first slot, the reverse of its iterator.
+     */
     public function holders(): array
     {
-        return \PhpMinecraftJavaServer\Protocol\Nbt::hashMapOrder(array_map('strval', array_keys($this->scores)));
+        return array_reverse($this->scoreHolderOrder());
     }
-
 }

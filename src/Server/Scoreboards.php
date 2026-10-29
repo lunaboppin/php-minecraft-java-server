@@ -188,6 +188,7 @@ trait Scoreboards
         $created = !isset($scores[$holder][$objective]);
         if ($created || $scores[$holder][$objective]['value'] !== $value) {
             $scores[$holder][$objective] = ['value' => $value, 'locked' => $scores[$holder][$objective]['locked'] ?? true];
+            $this->scoreboard()->syncHolderOrder();
             $this->scoreChanged($holder, $objective);
         }
     }
@@ -206,18 +207,20 @@ trait Scoreboards
     private function resetScore(string $holder, ?string $objective): void
     {
         $scores = &$this->scoreboard()->scores;
-        if ($objective === null || (isset($scores[$holder][$objective]) && count($scores[$holder]) === 1)) {
-            if (isset($scores[$holder])) {
-                unset($scores[$holder]);
-                $this->broadcastScoreboard('reset_score', Binary::writeString($holder) . "\0");
-            }
+        if (!isset($scores[$holder])) {
             return;
         }
-        if (!isset($scores[$holder][$objective])) {
+        $removed = $objective !== null && isset($scores[$holder][$objective]);
+        if ($objective !== null) {
+            unset($scores[$holder][$objective]);
+        }
+        if ($objective === null || $scores[$holder] === []) {
+            unset($scores[$holder]);
+            $this->scoreboard()->syncHolderOrder();
+            $this->broadcastScoreboard('reset_score', Binary::writeString($holder) . "\0");
             return;
         }
-        unset($scores[$holder][$objective]);
-        if ($this->tracked($objective)) {
+        if ($removed && $this->tracked($objective)) {
             $this->broadcastScoreboard('reset_score', Binary::writeString($holder) . "\1" . Binary::writeString($objective));
         }
     }

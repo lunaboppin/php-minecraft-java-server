@@ -171,10 +171,17 @@ SCRIPT = [
     ('scoreboard players enable @a t', False), ('tellraw @s {score:{name:"Witness",objective:"kills"}}', False), ('tellraw @s {score:{name:"@s",objective:"kills"}}', False),
     ('kill @a[scores={kills=1..}]', False), ('scoreboard objectives remove kills', False), ('scoreboard objectives remove kills', False),
     ('scoreboard objectives list', False),
+    # playerScores grows past 16 holders, keeps holders whose objective is removed, and lists them
+    # in its spliterator order; resetting an objective drops every holder it leaves empty.
+    ('scoreboard objectives add g dummy', False), ('scoreboard players set f01 g 1', False), ('scoreboard players set f02 g 1', False), ('scoreboard players set f03 g 1', False), ('scoreboard players set f04 g 1', False), ('scoreboard players set f05 g 1', False), ('scoreboard players set f06 g 1', False), ('scoreboard players set f07 g 1', False), ('scoreboard players set f08 g 1', False), ('scoreboard players set f09 g 1', False), ('scoreboard players set f10 g 1', False), ('scoreboard players set f11 g 1', False), ('scoreboard players set f12 g 1', False), ('scoreboard players set f13 g 1', False), ('scoreboard players set f14 g 1', False), ('scoreboard players set f15 g 1', False), ('scoreboard players set f16 g 1', False), ('scoreboard players set f17 g 1', False),
+    ('scoreboard players list', False), ('scoreboard objectives remove g', False), ('scoreboard players list', False),
+    ('scoreboard objectives add h dummy', False), ('scoreboard players set f05 h 5', False), ('scoreboard objectives setdisplay sidebar h', False),
+    ('scoreboard players reset f05', False), ('scoreboard players reset * h', False), ('scoreboard players list', False),
+    ('scoreboard objectives remove h', False),
     ('!respawn', False),
     # Summoned mobs with NBT, named and tagged selection; their random loot is cleared quietly.
-    # The operator stands on a stone floor in open air first, so the mobs neither fall, suffocate nor touch the border.
-    ('!quiet tp @s 3 101 4', False), ('!quiet fill 2 100 3 4 100 5 minecraft:stone', False), ('!quiet fill 2 101 3 4 103 5 minecraft:air', False),
+    # The operator stands inside a closed stone box first, so the crowded mobs can neither fall nor wander off.
+    ('!quiet tp @s 3 101 4', False), ('!quiet fill 0 100 1 6 104 7 minecraft:stone hollow', False),
     ('summon pig ~ ~ ~ {NoAI:1b}', False), ('summon pig ~ ~ ~ {CustomName:"Bob"}', False), ('summon pig ~ ~ ~ {CustomName:{text:"Red",color:"red"}}', False),
     ('summon cow ~ ~ ~ {Age:-24000}', False), ('summon cow ~ ~ ~ {Silent:1b,Invulnerable:1b,PersistenceRequired:1b}', False), ('summon pig ~ ~ ~ {Tags:["a","b"]}', False),
     ('summon pig ~ ~ ~ {Health:5f}', False), ('summon pig ~ ~ ~ {Rotation:[90f,0f]}', False), ('summon pig ~ ~ ~ {NoAI:1b', False),
