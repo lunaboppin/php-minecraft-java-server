@@ -23,6 +23,7 @@ foreach ([
     [-85, 180, 'jungle_pyramid', [-1360, 64, 2880, -1346, 73, 2891], 'east'],
     // The last piece of an igloo is its top; this one has a ladder shaft and laboratory below.
     [208, -305, 'igloo', [3328, 90, -4880, 3334, 94, -4873], 'north'],
+    [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {

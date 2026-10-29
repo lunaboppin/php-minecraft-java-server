@@ -61,6 +61,8 @@ abstract class Piece
             'desert_pyramid' => DesertPyramid::restoreWith($piece),
             'jungle_temple' => JungleTemple::restoreWith($piece),
             'igloo' => Igloo::restoreWith($piece),
+            'shipwreck' => Shipwreck::restoreWith($piece),
+            'buried_treasure' => BuriedTreasure::restoreWith($piece),
         };
     }
 

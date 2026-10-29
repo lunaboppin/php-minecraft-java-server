@@ -82,13 +82,14 @@ The server generates the Nether with vanilla when `vanillaTerrain` is on. Enabli
 
 Starts and their pieces' state live in the world database (`vanilla_structure_starts`). Each decorated chunk places the pieces of starts within 8 chunks that overlap it. Structures run before the features of each decoration step, in registry order, and each is seeded with its index in the step, as `applyBiomeDecoration` does.
 
-Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars and drops unsupported torches and ladders.
+Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: swamp huts, desert pyramids, jungle temples and igloos. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+Ported so far: swamp huts, desert pyramids, jungle temples, igloos, shipwrecks and buried treasure. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
 - the hut at chunk -17, 22, including its stair shapes and fence connections;
 - the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
 - the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
-- the igloo at 208, -305, with its 11-segment ladder shaft and laboratory.
+- the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
+- the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
 
 Templates (`Template`, `TemplatePiece`) port `StructureTemplate` and `TemplateStructurePiece`:
 - palettes in vanilla's placement order, with the positional palette choice;

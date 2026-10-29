@@ -62,10 +62,20 @@ $shapes = new ShapeUpdater($blocks, new Survival($blocks, $version->directory . 
 $get = static function (int $x, int $y, int $z) use (&$chunks, $settings): int {
     return $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)];
 };
-foreach ($decorator->structureContext?->postProcessing ?? [] as [$x, $y, $z]) {
-    $updated = $shapes->update($get($x, $y, $z), $x, $y, $z, $get);
-    if ($updated !== null) {
-        $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $updated;
+if (getenv('MARKORDER')) {
+    echo 'mark order: ', implode(' ', array_keys(array_filter($decorator->structureContext?->postProcessing ?? [], static fn ($p) => in_array(implode(',', $p), explode(';', getenv('MARKORDER')), true)))), "\n";
+}
+$shapes->updateAll(array_values($decorator->structureContext?->postProcessing ?? []), $get, static function (int $x, int $y, int $z, int $state) use (&$chunks, $settings): void {
+    $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
+});
+if (getenv('NEIGHBOURS')) {
+    // NEIGHBOURS=block prints each such block in the centre chunk with its horizontal neighbours.
+    $c = $chunks[$centerX . ',' . $centerZ];
+    foreach ($c->blocks as $i => $state) {
+        if ($blocks->name($state) === getenv('NEIGHBOURS')) {
+            [$x, $y, $z] = [$centerX * 16 + ($i & 15), ($i >> 8) + $settings->minY, $centerZ * 16 + (($i >> 4) & 15)];
+            echo "$x,$y,$z ", json_encode($blocks->properties($state)), ' N=', $blocks->name($get($x, $y, $z - 1)), ' S=', $blocks->name($get($x, $y, $z + 1)), ' W=', $blocks->name($get($x - 1, $y, $z)), ' E=', $blocks->name($get($x + 1, $y, $z)), "\n";
+        }
     }
 }
 if ($decorator->skipped !== []) {

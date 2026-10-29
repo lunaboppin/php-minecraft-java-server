@@ -178,6 +178,29 @@ final class Structures
         return isset($this->biomeSet($structure['biomes'])[$this->biomes->uncached($x >> 2, $y >> 2, $z >> 2)]);
     }
 
+    /** Structure.getCornerHeights at an area's corners (one past its size, as vanilla samples them). */
+    private function cornerHeights(int $minX, int $minZ, int $sizeX, int $sizeZ): array
+    {
+        return [
+            $this->firstOccupiedHeight($minX, $minZ),
+            $this->firstOccupiedHeight($minX, $minZ + $sizeZ),
+            $this->firstOccupiedHeight($minX + $sizeX, $minZ),
+            $this->firstOccupiedHeight($minX + $sizeX, $minZ + $sizeZ),
+        ];
+    }
+
+    /** Structure.getLowestY */
+    private function lowestY(int $minX, int $minZ, int $sizeX, int $sizeZ): int
+    {
+        return min($this->cornerHeights($minX, $minZ, $sizeX, $sizeZ));
+    }
+
+    /** Structure.getMeanFirstOccupiedHeight */
+    private function meanHeight(int $minX, int $minZ, int $sizeX, int $sizeZ): int
+    {
+        return intdiv(array_sum($this->cornerHeights($minX, $minZ, $sizeX, $sizeZ)), 4);
+    }
+
     /**
      * SinglePieceStructure.findGenerationPoint: every corner of the piece's area is at or above
      * sea level (Structure.getLowestY), and the chunk centre's surface biome is valid.
@@ -186,13 +209,7 @@ final class Structures
     {
         $minX = $cx * 16;
         $minZ = $cz * 16;
-        $lowest = min(
-            $this->firstOccupiedHeight($minX, $minZ),
-            $this->firstOccupiedHeight($minX, $minZ + $depth),
-            $this->firstOccupiedHeight($minX + $width, $minZ),
-            $this->firstOccupiedHeight($minX + $width, $minZ + $depth),
-        );
-        if ($lowest < $this->settings->seaLevel) {
+        if ($this->lowestY($minX, $minZ, $width, $depth) < $this->settings->seaLevel) {
             return false;
         }
         $x = $minX + 8;
@@ -228,6 +245,29 @@ final class Structures
                 // Rotation.getRandom
                 $rotation = $random->nextInt(4);
                 return Igloo::pieces($this->blocks, $this->directory, [$cx * 16, 90, $cz * 16], $rotation, $random);
+            case 'shipwreck':
+                $beached = (bool) ($structure['is_beached'] ?? false);
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, !$beached), $z)) {
+                    return [];
+                }
+                $rotation = $random->nextInt(4);
+                $piece = Shipwreck::create($this->blocks, $this->directory, $cx, $cz, $rotation, $random, $beached);
+                if ($piece->tooBig($this->blocks, $this->directory)) {
+                    [$minX, , $minZ, $maxX, , $maxZ] = $piece->box;
+                    $piece->adjustHeight($beached
+                        ? $piece->beachedHeight($this->blocks, $this->directory, $this->lowestY($minX, $minZ, $maxX - $minX + 1, $maxZ - $minZ + 1), $random)
+                        : $this->meanHeight($minX, $minZ, $maxX - $minX + 1, $maxZ - $minZ + 1));
+                }
+                return [$piece];
+            case 'buried_treasure':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, true), $z)) {
+                    return [];
+                }
+                return [new BuriedTreasure([$cx * 16 + 9, 90, $cz * 16 + 9, $cx * 16 + 9, 90, $cz * 16 + 9], null)];
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }

@@ -127,7 +127,7 @@ final class ChunkStore
     /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
     private function postProcess(int $cx, int $cz, array $blocks): array
     {
-        $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=?');
+        $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=? ORDER BY rowid');
         $q->execute([$cx, $cz]);
         $marks = $q->fetchAll(\PDO::FETCH_NUM);
         if ($marks === []) {
@@ -146,13 +146,9 @@ final class ChunkStore
             return $neighbours[$key][(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] ?? 0;
         };
         $this->shapes ??= new ShapeUpdater($this->blocks(), new Survival($this->blocks(), $this->version->directory . '/worldgen/block-behaviour.json'));
-        foreach ($marks as [$x, $y, $z]) {
-            $index = (($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15);
-            $updated = $this->shapes->update($blocks[$index], $x, $y, $z, $get);
-            if ($updated !== null) {
-                $blocks[$index] = $updated;
-            }
-        }
+        $this->shapes->updateAll($marks, $get, static function (int $x, int $y, int $z, int $state) use (&$blocks, $minY): void {
+            $blocks[(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
+        });
         $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=? WHERE cx=? AND cz=?');
         $update->bindValue(1, self::encode($blocks), \PDO::PARAM_LOB);
         $update->bindValue(2, $cx, \PDO::PARAM_INT);

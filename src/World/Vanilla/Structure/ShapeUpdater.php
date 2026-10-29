@@ -29,6 +29,32 @@ final class ShapeUpdater
     }
 
     /**
+     * Update marked blocks in order, then again while any shape changed (up to three passes), so a
+     * fence sees the final shape of stairs updated after it. Vanilla reaches that state when the
+     * neighbouring chunk was decorated first.
+     *
+     * @param list<array{0: int, 1: int, 2: int}> $marks
+     * @param callable(int, int, int): int $get
+     * @param callable(int, int, int, int): void $set
+     */
+    public function updateAll(array $marks, callable $get, callable $set): void
+    {
+        for ($pass = 0; $pass < 3; ++$pass) {
+            $changed = false;
+            foreach ($marks as [$x, $y, $z]) {
+                $updated = $this->update($get($x, $y, $z), $x, $y, $z, $get);
+                if ($updated !== null) {
+                    $set($x, $y, $z, $updated);
+                    $changed = true;
+                }
+            }
+            if (!$changed) {
+                return;
+            }
+        }
+    }
+
+    /**
      * The block's shape after its neighbours are known, or null when it is unchanged.
      *
      * @param callable(int, int, int): int $get
@@ -45,6 +71,11 @@ final class ShapeUpdater
             [$dx, $dz, $face] = self::SIDES[$facing];
             // The block behind, on the side opposite the facing, must have a sturdy face towards it.
             return $this->blocks->sturdy($get($x - $dx, $y, $z - $dz), self::opposite($face)) ? null : $air;
+        }
+        if ($this->survival->isA($state, 'StairBlock')) {
+            $shape = $this->stairsShape($state, $x, $y, $z, $get);
+            $updated = $this->blocks->with($state, 'shape', $shape);
+            return $updated === $state ? null : $updated;
         }
         $fence = $this->survival->isA($state, 'FenceBlock');
         $bars = $this->survival->isA($state, 'IronBarsBlock');
@@ -69,6 +100,40 @@ final class ShapeUpdater
             $updated = $this->blocks->with($updated, $side, $connects ? 'true' : 'false');
         }
         return $updated === $state ? null : $updated;
+    }
+
+    private const FACINGS = ['north' => [0, -1], 'east' => [1, 0], 'south' => [0, 1], 'west' => [-1, 0]];
+
+    private const COUNTER_CLOCKWISE = ['north' => 'west', 'west' => 'south', 'south' => 'east', 'east' => 'north'];
+
+    private const OPPOSITE = ['north' => 'south', 'south' => 'north', 'east' => 'west', 'west' => 'east'];
+
+    /** StairBlock.getStairsShape: corners with the stairs behind or in front of it. */
+    private function stairsShape(int $state, int $x, int $y, int $z, callable $get): string
+    {
+        $properties = $this->blocks->properties($state);
+        $facing = $properties['facing'];
+        $half = $properties['half'];
+        $stairsAt = function (string $direction) use ($get, $x, $y, $z): ?array {
+            [$dx, $dz] = self::FACINGS[$direction];
+            $neighbour = $get($x + $dx, $y, $z + $dz);
+            return $this->survival->isA($neighbour, 'StairBlock') ? $this->blocks->properties($neighbour) : null;
+        };
+        $axis = static fn (string $direction): string => $direction === 'east' || $direction === 'west' ? 'x' : 'z';
+        // StairBlock.canTakeShape
+        $canTake = static function (string $direction) use ($stairsAt, $facing, $half): bool {
+            $neighbour = $stairsAt($direction);
+            return $neighbour === null || $neighbour['facing'] !== $facing || $neighbour['half'] !== $half;
+        };
+        $behind = $stairsAt($facing);
+        if ($behind !== null && $behind['half'] === $half && $axis($behind['facing']) !== $axis($facing) && $canTake(self::OPPOSITE[$behind['facing']])) {
+            return $behind['facing'] === self::COUNTER_CLOCKWISE[$facing] ? 'outer_left' : 'outer_right';
+        }
+        $front = $stairsAt(self::OPPOSITE[$facing]);
+        if ($front !== null && $front['half'] === $half && $axis($front['facing']) !== $axis($facing) && $canTake($front['facing'])) {
+            return $front['facing'] === self::COUNTER_CLOCKWISE[$facing] ? 'inner_left' : 'inner_right';
+        }
+        return 'straight';
     }
 
     /** The Blocks::sturdy index of the opposite horizontal direction. */
