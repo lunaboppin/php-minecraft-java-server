@@ -86,7 +86,7 @@ final class ChunkStore
 
     private function generator(): OverworldGenerator
     {
-        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory, $this->dimension === 'the_nether' ? 'nether' : 'overworld');
+        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory, match ($this->dimension) { 'the_nether' => 'nether', 'the_end' => 'end', default => 'overworld' });
     }
 
     private function decorator(): Decorator

@@ -52,6 +52,7 @@ WORLDGEN_FIXTURE_CHUNKS = {
 }
 # The same stages of Nether chunks: crimson and warped forests, nether wastes and a soul sand valley.
 WORLDGEN_NETHER_FIXTURE_CHUNKS = {'42': ['0:0', '-1:-1', '5:3', '-20:14']}
+WORLDGEN_END_FIXTURE_CHUNKS = {'42': ['0:0', '-1:-1', '3:2', '80:10', '-70:40', '100:-100']}
 
 
 def worldgen_resources(inner, out):
@@ -296,6 +297,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-Ddimension=the_nether', '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order-nether.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-Ddimension=the_end', '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order-end.json')], check=True, cwd=cache)
     exports = []
     for seed, chunks in WORLDGEN_FIXTURE_CHUNKS.items():
         exports.append(cache / f'worldgen-chunks-{seed}.json')
@@ -303,6 +305,9 @@ def main():
     for seed, chunks in WORLDGEN_NETHER_FIXTURE_CHUNKS.items():
         exports.append(cache / f'worldgen-nether-chunks-{seed}.json')
         subprocess.run([java, logging_option, '-Ddimension=the_nether', '-cp', str(classes) + os.pathsep + cp, 'ExportWorldgenChunks', str(exports[-1]), seed, *chunks], check=True, cwd=cache)
+    for seed, chunks in WORLDGEN_END_FIXTURE_CHUNKS.items():
+        exports.append(cache / f'worldgen-end-chunks-{seed}.json')
+        subprocess.run([java, logging_option, '-Ddimension=the_end', '-cp', str(classes) + os.pathsep + cp, 'ExportWorldgenChunks', str(exports[-1]), seed, *chunks], check=True, cwd=cache)
     subprocess.run(['python3', str(ROOT / 'tools/worldgen_fixture.py'), str(out / 'worldgen-chunks.json'), *map(str, exports)], check=True)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')
