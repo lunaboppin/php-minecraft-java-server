@@ -53,7 +53,7 @@ trait MobMovement
             $this->pushAfterMobTravel($mob);
             return;
         }
-        $definition = $this->version->catalog->mobs['entities'][$mob['kind']];
+        $definition = ['attributes' => $this->mobAttributes($mob)] + $this->version->catalog->mobs['entities'][$mob['kind']];
         $this->mobAirTravel ??= new AirTravel(
             $this->version->catalog,
             new EntityPhysics(file_get_contents($this->version->directory . '/entity-sine.bin')),
