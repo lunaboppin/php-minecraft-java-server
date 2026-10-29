@@ -319,6 +319,88 @@ final class Structures
         return $this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z);
     }
 
+    /** RuinedPortalStructure.findGenerationPoint */
+    private function ruinedPortal(array $structure, int $cx, int $cz, LegacyRandom $random): array
+    {
+        $setups = $structure['setups'];
+        $setup = $setups[0];
+        if (count($setups) > 1) {
+            $total = 0.0;
+            foreach ($setups as $candidate) {
+                $total = F32::r($total + F32::r((float) $candidate['weight']));
+            }
+            $pick = $random->nextFloat();
+            foreach ($setups as $candidate) {
+                $pick = F32::r($pick - F32::r(F32::r((float) $candidate['weight']) / $total));
+                if ($pick < 0.0) {
+                    $setup = $candidate;
+                    break;
+                }
+            }
+        }
+        $airProbability = F32::r((float) $setup['air_pocket_probability']);
+        $airPocket = $airProbability === 0.0 ? false : ($airProbability === 1.0 ? true : $random->nextFloat() < $airProbability);
+        $template = $random->nextFloat() < F32::r(0.05) ? 'ruined_portal/giant_portal_' . ($random->nextInt(3) + 1) : 'ruined_portal/portal_' . ($random->nextInt(10) + 1);
+        $loaded = Template::load($this->blocks, $this->directory, $template);
+        $rotation = $random->nextInt(4);
+        $mirror = $random->nextFloat() < 0.5 ? BlockTransform::NONE : BlockTransform::FRONT_BACK;
+        $pivot = [intdiv($loaded->size[0], 2), 0, intdiv($loaded->size[2], 2)];
+        $box = $loaded->boundingBox([$cx * 16, 0, $cz * 16], $mirror, $rotation, $pivot);
+        $center = [$box[0] + intdiv($box[3] - $box[0] + 1, 2), $box[2] + intdiv($box[5] - $box[2] + 1, 2)];
+        $placement = $setup['placement'];
+        $oceanFloor = $placement === 'on_ocean_floor';
+        $surfaceY = $this->firstOccupiedHeight($center[0], $center[1], $oceanFloor);
+        $y = $this->portalY($random, $placement, $airPocket, $surfaceY, $box[4] - $box[1] + 1, $box, $oceanFloor);
+        $origin = [$cx * 16, $y, $cz * 16];
+        if (!$this->validBiome($structure, ...$origin)) {
+            return [];
+        }
+        $biome = $this->biomes->uncached($origin[0] >> 2, $origin[1] >> 2, $origin[2] >> 2);
+        $this->climate ??= new \PhpMinecraftJavaServer\World\Vanilla\BiomeClimate($this->directory);
+        $portal = new RuinedPortal($loaded->boundingBox($origin, $mirror, $rotation, $pivot), $template, $origin, $rotation, $pivot, $mirror);
+        $portal->properties = [
+            'placement' => $placement,
+            'cold' => ($setup['can_be_cold'] ?? false) && $this->climate->coldEnoughToSnow($biome, ...[...$origin, $this->settings->seaLevel]),
+            'mossiness' => (float) $setup['mossiness'],
+            'air_pocket' => $airPocket,
+            'overgrown' => (bool) ($setup['overgrown'] ?? false),
+            'vines' => (bool) ($setup['vines'] ?? false),
+            'blackstone' => (bool) ($setup['replace_with_blackstone'] ?? false),
+        ];
+        return [$portal];
+    }
+
+    /** RuinedPortalStructure.findSuitableY: a placement height, lowered until three corners stand on ground. */
+    private function portalY(LegacyRandom $random, string $placement, bool $airPocket, int $surfaceY, int $ySpan, array $box, bool $oceanFloor): int
+    {
+        $minY = $this->settings->minY + 15;
+        $between = static fn (int $min, int $max): int => $random->nextInt($max - $min + 1) + $min;
+        $within = static fn (int $min, int $max): int => $min < $max ? $between($min, $max) : $max;
+        $newY = match ($placement) {
+            'in_nether' => $airPocket ? $between(32, 100) : ($random->nextFloat() < 0.5 ? $between(27, 29) : $between(29, 100)),
+            'in_mountain' => $within(70, $surfaceY - $ySpan),
+            'underground' => $within($minY, $surfaceY - $ySpan),
+            'partly_buried' => $surfaceY - $ySpan + $between(2, 8),
+            default => $surfaceY,
+        };
+        $columns = [];
+        foreach ([[$box[0], $box[2]], [$box[3], $box[2]], [$box[0], $box[5]], [$box[3], $box[5]]] as [$x, $z]) {
+            $columns[] = NoiseChunk::baseColumn($this->settings, $x, $z);
+        }
+        for ($y = $newY; $y > $minY; --$y) {
+            $solid = 0;
+            foreach ($columns as $column) {
+                $block = $column[$y - $this->settings->minY] ?? 'air';
+                if ($block !== 'air' && (!$oceanFloor || $block === $this->settings->defaultBlock) && ++$solid === 3) {
+                    return $y;
+                }
+            }
+        }
+        return $y;
+    }
+
+    private ?\PhpMinecraftJavaServer\World\Vanilla\BiomeClimate $climate = null;
+
     /** MineshaftStructure.findGenerationPoint and generatePiecesAndAdjust. */
     private function mineshaft(array $structure, int $cx, int $cz, LegacyRandom $random): array
     {
@@ -418,6 +500,8 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'ruined_portal':
+                return $this->ruinedPortal($structure, $cx, $cz, $random);
             case 'ocean_ruin':
                 $x = $cx * 16 + 8;
                 $z = $cz * 16 + 8;

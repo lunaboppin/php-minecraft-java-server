@@ -70,6 +70,7 @@ abstract class Piece
             'mineshaft_stairs' => MineshaftStairs::restoreWith($piece),
             'stronghold' => StrongholdPiece::restoreWith($piece),
             'ocean_ruin' => OceanRuin::restoreWith($piece),
+            'ruined_portal' => RuinedPortal::restoreWith($piece),
         };
     }
 
