@@ -26,14 +26,16 @@ foreach ([
     [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
     [41, -19, 'village_plains', [647, 79, -313, 656, 85, -304], 186],
     [4, 0, 'mineshaft', [66, 5, 2, 76, 11, 14], 135],
+    // The first stronghold ring chunk, after its biome search.
+    [-25, -141, 'stronghold', [-398, -27, -2254, -394, -17, -2250], 97],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
     $starts = $structures->create($cx, $cz);
     $last = $starts === [] ? null : $starts[0]['pieces'][count($starts[0]['pieces']) - 1];
     $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $last->box, $last->orientation];
-    if ($structure === 'village_plains' || $structure === 'mineshaft') {
-        // Official starts: the village's 186 pieces from its meeting point, the mineshaft's 135 from its room.
+    if (in_array($structure, ['village_plains', 'mineshaft', 'stronghold'], true)) {
+        // Official starts: the village's 186 pieces, the mineshaft's 135 and the stronghold's 97, from their first piece.
         $actual = [$starts[0]['structure'], $starts[0]['pieces'][0]->box, count($starts[0]['pieces'])];
     }
     if ($actual !== [$structure, $box, $orientation]) {
