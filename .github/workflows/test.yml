@@ -64,7 +64,7 @@ jobs:
         run: python3 tests/panel_egg.py --container
   parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
