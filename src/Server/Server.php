@@ -84,7 +84,7 @@ final class Server
         $this->worlds['overworld'] = $this->world;
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
-            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension);
+            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $dimension === 'the_nether' && $config->vanillaTerrain);
         }
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
@@ -119,6 +119,9 @@ final class Server
         }
         [$spawnX, , $spawnZ] = $this->world->spawn();
         $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
+        if (($this->worlds['the_nether'] ?? null)?->vanilla !== null) {
+            $pregenerate[] = $this->config->worldPath . '.the_nether.sqlite';
+        }
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
             $process = proc_open(
                 [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate],

@@ -6,11 +6,15 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Decoration;
 
 /**
  * BlockState.canSurvive for the blocks world generation places, chosen by each block's official
- * class chain (block-behaviour.json "classes"). Block light is not computed during decoration,
- * so mushrooms always pass their light check.
+ * class chain (block-behaviour.json "classes"). Chunks have no light data during decoration, so
+ * the raw brightness is full sky light in dimensions with a sky and zero in the Nether: mushrooms
+ * survive on any solid block there, but only on their override blocks under a sky.
  */
 final class Survival
 {
+    /** Whether the dimension has sky light (the Overworld). */
+    public bool $skyLight = true;
+
     /** @var array<string, list<string>> */
     private readonly array $classes;
 
@@ -35,13 +39,17 @@ final class Survival
         return $this->blocks->properties($state)[$name] ?? null;
     }
 
-    private function vegetationSupport(string $class, int $below, Region $region, int $x, int $y, int $z): bool
+    private function vegetationSupport(string $class, int $state, int $below, Region $region, int $x, int $y, int $z): bool
     {
         $blocks = $this->blocks;
         return match ($class) {
             'SeagrassBlock', 'TallSeagrassBlock' => $blocks->sturdy($below, Blocks::UP) && !$blocks->inTag($below, 'cannot_support_seagrass'),
             'LilyPadBlock' => ($blocks->isWater($below) || $blocks->inTag($below, 'supports_lily_pad')) && !$blocks->hasFluid($region->get($x, $y + 1, $z)),
-            'MushroomBlock' => $blocks->inTag($below, 'mushroom_grow_block'),
+            'MushroomBlock' => $blocks->inTag($below, 'overrides_mushroom_light_requirement')
+                || (!$this->skyLight && $blocks->flag($below, 1 << 20) && $blocks->flag($below, Blocks::FULL_CUBE)),
+            // Each Nether root and fungus block has its own supports_<block> tag.
+            'NetherRootsBlock', 'NetherFungusBlock' => $blocks->inTag($below, 'supports_' . $blocks->name($state)),
+            'NetherSproutsBlock' => $blocks->inTag($below, 'supports_nether_sprouts'),
             'DryVegetationBlock', 'ShortDryGrassBlock' => $blocks->inTag($below, 'supports_dry_vegetation'),
             'AzaleaBlock' => $blocks->inTag($below, 'supports_azalea'),
             'MangrovePropaguleBlock' => $blocks->inTag($below, 'supports_mangrove_propagule'),
@@ -155,7 +163,7 @@ final class Survival
                     return false;
                 }
             }
-            return $this->vegetationSupport($class, $below, $region, $x, $y, $z);
+            return $this->vegetationSupport($class, $state, $below, $region, $x, $y, $z);
         }
         return true;
     }

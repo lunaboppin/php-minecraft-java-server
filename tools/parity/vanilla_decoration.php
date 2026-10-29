@@ -30,10 +30,12 @@ if ($argc < 3) {
 $seed = (int) $argv[2];
 $centerX = (int) ($argv[3] ?? 0);
 $centerZ = (int) ($argv[4] ?? 0);
+$reference = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$dimension = $reference['dimension'] ?? 'overworld';
 $version = new Version();
-$generator = new OverworldGenerator($seed, $version->directory);
+$generator = new OverworldGenerator($seed, $version->directory, $dimension === 'the_nether' ? 'nether' : 'overworld');
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
-$decorator = new Decorator($blocks, new BiomeClimate($version->directory . '/worldgen'), $version->directory . '/worldgen');
+$decorator = new Decorator($blocks, new BiomeClimate($version->directory . '/worldgen'), $version->directory . '/worldgen', $dimension);
 $chunks = [];
 for ($dz = -3; $dz <= 3; ++$dz) {
     for ($dx = -3; $dx <= 3; ++$dx) {
@@ -52,7 +54,6 @@ for ($dz = -2; $dz <= 2; ++$dz) {
 if ($decorator->skipped !== []) {
     echo 'Not ported: ' . json_encode($decorator->skipped) . "\n";
 }
-$reference = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
 foreach ($reference['chunks'] as $official) {
     if (abs($official['x'] - $centerX) > 1 || abs($official['z'] - $centerZ) > 1) {
         continue;

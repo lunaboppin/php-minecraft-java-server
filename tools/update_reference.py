@@ -294,6 +294,7 @@ def main():
     structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-Ddimension=the_nether', '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order-nether.json')], check=True, cwd=cache)
     exports = []
     for seed, chunks in WORLDGEN_FIXTURE_CHUNKS.items():
         exports.append(cache / f'worldgen-chunks-{seed}.json')
