@@ -347,7 +347,7 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event')
 
 
 def normalize_entity_ids(items):
@@ -360,7 +360,9 @@ def normalize_entity_ids(items):
         data = bytes.fromhex(payload)
         end = next(i for i, byte in enumerate(data) if byte < 0x80) + 1
         return '00' + data[end:].hex()
-    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED else item for item in items]
+    # entity_event addresses its entity with a plain int instead.
+    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED
+            else {**item, 'hex': '00000000' + item['hex'][8:]} if item['packet'] == 'entity_event' else item for item in items]
 
 
 def compare(reference, php):
