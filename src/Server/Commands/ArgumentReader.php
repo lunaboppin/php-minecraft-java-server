@@ -44,6 +44,7 @@ final class ArgumentReader
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
             'minecraft:mob_effect' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/mob-effects.json'), true, 512, JSON_THROW_ON_ERROR)['effects'])),
+            'minecraft:attribute' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/attributes.json'), true, 512, JSON_THROW_ON_ERROR)['attributes'])),
             'minecraft:enchantment' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/enchantments.json'), true, 512, JSON_THROW_ON_ERROR))),
             // Items with a default maximum damage.
             'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),

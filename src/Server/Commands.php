@@ -100,6 +100,14 @@ trait Commands
 
     use CommandModules\EffectCommand;
 
+    use CommandModules\AttributeCommand;
+
+    use CommandModules\PlaySoundCommand;
+
+    use CommandModules\StopSoundCommand;
+
+    use CommandModules\RotateCommand;
+
     private function operator(Client $client): bool
     {
         foreach ($this->config->operators as $name) {
@@ -119,9 +127,20 @@ trait Commands
     /** Vanilla sendSuccess: tell the source, and optionally echo to other operators as an admin message. */
     private function sendSuccess(Client $sender, array $message, bool $broadcastToOperators): void
     {
-        $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-        $sender->send($this->version, 'system_chat', Packets::systemChat($message));
+        // ServerPlayer.acceptsSuccess and broadcastToAdmins follow send_command_feedback.
+        $feedback = $this->gameRule('send_command_feedback') === 'true';
+        if ($feedback) {
+            $sender->send($this->version, 'system_chat', Packets::systemChat($message));
+        }
         if (!$broadcastToOperators) {
+            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
+            return;
+        }
+        // The server console sees admin messages only while log_admin_commands is on.
+        if ($this->gameRule('log_admin_commands') === 'true') {
+            $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
+        }
+        if (!$feedback) {
             return;
         }
         $admin = ['translate' => 'chat.type.admin', 'with' => [$this->displayName($sender), $message], 'color' => 'gray', 'italic' => true];

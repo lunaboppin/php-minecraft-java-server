@@ -155,8 +155,7 @@ trait Animals
         if (isset($animal['soundVariant'])) {
             $c->send($this->version, 'set_entity_data', Packets::mobSoundVariant($this->version, $id, $animal['kind'], $animal['soundVariant']));
         }
-        $attributes = array_intersect_key($this->version->catalog->mobs['entities'][$animal['kind']]['attributes'], array_flip($this->version->catalog->mobs['sync_attributes']));
-        $c->send($this->version, 'update_attributes', Packets::attributes($this->version->catalog, $id, $attributes));
+        $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $id, $this->mobAttributeEntries($animal)));
         if (($animal['equipment'] ?? []) !== []) {
             $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
         }

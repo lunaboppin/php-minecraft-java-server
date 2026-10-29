@@ -31,6 +31,12 @@ final class Client
     public int $lastLevelUpTick = -1000;
     /** @var array<string, array{amplifier: int, duration: int, ambient: bool, particles: bool, icon: bool}> active status effects */
     public array $effects = [];
+    /** @var array<string, float> attribute base values changed from the type's defaults */
+    public array $attributeBases = [];
+    /** @var array<string, array<string, array{0: float, 1: int, 2: bool}>> attribute modifiers by id, in insertion order: amount, operation, permanent */
+    public array $attributeModifiers = [];
+    /** Absorption hearts' health. */
+    public float $absorption = 0.0;
     public int $lastDamageTick = -20;
     /** The amount of the last hurt, which a hit during the invulnerability window must exceed. */
     public float $lastDamageAmount = 0;

@@ -60,11 +60,13 @@ trait Survival
         if (abs($c->x) > 29999900 || abs($c->z) > 29999900 || $c->y < $this->worlds[$c->dimension]->minY || $c->y >= $this->worlds[$c->dimension]->minY + $this->worlds[$c->dimension]->height) {
             [$c->x, $c->y, $c->z] = $this->worlds[$c->dimension]->spawn();
         }
-        $c->health = max(0, min(20, (float) ($data['health'] ?? 20)));
+        $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
+        $this->loadAttributes($c, $data['attributes'] ?? []);
+        $c->health = max(0, min($this->maxHealth($c), (float) ($data['health'] ?? 20)));
+        $c->absorption = max(0.0, (float) ($data['absorption'] ?? 0.0));
         $c->food = max(0, min(20, (int) ($data['food'] ?? 20)));
         $c->saturation = max(0, min($c->food, (float) ($data['saturation'] ?? 5)));
         $c->experience = max(0, (int) ($data['experience'] ?? 0));
-        $c->effects = array_filter($data['effects'] ?? [], fn (mixed $instance, mixed $effect): bool => is_array($instance) && isset($this->effectDefinitions()[$effect]), ARRAY_FILTER_USE_BOTH);
         [$c->experienceLevel, $c->experienceProgress] = isset($data['experienceLevel']) ? [max(0, (int) $data['experienceLevel']), max(0.0, min(1.0, (float) $data['experienceProgress']))] : self::experienceFromTotal($c->experience);
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
@@ -89,7 +91,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -176,7 +178,7 @@ trait Survival
      */
     private function joinAttributes(Client $c): string
     {
-        $speed = ['movement_speed', (float) unpack('G', pack('G', 0.1))[1], []];
+        $speed = $this->attributeEntry('player', $c->attributeBases, $c->attributeModifiers, 'movement_speed');
         $ranges = $this->interactionRanges($c);
         return Packets::attributeModifiers($this->version->catalog, $c->entityId, $c->gameMode === 1 ? [$speed, ...$ranges] : [...array_reverse($ranges), $speed]);
     }
@@ -196,6 +198,12 @@ trait Survival
         if ($c->dead || (in_array($c->gameMode, [1, 3], true) && !in_array($type, $tags['minecraft:bypasses_invulnerability'], true))) {
             return false;
         }
+        // Player.isInvulnerableTo: the damage-type game rules.
+        foreach (['minecraft:is_drowning' => 'drowning_damage', 'minecraft:is_fall' => 'fall_damage', 'minecraft:is_fire' => 'fire_damage', 'minecraft:is_freezing' => 'freeze_damage'] as $tag => $rule) {
+            if (in_array($type, $tags[$tag], true) && $this->gameRule($rule) !== 'true') {
+                return false;
+            }
+        }
         // LivingEntity.hurtServer: fire resistance ignores fire damage entirely.
         if (isset($c->effects['minecraft:fire_resistance']) && in_array($type, $tags['minecraft:is_fire'], true)) {
             return false;
@@ -212,19 +220,46 @@ trait Survival
         if ($attacker !== null) {
             [$c->lastHurtByPlayer, $c->lastHurtByPlayerTick] = [$attacker, $this->ticks];
         }
-        // getDamageAfterMagicAbsorb: resistance reduces what is taken.
+        // getDamageAfterMagicAbsorb: resistance reduces what is taken, then absorption takes its share.
         $amount = $this->effectDamage($c, $amount, $type);
+        if ($c->absorption > 0.0) {
+            $absorbed = min($c->absorption, $amount);
+            $this->setAbsorption($c, $c->absorption - $absorbed);
+            $amount -= $absorbed;
+        }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
+        // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
+        // the death event when the hit was lethal.
+        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10));
+        $effects = $this->version->catalog->damageTypes['types'][$type]['effects'] ?? 'hurt';
+        $sound = $c->health <= 0 ? 'entity.player.death' : match ($effects) {
+            'drowning' => 'entity.player.hurt_drown',
+            'burning' => 'entity.player.hurt_on_fire',
+            'freezing' => 'entity.player.hurt_freeze',
+            'poking' => 'entity.player.hurt_sweet_berry_bush',
+            default => 'entity.player.hurt',
+        };
+        $random = static fn (): float => mt_rand() / (mt_getrandmax() + 1);
+        $pitch = unpack('G', pack('G', ($random() - $random()) * 0.2 + 1.0))[1];
+        $noise = Packets::sound($this->version->blocks['sounds'][$sound], 7, $c->x, $c->y, $c->z, 1.0, $pitch, unpack('J', random_bytes(8))[1]);
         foreach ($this->localPlayers() as $p) {
             if ($p === $c || isset($p->entities[$c->entityId])) {
-                $p->send($this->version, 'entity_event', pack('N', $c->entityId) . chr($c->health <= 0 ? 3 : 2));
+                $p->send($this->version, 'damage_event', $event);
+            }
+            if ($p !== $c && ($p->x - $c->x) ** 2 + ($p->y - $c->y) ** 2 + ($p->z - $c->z) ** 2 < 16 ** 2) {
+                $p->send($this->version, 'sound', $noise);
+            }
+            if ($c->health <= 0 && ($p === $c || isset($p->entities[$c->entityId]))) {
+                $p->send($this->version, 'entity_event', pack('N', $c->entityId) . "\3");
             }
         }
         if ($c->health <= 0) {
             $c->dead = true;
-            // The respawned player starts without effects.
-            $c->effects = [];
+            // The respawned player starts without effects or absorption.
+            [$c->effects, $c->absorption] = [[], 0.0];
+            // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.
+            $c->attributeModifiers = array_filter(array_map(static fn (array $modifiers): array => array_filter($modifiers, static fn (array $modifier): bool => $modifier[2]), $c->attributeModifiers));
             $c->mining = null;
             $c->eating = null;
             $this->closeWindow($c, true);
@@ -503,6 +538,7 @@ trait Survival
                 if ($c->gameMode === 0) {
                     Inventory::consume($c->inventory, $slot);
                 }$this->health($c);
+                $this->applyConsumeEffects($c, 'minecraft:' . $this->version->catalog->itemName($c->eating['item']));
                 $this->syncInventory($c);
                 $c->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x09");
             }$c->eating = null;
@@ -548,12 +584,12 @@ trait Survival
         }
         if ($this->config->difficulty === 0) {
             $c->food = 20;
-            if ($c->health < 20) {
-                $c->health = min(20, $c->health + 1);
+            if ($c->health < $this->maxHealth($c)) {
+                $c->health = min($this->maxHealth($c), $c->health + 1);
             }
         } elseif ($this->ticks % 80 === 0) {
-            if ($this->naturalRegeneration && $c->food >= 18 && $c->health < 20) {
-                $c->health = min(20, $c->health + 1);
+            if ($this->naturalRegeneration && $c->food >= 18 && $c->health < $this->maxHealth($c)) {
+                $c->health = min($this->maxHealth($c), $c->health + 1);
                 $c->exhaustion += 6;
             } elseif ($c->food === 0 && ($this->config->difficulty === 3 || $c->health > ($this->config->difficulty === 1 ? 10 : 1))) {
                 $this->damage($c, 1, 'starve');
@@ -575,8 +611,11 @@ trait Survival
             return;
         }
         $info = $this->version->catalog->item($stack['item']);
-        if (isset($info['nutrition']) && $c->food < 20) {
-            $c->eating = ['slot' => $slot, 'item' => $stack['item'], 'complete' => $this->ticks + 32];
+        // Foods with canAlwaysEat are eaten at full hunger; Consumable.consumeTicks sets the time.
+        $name = 'minecraft:' . $this->version->catalog->itemName($stack['item']);
+        if (isset($info['nutrition']) && ($c->food < 20 || in_array($name, $this->consumables()['always_edible'], true))) {
+            $ticks = (int) (($this->consumables()['items'][$name]['consume_seconds'] ?? 1.6) * 20);
+            $c->eating = ['slot' => $slot, 'item' => $stack['item'], 'complete' => $this->ticks + $ticks];
             return;
         }
         if ($this->version->catalog->itemName($stack['item']) === 'bucket') {
@@ -618,7 +657,7 @@ trait Survival
         }
         foreach ($this->localPlayers() as $target) {
             // Player.canHarmPlayer: PvP must be on, and team mates without friendly fire are spared.
-            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp || $this->friendlyFireBlocked($attacker, $target)) {
+            if ($target->entityId !== $id || $target === $attacker || !$this->config->pvp || $this->gameRule('pvp') !== 'true' || $this->friendlyFireBlocked($attacker, $target)) {
                 continue;
             }
             if (($target->x - $attacker->x) ** 2 + ($target->y - $attacker->y) ** 2 + ($target->z - $attacker->z) ** 2 > 4.5 ** 2) {

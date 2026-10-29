@@ -219,13 +219,59 @@ SCRIPT = [
     ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
     ('effect give Witness instant_health 1 0', False), ('effect give Witness instant_damage 1 0', False), ('effect give Witness poison 5', False),
     ('effect clear Witness poison', False), ('effect clear', False),
+    # Sounds, with their random seeds zeroed before comparison.
+    ('tp @a 0 100 0', False), ('playsound minecraft:entity.player.levelup', False), ('playsound minecraft:entity.player.levelup master', False),
+    ('playsound entity.player.levelup player @a', False), ('playsound minecraft:block.note_block.harp record Witness 0 100 0 0.5 2', False), ('playsound minecraft:block.note_block.harp record Witness 0 100 0 2 0.5 0.3', False),
+    ('playsound minecraft:block.note_block.harp record Witness 1000 100 0', False), ('playsound minecraft:block.note_block.harp record Witness 1000 100 0 1 1 0.5', False), ('playsound custom:my.sound master @s', False),
+    ('playsound minecraft:entity.player.levelup nope', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ -1', False), ('playsound minecraft:entity.player.levelup master @s ~ ~ ~ 1 3', False),
+    ('stopsound @s', False), ('stopsound @a master', False), ('stopsound Witness * minecraft:entity.player.levelup', False),
+    ('stopsound @s player minecraft:entity.player.levelup', False),
+    # Game rules with server behaviour: damage types, respawn and debug flags, command feedback.
+    ('gamemode survival Witness', False), ('gamerule fall_damage false', False), ('damage Witness 2 fall', False),
+    ('gamerule fall_damage true', False), ('damage Witness 2 fall', False), ('gamerule fire_damage false', False),
+    ('damage Witness 2 on_fire', False), ('gamerule drowning_damage false', False), ('damage Witness 2 drown', False),
+    ('gamerule freeze_damage false', False), ('damage Witness 2 freeze', False), ('gamerule fire_damage true', False),
+    ('gamerule drowning_damage true', False), ('gamerule freeze_damage true', False), ('gamerule immediate_respawn true', False),
+    ('gamerule immediate_respawn false', False), ('gamerule reduced_debug_info true', False), ('gamerule reduced_debug_info false', False),
+    ('gamerule limited_crafting true', False), ('gamerule limited_crafting false', False), ('gamerule send_command_feedback false', False),
+    ('time set 100', False), ('seed', False), ('gamerule send_command_feedback true', False),
+    ('gamerule log_admin_commands false', False), ('time set 200', False), ('gamerule log_admin_commands true', False),
+    # /rotate, with its rotation and look-at packets; the witness stands on stone so vanilla never kicks them for floating.
+    ('!quiet fill -1 99 -1 1 99 1 minecraft:stone', False), ('tp Witness 0 100 0 0 0', False), ('tp ParityProbe 3 100 3 0 0', False), ('rotate Witness 90 45', False),
+    ('rotate Witness ~10 ~-5', False), ('rotate Witness facing 0 64 0', False), ('rotate Witness facing entity ParityProbe', False),
+    ('rotate Witness facing entity ParityProbe eyes', False), ('rotate @a 0 0', False), ('rotate @s 400 100', False),
+    # /attribute on players and a pig, with the attribute update every tracker receives.
+    ('attribute Witness max_health get', False), ('attribute Witness minecraft:max_health get 2.5', False),
+    ('attribute Witness max_health base get', False), ('attribute Witness max_health base set 30', False),
+    ('attribute Witness max_health base get', False), ('attribute Witness max_health get', False),
+    ('attribute Witness max_health base set 2000', False), ('attribute Witness max_health base reset', False),
+    ('attribute Witness movement_speed get', False), ('attribute Witness movement_speed base get 1000', False),
+    ('attribute Witness movement_speed modifier add test:fast 0.5 add_multiplied_base', False),
+    ('attribute Witness movement_speed modifier add test:fast 0.5 add_multiplied_base', False),
+    ('attribute Witness movement_speed modifier value get test:fast', False),
+    ('attribute Witness movement_speed modifier value get test:fast 10', False), ('attribute Witness movement_speed get', False),
+    ('attribute Witness movement_speed modifier add test:plus 0.1 add_value', False),
+    ('attribute Witness movement_speed modifier add test:total 1 add_multiplied_total', False),
+    ('attribute Witness movement_speed get', False), ('attribute Witness movement_speed modifier remove test:fast', False),
+    ('attribute Witness movement_speed modifier remove test:fast', False),
+    ('attribute Witness movement_speed modifier value get test:nope', False),
+    ('attribute Witness movement_speed modifier remove test:plus', False),
+    ('attribute Witness movement_speed modifier remove test:total', False), ('attribute Witness follow_range get', False),
+    ('attribute Witness nope get', False), ('attribute Witness scale base set 2', False),
+    ('attribute Witness scale base reset', False), ('!quiet kill @e[type=!player]', False), ('summon pig 0 64 0', False),
+    ('attribute @e[type=pig,limit=1] max_health get', False), ('attribute @e[type=pig,limit=1] attack_damage get', False),
+    ('kill @e[type=pig]', False),
     ('list', False),
 ]
 
 
-def collect(client, since):
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED]
+def collect(client, since, command=''):
+    extra = next((packets for prefix, packets in EXTRA.items() if command.removeprefix('!witness ').startswith(prefix)), ())
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED or name in extra]
 
+
+# Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
+EXTRA = {'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -278,13 +324,18 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 other.tick_barrier()
             except (AssertionError, EOFError, OSError, TimeoutError):
                 pass  # The witness may have been kicked.
-            results.append({'command': command, 'operator': collect(operator, marks[0]), 'witness': collect(witness, marks[1])})
+            results.append({'command': command, 'operator': collect(operator, marks[0], command), 'witness': collect(witness, marks[1], command)})
         operator.close()
         witness.close()
     finally:
         server.stop()
     (output / f'{kind}-feedback.json').write_text(json.dumps(results, indent=1))
     return results
+
+
+def normalize_seeds(items):
+    """Zero the random seed that ends every sound packet."""
+    return [{**item, 'hex': item['hex'][:-16] + '0' * 16} if item['packet'] == 'sound' else item for item in items]
 
 
 def normalize_uuids(items):
@@ -296,7 +347,7 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event')
 
 
 def normalize_entity_ids(items):
@@ -309,7 +360,9 @@ def normalize_entity_ids(items):
         data = bytes.fromhex(payload)
         end = next(i for i, byte in enumerate(data) if byte < 0x80) + 1
         return '00' + data[end:].hex()
-    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED else item for item in items]
+    # entity_event addresses its entity with a plain int instead.
+    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED
+            else {**item, 'hex': '00000000' + item['hex'][8:]} if item['packet'] == 'entity_event' else item for item in items]
 
 
 def compare(reference, php):
@@ -321,7 +374,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_entity_ids(expected[role])) != key(normalize_entity_ids(actual[role])):
+            if key(normalize_seeds(normalize_entity_ids(expected[role]))) != key(normalize_seeds(normalize_entity_ids(actual[role]))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 

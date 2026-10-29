@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **45** have an existing PHP handler; **47** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **49** have an existing PHP handler; **43** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -16,7 +16,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | Command | PHP module | Native acceptance | Redirect |
 | --- | --- | --- | --- |
 | `/advancement` | — | Unimplemented | — |
-| `/attribute` | — | Unimplemented | — |
+| `/attribute` | [AttributeCommand.php](../src/Server/Commands/AttributeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban` | [BanCommand.php](../src/Server/Commands/BanCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban-ip` | — | Unimplemented | — |
 | `/banlist` | [BanListCommand.php](../src/Server/Commands/BanListCommand.php) | Partial handler; native behavior incomplete | — |
@@ -60,14 +60,14 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/particle` | — | Unimplemented | — |
 | `/perf` | — | Unimplemented | — |
 | `/place` | — | Unimplemented | — |
-| `/playsound` | — | Unimplemented | — |
+| `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/posteffect` | — | Unimplemented | — |
 | `/random` | — | Unimplemented | — |
 | `/recipe` | — | Unimplemented | — |
 | `/reload` | — | Unimplemented | — |
 | `/return` | — | Unimplemented | — |
 | `/ride` | — | Unimplemented | — |
-| `/rotate` | — | Unimplemented | — |
+| `/rotate` | [RotateCommand.php](../src/Server/Commands/RotateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-all` | [SaveAllCommand.php](../src/Server/Commands/SaveAllCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-off` | [SaveOffCommand.php](../src/Server/Commands/SaveOffCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-on` | [SaveOnCommand.php](../src/Server/Commands/SaveOnCommand.php) | Partial handler; native behavior incomplete | — |
@@ -82,7 +82,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/spectate` | — | Unimplemented | — |
 | `/spreadplayers` | — | Unimplemented | — |
 | `/stop` | [StopCommand.php](../src/Server/Commands/StopCommand.php) | Partial handler; native behavior incomplete | — |
-| `/stopsound` | — | Unimplemented | — |
+| `/stopsound` | [StopSoundCommand.php](../src/Server/Commands/StopSoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/stopwatch` | — | Unimplemented | — |
 | `/summon` | [SummonCommand.php](../src/Server/Commands/SummonCommand.php) | Partial handler; native behavior incomplete | — |
 | `/swing` | — | Unimplemented | — |

@@ -30,6 +30,8 @@ final class Server
 
     use Effects;
 
+    use Attributes;
+
     use Commands;
 
     use Animals;
@@ -539,7 +541,7 @@ final class Server
     /** PlayerList.placeNewPlayer and sendLevelInfo, in vanilla's packet order. */
     private function joinWorld(Client $c): void
     {
-        $c->send($this->version, 'login', Packets::playLogin($this->version, $c->entityId, $this->config->maxPlayers, $this->viewDistance($c), $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension, array_keys($this->worlds), $this->config->viewDistance));
+        $c->send($this->version, 'login', Packets::playLogin($this->version, $c->entityId, $this->config->maxPlayers, $this->viewDistance($c), $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension, array_keys($this->worlds), $this->config->viewDistance, $this->gameRule('reduced_debug_info') === 'true', $this->gameRule('immediate_respawn') === 'true', $this->gameRule('limited_crafting') === 'true'));
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
@@ -578,6 +580,9 @@ final class Server
         foreach (array_keys($c->effects) as $effect) {
             $c->send($this->version, 'update_mob_effect', $this->effectPacket($c, $effect, false));
             $this->syncEffectAttributes($c, $effect);
+        }
+        if ($c->absorption > 0.0) {
+            $this->setAbsorption($c, $c->absorption);
         }
         $c->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $c->entityId, $c->information['skinParts'] ?? 0, $c->information['mainHand'] ?? 1));
         $this->health($c);

@@ -1,0 +1,227 @@
+{
+  "version": "26.3",
+  "always_edible": [
+    "minecraft:golden_apple",
+    "minecraft:enchanted_golden_apple",
+    "minecraft:chorus_fruit",
+    "minecraft:suspicious_stew",
+    "minecraft:honey_bottle"
+  ],
+  "items": {
+    "minecraft:apple": {},
+    "minecraft:mushroom_stew": {},
+    "minecraft:bread": {},
+    "minecraft:porkchop": {},
+    "minecraft:cooked_porkchop": {},
+    "minecraft:golden_apple": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:regeneration",
+              "amplifier": 1,
+              "duration": 100,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:absorption",
+              "duration": 2400,
+              "show_icon": true
+            }
+          ],
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:enchanted_golden_apple": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:regeneration",
+              "amplifier": 1,
+              "duration": 400,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:resistance",
+              "duration": 6000,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:fire_resistance",
+              "duration": 6000,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:absorption",
+              "amplifier": 3,
+              "duration": 2400,
+              "show_icon": true
+            }
+          ],
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:milk_bucket": {
+      "animation": "drink",
+      "sound": "minecraft:entity.generic.drink",
+      "has_consume_particles": false,
+      "on_consume_effects": [
+        {
+          "type": "minecraft:clear_all_effects"
+        }
+      ]
+    },
+    "minecraft:cod": {},
+    "minecraft:salmon": {},
+    "minecraft:tropical_fish": {},
+    "minecraft:pufferfish": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:poison",
+              "amplifier": 1,
+              "duration": 1200,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:hunger",
+              "amplifier": 2,
+              "duration": 300,
+              "show_icon": true
+            },
+            {
+              "id": "minecraft:nausea",
+              "duration": 300,
+              "show_icon": true
+            }
+          ],
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:cooked_cod": {},
+    "minecraft:cooked_salmon": {},
+    "minecraft:cookie": {},
+    "minecraft:melon_slice": {},
+    "minecraft:dried_kelp": {
+      "consume_seconds": 0.8
+    },
+    "minecraft:beef": {},
+    "minecraft:cooked_beef": {},
+    "minecraft:chicken": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:hunger",
+              "duration": 600,
+              "show_icon": true
+            }
+          ],
+          "probability": 0.3,
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:cooked_chicken": {},
+    "minecraft:rotten_flesh": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:hunger",
+              "duration": 600,
+              "show_icon": true
+            }
+          ],
+          "probability": 0.8,
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:potion": {
+      "animation": "drink",
+      "sound": "minecraft:entity.generic.drink",
+      "has_consume_particles": false
+    },
+    "minecraft:spider_eye": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:poison",
+              "duration": 100,
+              "show_icon": true
+            }
+          ],
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:carrot": {},
+    "minecraft:potato": {},
+    "minecraft:baked_potato": {},
+    "minecraft:poisonous_potato": {
+      "on_consume_effects": [
+        {
+          "effects": [
+            {
+              "id": "minecraft:poison",
+              "duration": 100,
+              "show_icon": true
+            }
+          ],
+          "probability": 0.6,
+          "type": "minecraft:apply_effects"
+        }
+      ]
+    },
+    "minecraft:golden_carrot": {},
+    "minecraft:pumpkin_pie": {},
+    "minecraft:rabbit": {},
+    "minecraft:cooked_rabbit": {},
+    "minecraft:rabbit_stew": {},
+    "minecraft:mutton": {},
+    "minecraft:cooked_mutton": {},
+    "minecraft:chorus_fruit": {
+      "on_consume_effects": [
+        {
+          "type": "minecraft:teleport_randomly"
+        }
+      ]
+    },
+    "minecraft:beetroot": {},
+    "minecraft:beetroot_soup": {},
+    "minecraft:suspicious_stew": {},
+    "minecraft:sweet_berries": {},
+    "minecraft:glow_berries": {},
+    "minecraft:honey_bottle": {
+      "consume_seconds": 2.0,
+      "animation": "drink",
+      "sound": "minecraft:item.honey_bottle.drink",
+      "has_consume_particles": false,
+      "on_consume_effects": [
+        {
+          "effects": "minecraft:poison",
+          "type": "minecraft:remove_effects"
+        }
+      ]
+    },
+    "minecraft:ominous_bottle": {
+      "animation": "drink",
+      "sound": "minecraft:entity.generic.drink",
+      "has_consume_particles": false,
+      "on_consume_effects": [
+        {
+          "sound": "minecraft:item.ominous_bottle.dispose",
+          "type": "minecraft:play_sound"
+        }
+      ]
+    }
+  },
+  "absorption_index": 17
+}

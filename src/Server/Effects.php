@@ -48,10 +48,15 @@ trait Effects
             }
             $new = $current;
         }
+        $upgraded = $current === null || $amplifier > ($c->effects[$effect]['amplifier'] ?? -1);
         $c->effects[$effect] = $new;
         // onEffectAdded blends the new effect in; onEffectUpdated does not.
         $c->send($this->version, 'update_mob_effect', $this->effectPacket($c, $effect, $current === null));
         $this->syncEffectAttributes($c, $effect);
+        if ($upgraded && $effect === 'minecraft:absorption') {
+            // AbsorptionMobEffect.onEffectStarted: at least four hearts' worth per level.
+            $this->setAbsorption($c, max($c->absorption, 4.0 * ($new['amplifier'] + 1)));
+        }
         return true;
     }
 
@@ -63,6 +68,10 @@ trait Effects
         unset($c->effects[$effect]);
         $c->send($this->version, 'remove_mob_effect', Binary::writeVarInt($c->entityId) . Binary::writeVarInt($this->effectDefinitions()[$effect]['id']));
         $this->syncEffectAttributes($c, $effect);
+        // LivingEntity.refreshDirtyAttributes clamps absorption and health to their new maximums.
+        if ($effect === 'minecraft:absorption' && $c->absorption > 0.0) {
+            $this->setAbsorption($c, 0.0);
+        }
         return true;
     }
 
@@ -75,32 +84,25 @@ trait Effects
             . Binary::writeVarInt($instance['amplifier']) . Binary::writeVarInt($instance['duration']) . chr($flags);
     }
 
-    /** The synchronized attributes an effect modifies, with every active effect's modifier on them. */
+    /**
+     * MobEffect.removeAttributeModifiers and addAttributeModifiers: the effect's modifiers are
+     * removed and, while it is active, added again for its level, then the synchronized ones
+     * are sent.
+     */
     private function syncEffectAttributes(Client $c, string $effect): void
     {
-        $definitions = $this->effectDefinitions();
-        $synced = $this->version->catalog->mobs['sync_attributes'];
-        $attributes = [];
-        foreach ($definitions[$effect]['attributes'] as $attribute => $_) {
+        $names = [];
+        foreach ($this->effectDefinitions()[$effect]['attributes'] as $attribute => $modifier) {
             $name = substr($attribute, 10);
-            if (!in_array($name, $synced, true)) {
-                continue;
+            unset($c->attributeModifiers[$name][$modifier['id']]);
+            if (isset($c->effects[$effect])) {
+                // AttributeTemplate.create: the amount per level, times the level.
+                $amount = $modifier['amounts'][0] * ($c->effects[$effect]['amplifier'] + 1);
+                $c->attributeModifiers[$name][$modifier['id']] = [$amount, ['add_value' => 0, 'add_multiplied_base' => 1, 'add_multiplied_total' => 2][$modifier['operation']], false];
             }
-            $modifiers = [];
-            foreach ($c->effects as $active => $instance) {
-                $modifier = $definitions[$active]['attributes'][$attribute] ?? null;
-                if ($modifier !== null) {
-                    // AttributeTemplate.create: the amount per level, times the level.
-                    $amount = $modifier['amounts'][0] * ($instance['amplifier'] + 1);
-                    $modifiers[] = [$modifier['id'], $amount, ['add_value' => 0, 'add_multiplied_base' => 1, 'add_multiplied_total' => 2][$modifier['operation']]];
-                }
-            }
-            $base = $this->version->catalog->mobs['entities']['player']['attributes'][$name];
-            $attributes[] = [$name, $name === 'movement_speed' ? (float) unpack('G', pack('G', 0.1))[1] : (float) $base, $modifiers];
+            $names[] = $name;
         }
-        if ($attributes !== []) {
-            $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $c->entityId, $attributes));
-        }
+        $this->syncPlayerAttributes($c, $names);
     }
 
     /**
@@ -149,8 +151,8 @@ trait Effects
     {
         switch ($effect) {
             case 'minecraft:regeneration':
-                if ($c->health < 20) {
-                    $c->health = min(20.0, $c->health + 1.0);
+                if ($c->health < $this->maxHealth($c)) {
+                    $c->health = min($this->maxHealth($c), $c->health + 1.0);
                     $this->health($c);
                 }
                 return;
@@ -167,7 +169,7 @@ trait Effects
                 $c->exhaustion += 0.005 * ($amplifier + 1);
                 return;
             case 'minecraft:instant_health':
-                $c->health = min(20.0, $c->health + max(4 << $amplifier, 0));
+                $c->health = min($this->maxHealth($c), $c->health + max(4 << $amplifier, 0));
                 $this->health($c);
                 return;
             case 'minecraft:instant_damage':
@@ -179,6 +181,64 @@ trait Effects
                 $c->saturation = min((float) $c->food, $c->saturation + ($amplifier + 1) * 2.0);
                 $this->health($c);
                 return;
+        }
+    }
+
+    /** LivingEntity.getMaxHealth: the max_health attribute as a float. */
+    private function maxHealth(Client $c): float
+    {
+        return (float) unpack('G', pack('G', $this->playerAttribute($c, 'max_health')))[1];
+    }
+
+    /** Player.setAbsorptionAmount, shown to the player and those tracking them. */
+    private function setAbsorption(Client $c, float $amount): void
+    {
+        $c->absorption = max(0.0, $amount);
+        $payload = Binary::writeVarInt($c->entityId) . chr($this->consumables()['absorption_index']) . Binary::writeVarInt(3) . pack('G', $c->absorption) . "\xff";
+        foreach ($this->players() as $player) {
+            if ($player === $c || isset($player->entities[$c->entityId])) {
+                $player->send($this->version, 'set_entity_data', $payload);
+            }
+        }
+    }
+
+    /** @return array{items: array<string, array>, absorption_index: int} */
+    private function consumables(): array
+    {
+        static $consumables = null;
+        return $consumables ??= json_decode((string) file_get_contents($this->version->directory . '/consumables.json'), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Consumable.onConsume: the item's consume effects. Random teleports and sounds are not
+     * modelled.
+     */
+    private function applyConsumeEffects(Client $c, string $item): void
+    {
+        foreach ($this->consumables()['items'][$item]['on_consume_effects'] ?? [] as $effect) {
+            switch ($effect['type']) {
+                case 'minecraft:apply_effects':
+                    if (mt_rand() / (mt_getrandmax() + 1) >= ($effect['probability'] ?? 1.0)) {
+                        break;
+                    }
+                    foreach ($effect['effects'] as $instance) {
+                        $this->giveEffect($c, $instance['id'], (int) ($instance['duration'] ?? 0), (int) ($instance['amplifier'] ?? 0), (bool) ($instance['ambient'] ?? false), (bool) ($instance['show_particles'] ?? true), (bool) ($instance['show_icon'] ?? true));
+                    }
+                    break;
+                case 'minecraft:remove_effects':
+                    $ids = $effect['effects'];
+                    foreach (is_array($ids) ? $ids : [$ids] as $id) {
+                        foreach (str_starts_with($id, '#') ? array_map(static fn (string $name): string => 'minecraft:' . $name, $this->version->registryTags('minecraft:mob_effect')[substr($id, 1)] ?? []) : [$id] as $remove) {
+                            $this->removeEffect($c, $remove);
+                        }
+                    }
+                    break;
+                case 'minecraft:clear_all_effects':
+                    foreach (array_keys($c->effects) as $active) {
+                        $this->removeEffect($c, $active);
+                    }
+                    break;
+            }
         }
     }
 

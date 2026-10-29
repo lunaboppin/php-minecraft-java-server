@@ -52,11 +52,12 @@ final class Packets
         return $uuid . Binary::writeString($name, 16) . self::profileProperties($properties) . $session;
     }
 
-    public static function playLogin(Version $v, int $entityId, int $maxPlayers, int $view, int $gameMode = 1, bool $flat = true, int $hashedSeed = 0, string $dimension = 'overworld', array $levels = ['overworld'], ?int $simulation = null): string
+    public static function playLogin(Version $v, int $entityId, int $maxPlayers, int $view, int $gameMode = 1, bool $flat = true, int $hashedSeed = 0, string $dimension = 'overworld', array $levels = ['overworld'], ?int $simulation = null, bool $reducedDebugInfo = false, bool $immediateRespawn = false, bool $limitedCrafting = false): string
     {
         return pack('N', $entityId) . "\0" . Binary::writeVarInt(count($levels)) . implode('', array_map(static fn (string $key): string => Binary::writeString('minecraft:' . $key), $levels))
             . Binary::writeVarInt($maxPlayers) . Binary::writeVarInt($view) . Binary::writeVarInt($simulation ?? $view)
-            . "\0\1\0" . Binary::writeVarInt($v->registryId('dimension_type', $dimension))
+            // reducedDebugInfo, showDeathScreen (unless respawning immediately) and doLimitedCrafting.
+            . chr((int) $reducedDebugInfo) . chr((int) !$immediateRespawn) . chr((int) $limitedCrafting) . Binary::writeVarInt($v->registryId('dimension_type', $dimension))
             . Binary::writeString('minecraft:' . $dimension) . pack('J', $hashedSeed)
             . Binary::writeVarInt($gameMode) . "\0\0" . chr((int) $flat) . "\0\0" . Binary::writeVarInt($dimension === 'the_nether' ? 32 : ($dimension === 'the_end' ? 0 : 63)) . "\0\0";
     }
@@ -261,9 +262,10 @@ final class Packets
         return Nbt::component(['text' => $motd]) . "\0";
     }
 
-    public static function damageEvent(Version $version, int $id, int $cause = -1): string
+    /** ClientboundDamageEventPacket: the damage type, cause and direct entity ids (plus one), and no position. */
+    public static function damageEvent(Version $version, int $id, int $cause = -1, string $type = 'player_attack'): string
     {
-        return Binary::writeVarInt($id) . Binary::writeVarInt($version->registryId('damage_type', 'player_attack')) . Binary::writeVarInt($cause + 1) . Binary::writeVarInt($cause + 1) . "\0";
+        return Binary::writeVarInt($id) . Binary::writeVarInt($version->registryId('damage_type', $type)) . Binary::writeVarInt($cause + 1) . Binary::writeVarInt($cause + 1) . "\0";
     }
 
     public static function hurtAnimation(int $id, float $yaw): string

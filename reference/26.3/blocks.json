@@ -3304,6 +3304,12 @@
     "zombified_piglin": 158
   },
   "sounds": {
-    "entity.player.levelup": 1321
+    "entity.player.levelup": 1321,
+    "entity.player.hurt": 1316,
+    "entity.player.hurt_drown": 1317,
+    "entity.player.hurt_freeze": 1318,
+    "entity.player.hurt_on_fire": 1319,
+    "entity.player.hurt_sweet_berry_bush": 1320,
+    "entity.player.death": 1315
   }
 }

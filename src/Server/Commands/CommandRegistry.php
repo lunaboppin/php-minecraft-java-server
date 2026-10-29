@@ -56,6 +56,10 @@ final class CommandRegistry
             new CommandDefinition('scoreboard', 'executeScoreboard', true),
             new CommandDefinition('team', 'executeTeam', true),
             new CommandDefinition('effect', 'executeEffect', true),
+            new CommandDefinition('playsound', 'executePlaySound', true),
+            new CommandDefinition('stopsound', 'executeStopSound', true),
+            new CommandDefinition('rotate', 'executeRotate', true),
+            new CommandDefinition('attribute', 'executeAttribute', true),
         ];
     }
 

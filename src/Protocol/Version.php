@@ -68,6 +68,7 @@ final class Version
             'minecraft:block' => array_keys($this->catalog->blocks),
             'minecraft:item' => array_flip($this->blocks['items']),
             'minecraft:entity_type' => array_flip($this->blocks['entity_types']),
+            'minecraft:mob_effect' => array_combine(array_column($effects = $this->json('mob-effects.json')['effects'], 'id'), array_map(static fn (string $name): string => substr($name, 10), array_keys($effects))),
             // Synchronized registries are numbered in their dynamic-registries order.
             default => array_map(static fn (string $name): string => str_starts_with($name, 'minecraft:') ? substr($name, 10) : $name, $this->dynamic[$registry] ?? throw new \InvalidArgumentException('Unsupported tag registry ' . $registry)),
         };
