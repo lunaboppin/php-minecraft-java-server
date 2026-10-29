@@ -277,6 +277,10 @@ SCRIPT = [
     ('damage @e[type=pig,limit=1] 3 in_fire', False), ('damage @e[type=pig,limit=1] 100 fall', False), ('damage @e[type=pig,limit=1] 1', False),
     ('summon chicken 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=chicken,limit=1] 1 fall', False),
     ('!quiet kill @e[type=!player]', False),
+    # A dropped item has 5 health, truncated after each hit, and goes at 0; the operator stands clear of it.
+    ('!quiet tp @s 0 110 6', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
+    ('damage @e[type=item,limit=1] 2', False), ('damage @e[type=item,limit=1] 2.9 in_fire', False), ('damage @e[type=item,limit=1] 1', False),
+    ('damage @e[type=item,limit=1] 1', False),
     ('list', False),
 ]
 
