@@ -128,6 +128,8 @@ Set `operators` in `server.json` to the usernames that should have administrativ
 
 As on a vanilla dedicated server, `spawnProtection` (default 16, the `spawn-protection` default) stops players who are not operators from breaking or using blocks whose x or z lies within that many blocks of the world spawn. They see vanilla's red `build.spawn_protection` notice instead. It applies only in the Overworld and only while at least one operator is set; 0 turns it off. `tests/spawn-protection.py` compares it with the official server.
 
+New players, and players respawning without a spawn of their own, start at a random safe column within the `respawn_radius` game rule (default 10) of the world spawn, as `PlayerSpawnFinder` places them. The radius is narrowed by the world border, and adventure-mode worlds only lift the spawn clear of blocks. `tests/spawn-scatter.py` checks the same rules on the official server. `initialGameRules` in `server.json` (an object of rule names to values, such as `{"respawn_radius": "0"}`) gives a new world's stored game rules before anyone joins. The test suites use it so that players start at the spawn itself.
+
 Operator commands include:
 
 ```text

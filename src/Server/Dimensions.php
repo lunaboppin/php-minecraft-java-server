@@ -172,7 +172,7 @@ trait Dimensions
         }
         if ($name === 'end_portal') {
             $target = $c->dimension === 'the_end' ? 'overworld' : 'the_end';
-            $this->changeDimension($c, $target, $target === 'overworld' ? ($c->personalSpawn ?? $this->worlds['overworld']->spawn()) : null);
+            $this->changeDimension($c, $target, $target === 'overworld' ? ($c->personalSpawn ?? $this->sharedSpawn()) : null);
             return;
         }
         if ($c->dimension === 'the_end') {

@@ -261,7 +261,8 @@ def server(config):
     with tempfile.TemporaryDirectory(prefix='php-minecraft-server-') as temp:
         cfg = Path(temp) / 'server.json'
         # Scenarios build near spawn as non-operators, like the vanilla references run with spawn-protection=0.
-        cfg.write_text(json.dumps({'logDirectory':str(Path(temp)/'logs'),'spawnProtection':0,**config}))
+        # Scenarios expect players at the spawn itself; vanilla's default respawn_radius scatters them.
+        cfg.write_text(json.dumps({'logDirectory':str(Path(temp)/'logs'),'spawnProtection':0,'initialGameRules':{'respawn_radius':'0'},**config}))
         error = open(Path(temp) / 'stderr.log', 'w+')
         proc = subprocess.Popen(['php', str(ROOT / 'bin/server.php'), '--config=' + str(cfg)], cwd=ROOT,
                                 stdout=subprocess.PIPE, stderr=error, text=True)

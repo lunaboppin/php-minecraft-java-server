@@ -14,6 +14,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use PlayerSpawning;
+
     use InventoryManagement;
 
     use Entities;
@@ -82,6 +84,9 @@ final class Server
         $this->initializeAuthentication($sessions);
         $this->world = new World($version, $config->worldPath, $config->generator, $config->seed, 'overworld', $config->vanillaTerrain);
         $this->worlds['overworld'] = $this->world;
+        if ((array) $config->initialGameRules !== [] && $this->world->setting('gameRules') === null) {
+            $this->world->setting('gameRules', (array) $config->initialGameRules);
+        }
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
             $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension);

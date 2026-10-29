@@ -46,8 +46,9 @@ trait Survival
     private function restorePlayer(Client $c): void
     {
         $c->gameMode = $this->config->defaultGameMode;
-        [$c->x, $c->y, $c->z] = $this->world->spawn();
         $data = $this->worlds['overworld']->loadPlayer($c->uuid, $c->authenticated);
+        // A new player starts where PlayerSpawnFinder puts them around the world spawn.
+        [$c->x, $c->y, $c->z] = $data === null ? $this->sharedSpawn() : $this->world->spawn();
         if ($data === null) {
             return;
         }
@@ -340,7 +341,7 @@ trait Survival
         // The respawned player applies its equipment's attribute modifiers afresh.
         $c->equipmentModifierStacks = [];
         $this->applyEquipmentAttributes($c, $this->playerEquipment($c));
-        $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->worlds['overworld']->spawn(), true);
+        $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->sharedSpawn(), true);
     }
 
     private function miningTicks(Client $c, int $state): int
