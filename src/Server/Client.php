@@ -15,6 +15,11 @@ final class Client
     public int $food = 20;
     public float $saturation = 5;
     public float $exhaustion = 0;
+    /** FoodData.tickTimer, and the ticks since the player was created (Entity.tickCount). */
+    public int $foodTimer = 0;
+    public int $livingTicks = 0;
+    /** Health, food and whether saturation was empty, as last sent. */
+    public array $lastSentVitals = [];
     public float $fallDistance = 0;
     public int $air = 300;
     public int $fireTicks = 0;

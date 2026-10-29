@@ -69,8 +69,16 @@ public class ExportReference {
         mapped.addAll(staticRegs);
         var access = new RegistryAccess.ImmutableRegistryAccess(mapped).freeze();
         var gameplay=new JsonObject();var flags=new JsonArray();var blockInfo=new JsonObject();var items=new JsonObject();
+        // The default suffocation predicate reads the causes_suffocation tag, unbound here: bit 512
+        // marks blocks keeping it, and bit 256 is any other block's own predicate.
+        var propertiesField=net.minecraft.world.level.block.state.BlockBehaviour.class.getDeclaredField("properties");propertiesField.setAccessible(true);
+        var suffocationField=net.minecraft.world.level.block.state.BlockBehaviour.Properties.class.getDeclaredField("isSuffocating");suffocationField.setAccessible(true);
+        var defaultSuffocation=suffocationField.get(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of());
         for(var state:Block.BLOCK_STATE_REGISTRY) {
-            flags.add((state.isAir()?1:0) | (state.isSolid()?2:0) | (!state.getFluidState().isEmpty()?4:0) | (state.canOcclude()?8:0) | (state.getLightEmission()<<4));
+            var defaultPredicate=suffocationField.get(propertiesField.get(state.getBlock()))==defaultSuffocation;
+            flags.add((state.isAir()?1:0) | (state.isSolid()?2:0) | (!state.getFluidState().isEmpty()?4:0) | (state.canOcclude()?8:0) | (state.getLightEmission()<<4)
+                | (!defaultPredicate && state.isSuffocating(net.minecraft.world.level.EmptyBlockGetter.INSTANCE,net.minecraft.core.BlockPos.ZERO)?256:0)
+                | (defaultPredicate?512:0));
         }
         for(var block:BuiltInRegistries.BLOCK) {
             var state=block.defaultBlockState();var info=new JsonObject();
