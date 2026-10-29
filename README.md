@@ -70,7 +70,7 @@ The generator name, seed, and algorithm version are saved in the database. **Use
 
 ### Vanilla Overworld terrain
 
-Set `"vanillaTerrain": true` to generate the Overworld and the Nether with the official Minecraft 26.3 pipeline, ported to PHP in `src/World/Vanilla`. A given seed then produces vanilla terrain: noise-router shapes and caves, aquifers, multi-noise biomes, surface rules, ore veins, carvers and the decoration features. Those features include ores, trees, vegetation, lakes, lush-cave patches, monster rooms, geodes and freezing. Structures are not generated yet. See [the worldgen evidence](tools/WORLDGEN.md) for what is checked against the official server.
+Set `"vanillaTerrain": true` to generate the Overworld, the Nether and the End with the official Minecraft 26.3 pipeline, ported to PHP in `src/World/Vanilla`. A given seed then produces vanilla terrain: noise-router shapes and caves, aquifers, multi-noise biomes, surface rules, ore veins, carvers and the decoration features. Those features include ores, trees, vegetation, lakes, lush-cave patches, monster rooms, geodes and freezing. Structures are not generated yet. See [the worldgen evidence](tools/WORLDGEN.md) for what is checked against the official server.
 
 Each chunk takes about a second of PHP, so `generationWorkers` background processes (default 3) generate chunks ahead of the players. A chunk is sent once it and its eight neighbours are decorated. Chunks near players come first. When no chunk is wanted, the workers generate the area within `pregenerateRadius` chunks of spawn (default 32; 0 turns it off), so that area loads straight away. Generated chunks are stored in the world database (`vanilla_chunks`), about 35 KB each; player edits overlay them as before.
 
@@ -94,13 +94,13 @@ Every server has three separately saved worlds:
 | --- | --- | --- |
 | Overworld | Continents, rivers, trees, caves, ores; Y=-64…319 | Configured `worldPath` |
 | Nether | Lava seas, bedrock floor/roof, five biomes, quartz/gold ores, ancient debris, giant fungi, roots and glowstone; Y=0…255 | `<worldPath>.the_nether.sqlite` |
-| End | Central island, surrounding void, outer islands, chorus plants, obsidian pillars, arrival platform and exit fountain; Y=0…255 | `<worldPath>.the_end.sqlite` |
+| End | Central island, surrounding void, outer islands, chorus plants, obsidian pillars, arrival platform and exit fountain (vanilla islands, spikes and exit podium with `vanillaTerrain`); Y=0…255 | `<worldPath>.the_end.sqlite` |
 
 Use **`/dimension overworld|the_nether|the_end`** as an operator. `/tp player` follows that player's dimension. Travel retains your inventory, health and mode; reconnecting restores your saved dimension. Death returns you to your Overworld respawn point. Blocks, containers, dropped items, animals, lighting and nearby player entities are scoped to their dimension.
 
 Build an obsidian frame with an interior from 2×3 to 21×21 blocks and use flint and steel on its bottom interior to activate a Nether portal. Survival players wait four seconds inside; creative players travel immediately after cooldown. Nether travel scales X/Z by 8:1, reuses registered nearby portals, and constructs an arrival frame when needed. Breaking a portal block or its adjacent frame collapses the connected interior. A cooldown prevents immediate return loops; leave the arrival portal before entering again.
 
-An inward-facing ring of twelve End portal frames activates when its final Eye of Ender is inserted. Frames currently require creative items or commands because strongholds are not generated. The End's central exit fountain returns you to the Overworld. Water buckets cannot place water in the Nether; beds only set spawn in the Overworld. Bed explosions, respawn anchors, portal travel for mobs, end gateways, dragon/crystal encounters and credits are not implemented. Portal search uses this server's saved portal list, rather than vanilla's full portal-search algorithm.
+An inward-facing ring of twelve End portal frames activates when its final Eye of Ender is inserted. Frames currently require creative items or commands because strongholds are not generated. The End's central exit fountain returns you to the Overworld. With `vanillaTerrain` on, the End has vanilla islands, spikes and chorus plants. Its exit portal is already open, as it would be after the dragon's defeat. Water buckets cannot place water in the Nether; beds only set spawn in the Overworld. Bed explosions, respawn anchors, portal travel for mobs, end gateways, dragon/crystal encounters and credits are not implemented. Portal search uses this server's saved portal list, rather than vanilla's full portal-search algorithm.
 
 ## Gameplay
 

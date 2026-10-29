@@ -18,8 +18,15 @@ final class BiomeSource
     /** @var array<string, list<string>> */
     private array $chunks = [];
 
+    /** TheEndBiomeSource replaces the climate search with island height thresholds. */
+    private readonly bool $end;
+
     public function __construct(private readonly OverworldSettings $settings, string $preset = 'overworld')
     {
+        $this->end = $preset === 'end';
+        if ($this->end) {
+            return;
+        }
         $rows = json_decode((string) file_get_contents($settings->directory . '/biome-parameters.json'), true, 512, JSON_THROW_ON_ERROR)[$preset];
         $leaves = [];
         foreach ($rows as $row) {
@@ -190,6 +197,9 @@ final class BiomeSource
     /** BiomeSource.createUncachedResolver: climate sampled point by point without caches. */
     public function uncached(int $quartX, int $quartY, int $quartZ): string
     {
+        if ($this->end) {
+            return $this->endBiome($quartX, $quartY, $quartZ);
+        }
         $router = $this->settings->json['noise_router'];
         $context = new SamplerContext(false);
         $climate = [];
@@ -197,6 +207,24 @@ final class BiomeSource
             $climate[] = $this->settings->state->sampler($router[$name])->value($context, $quartX << 2, $quartY << 2, $quartZ << 2);
         }
         return $this->find($climate);
+    }
+
+    /** TheEndBiomeSource.getNoiseBiome: the main island within 64 chunks, then by the island height at the chunk's centre. */
+    private function endBiome(int $quartX, int $quartY, int $quartZ): string
+    {
+        $chunkX = $quartX >> 2;
+        $chunkZ = $quartZ >> 2;
+        if ($chunkX * $chunkX + $chunkZ * $chunkZ <= 4096) {
+            return 'the_end';
+        }
+        $height = $this->settings->state->sampler($this->settings->json['noise_router']['erosion'])
+            ->value(new SamplerContext(false), ($chunkX * 2 + 1) * 8, $quartY << 2, ($chunkZ * 2 + 1) * 8);
+        return match (true) {
+            $height > 0.25 => 'end_highlands',
+            $height >= -0.0625 => 'end_midlands',
+            $height < -0.21875 => 'small_end_islands',
+            default => 'end_barrens',
+        };
     }
 
     /** @return list<string> the distinct biomes of a chunk */
@@ -214,6 +242,17 @@ final class BiomeSource
      */
     public function chunk(int $chunkX, int $chunkZ): array
     {
+        if ($this->end) {
+            $biomes = [];
+            for ($y = 0, $layers = intdiv($this->settings->height, 4); $y < $layers; ++$y) {
+                for ($z = 0; $z < 4; ++$z) {
+                    for ($x = 0; $x < 4; ++$x) {
+                        $biomes[($y << 4) | ($z << 2) | $x] = $this->endBiome(($chunkX << 2) + $x, ($this->settings->minY >> 2) + $y, ($chunkZ << 2) + $z);
+                    }
+                }
+            }
+            return $biomes;
+        }
         $router = $this->settings->json['noise_router'];
         $state = $this->settings->state;
         $context = new SamplerContext();

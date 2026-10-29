@@ -44,6 +44,8 @@ final class Decorator
 
     private ?Nether $nether = null;
 
+    private ?End $end = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -224,6 +226,8 @@ final class Decorator
                 return $this->environmentScan($modifier, $region, $position);
             case 'cuboid':
                 return self::cuboid($modifier, $random, $position);
+            case 'fixed_placement':
+                return array_values(array_filter($modifier['positions'], static fn (array $p): bool => $p[0] >> 4 === $x >> 4 && $p[2] >> 4 === $z >> 4));
             case 'randomly_selected':
                 return $this->modify($modifier['placements'][$random->nextInt(count($modifier['placements']))], $region, $random, $position, $top);
         }
@@ -401,6 +405,16 @@ final class Decorator
                 return ($this->nether ??= new Nether($this))->projectedPatchySquare($feature, $region, $random, $x, $y, $z);
             case 'stepped_column_cluster':
                 return ($this->nether ??= new Nether($this))->steppedColumnCluster($feature, $region, $random, $x, $y, $z);
+            case 'end_spike':
+                return ($this->end ??= new End($this))->spike($region, $random, $x, $z);
+            case 'end_island':
+                return ($this->end ??= new End($this))->island($region, $random, $x, $y, $z);
+            case 'end_gateway':
+                return ($this->end ??= new End($this))->gateway($region, $x, $y, $z);
+            case 'end_platform':
+                return ($this->end ??= new End($this))->platform($region, $x, $y, $z);
+            case 'chorus_plant':
+                return ($this->end ??= new End($this))->chorus($region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }

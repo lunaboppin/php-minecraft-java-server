@@ -86,7 +86,7 @@ final class Server
         $this->worlds['overworld'] = $this->world;
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
-            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $dimension === 'the_nether' && $config->vanillaTerrain);
+            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $config->vanillaTerrain);
         }
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
@@ -126,8 +126,8 @@ final class Server
         }
         [$spawnX, , $spawnZ] = $this->world->spawn();
         $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
-        if (($this->worlds['the_nether'] ?? null)?->vanilla !== null) {
-            $pregenerate[] = $this->config->worldPath . '.the_nether.sqlite';
+        foreach (['the_nether', 'the_end'] as $dimension) {
+            $pregenerate[] = ($this->worlds[$dimension] ?? null)?->vanilla !== null ? $this->config->worldPath . '.' . $dimension . '.sqlite' : '-';
         }
         $this->generationWorkerCommand = [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate];
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
@@ -142,6 +142,8 @@ final class Server
         for ($dz = -3; $dz <= 3; ++$dz) {
             for ($dx = -3; $dx <= 3; ++$dx) {
                 $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)), 600.0);
+                // The End's arrival platform, so players coming through a portal land on generated islands.
+                ($this->worlds['the_end'] ?? null)?->requestGeneration(6 + $dx, $dz, 100 + max(abs($dx), abs($dz)), 600.0);
             }
         }
     }
@@ -1365,6 +1367,7 @@ final class Server
         if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
             $this->generationWorkersCheckedAt = $now;
             $this->checkGenerationWorkers();
+            $this->placeEndExitPortal();
         }
         foreach ($this->clients as $id => $c) {
             if ($c->closing) {

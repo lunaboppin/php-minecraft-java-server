@@ -8,14 +8,14 @@ use PhpMinecraftJavaServer\World\Vanilla\OverworldGenerator;
 
 // Complete undecorated chunks from the official generator (reference/26.3/worldgen-chunks.json),
 // stage by stage: biomes, noise fill with aquifers, material rules and carvers, for Overworld and
-// Nether chunks.
+// Nether and End chunks.
 $fixture = json_decode((string) file_get_contents(__DIR__ . '/../reference/26.3/worldgen-chunks.json'), true, 512, JSON_THROW_ON_ERROR);
 $generators = [];
 $failures = [];
 $checks = 0;
 foreach ($fixture['chunks'] as $expected) {
     $dimension = $expected['dimension'] ?? 'overworld';
-    $generator = $generators[$expected['seed'] . $dimension] ??= new OverworldGenerator((int) $expected['seed'], __DIR__ . '/../reference/26.3', $dimension === 'the_nether' ? 'nether' : 'overworld');
+    $generator = $generators[$expected['seed'] . $dimension] ??= new OverworldGenerator((int) $expected['seed'], __DIR__ . '/../reference/26.3', match ($dimension) { 'the_nether' => 'nether', 'the_end' => 'end', default => 'overworld' });
     $chunk = $generator->chunk($expected['x'], $expected['z'], true);
     $actual = [
         'biomes' => $chunk['biomes'],
@@ -33,4 +33,4 @@ foreach ($fixture['chunks'] as $expected) {
 if ($failures !== []) {
     throw new RuntimeException(implode("\n", $failures));
 }
-echo 'PASS: ' . $checks . ' official Overworld and Nether chunk stages across ' . count($fixture['chunks']) . " chunks and two seeds\n";
+echo 'PASS: ' . $checks . ' official Overworld, Nether and End chunk stages across ' . count($fixture['chunks']) . " chunks and two seeds\n";

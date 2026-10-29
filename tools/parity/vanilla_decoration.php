@@ -33,7 +33,7 @@ $centerZ = (int) ($argv[4] ?? 0);
 $reference = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
 $dimension = $reference['dimension'] ?? 'overworld';
 $version = new Version();
-$generator = new OverworldGenerator($seed, $version->directory, $dimension === 'the_nether' ? 'nether' : 'overworld');
+$generator = new OverworldGenerator($seed, $version->directory, match ($dimension) { 'the_nether' => 'nether', 'the_end' => 'end', default => 'overworld' });
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
 $decorator = new Decorator($blocks, new BiomeClimate($version->directory . '/worldgen'), $version->directory . '/worldgen', $dimension);
 $chunks = [];
@@ -64,7 +64,8 @@ foreach ($reference['chunks'] as $official) {
     $total = 0;
     foreach ($names as $i => $name) {
         $official_name = preg_replace('/\[.*$/', '', $name);
-        $name = $blocks->name($mine[$i]);
+        // Above the noise height (the End's 128 of 256) nothing is generated.
+        $name = isset($mine[$i]) ? $blocks->name($mine[$i]) : 'air';
         if ($official_name !== $name) {
             ++$total;
             $kinds["$official_name<-$name"] = ($kinds["$official_name<-$name"] ?? 0) + 1;

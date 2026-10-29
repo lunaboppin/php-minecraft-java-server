@@ -140,6 +140,66 @@
    "noise": "a0915e5149576c1caf9498e63a4d9ce80a1b8c82baa7058e5d4559a216d75859",
    "surface": "27509778d71e552718ce6aa7ea74299edb7c585a92dc659967d6a6982370c5ff",
    "carvers": "80ab1f2405b245d895c7c6752f11974effe121f3ba2cc20ebc58822eaaa07e02"
+  },
+  {
+   "seed": "42",
+   "x": 0,
+   "z": 0,
+   "biomes": "1a3af5a9dd575714275c7efc262ec0c1e2f37e0f7d8e8bed32cca298079f06d6",
+   "dimension": "the_end",
+   "noise": "9a061e9bb33a4bbcda2297dd3f2e002aa88483ece59b7704d07a4058b98ade04",
+   "surface": "9a061e9bb33a4bbcda2297dd3f2e002aa88483ece59b7704d07a4058b98ade04",
+   "carvers": "9a061e9bb33a4bbcda2297dd3f2e002aa88483ece59b7704d07a4058b98ade04"
+  },
+  {
+   "seed": "42",
+   "x": -1,
+   "z": -1,
+   "biomes": "1a3af5a9dd575714275c7efc262ec0c1e2f37e0f7d8e8bed32cca298079f06d6",
+   "dimension": "the_end",
+   "noise": "bbf927fb72693371834cc905269d4c5de36bdfde0b19c11a96e1234415ab21cf",
+   "surface": "bbf927fb72693371834cc905269d4c5de36bdfde0b19c11a96e1234415ab21cf",
+   "carvers": "bbf927fb72693371834cc905269d4c5de36bdfde0b19c11a96e1234415ab21cf"
+  },
+  {
+   "seed": "42",
+   "x": 3,
+   "z": 2,
+   "biomes": "1a3af5a9dd575714275c7efc262ec0c1e2f37e0f7d8e8bed32cca298079f06d6",
+   "dimension": "the_end",
+   "noise": "d4263691e7a8ae66fed1bed2090fb248841a9bffcf1abed8ccb709597d466662",
+   "surface": "d4263691e7a8ae66fed1bed2090fb248841a9bffcf1abed8ccb709597d466662",
+   "carvers": "d4263691e7a8ae66fed1bed2090fb248841a9bffcf1abed8ccb709597d466662"
+  },
+  {
+   "seed": "42",
+   "x": 80,
+   "z": 10,
+   "biomes": "2531f79c6cea6083d59c73889664e3d24ad4fb99797ce0c95e825269e221ad79",
+   "dimension": "the_end",
+   "noise": "c78ce1024bfeb1ce184d5249f63509a4aca345ca50a39c9e15886b2f3e338c41",
+   "surface": "c78ce1024bfeb1ce184d5249f63509a4aca345ca50a39c9e15886b2f3e338c41",
+   "carvers": "c78ce1024bfeb1ce184d5249f63509a4aca345ca50a39c9e15886b2f3e338c41"
+  },
+  {
+   "seed": "42",
+   "x": -70,
+   "z": 40,
+   "biomes": "2531f79c6cea6083d59c73889664e3d24ad4fb99797ce0c95e825269e221ad79",
+   "dimension": "the_end",
+   "noise": "dff0ee0af875a3704b56a9ebedd2195de0cbb7fdd8230847ac39fb92b2c470a1",
+   "surface": "dff0ee0af875a3704b56a9ebedd2195de0cbb7fdd8230847ac39fb92b2c470a1",
+   "carvers": "dff0ee0af875a3704b56a9ebedd2195de0cbb7fdd8230847ac39fb92b2c470a1"
+  },
+  {
+   "seed": "42",
+   "x": 100,
+   "z": -100,
+   "biomes": "2531f79c6cea6083d59c73889664e3d24ad4fb99797ce0c95e825269e221ad79",
+   "dimension": "the_end",
+   "noise": "2ca2fdbfb5be9aa53ad6ea78826164c2a2e52f81c1e67581f9124aa3fabc6c1e",
+   "surface": "2ca2fdbfb5be9aa53ad6ea78826164c2a2e52f81c1e67581f9124aa3fabc6c1e",
+   "carvers": "2ca2fdbfb5be9aa53ad6ea78826164c2a2e52f81c1e67581f9124aa3fabc6c1e"
   }
  ]
 }
