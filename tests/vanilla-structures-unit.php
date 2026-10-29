@@ -47,6 +47,15 @@ foreach ([
     ++$checks;
 }
 
+// The Nether fortress at the origin: the official start's 90 pieces.
+$nether = new OverworldGenerator(42, $version->directory, 'nether');
+$fortress = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(0, 0);
+$actual = [$fortress[0]['structure'] ?? null, count($fortress[0]['pieces'] ?? []), $fortress[0]['pieces'][0]->box ?? null];
+if ($actual !== ['fortress', 90, [2, 69, 2, 20, 78, 20]]) {
+    throw new RuntimeException('Nether fortress start at 0,0: ' . json_encode($actual));
+}
+++$checks;
+
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
 $transform = new BlockTransform($blocks);
 $name = static function (int $state) use ($blocks): string {

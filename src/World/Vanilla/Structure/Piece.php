@@ -71,6 +71,7 @@ abstract class Piece
             'stronghold' => StrongholdPiece::restoreWith($piece),
             'ocean_ruin' => OceanRuin::restoreWith($piece),
             'ruined_portal' => RuinedPortal::restoreWith($piece),
+            'nether_fortress' => NetherFortressPiece::restoreWith($piece),
         };
     }
 

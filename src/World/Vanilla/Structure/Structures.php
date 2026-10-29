@@ -500,6 +500,11 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'fortress':
+                if (!$this->validBiome($structure, $cx * 16, 64, $cz * 16)) {
+                    return [];
+                }
+                return NetherFortressPiece::generate($random, $cx, $cz);
             case 'ruined_portal':
                 return $this->ruinedPortal($structure, $cx, $cz, $random);
             case 'ocean_ruin':
