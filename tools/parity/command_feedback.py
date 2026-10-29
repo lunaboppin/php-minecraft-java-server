@@ -263,11 +263,20 @@ SCRIPT = [
     ('kill @e[type=pig]', False),
     # Players paired with a tracker again receive each other's synchronized attribute instances.
     ('!quiet tp @s 0 100 0', False), ('tp @a[name=Witness] 300 100 0', False), ('tp @a[name=Witness] 1 100 0', False),
-    # A killed mob loses its scores and team once its death animation ends and it is removed.
+    # A killed mob loses its scores and team once its death animation ends and it is removed; it has
+    # no AI, so it cannot wander off the floor and fall.
     ('scoreboard objectives add dead dummy', False), ('scoreboard objectives setdisplay sidebar dead', False), ('team add gone', False),
-    ('summon pig 0 100 0', False), ('scoreboard players set @e[type=pig] dead 3', False), ('team join gone @e[type=pig]', False),
+    ('summon pig 0 100 0 {NoAI:1b}', False), ('scoreboard players set @e[type=pig] dead 3', False), ('team join gone @e[type=pig]', False),
     ('kill @e[type=pig]', False), ('scoreboard players list @e[type=pig]', False), ('scoreboard players list', False),
     ('team list gone', False), ('scoreboard objectives remove dead', False), ('team remove gone', False),
+    # A mob dropped six blocks inside a stone box takes fall damage; /damage hurts and kills mobs too.
+    # The failing /damage lines on a giant, which never spawns, wait while still recording damage events.
+    ('!quiet fill -2 99 -2 2 108 2 minecraft:stone hollow', False), ('!quiet tp @s 0 100 0', False), ('!quiet kill @e[type=!player]', False),
+    ('summon pig 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False),
+    ('damage @e[type=pig,limit=1] 2', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=pig,limit=1] 1', False),
+    ('damage @e[type=pig,limit=1] 3 in_fire', False), ('damage @e[type=pig,limit=1] 100 fall', False), ('damage @e[type=pig,limit=1] 1', False),
+    ('summon chicken 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=chicken,limit=1] 1 fall', False),
+    ('!quiet kill @e[type=!player]', False),
     ('list', False),
 ]
 
@@ -280,7 +289,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

@@ -15,7 +15,7 @@ trait DamageCommand
         if (count($arguments) < 2 || count($arguments) === 4 || count($arguments) > 5 || (count($arguments) === 5 && $arguments[3] !== 'by')) {
             throw new \InvalidArgumentException('Usage: /damage <target> <amount> [<damageType> [by <entity>]]');
         }
-        $targets = $this->selectPlayers($arguments[0], $sender);
+        $targets = $this->selectEntities($arguments[0], $sender);
         if (count($targets) !== 1) {
             throw new CommandFailure(['translate' => 'argument.entity.toomany']);
         }
@@ -37,9 +37,12 @@ trait DamageCommand
             $attacker = $attackers[0];
         }
         $target = $targets[0];
-        if (!$this->damage($target, $amount, $type, $attacker)) {
+        // Mobs take LivingEntity.hurtServer as players do; item entities are not supported yet.
+        $hurt = isset($target['client']) ? $this->damage($target['client'], $amount, $type, $attacker)
+            : (isset($target['mob']) && $this->withDimension($sender->dimension, fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)));
+        if (!$hurt) {
             throw new CommandFailure(['translate' => 'commands.damage.invulnerable']);
         }
-        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, $this->displayName($target)]], true);
+        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, $this->entityName($target)]], true);
     }
 }
