@@ -39,10 +39,11 @@ trait PlayerSpawning
             $value = ($offset + $coprime * $index) % $count;
             $x = $suggestion[0] + $value % $side - $radius;
             $z = $suggestion[2] + intdiv($value, $side) - $radius;
-            // Vanilla loads each candidate's chunk; one still generating ends the search early here.
+            // Vanilla loads each candidate's chunk. Here a chunk still generating ends the search at
+            // the world spawn itself, since its blocks would read as air.
             if (!$world->ready($x >> 4, $z >> 4)) {
                 $world->requestGeneration($x >> 4, $z >> 4, 0);
-                break;
+                return [$spawnX, $spawnY, $spawnZ];
             }
             $position = $this->levelRespawnPosition($world, $x, $z);
             if ($position !== null && $this->noCollisionNoLiquid($world, $position)) {

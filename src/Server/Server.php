@@ -668,6 +668,13 @@ final class Server
         $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
     }
 
+    /** ChunkTrackingView.isWithinDistance: the cylinder of chunks a player's view keeps, with its border. */
+    private function chunkInView(Client $c, int $x, int $z): bool
+    {
+        $view = $this->viewDistance($c);
+        return max(0, abs($x - (int) floor($c->x / 16)) - 2) ** 2 + max(0, abs($z - (int) floor($c->z / 16)) - 2) ** 2 < $view * $view;
+    }
+
     private function scheduleChunks(Client $c): void
     {
         $cx = (int) floor($c->x / 16);
