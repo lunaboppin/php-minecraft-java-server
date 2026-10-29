@@ -115,9 +115,11 @@ final class Server
         if ($this->world->vanilla === null) {
             return;
         }
+        [$spawnX, , $spawnZ] = $this->world->spawn();
+        $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
             $process = proc_open(
-                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed],
+                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate],
                 [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR],
                 $pipes,
             );
