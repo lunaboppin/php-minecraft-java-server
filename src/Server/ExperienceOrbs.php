@@ -27,6 +27,21 @@ trait ExperienceOrbs
         return $reference ??= json_decode((string) file_get_contents($this->version->directory . '/experience.json'), true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /** Orbs saved with the world come back with new network IDs. */
+    private function restoreExperienceOrbs(): void
+    {
+        foreach ($this->world->setting('experienceOrbs') ?? [] as $saved) {
+            if (!isset($saved['uuid'], $saved['value']) || ($saved['count'] ?? 1) <= 0) {
+                continue;
+            }
+            $id = $this->nextEntity++;
+            $this->experienceOrbs[$id] = ['id' => $id, 'uuid' => hex2bin($saved['uuid']), 'x' => (float) $saved['x'], 'y' => (float) $saved['y'], 'z' => (float) $saved['z'],
+                'yaw' => (float) ($saved['yaw'] ?? 0.0), 'velocity' => array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), 'value' => (int) $saved['value'],
+                'count' => (int) ($saved['count'] ?? 1), 'age' => (int) ($saved['age'] ?? 0), 'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false,
+                'following' => null, 'dirty' => true];
+        }
+    }
+
     /** ExperienceOrb.getExperienceValue: the largest orb size the amount allows. */
     private static function orbValue(int $amount): int
     {

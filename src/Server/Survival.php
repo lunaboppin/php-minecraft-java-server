@@ -108,6 +108,9 @@ trait Survival
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();
                 $this->world->setting('animals', $this->animals);
+                // ExperienceOrb.addAdditionalSaveData: value, count, age and health keep; the network ID does not.
+                $this->world->setting('experienceOrbs', array_values(array_map(static fn (array $orb): array => ['uuid' => bin2hex($orb['uuid'])]
+                    + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
