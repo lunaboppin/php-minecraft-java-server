@@ -58,7 +58,9 @@ class World
         // Enabling vanilla terrain keeps every chunk players changed, with a margin, and the
         // chunks players are standing in; all other chunks are generated again with vanilla.
         if($dimension==='overworld' && $generator==='terrain' && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaTerrain());}
-        $this->vanilla=$dimension==='overworld' && $generator==='terrain' && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed):null;
+        // The Nether recorded no generated chunks, so its edited chunks are recorded as kept instead.
+        if($dimension==='the_nether' && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaNether());}
+        $this->vanilla=(($dimension==='overworld' && $generator==='terrain') || $dimension==='the_nether') && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed,$dimension,$this->height):null;
         if($this->vanilla!==null && $this->setting('vanillaSpawnPending')){
             // The spawn surface is refined to the decorated column once the chunk exists.
             $this->setting('spawn',$this->vanilla->findSpawn());
@@ -77,7 +79,7 @@ class World
         foreach(array_keys($this->containerPositions) as $position){$p=array_map('intval',explode(':',$position));$centres[]=[$p[0]>>4,$p[2]>>4];}
         foreach($this->db->query('SELECT data FROM players') as $row){
             $player=json_decode($row['data'],true);
-            if(is_array($player) && isset($player['x'],$player['z']) && ($player['dimension']??'overworld')==='overworld'){$centres[]=[((int)floor($player['x']))>>4,((int)floor($player['z']))>>4];}
+            if(is_array($player) && isset($player['x'],$player['z']) && ($player['dimension']??'overworld')===$this->dimension){$centres[]=[((int)floor($player['x']))>>4,((int)floor($player['z']))>>4];}
         }
         $kept=[];
         foreach($centres as [$cx,$cz]){for($dz=-1;$dz<=1;++$dz){for($dx=-1;$dx<=1;++$dx){$kept[($cx+$dx).':'.($cz+$dz)]=true;}}}
@@ -92,6 +94,11 @@ class World
         if($this->setting('spawn')===null && !isset($kept['0:0'])){$this->setting('vanillaSpawnPending',true);}
         $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>$moved]);
     }
+    private function adoptVanillaNether():void {
+        $kept=$this->keptChunks();$q=$this->db->prepare('INSERT OR IGNORE INTO generation(cx,cz,legacy) VALUES(?,?,0)');
+        foreach(array_keys($kept) as $key){[$cx,$cz]=explode(':',$key);$q->execute([(int)$cx,(int)$cz]);}
+        $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>0]);
+    }
     public function setting(string $key,mixed $value=null): mixed {
         if($value!==null){$q=$this->db->prepare('INSERT INTO metadata(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');$q->execute([$key,json_encode($value,JSON_THROW_ON_ERROR)]);return $value;}
         $q=$this->db->prepare('SELECT value FROM metadata WHERE key=?');$q->execute([$key]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
@@ -99,7 +106,7 @@ class World
     public function hashedSeed():int {return unpack('P',substr(hash('sha256',pack('P',$this->seed),true),0,8))[1];}
     public function spawn():array {return $this->setting('spawn')??match($this->dimension){'the_end'=>[100.5,65.0,0.5],'the_nether'=>[0.5,72.0,0.5],default=>[0.5,$this->terrain===null?64.0:65.0,0.5]};}
     private function generatorFor(int $cx,int $cz):TerrainGenerator|DimensionGenerator|Vanilla\ChunkStore|null {
-        if($this->legacyTerrain===null){return $this->terrain;}
+        if($this->legacyTerrain===null && ($this->vanilla??null)===null){return $this->terrain;}
         $key=$cx.':'.$cz;if(isset($this->generationCache[$key])){return $this->generationCache[$key];}
         $q=$this->db->prepare('SELECT legacy FROM generation WHERE cx=? AND cz=?');$q->execute([$cx,$cz]);$legacy=$q->fetchColumn();
         if($legacy===false){$legacy=$this->vanilla!==null?2:0;$q=$this->db->prepare('INSERT INTO generation(cx,cz,legacy) VALUES(?,?,?)');$q->execute([$cx,$cz,$legacy]);}

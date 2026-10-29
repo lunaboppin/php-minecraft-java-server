@@ -171,6 +171,7 @@ final class Catalog
 
     public function emission(int $state): int
     {
-        return ($this->flags[$state] ?? 0) >> 4;
+        // Bits 4-7; the suffocation bits sit above them.
+        return ($this->flags[$state] ?? 0) >> 4 & 15;
     }
 }

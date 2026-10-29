@@ -25,7 +25,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
  * Official Overworld chunks after each terrain stage: biomes, noise fill, material (surface)
  * rules and carvers, generated offline by the pinned server's own NoiseBasedChunkGenerator.
  * Structures are not placed, so chunks near structures with terrain adaptation differ from a
- * real world. Usage: output seed cx:cz [cx:cz ...]
+ * real world. Usage: output seed cx:cz [cx:cz ...]; -Ddimension=the_nether exports the Nether.
  */
 public class ExportWorldgenChunks {
     public static void main(String[] args) throws Exception {
@@ -35,7 +35,12 @@ public class ExportWorldgenChunks {
         net.minecraft.server.Bootstrap.bootStrap();
         try (var data = ReferenceWorldData.load()) {
             var access = data.access();
-            var stem = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value().overworld().orElseThrow();
+            var preset = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value();
+            var stem = switch (System.getProperty("dimension", "overworld")) {
+                case "the_nether" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.NETHER);
+                case "overworld" -> preset.overworld().orElseThrow();
+                default -> throw new IllegalArgumentException("Unsupported dimension");
+            };
             var generator = (NoiseBasedChunkGenerator) stem.generator();
             NoiseGeneratorSettings settings = generator.generatorSettings().value();
             RandomState randomState = RandomState.create(access.lookupOrThrow(Registries.NOISE), seed, settings);
@@ -64,6 +69,7 @@ public class ExportWorldgenChunks {
             var root = new JsonObject();
             root.addProperty("version", net.minecraft.SharedConstants.getCurrentVersion().id());
             root.addProperty("seed", Long.toString(seed));
+            root.addProperty("dimension", System.getProperty("dimension", "overworld"));
             var chunks = new JsonArray();
             for (int i = 2; i < args.length; ++i) {
                 String[] parts = args[i].split(":");

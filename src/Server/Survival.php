@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\Nbt;
+use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Inventory;
 
 trait Survival
@@ -119,6 +120,7 @@ trait Survival
             return;
         }
         $c->send($this->version, 'set_health', pack('G', $c->health) . Binary::writeVarInt($c->food) . pack('G', $c->saturation));
+        $c->lastSentVitals = [$c->health, $c->food, $c->saturation == 0.0];
         $this->syncPlayerMetadata($c);
         $this->syncExperience($c);
     }
@@ -501,9 +503,16 @@ trait Survival
                 $c->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x09");
             }$c->eating = null;
         }
+        // LivingEntity.baseTick: suffocating in a wall, otherwise the world border.
         if (!$c->dead && in_array($c->gameMode, [0, 2], true)) {
-            $this->borderDamage($c);
+            $eye = $c->sneaking && !$c->flying ? 1.27 : 1.62;
+            if ($this->inWall($c->x, $c->y + $eye, $c->z, 0.6)) {
+                $this->damage($c, 1.0, 'in_wall');
+            } else {
+                $this->borderDamage($c);
+            }
         }
+        $this->tickFood($c);
         if ($c->gameMode !== 0 || $this->ticks % 20 !== 0) {
             return;
         }
@@ -532,28 +541,75 @@ trait Survival
             $c->fireTicks -= 20;
             $this->damage($c, 1, 'on_fire');
         }
-        while ($c->exhaustion >= 4) {
-            $c->exhaustion -= 4;
-            if ($c->saturation > 0) {
-                $c->saturation = max(0, $c->saturation - 1);
-            } elseif ($this->config->difficulty > 0) {
-                $c->food = max(0, $c->food - 1);
+    }
+
+    /**
+     * ServerPlayer.tickRegeneration (peaceful only) and FoodData.tick, every tick after the living
+     * tick: exhaustion past 4 costs saturation or food, then saturated healing every 10 ticks,
+     * ordinary healing every 80, or starvation. Changed health or food is then sent.
+     */
+    private function tickFood(Client $c): void
+    {
+        if ($c->dead) {
+            return;
+        }
+        ++$c->livingTicks;
+        $peaceful = $this->config->difficulty === 0;
+        if ($peaceful && $this->naturalRegeneration) {
+            if ($c->livingTicks % 20 === 0) {
+                $this->heal($c, 1.0);
+                if ($c->saturation < 20.0) {
+                    $c->saturation += 1.0;
+                }
+            }
+            if ($c->livingTicks % 10 === 0 && $c->food < 20) {
+                ++$c->food;
             }
         }
-        if ($this->config->difficulty === 0) {
-            $c->food = 20;
-            if ($c->health < $this->maxHealth($c)) {
-                $c->health = min($this->maxHealth($c), $c->health + 1);
-            }
-        } elseif ($this->ticks % 80 === 0) {
-            if ($this->naturalRegeneration && $c->food >= 18 && $c->health < $this->maxHealth($c)) {
-                $c->health = min($this->maxHealth($c), $c->health + 1);
-                $c->exhaustion += 6;
-            } elseif ($c->food === 0 && ($this->config->difficulty === 3 || $c->health > ($this->config->difficulty === 1 ? 10 : 1))) {
-                $this->damage($c, 1, 'starve');
+        if ($c->exhaustion > 4.0) {
+            $c->exhaustion = Float32::round($c->exhaustion - 4.0);
+            if ($c->saturation > 0.0) {
+                $c->saturation = max(Float32::round($c->saturation - 1.0), 0.0);
+            } elseif (!$peaceful) {
+                $c->food = max($c->food - 1, 0);
             }
         }
-        $this->health($c);
+        $hurt = $c->health > 0.0 && $c->health < $this->maxHealth($c);
+        if ($this->naturalRegeneration && $c->saturation > 0.0 && $hurt && $c->food >= 20) {
+            if (++$c->foodTimer >= 10) {
+                $spent = min($c->saturation, 6.0);
+                $this->heal($c, Float32::round($spent / 6.0));
+                $c->exhaustion = min(Float32::round($c->exhaustion + $spent), 40.0);
+                $c->foodTimer = 0;
+            }
+        } elseif ($this->naturalRegeneration && $c->food >= 18 && $hurt) {
+            if (++$c->foodTimer >= 80) {
+                $this->heal($c, 1.0);
+                $c->exhaustion = min(Float32::round($c->exhaustion + 6.0), 40.0);
+                $c->foodTimer = 0;
+            }
+        } elseif ($c->food <= 0) {
+            if (++$c->foodTimer >= 80) {
+                if ($c->health > 10.0 || $this->config->difficulty === 3 || ($c->health > 1.0 && $this->config->difficulty === 2)) {
+                    $this->damage($c, 1.0, 'starve');
+                }
+                $c->foodTimer = 0;
+            }
+        } else {
+            $c->foodTimer = 0;
+        }
+        // ServerPlayer.doTick sends health when it, the food level or an empty saturation changes.
+        if ([$c->health, $c->food, $c->saturation == 0.0] !== $c->lastSentVitals) {
+            $this->health($c);
+        }
+    }
+
+    /** LivingEntity.heal: living players gain health up to their maximum. */
+    private function heal(Client $c, float $amount): void
+    {
+        if ($c->health > 0.0) {
+            $c->health = min($this->maxHealth($c), Float32::round($c->health + $amount));
+        }
     }
 
     private function useHeldItem(Client $c, int $hand): void

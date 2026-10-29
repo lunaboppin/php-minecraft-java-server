@@ -8,8 +8,9 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 /**
- * The Overworld generator's global placed-feature order for each decoration step
- * (FeatureSorter). A feature's index in its step seeds its random source.
+ * A generator's global placed-feature order for each decoration step (FeatureSorter): the
+ * Overworld's, or the Nether's with -Ddimension=the_nether. A feature's index in its step seeds
+ * its random source.
  */
 public class ExportFeatureOrder {
     public static void main(String[] args) throws Exception {
@@ -18,7 +19,12 @@ public class ExportFeatureOrder {
         net.minecraft.server.Bootstrap.bootStrap();
         try (var data = ReferenceWorldData.load()) {
             var access = data.access();
-            var generator = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value().overworld().orElseThrow().generator();
+            var preset = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value();
+            var generator = switch (System.getProperty("dimension", "overworld")) {
+                case "the_nether" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.NETHER).generator();
+                case "overworld" -> preset.overworld().orElseThrow().generator();
+                default -> throw new IllegalArgumentException("Unsupported dimension");
+            };
             var field = ChunkGenerator.class.getDeclaredField("featuresPerStep");
             field.setAccessible(true);
             var steps = (List<FeatureSorter.StepFeatureData>) ((Supplier<?>) field.get(generator)).get();

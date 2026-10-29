@@ -24,10 +24,11 @@ final class OverworldGenerator
     /** @var array<string, string> carver source chunk biomes, which neighbouring chunks share */
     private array $sourceBiomes = [];
 
-    public function __construct(int $seed, string $referenceDirectory)
+    /** @param string $settings noise settings: overworld or nether */
+    public function __construct(int $seed, string $referenceDirectory, string $settings = 'overworld')
     {
-        $this->settings = new OverworldSettings($seed, $referenceDirectory . '/worldgen');
-        $this->biomes = new BiomeSource($this->settings);
+        $this->settings = new OverworldSettings($seed, $referenceDirectory . '/worldgen', $settings);
+        $this->biomes = new BiomeSource($this->settings, $settings);
         $this->materials = new MaterialSystem($this->settings);
         $this->carvers = new Carvers($this->settings, (string) file_get_contents($referenceDirectory . '/entity-sine.bin'));
         $this->zoomSeed = BiomeClimate::zoomSeed($seed);

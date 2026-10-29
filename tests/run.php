@@ -113,10 +113,12 @@ rejects(fn () => Packets::readClientInformation(new Binary($settingsBytes . "\0"
 $wrapped = Packets::readClientInformation(new Binary(Binary::writeString('en_us') . "\xff" . Binary::writeVarInt(-1) . "\2\0" . Binary::writeVarInt(5) . "\0\1" . Binary::writeVarInt(4)));
 check($wrapped['viewDistance'] === -1 && $wrapped['chatVisibility'] === 2 && $wrapped['mainHand'] === 0 && $wrapped['particles'] === 1 && $wrapped['chatColors'] === true, 'official signed distance, wrapped enums, zero fallback arm and nonzero boolean');
 $confirmationBytes = hex2bin($f['client_teleport_confirmation']);
-check(Packets::readTeleportConfirmation(new Binary($confirmationBytes)) === ['id' => 1, 'x' => 0.5, 'y' => 64.0, 'z' => 0.5, 'yaw' => 0.0, 'pitch' => 0.0], 'official teleport confirmation including position and rotation');
+check(Packets::readTeleportConfirmation(new Binary($confirmationBytes)) === ['id' => 1, 'x' => 0.5, 'y' => 64.0, 'z' => 0.5, 'yaw' => 0.0, 'pitch' => 0.0, 'valid' => true], 'official teleport confirmation including position and rotation');
 rejects(fn () => Packets::readTeleportConfirmation(new Binary("\1")), 'legacy ID-only teleport confirmation rejected');
 rejects(fn () => Packets::readTeleportConfirmation(new Binary($confirmationBytes . "\0")), 'extra teleport data rejected');
-rejects(fn () => Packets::readTeleportConfirmation(new Binary("\1" . pack('EEEGG', NAN, 64, 0.5, 0, 0))), 'non-finite teleport rejected');
+check(!Packets::readTeleportConfirmation(new Binary("\1" . pack('EEEGG', NAN, 64, 0.5, 0, 0)))['valid'], 'NaN teleport confirmation is invalid movement');
+check(Packets::readTeleportConfirmation(new Binary("\1" . pack('EEEGG', INF, 64, 0.5, 0, 0)))['valid'], 'infinite teleport coordinates are valid, as in vanilla');
+check(!Packets::readTeleportConfirmation(new Binary("\1" . pack('EEEGG', 0.5, 64, 0.5, INF, 0)))['valid'], 'infinite teleport rotation is invalid movement');
 $uuid = hex2bin('5627dd98e6be3c21b8a8e92344183641');
 $fixtures = [
     'login_finished' => Packets::loginFinished($uuid, 'Steve', pack('JJ', 0, 1)),
@@ -257,6 +259,10 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/block-breaking.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/movement-checks.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
