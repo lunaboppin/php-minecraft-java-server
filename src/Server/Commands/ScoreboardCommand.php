@@ -191,10 +191,30 @@ trait ScoreboardCommand
                 $sources = $this->scoreHolders($arguments[4], $sender);
                 $sourceObjective = $this->objective($arguments[5]);
                 $result = 0;
+                // getOrCreatePlayerScore: missing target and source scores are created at 0 without an
+                // update, even when the operation then fails; a created score is sent once it is set.
+                $create = static function (string $holder, string $objective) use ($scoreboard): bool {
+                    if (isset($scoreboard->scores[$holder][$objective])) {
+                        return false;
+                    }
+                    $scoreboard->scores[$holder][$objective] = ['value' => 0, 'locked' => true];
+                    $scoreboard->syncHolderOrder();
+                    return true;
+                };
+                $assign = function (string $holder, string $objective, int $value, bool $created): void {
+                    if ($created) {
+                        $this->scoreboard()->scores[$holder][$objective]['value'] = $value;
+                        $this->scoreChanged($holder, $objective);
+                    } else {
+                        $this->setScore($holder, $objective, $value);
+                    }
+                };
                 foreach ($holders as $holder) {
+                    $targetCreated = $create($holder, $objective);
                     foreach ($sources as $source) {
-                        $target = $scoreboard->scores[$holder][$objective]['value'] ?? 0;
-                        $value = $scoreboard->scores[$source][$sourceObjective]['value'] ?? 0;
+                        $sourceCreated = $create($source, $sourceObjective);
+                        $target = $scoreboard->scores[$holder][$objective]['value'];
+                        $value = $scoreboard->scores[$source][$sourceObjective]['value'];
                         if (in_array($operation, ['/=', '%='], true) && $value === 0) {
                             throw new CommandFailure(['translate' => 'arguments.operation.div0']);
                         }
@@ -210,9 +230,9 @@ trait ScoreboardCommand
                             '>' => max($target, $value),
                             default => $value,
                         };
-                        $this->setScore($holder, $objective, $result);
+                        $assign($holder, $objective, $result, $targetCreated);
                         if ($operation === '><') {
-                            $this->setScore($source, $sourceObjective, $target);
+                            $assign($source, $sourceObjective, $target, $sourceCreated);
                         }
                     }
                 }

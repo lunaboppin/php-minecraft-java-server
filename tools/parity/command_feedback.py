@@ -249,8 +249,10 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 witness.tick_barrier()
                 operator.tick_barrier()
             if command == '!respawn':
-                # Not a command: the witness leaves the death screen before the next step.
-                witness.send('client_command', wire.vi(0))
+                # Not a command: dead players leave the death screen before the next step. Both
+                # servers ignore the request from a living player.
+                for client in (operator, witness):
+                    client.send('client_command', wire.vi(0))
                 witness.tick_barrier()
                 operator.tick_barrier()
                 continue

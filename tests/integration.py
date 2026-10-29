@@ -113,6 +113,7 @@ class Client:
         self.threshold = -1
         self.seen = []
         self.teleport = None
+        self.pose = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.chunk_count = 0
 
     def close(self):
@@ -188,8 +189,12 @@ class Client:
         if self.state == 'play':
             if name == 'player_position':
                 self.teleport, off = read_vi(payload)
-                x, y, z = struct.unpack_from('>ddd', payload, off)
-                yaw, pitch = struct.unpack_from('>ff', payload, off + 48)
+                values = [*struct.unpack_from('>ddd', payload, off), *struct.unpack_from('>ff', payload, off + 48)]
+                relatives, = struct.unpack_from('>i', payload, off + 56)
+                # Relative X, Y, Z, Y_ROT and X_ROT (bits 0-4) offset the client's pose, as a real client
+                # applies them; vanilla moves the player to the confirmed position.
+                self.pose = [self.pose[i] + value if relatives >> i & 1 else value for i, value in enumerate(values)]
+                x, y, z, yaw, pitch = self.pose
                 confirmation = vi(self.teleport) + struct.pack('>dddff', x, y, z, yaw, pitch)
                 if self.teleport == 1 and (x, y, z, yaw, pitch) == (0.5, 64.0, 0.5, 0.0, 0.0):
                     check(confirmation.hex() == FIXTURES['client_teleport_confirmation'],
