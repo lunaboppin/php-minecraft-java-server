@@ -213,6 +213,7 @@ foreach ([
     'tick-cost-unit.php',
     'terrain-generator-unit.php',
     'vanilla-worldgen-unit.php',
+    'vanilla-structures-unit.php',
     'chunk-packet-unit.php',
     'loot-unit.php',
     'world-border-unit.php',
@@ -335,6 +336,10 @@ if ($code !== 0) {
     exit($code);
 }
 passthru('python3 ' . escapeshellarg(__DIR__ . '/tracking.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/player-motion.py'), $code);
 if ($code !== 0) {
     exit($code);
 }

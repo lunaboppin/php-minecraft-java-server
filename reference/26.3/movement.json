@@ -839,5 +839,9 @@
       "velocity": "normal",
       "spawn_data": "none"
     }
+  },
+  "player_tracking": {
+    "update_interval": 2,
+    "track_deltas": false
   }
 }

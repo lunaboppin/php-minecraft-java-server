@@ -132,7 +132,7 @@ def main():
     x2, z2 = map(int, args.end.split(':'))
     x1, x2 = sorted((x1, x2))
     z1, z2 = sorted((z1, z2))
-    work = args.work / f'seed-{args.seed}{"-structures" if args.structures else ""}'
+    work = (args.work / f'seed-{args.seed}{"-structures" if args.structures else ""}').resolve()
     shutil.rmtree(work, ignore_errors=True)
     work.mkdir(parents=True)
     shutil.copyfile(args.eula_file, work / 'eula.txt')

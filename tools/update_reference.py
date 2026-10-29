@@ -52,20 +52,28 @@ WORLDGEN_FIXTURE_CHUNKS = {
 }
 # The same stages of Nether chunks: crimson and warped forests, nether wastes and a soul sand valley.
 WORLDGEN_NETHER_FIXTURE_CHUNKS = {'42': ['0:0', '-1:-1', '5:3', '-20:14']}
+WORLDGEN_END_FIXTURE_CHUNKS = {'42': ['0:0', '-1:-1', '3:2', '80:10', '-70:40', '100:-100']}
 
 
 def worldgen_resources(inner, out):
     """Copy the official Overworld worldgen registries the native generator reads at runtime."""
     folders = ('density_function', 'noise', 'noise_settings', 'material_rule', 'material_condition', 'carver', 'biome',
-               'placed_feature', 'feature', 'block_state_provider', 'processor_list')
+               'placed_feature', 'feature', 'block_state_provider', 'processor_list', 'structure', 'structure_set',
+               'template_pool')
     target = out / 'worldgen'
-    for folder in folders:
+    for folder in (*folders, 'tags/biome'):
         shutil.rmtree(target / folder, ignore_errors=True)
     with zipfile.ZipFile(inner) as archive:
         for name in sorted(archive.namelist()):
             prefix = 'data/minecraft/worldgen/'
             if name.startswith(prefix) and name.endswith('.json') and name[len(prefix):].split('/')[0] in folders:
                 destination = target / name[len(prefix):]
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(archive.read(name))
+            # Biome tags, which structures use to choose where they can start.
+            tags = 'data/minecraft/tags/worldgen/biome/'
+            if name.startswith(tags) and name.endswith('.json'):
+                destination = target / 'tags/biome' / name[len(tags):]
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(archive.read(name))
 
@@ -260,7 +268,7 @@ def main():
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
         'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
-        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportExperience.java', 'ExportItemEntities.java',
+        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportExperience.java', 'ExportItemEntities.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -296,7 +304,9 @@ def main():
     structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportStructureOrder', str(out / 'worldgen/structure-order.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-Ddimension=the_nether', '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order-nether.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-Ddimension=the_end', '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order-end.json')], check=True, cwd=cache)
     exports = []
     for seed, chunks in WORLDGEN_FIXTURE_CHUNKS.items():
         exports.append(cache / f'worldgen-chunks-{seed}.json')
@@ -304,6 +314,9 @@ def main():
     for seed, chunks in WORLDGEN_NETHER_FIXTURE_CHUNKS.items():
         exports.append(cache / f'worldgen-nether-chunks-{seed}.json')
         subprocess.run([java, logging_option, '-Ddimension=the_nether', '-cp', str(classes) + os.pathsep + cp, 'ExportWorldgenChunks', str(exports[-1]), seed, *chunks], check=True, cwd=cache)
+    for seed, chunks in WORLDGEN_END_FIXTURE_CHUNKS.items():
+        exports.append(cache / f'worldgen-end-chunks-{seed}.json')
+        subprocess.run([java, logging_option, '-Ddimension=the_end', '-cp', str(classes) + os.pathsep + cp, 'ExportWorldgenChunks', str(exports[-1]), seed, *chunks], check=True, cwd=cache)
     subprocess.run(['python3', str(ROOT / 'tools/worldgen_fixture.py'), str(out / 'worldgen-chunks.json'), *map(str, exports)], check=True)
     reports = generated / 'reports'
     shutil.copyfile(reports / 'packets.json', out / 'packets.json')

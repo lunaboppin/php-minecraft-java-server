@@ -71,6 +71,24 @@ final class NoiseChunk
     }
 
     /**
+     * NoiseBasedChunkGenerator.getBaseHeight: one above the highest block of the column, before
+     * surface rules and carvers, that is not air (WORLD_SURFACE_WG) or that blocks motion
+     * (OCEAN_FLOOR_WG, which skips fluids).
+     */
+    public static function baseHeight(OverworldSettings $settings, int $x, int $z, bool $oceanFloor): int
+    {
+        $chunk = new self($settings, $x >> 4, $z >> 4, new Volume(1, $settings->height, 1, $x, $settings->minY, $z));
+        $density = $settings->state->sampler($settings->json['noise_router']['final_density'])->volume($chunk->context, $chunk->volume);
+        for ($y = $settings->height - 1; $y >= 0; --$y) {
+            $state = $chunk->substance($x, $settings->minY + $y, $z, $density[$y]) ?? $settings->defaultBlock;
+            if ($state !== 'air' && (!$oceanFloor || $state === $settings->defaultBlock)) {
+                return $settings->minY + $y + 1;
+            }
+        }
+        return $settings->minY;
+    }
+
+    /**
      * Block names in y, z, x order from the bottom of the chunk.
      *
      * @return list<string>

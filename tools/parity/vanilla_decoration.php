@@ -21,7 +21,10 @@ use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Decorator;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\ProtoChunk;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldGenerator;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
 if ($argc < 3) {
     fwrite(STDERR, "usage: vanilla_decoration.php REGIONS.json SEED [CX CZ]\n");
@@ -33,9 +36,12 @@ $centerZ = (int) ($argv[4] ?? 0);
 $reference = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
 $dimension = $reference['dimension'] ?? 'overworld';
 $version = new Version();
-$generator = new OverworldGenerator($seed, $version->directory, $dimension === 'the_nether' ? 'nether' : 'overworld');
+$generator = new OverworldGenerator($seed, $version->directory, match ($dimension) { 'the_nether' => 'nether', 'the_end' => 'end', default => 'overworld' });
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
 $decorator = new Decorator($blocks, new BiomeClimate($version->directory . '/worldgen'), $version->directory . '/worldgen', $dimension);
+if (($reference['structures'] ?? false) === true) {
+    $decorator->structures = new Structures($generator->settings, $generator->biomes, $version->directory . '/worldgen');
+}
 $chunks = [];
 for ($dz = -3; $dz <= 3; ++$dz) {
     for ($dx = -3; $dx <= 3; ++$dx) {
@@ -51,6 +57,17 @@ for ($dz = -2; $dz <= 2; ++$dz) {
         $decorator->decorate(new Region($blocks, $centerX + $dx, $centerZ + $dz, $chunks, $settings->minY, $settings->height, $settings->seaLevel, BiomeClimate::zoomSeed($seed), $seed));
     }
 }
+// LevelChunk.postProcessGeneration for the shapes structure pieces marked.
+$shapes = new ShapeUpdater($blocks, new Survival($blocks, $version->directory . '/worldgen/block-behaviour.json'));
+$get = static function (int $x, int $y, int $z) use (&$chunks, $settings): int {
+    return $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)];
+};
+foreach ($decorator->structureContext?->postProcessing ?? [] as [$x, $y, $z]) {
+    $updated = $shapes->update($get($x, $y, $z), $x, $y, $z, $get);
+    if ($updated !== null) {
+        $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $updated;
+    }
+}
 if ($decorator->skipped !== []) {
     echo 'Not ported: ' . json_encode($decorator->skipped) . "\n";
 }
@@ -62,9 +79,21 @@ foreach ($reference['chunks'] as $official) {
     $mine = $chunks[$official['x'] . ',' . $official['z']]->blocks;
     $kinds = [];
     $total = 0;
+    // FULL=1 compares block states with their properties, which official names omit for default states.
+    $full = getenv('FULL') === '1';
+    $describe = static function (int $state) use ($blocks): string {
+        $name = $blocks->name($state);
+        if ($state === $blocks->state($name)) {
+            return $name;
+        }
+        $properties = $blocks->properties($state);
+        ksort($properties);
+        return $name . '[' . implode(',', array_map(static fn ($k, $v): string => "$k=$v", array_keys($properties), $properties)) . ']';
+    };
     foreach ($names as $i => $name) {
-        $official_name = preg_replace('/\[.*$/', '', $name);
-        $name = $blocks->name($mine[$i]);
+        $official_name = $full ? $name : preg_replace('/\[.*$/', '', $name);
+        // Above the noise height (the End's 128 of 256) nothing is generated.
+        $name = isset($mine[$i]) ? ($full ? $describe($mine[$i]) : $blocks->name($mine[$i])) : 'air';
         if ($official_name !== $name) {
             ++$total;
             $kinds["$official_name<-$name"] = ($kinds["$official_name<-$name"] ?? 0) + 1;

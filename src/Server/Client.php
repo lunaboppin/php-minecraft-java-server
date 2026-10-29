@@ -97,6 +97,8 @@ final class Client
     public bool $ground = true;
     /** Player.takeXpDelay: ticks until the player can take another experience orb. */
     public int $takeXpDelay = 0;
+    /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
+    public float $velocityY = 0.0;
     /** Whether a position arrived since the client's last client_tick_end. */
     public bool $positionThisTick = false;
     /** Where the player's last tick left them, and the movement packets since. */
@@ -125,6 +127,9 @@ final class Client
     /** @var array<int, ?array> the equipment stacks whose attribute modifiers are applied */
     public array $equipmentModifierStacks = [];
     public ?string $lastPlayerMetadata = null;
+    public ?float $lastTrackedHealth = null;
+    /** ServerEntity's movement state for those tracking this player; a new entity starts afresh. */
+    public ?\PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker $motionTracker = null;
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;
     public float $packetWindow;

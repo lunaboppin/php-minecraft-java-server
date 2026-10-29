@@ -88,7 +88,7 @@ final class Server
         $this->worlds['overworld'] = $this->world;
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
-            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $dimension === 'the_nether' && $config->vanillaTerrain);
+            $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $config->vanillaTerrain);
         }
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
@@ -128,8 +128,8 @@ final class Server
         }
         [$spawnX, , $spawnZ] = $this->world->spawn();
         $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
-        if (($this->worlds['the_nether'] ?? null)?->vanilla !== null) {
-            $pregenerate[] = $this->config->worldPath . '.the_nether.sqlite';
+        foreach (['the_nether', 'the_end'] as $dimension) {
+            $pregenerate[] = ($this->worlds[$dimension] ?? null)?->vanilla !== null ? $this->config->worldPath . '.' . $dimension . '.sqlite' : '-';
         }
         $this->generationWorkerCommand = [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate];
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
@@ -144,6 +144,8 @@ final class Server
         for ($dz = -3; $dz <= 3; ++$dz) {
             for ($dx = -3; $dx <= 3; ++$dx) {
                 $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)), 600.0);
+                // The End's arrival platform, so players coming through a portal land on generated islands.
+                ($this->worlds['the_end'] ?? null)?->requestGeneration(6 + $dx, $dz, 100 + max(abs($dx), abs($dz)), 600.0);
             }
         }
     }
@@ -608,6 +610,8 @@ final class Server
         $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
         $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
         $this->scheduleChunks($c);
+        // The player's ServerEntity starts with them, counting ticks from here.
+        $this->playerMotionTracker($c);
         $this->broadcastPlayerPosition($c);
         foreach ($others as $other) {
             $this->spawnPlayer($c, $other);
@@ -636,15 +640,21 @@ final class Server
         if (isset($recipient->entities[$player->entityId]) || !$this->tracksPlayer($recipient, $player)) {
             return;
         }
-        $recipient->send($this->version, 'add_entity', Packets::addPlayer($player->entityId, $player->uuid, $this->version->blocks['player_entity_type'], $player->x, $player->y, $player->z, $player->yaw, $player->pitch));
-        $recipient->send($this->version, 'rotate_head', Packets::headRotation($player->entityId, $player->yaw));
-        $recipient->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $player->entityId, $player->information['skinParts'] ?? 0, $player->information['mainHand'] ?? 1));
+        // ServerEntity.sendPairingData: the spawn from the last synced position, then the
+        // non-default entity data, the synchronized attributes and any equipment.
+        $recipient->send($this->version, 'add_entity', $this->playerMotionTracker($player)->spawnPacket($player->uuid, $this->version->blocks['player_entity_type']));
+        $data = $this->playerPairingData($player);
+        if ($data !== null) {
+            $recipient->send($this->version, 'set_entity_data', $data);
+        }
         $attributes = $this->pairingAttributes($player);
         if ($attributes !== null) {
             $recipient->send($this->version, 'update_attributes', $attributes);
         }
-        $recipient->send($this->version, 'set_equipment', Packets::equipment($player->entityId, $this->playerEquipment($player), $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
-        $recipient->send($this->version, 'set_entity_data', $this->playerMetadata($player));
+        $equipment = array_filter($this->playerEquipment($player), static fn (?array $stack): bool => $stack !== null);
+        if ($equipment !== []) {
+            $recipient->send($this->version, 'set_equipment', Packets::equipment($player->entityId, $equipment, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+        }
         $recipient->entities[$player->entityId] = true;
     }
 
@@ -708,6 +718,7 @@ final class Server
         $c->tickPosition = [$c->x, $c->y, $c->z];
         $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
+        $c->velocityY = 0.0;
         $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
@@ -771,6 +782,8 @@ final class Server
                     return;
                 }
                 $c->teleport = null;
+                // handleAcceptTeleportPacket moves the player as a packet that is not on the ground.
+                $c->ground = false;
                 return;
             case 'client_tick_end':
                 $r->end();
@@ -973,7 +986,8 @@ final class Server
         // for each movement packet since then (as one when there are more than five), moved too quickly.
         $packets = ++$c->movesThisTick > 5 ? 1 : $c->movesThisTick;
         [$fromX, $fromY, $fromZ] = $c->tickPosition ?? [$c->x, $c->y, $c->z];
-        if (($x - $fromX) ** 2 + ($y - $fromY) ** 2 + ($z - $fromZ) ** 2 > 100.0 * $packets && $this->gameRule('player_movement_check') === 'true') {
+        // The allowance is beyond the player's own server-side movement, of which only the vertical part is simulated here.
+        if (($x - $fromX) ** 2 + ($y - $fromY) ** 2 + ($z - $fromZ) ** 2 - $c->velocityY ** 2 > 100.0 * $packets && $this->gameRule('player_movement_check') === 'true') {
             $this->log($c->name . ' moved too quickly! ' . ($x - $fromX) . ',' . ($y - $fromY) . ',' . ($z - $fromZ));
             $this->teleport($c, [$c->x, $c->y, $c->z]);
             return;
@@ -989,7 +1003,12 @@ final class Server
         $c->z = $z;
         $c->yaw = $yaw;
         $c->pitch = $pitch;
-        $c->ground = ($flags & 1) !== 0;
+        $ground = ($flags & 1) !== 0;
+        // handlePlayerPositionChange: leaving the ground upwards is a jump in the server's own simulation.
+        if ($c->ground && !$ground && $y > $oldY) {
+            $c->velocityY = max(0.42, $c->velocityY);
+        }
+        $c->ground = $ground;
         $this->survivalMovement($c, $oldY, $distance);
         $this->trackPushingPlayer($c);
         if ($y < -80 && in_array($c->gameMode, [1, 3], true)) {
@@ -1367,6 +1386,7 @@ final class Server
         if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
             $this->generationWorkersCheckedAt = $now;
             $this->checkGenerationWorkers();
+            $this->placeEndExitPortal();
         }
         foreach ($this->clients as $id => $c) {
             if ($c->closing) {
@@ -1413,6 +1433,8 @@ final class Server
                         $c->attributesSent = true;
                     }
                     $this->refreshTracking($c);
+                    $this->synchronizePlayerMotion($c);
+                    $this->simulatePlayerGround($c);
                 });
             } catch (ProtocolException $e) {
                 $this->disconnect($c, $e->getMessage());
