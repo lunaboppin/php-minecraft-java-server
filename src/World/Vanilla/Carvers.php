@@ -346,7 +346,6 @@ final class Carvers
     {
         ksort($this->mask);
         $minY = $this->settings->minY;
-        $aquifer = $noiseChunk->aquifer;
         $runs = [];
         $start = null;
         $previous = null;
@@ -378,7 +377,7 @@ final class Carvers
                     if ($old === 'grass_block' || $old === 'mycelium') {
                         $hasGrass = true;
                     }
-                    $state = $aquifer->computeSubstance($chunkX * 16 + $x, $y, $chunkZ * 16 + $z, 0.0);
+                    $state = $noiseChunk->substance($chunkX * 16 + $x, $y, $chunkZ * 16 + $z, 0.0);
                     if ($state === null) {
                         continue;
                     }

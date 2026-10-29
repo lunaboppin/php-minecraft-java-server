@@ -76,7 +76,12 @@ final class RandomState
         $name = self::name($name);
         if (!isset($this->noises[$name])) {
             $parameters = json_decode((string) file_get_contents($this->directory . '/noise/' . substr($name, 10) . '.json'), true, 512, JSON_THROW_ON_ERROR);
-            $this->noises[$name] = NormalNoise::create($this->random->fromHashOf($name), $parameters);
+            // DensityFunction.CompileContext.createNoiseSampler seeds the Nether climate noises from the world seed.
+            $this->noises[$name] = match ($name) {
+                'minecraft:nether/temperature' => NormalNoise::create(new LegacyRandom($this->seed), $parameters, true),
+                'minecraft:nether/vegetation' => NormalNoise::create(new LegacyRandom($this->seed + 1), $parameters, true),
+                default => NormalNoise::create($this->random->fromHashOf($name), $parameters),
+            };
         }
         return $this->noises[$name];
     }

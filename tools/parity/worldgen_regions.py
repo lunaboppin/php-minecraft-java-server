@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Generate an area with the official 26.3 server and decode its saved chunks.
+"""Generate an area with the official 26.3 server and decode its saved chunks (the Overworld unless
+--dimension says otherwise).
 
 The isolated reference server runs with the given seed. Structures are off unless
 --structures is passed. It force-loads a rectangle of chunks, saves and stops; the region files
@@ -68,12 +69,17 @@ def state_name(entry):
     return name
 
 
-def decode_chunk(nbt):
+# The section range of each dimension's build height.
+SECTIONS = {'overworld': (-4, 19), 'the_nether': (0, 7), 'the_end': (0, 15)}
+
+
+def decode_chunk(nbt, dimension='overworld'):
+    low, high = SECTIONS[dimension]
     sections = sorted(nbt['sections'], key=lambda section: section['Y'])
     blocks = []
     biomes = []
     for section in sections:
-        if section['Y'] < -4 or section['Y'] > 19:
+        if section['Y'] < low or section['Y'] > high:
             continue
         indices, palette = container(section['block_states'], 4096, 4)
         names = [state_name(entry) for entry in palette]
@@ -84,7 +90,7 @@ def decode_chunk(nbt):
     return blocks, biomes
 
 
-def read_regions(world, chunks):
+def read_regions(world, chunks, dimension='overworld'):
     out = {}
     for region in sorted((world / 'region').glob('r.*.mca')):
         data = region.read_bytes()
@@ -101,7 +107,7 @@ def read_regions(world, chunks):
             nbt = Nbt(raw).root()
             key = (nbt['xPos'], nbt['zPos'])
             if key in chunks and nbt.get('Status') == 'minecraft:full':
-                out[key] = decode_chunk(nbt)
+                out[key] = decode_chunk(nbt, dimension)
     return out
 
 
@@ -112,6 +118,7 @@ def main():
     parser.add_argument('--to', dest='end', required=True, help='chunk x:z of the other corner')
     parser.add_argument('--margin', type=int, default=0, help='extra force-loaded chunks around the rectangle')
     parser.add_argument('--structures', action='store_true')
+    parser.add_argument('--dimension', choices=sorted(SECTIONS), default='overworld')
     parser.add_argument('--threads', type=int, help='limit the official server to this many background (generation) threads')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--work', type=Path, default=ROOT / 'tools/.cache/worldgen-reference')
@@ -169,7 +176,7 @@ def main():
             for bz in range(z1 - margin, z2 + margin + 1, 16):
                 ex = min(bx + 15, x2 + margin)
                 ez = min(bz + 15, z2 + margin)
-                command(f'forceload add {bx * 16} {bz * 16} {ex * 16} {ez * 16}')
+                command(f'execute in minecraft:{args.dimension} run forceload add {bx * 16} {bz * 16} {ex * 16} {ez * 16}')
         # Give generation time, then save everything to disk.
         total = (x2 - x1 + 1 + 2 * margin) * (z2 - z1 + 1 + 2 * margin)
         time.sleep(min(600, 5 + total * 0.05))
@@ -182,8 +189,8 @@ def main():
             process.kill()
         log.close()
     wanted = {(x, z) for x in range(x1, x2 + 1) for z in range(z1, z2 + 1)}
-    chunks = read_regions(work / 'world/dimensions/minecraft/overworld', wanted)
-    out = {'version': '26.3', 'seed': args.seed, 'structures': args.structures, 'chunks': []}
+    chunks = read_regions(work / f'world/dimensions/minecraft/{args.dimension}', wanted, args.dimension)
+    out = {'version': '26.3', 'seed': args.seed, 'dimension': args.dimension, 'structures': args.structures, 'chunks': []}
     for (x, z), (blocks, biomes) in sorted(chunks.items()):
         out['chunks'].append({'x': x, 'z': z, 'blocks': base64.b64encode(zlib.compress('\n'.join(blocks).encode(), 9)).decode(),
                               'biomes': base64.b64encode(zlib.compress('\n'.join(biomes).encode(), 9)).decode()})
