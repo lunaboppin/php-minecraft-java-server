@@ -136,7 +136,7 @@ final class Trees
 
     private function placeLog(int $x, int $y, int $z, ?string $axis = null): bool
     {
-        if (!$this->validTreePos($x, $y, $z)) {
+        if (!$this->validTreePos($x, $y, $z) && !$this->growsThrough($this->feature['trunk_placer'], $x, $y, $z)) {
             return false;
         }
         $state = $this->providers->state($this->feature['trunk_provider'], $this->region, $this->random, $x, $y, $z);
@@ -145,6 +145,123 @@ final class Trees
         }
         $this->setTrunk($x, $y, $z, $state);
         return true;
+    }
+
+    /** UpwardsBranchingTrunkPlacer.validTreePos: logs also replace its can_grow_through blocks. */
+    private function growsThrough(array $placer, int $x, int $y, int $z): bool
+    {
+        if (!isset($placer['can_grow_through'])) {
+            return false;
+        }
+        $through = $placer['can_grow_through'];
+        $state = $this->get($x, $y, $z);
+        foreach ((array) $through as $entry) {
+            if (str_starts_with($entry, '#') ? $this->blocks->inTag($state, preg_replace('/^#?(minecraft:)?/', '', $entry)) : $this->blocks->is($state, $entry)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** MangroveRootPlacer.canPlaceRoot */
+    private function canPlaceRoot(array $placement, int $x, int $y, int $z): bool
+    {
+        return $this->validTreePos($x, $y, $z) || $this->growsThrough($placement, $x, $y, $z);
+    }
+
+    /** MangroveRootPlacer.placeRoots: a column down to the origin and four spreading roots. */
+    private function placeRoots(array $placer, int $x, int $y, int $z, int $trunkY): bool
+    {
+        $placement = $placer['mangrove_root_placement'];
+        for ($cy = $y; $cy < $trunkY; ++$cy) {
+            if (!$this->canPlaceRoot($placement, $x, $cy, $z)) {
+                return false;
+            }
+        }
+        $positions = [[$x, $trunkY - 1, $z]];
+        foreach (self::HORIZONTAL as $direction) {
+            $start = [$x + $direction[0], $trunkY, $z + $direction[1]];
+            $branch = [];
+            if (!$this->simulateRoots($placement, $start, $direction, [$x, $trunkY, $z], $branch, 0)) {
+                return false;
+            }
+            array_push($positions, ...$branch);
+            $positions[] = $start;
+        }
+        foreach ($positions as [$px, $py, $pz]) {
+            $this->placeRoot($placer, $px, $py, $pz);
+        }
+        return true;
+    }
+
+    private function simulateRoots(array $placement, array $pos, array $direction, array $origin, array &$positions, int $layer): bool
+    {
+        $maxLength = $placement['max_root_length'];
+        if ($layer === $maxLength || count($positions) > $maxLength) {
+            return false;
+        }
+        [$x, $y, $z] = $pos;
+        $below = [$x, $y - 1, $z];
+        $next = [$x + $direction[0], $y, $z + $direction[1]];
+        $width = abs($x - $origin[0]) + abs($y - $origin[1]) + abs($z - $origin[2]);
+        $maxWidth = $placement['max_root_width'];
+        $skew = F32::r((float) $placement['random_skew_chance']);
+        if ($width > $maxWidth - 3 && $width <= $maxWidth) {
+            $candidates = $this->random->nextFloat() < $skew ? [$below, [$next[0], $next[1] - 1, $next[2]]] : [$below];
+        } elseif ($width > $maxWidth) {
+            $candidates = [$below];
+        } elseif ($this->random->nextFloat() < $skew) {
+            $candidates = [$below];
+        } else {
+            $candidates = $this->random->nextBoolean() ? [$next] : [$below];
+        }
+        foreach ($candidates as $candidate) {
+            if ($this->canPlaceRoot($placement, ...$candidate)) {
+                $positions[] = $candidate;
+                if (!$this->simulateRoots($placement, $candidate, $direction, $origin, $positions, $layer + 1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private function waterlogged(int $state, int $x, int $y, int $z): int
+    {
+        if (!$this->blocks->has($state, 'waterlogged')) {
+            return $state;
+        }
+        return $this->blocks->with($state, 'waterlogged', $this->blocks->isWater($this->get($x, $y, $z)) ? 'true' : 'false');
+    }
+
+    private function setRoot(int $x, int $y, int $z, int $state): void
+    {
+        $this->roots["$x,$y,$z"] = [$x, $y, $z];
+        $this->region->set($x, $y, $z, $state);
+    }
+
+    /** MangroveRootPlacer.placeRoot */
+    private function placeRoot(array $placer, int $x, int $y, int $z): void
+    {
+        $placement = $placer['mangrove_root_placement'];
+        $here = $this->get($x, $y, $z);
+        foreach ((array) $placement['muddy_roots_in'] as $muddy) {
+            if ($this->blocks->is($here, $muddy)) {
+                $state = $this->providers->state($placement['muddy_roots_provider'], $this->region, $this->random, $x, $y, $z);
+                $this->setRoot($x, $y, $z, $this->waterlogged($state, $x, $y, $z));
+                return;
+            }
+        }
+        if (!$this->canPlaceRoot($placement, $x, $y, $z)) {
+            return;
+        }
+        $state = $this->providers->state($placer['root_provider'], $this->region, $this->random, $x, $y, $z);
+        $this->setRoot($x, $y, $z, $this->waterlogged($state, $x, $y, $z));
+        $above = $placer['above_root_placement'] ?? null;
+        if ($above !== null && $this->random->nextFloat() < F32::r((float) $above['above_root_placement_chance']) && $this->blocks->isAir($this->get($x, $y + 1, $z))) {
+            $state = $this->providers->state($above['above_root_provider'], $this->region, $this->random, $x, $y + 1, $z);
+            $this->setRoot($x, $y + 1, $z, $this->waterlogged($state, $x, $y + 1, $z));
+        }
     }
 
     private function placeLogIfFree(int $x, int $y, int $z): void
@@ -169,10 +286,6 @@ final class Trees
 
     public function tree(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
     {
-        if (isset($feature['root_placer'])) {
-            $this->decorator->skipped['tree root placer'] = ($this->decorator->skipped['tree root placer'] ?? 0) + 1;
-            return false;
-        }
         $this->feature = $feature;
         $this->region = $region;
         $this->random = $random;
@@ -183,15 +296,20 @@ final class Trees
         $foliageHeight = $this->foliageHeight($foliage, $treeHeight);
         $trunkHeight = $treeHeight - $foliageHeight;
         $leafRadius = $this->foliageRadius($foliage, $trunkHeight);
-        if ($y < $region->minY + 1 || $y + $treeHeight + 1 > $region->maxY() + 1) {
+        $roots = $feature['root_placer'] ?? null;
+        $trunkY = $roots === null ? $y : $y + Providers::int($roots['trunk_offset_y'], $random);
+        if (min($y, $trunkY) < $region->minY + 1 || max($y, $trunkY) + $treeHeight + 1 > $region->maxY() + 1) {
             return false;
         }
-        $clipped = $this->maxFreeTreeHeight($treeHeight, $x, $y, $z);
+        $clipped = $this->maxFreeTreeHeight($treeHeight, $x, $trunkY, $z);
         $minClipped = $feature['minimum_size']['min_clipped_height'] ?? null;
         if ($clipped < $treeHeight && ($minClipped === null || $clipped < $minClipped)) {
             return false;
         }
-        $attachments = $this->placeTrunk($trunk, $clipped, $x, $y, $z);
+        if ($roots !== null && !$this->placeRoots($roots, $x, $y, $z, $trunkY)) {
+            return false;
+        }
+        $attachments = $this->placeTrunk($trunk, $clipped, $x, $trunkY, $z);
         foreach ($attachments as $attachment) {
             $this->createFoliage($foliage, $clipped, $attachment, $foliageHeight, $leafRadius);
         }
@@ -286,6 +404,37 @@ final class Trees
     {
         $random = $this->random;
         switch (preg_replace('/^minecraft:/', '', $trunk['type'])) {
+            case 'upwards_branching_trunk_placer':
+                $attachments = [];
+                $probability = F32::r((float) $trunk['place_branch_per_log_probability']);
+                for ($i = 0; $i < $height; ++$i) {
+                    $cy = $y + $i;
+                    if ($this->placeLog($x, $cy, $z) && $i < $height - 1 && $random->nextFloat() < $probability) {
+                        $direction = self::HORIZONTAL[$random->nextInt(4)];
+                        $length = Providers::int($trunk['extra_branch_length'], $random);
+                        $branchPos = max(0, $length - Providers::int($trunk['extra_branch_length'], $random) - 1);
+                        $steps = Providers::int($trunk['extra_branch_steps'], $random);
+                        $along = $cy + $branchPos;
+                        [$lx, $lz] = [$x, $z];
+                        for ($index = $branchPos; $index < $height && $steps > 0; ++$index, --$steps) {
+                            if ($index >= 1) {
+                                $placement = $cy + $index;
+                                $lx += $direction[0];
+                                $lz += $direction[1];
+                                $along = $this->placeLog($lx, $placement, $lz) ? $placement + 1 : $placement;
+                                $attachments[] = [[$lx, $placement, $lz], 0, false, 0];
+                            }
+                        }
+                        if ($along - $cy > 1) {
+                            $attachments[] = [[$lx, $along, $lz], 0, false, 0];
+                            $attachments[] = [[$lx, $along - 2, $lz], 0, false, 0];
+                        }
+                    }
+                    if ($i === $height - 1) {
+                        $attachments[] = [[$x, $cy + 1, $z], 0, false, 0];
+                    }
+                }
+                return $attachments;
             case 'straight_trunk_placer':
                 $this->placeBelowTrunk($x, $y - 1, $z);
                 for ($i = 0; $i < $height; ++$i) {
@@ -900,6 +1049,36 @@ final class Trees
                     break;
                 case 'place_on_ground':
                     $this->placeOnGround($decorator, $logs, $roots);
+                    break;
+                case 'attached_to_leaves':
+                    $blacklist = [];
+                    $probability = F32::r((float) $decorator['probability']);
+                    foreach ($this->shuffled($leaves) as [$x, $y, $z]) {
+                        $directions = $decorator['directions'];
+                        $direction = array_search($directions[$random->nextInt(count($directions))], ['down', 'up', 'north', 'south', 'west', 'east'], true);
+                        [$dx, $dy, $dz] = Blocks::OFFSETS[$direction];
+                        [$px, $py, $pz] = [$x + $dx, $y + $dy, $z + $dz];
+                        if (isset($blacklist["$px,$py,$pz"]) || !($random->nextFloat() < $probability)) {
+                            continue;
+                        }
+                        $empty = true;
+                        for ($i = 1; $i <= $decorator['required_empty_blocks'] && $empty; ++$i) {
+                            $empty = $this->blocks->isAir($this->get($x + $dx * $i, $y + $dy * $i, $z + $dz * $i));
+                        }
+                        if (!$empty) {
+                            continue;
+                        }
+                        $rxz = $decorator['exclusion_radius_xz'];
+                        $ry = $decorator['exclusion_radius_y'];
+                        for ($bx = -$rxz; $bx <= $rxz; ++$bx) {
+                            for ($by = -$ry; $by <= $ry; ++$by) {
+                                for ($bz = -$rxz; $bz <= $rxz; ++$bz) {
+                                    $blacklist[($px + $bx) . ',' . ($py + $by) . ',' . ($pz + $bz)] = true;
+                                }
+                            }
+                        }
+                        $this->setDecoration($px, $py, $pz, $this->providers->state($decorator['block_provider'], $this->region, $random, $px, $py, $pz));
+                    }
                     break;
                 case 'attached_to_logs':
                     foreach ($this->shuffled($logs) as [$x, $y, $z]) {

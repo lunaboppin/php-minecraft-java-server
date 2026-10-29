@@ -50,9 +50,9 @@ Ported features:
 - Ice spikes.
 - Sculk patches: the world generation `SculkSpreader` with charge cursors, sculk veins, sensors and shriekers.
 - Coral reefs: the 26.3 overlay feature and cuboid placement, coral trees and claws, and coral survival rules.
-- Trees: straight, forking, giant, mega jungle, dark oak, fancy, bending and cherry trunks; blob, bush, fancy, spruce, pine, mega pine, acacia, jungle, dark oak, random spread and cherry foliage; beehive, leaf and trunk vine, cocoa, alter ground, place-on-ground and attached-to-logs decorators; leaf distances. Decorators walk logs and leaves in Java `HashSet` order sorted by Y, which decides their random draws, so that order is reproduced.
+- Trees: straight, forking, giant, mega jungle, dark oak, fancy, bending, cherry and upwards branching (mangrove) trunks with the mangrove root placer; blob, bush, fancy, spruce, pine, mega pine, acacia, jungle, dark oak, random spread and cherry foliage; beehive, leaf and trunk vine, cocoa, alter ground, place-on-ground, attached-to-logs and attached-to-leaves decorators; leaf distances. Decorators walk logs and leaves in Java `HashSet` order sorted by Y, which decides their random draws, so that order is reproduced.
 
-Not ported yet: structures, mangrove, poplar and other branching trunks with root placers, fossils and templates, and the tree edge shape updates.
+Not ported yet: structures, poplar trunks, fossils and templates, and the tree edge shape updates.
 
 `tools/parity/worldgen_regions.py` runs the official server on a seed (structures off), force-loads an area and decodes the saved region files. `php tools/parity/vanilla_decoration.php` decorates the same area in PHP and compares the middle 3×3 chunks. Two official runs of one seed differed by up to 555 blocks per chunk in testing, because vanilla decorates neighbouring chunks in a scheduling-dependent order and overlapping features overwrite each other. So exact agreement can only be expected away from such overlaps. Against official seed-42 chunks around the origin, ores, clay, tuff, gravel, dirt blobs, geodes, lush-cave moss and the trees and vegetation of interior chunks agreed. The remaining differences were overlaps at chunk borders, the same kind as between the two official runs.
 
