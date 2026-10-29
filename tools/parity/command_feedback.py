@@ -263,9 +263,10 @@ SCRIPT = [
     ('kill @e[type=pig]', False),
     # Players paired with a tracker again receive each other's synchronized attribute instances.
     ('!quiet tp @s 0 100 0', False), ('tp @a[name=Witness] 300 100 0', False), ('tp @a[name=Witness] 1 100 0', False),
-    # A killed mob loses its scores and team once its death animation ends and it is removed.
+    # A killed mob loses its scores and team once its death animation ends and it is removed; it has
+    # no AI, so it cannot wander off the floor and fall.
     ('scoreboard objectives add dead dummy', False), ('scoreboard objectives setdisplay sidebar dead', False), ('team add gone', False),
-    ('summon pig 0 100 0', False), ('scoreboard players set @e[type=pig] dead 3', False), ('team join gone @e[type=pig]', False),
+    ('summon pig 0 100 0 {NoAI:1b}', False), ('scoreboard players set @e[type=pig] dead 3', False), ('team join gone @e[type=pig]', False),
     ('kill @e[type=pig]', False), ('scoreboard players list @e[type=pig]', False), ('scoreboard players list', False),
     ('team list gone', False), ('scoreboard objectives remove dead', False), ('team remove gone', False),
     # A mob dropped six blocks inside a stone box takes fall damage; /damage hurts and kills mobs too.
