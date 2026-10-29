@@ -16,6 +16,9 @@ final class Trees
 {
     private const HORIZONTAL = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
+    /** Direction ordinals 2-5 (north, south, west, east) as x/z steps. */
+    private const DIRECTION_XZ = [2 => [0, -1], 3 => [0, 1], 4 => [-1, 0], 5 => [1, 0]];
+
     private readonly Blocks $blocks;
 
     private readonly Providers $providers;
@@ -540,6 +543,21 @@ final class Trees
                 return $attachments;
             case 'fancy_trunk_placer':
                 return $this->fancyTrunk($height, $x, $y, $z);
+            case 'poplar_trunk_placer':
+                $this->placeBelowTrunk($x, $y - 1, $z);
+                $branchY = $height - Providers::int($trunk['trunk_height_above_branches'], $random);
+                for ($i = 0; $i < $height; ++$i) {
+                    $this->placeLog($x, $y + $i, $z);
+                    $directions = array_values(array_filter($this->shuffled([0, 1, 2, 3, 4, 5]), static fn (int $d): bool => $d > 1));
+                    if ($branchY - 1 === $i) {
+                        $branches = Providers::int($trunk['branch_amount'], $random);
+                        for ($branch = 0; $branch < $branches; ++$branch) {
+                            [$dx, $dz] = self::DIRECTION_XZ[$directions[$branch]];
+                            $this->placeLog($x + $dx, $y + $i, $z + $dz, $dx !== 0 ? 'x' : 'z');
+                        }
+                    }
+                }
+                return [[[$x, $y + $branchY, $z], 0, false, 0]];
             case 'cherry_trunk_placer':
                 return $this->cherryTrunk($trunk, $height, $x, $y, $z);
             case 'bending_trunk_placer':
@@ -753,6 +771,7 @@ final class Trees
             'random_spread_foliage_placer' => Providers::int($foliage['foliage_height'], $this->random),
             'acacia_foliage_placer' => 0,
             'dark_oak_foliage_placer' => 4,
+            'poplar_foliage_placer' => Providers::int($foliage['height'], $this->random),
             default => $foliage['height'] ?? 0,
         };
     }
@@ -861,6 +880,20 @@ final class Trees
                 $this->hangingLeavesRow($type, $base, $radius, -1, $doubleTrunk, $foliage);
                 $this->hangingLeavesRow($type, $base, $radius - 1, -2, $doubleTrunk, $foliage);
                 return;
+            case 'poplar_foliage_placer':
+                $base = [$pos[0], $pos[1] + $offset, $pos[2]];
+                $radius = $leafRadius + $radiusOffset - 1;
+                $flip = $random->nextBoolean();
+                $this->poplarRow($foliage, $base, $radius - 2, $withOffset - 1, $doubleTrunk, $withOffset, $flip);
+                $this->poplarRow($foliage, $base, $radius - 1, $withOffset - 2, $doubleTrunk, $withOffset, $flip);
+                $this->poplarRow($foliage, $base, $radius - 1, $withOffset - 3, $doubleTrunk, $withOffset, $flip);
+                for ($yo = $withOffset - 4; $yo >= 1; --$yo) {
+                    $this->poplarRow($foliage, $base, $radius, $yo, $doubleTrunk, $withOffset, $flip);
+                }
+                $this->poplarLogs($base, $radius, $withOffset - 4, $doubleTrunk, $withOffset, $flip);
+                $this->poplarRow($foliage, $base, $radius - 1, 0, $doubleTrunk, $withOffset, $flip);
+                $this->poplarRow($foliage, $base, max(1, min(2, $radius - 2)), -1, $doubleTrunk, $withOffset, $flip);
+                return;
             case 'random_spread_foliage_placer':
                 for ($i = 0; $i < $foliage['leaf_placement_attempts']; ++$i) {
                     $dx = $random->nextInt($leafRadius) - $random->nextInt($leafRadius);
@@ -871,6 +904,56 @@ final class Trees
                 return;
         }
         $this->decorator->skipped['foliage ' . $type] = ($this->decorator->skipped['foliage ' . $type] ?? 0) + 1;
+    }
+
+    /** PoplarFoliagePlacer.getCornerBlocksToCutForRhombusShape */
+    private static function poplarCut(int $dx, int $dz, int $radius, bool $partial, bool $flip): int
+    {
+        $small = $flip ? ($dx > 0 && $dz > 0) || ($dz < 0 && $dx < 0) : ($dx > 0 && $dz < 0) || ($dz > 0 && $dx < 0);
+        return $small ? $radius - 1 : ($partial ? $radius + 1 : $radius);
+    }
+
+    /** PoplarFoliagePlacer.placeLeavesRow: a rhombus whose top two rows lose their edges. */
+    private function poplarRow(array $foliage, array $base, int $radius, int $y, bool $doubleTrunk, int $height, bool $flip): void
+    {
+        $extra = $doubleTrunk ? 1 : 0;
+        $partial = $height - 1 === $y || $height - 2 === $y;
+        $holeChance = F32::r((float) $foliage['side_hole_chance']);
+        for ($dx = -$radius; $dx <= $radius + $extra; ++$dx) {
+            for ($dz = -$radius; $dz <= $radius + $extra; ++$dz) {
+                $cut = self::poplarCut($dx, $dz, $radius, $partial, $flip);
+                $absDx = abs($dx);
+                $absDz = abs($dz);
+                if ($partial && ($absDx === $radius || $absDz === $radius)) {
+                    continue;
+                }
+                $side = $this->random->nextFloat() <= $holeChance ? 1 : 0;
+                if ($absDx + $absDz <= $radius * 2 - ($cut + $side)) {
+                    $this->tryPlaceLeaf($base[0] + $dx, $base[1] + $y, $base[2] + $dz);
+                }
+            }
+        }
+    }
+
+    /** PoplarFoliagePlacer.replaceLeavesWithLog: sideways logs along the axes of a wide row. */
+    private function poplarLogs(array $base, int $radius, int $y, bool $doubleTrunk, int $height, bool $flip): void
+    {
+        $extra = $doubleTrunk ? 1 : 0;
+        $partial = $height - 1 === $y || $height - 2 === $y;
+        for ($dx = -$radius; $dx <= $radius + $extra; ++$dx) {
+            for ($dz = -$radius; $dz <= $radius + $extra; ++$dz) {
+                $absDz = abs($dz);
+                $absDx = abs($dx);
+                if ($absDx + $absDz <= $radius * 2 - (self::poplarCut($dx, $dz, $radius, $partial, $flip) + 2)
+                    && ($absDz === 0 && $radius - $absDx >= 4 || $absDx === 0 && $radius - $absDz >= 4)) {
+                    [$px, $py, $pz] = [$base[0] + $dx, $base[1] + $y, $base[2] + $dz];
+                    if ($this->get($px, $py, $pz) === $this->providers->state($this->feature['foliage_provider'], $this->region, $this->random, $px, $py, $pz)) {
+                        $state = $this->providers->state($this->feature['trunk_provider'], $this->region, $this->random, $px, $py, $pz);
+                        $this->setFoliage($px, $py, $pz, $this->blocks->with($state, 'axis', $absDz === 0 ? 'x' : 'z'));
+                    }
+                }
+            }
+        }
     }
 
     private function skipLocation(string $type, int $dx, int $y, int $dz, int $radius, bool $doubleTrunk, array $foliage = []): bool
@@ -997,6 +1080,9 @@ final class Trees
                         }
                     }
                     break;
+                case 'shelf_mushroom':
+                    $this->shelfMushroom($decorator, $logs);
+                    break;
                 case 'trunk_vine':
                     foreach ($logs as [$x, $y, $z]) {
                         foreach ([[-1, 0, 'east'], [1, 0, 'west'], [0, -1, 'south'], [0, 1, 'north']] as [$dx, $dz, $face]) {
@@ -1094,6 +1180,79 @@ final class Trees
                     $this->decorator->skipped['tree decorator ' . $type] = ($this->decorator->skipped['tree decorator ' . $type] ?? 0) + 1;
             }
         }
+    }
+
+    /** ShelfMushroomDecorator: mushrooms on two adjacent sides of a standing trunk, or both sides of a fallen log. */
+    private function shelfMushroom(array $decorator, array $logs): void
+    {
+        $random = $this->random;
+        if ($random->nextFloat() >= F32::r((float) $decorator['probability']) || $logs === []) {
+            return;
+        }
+        $faces = ['north', 'east', 'south', 'west'];
+        [$first, $last] = [$logs[0], $logs[count($logs) - 1]];
+        if ($first[1] === $last[1]) {
+            $sides = $first[0] !== $last[0] ? [0, 2] : [1, 3];
+            foreach ($logs as [$x, $y, $z]) {
+                foreach ($sides as $side) {
+                    if ($random->nextFloat() > 0.25) {
+                        continue;
+                    }
+                    [$dx, $dz] = self::HORIZONTAL[$side];
+                    if ($this->shelfMushroomFits($x + $dx, $y, $z + $dz) && !$this->shelfMushroomBeside($x + $dx, $y, $z + $dz) && !$this->shelfMushroomBeside($x, $y, $z)) {
+                        $this->placeShelfMushroom($x + $dx, $y, $z + $dz, $faces[$side]);
+                    }
+                }
+            }
+            return;
+        }
+        $side = $random->nextInt(4);
+        $sides = [$side, ($side + 1) % 4];
+        foreach ($logs as [$x, $y, $z]) {
+            $dy = $y - $first[1];
+            if ($dy < 1 || $dy > 4) {
+                continue;
+            }
+            foreach ($sides as $side) {
+                if ($random->nextFloat() > 0.25) {
+                    continue;
+                }
+                [$dx, $dz] = self::HORIZONTAL[$side];
+                if ($this->shelfMushroomFits($x + $dx, $y, $z + $dz) && !$this->blocks->is($this->get($x + $dx, $y - 1, $z + $dz), 'shelf_mushroom')) {
+                    $this->placeShelfMushroom($x + $dx, $y, $z + $dz, $faces[$side]);
+                    break;
+                }
+            }
+        }
+    }
+
+    private function shelfMushroomFits(int $x, int $y, int $z): bool
+    {
+        if (!$this->blocks->replaceable($this->get($x, $y, $z))) {
+            return false;
+        }
+        foreach ([[0, 0], [1, 0], [-1, 0], [0, -1], [0, 1]] as [$dx, $dz]) {
+            if ($this->blocks->is($this->get($x + $dx, $y, $z + $dz), 'water')) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function shelfMushroomBeside(int $x, int $y, int $z): bool
+    {
+        foreach (self::HORIZONTAL as [$dx, $dz]) {
+            if ($this->blocks->is($this->get($x + $dx, $y, $z + $dz), 'shelf_mushroom')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function placeShelfMushroom(int $x, int $y, int $z, string $facing): void
+    {
+        $state = $this->blocks->with($this->blocks->state('shelf_mushroom'), 'age', (string) $this->random->nextInt(2));
+        $this->setDecoration($x, $y, $z, $this->blocks->with($state, 'facing', $facing));
     }
 
     /** Util.shuffledCopy */
