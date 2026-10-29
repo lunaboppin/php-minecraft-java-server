@@ -498,10 +498,10 @@ trait Animals
                 $this->removeAnimal($id);
                 continue;
             }
-            // LivingEntity.baseTick: a mob whose eyes are in a wall suffocates.
+            // LivingEntity.baseTick: a ticking mob whose eyes are in a wall suffocates.
             $size = $this->version->catalog->mobs['entities'][$animal['kind']];
             $scale = ($animal['baby'] ?? false) ? 0.5 : 1.0;
-            if ($this->inWall($animal['x'], $animal['y'] + $size['eye_height'] * $scale, $animal['z'], $size['width'] * $scale)) {
+            if ($this->mobIsTicking($animal) && $this->inWall($animal['x'], $animal['y'] + $size['eye_height'] * $scale, $animal['z'], $size['width'] * $scale)) {
                 $this->hurtMob($id, 1.0, 'minecraft:in_wall');
                 if (isset($animal['deadAt'])) {
                     continue;
