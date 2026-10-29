@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 /**
  * A generator's global placed-feature order for each decoration step (FeatureSorter): the
- * Overworld's, or the Nether's with -Ddimension=the_nether. A feature's index in its step seeds
+ * Overworld's, or the Nether's or End's with -Ddimension=the_nether or the_end. A feature's index in its step seeds
  * its random source.
  */
 public class ExportFeatureOrder {
@@ -22,6 +22,7 @@ public class ExportFeatureOrder {
             var preset = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value();
             var generator = switch (System.getProperty("dimension", "overworld")) {
                 case "the_nether" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.NETHER).generator();
+                case "the_end" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.END).generator();
                 case "overworld" -> preset.overworld().orElseThrow().generator();
                 default -> throw new IllegalArgumentException("Unsupported dimension");
             };

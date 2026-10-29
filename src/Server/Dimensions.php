@@ -79,6 +79,8 @@ trait Dimensions
             $this->teleport($c, $position);
             return;
         }
+        // The player is a new entity there (or after respawning), with a fresh ServerEntity.
+        $c->motionTracker = null;
         $this->withDimension($c->dimension, function () use ($c): void {
             $this->closeWindow($c, true);
             foreach ($this->localPlayers() as $other) {
@@ -114,6 +116,7 @@ trait Dimensions
             $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
             $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
             $this->teleport($c, $position ?? $this->safeArrival($this->world->spawn()));
+            $this->playerMotionTracker($c);
             foreach ($this->localPlayers() as $other) {
                 if ($other !== $c) {
                     $this->spawnPlayer($c, $other);
@@ -121,6 +124,63 @@ trait Dimensions
                 }
             }
             $this->savePlayer($c);
+        });
+    }
+
+    /**
+     * EnderDragonFight.spawnExitPortal(true) once the main island's centre is generated. The
+     * dragon fight is not implemented, so a vanilla End starts as it is after the dragon's
+     * defeat: an active exit portal on the podium (EndPodiumFeature).
+     */
+    private function placeEndExitPortal(): void
+    {
+        $end = $this->worlds['the_end'] ?? null;
+        if ($end?->vanilla === null || $end->setting('exitPortal') !== null) {
+            return;
+        }
+        foreach ([[-1, -1], [0, -1], [-1, 0], [0, 0]] as [$cx, $cz]) {
+            if (!$end->ready($cx, $cz)) {
+                $end->requestGeneration($cx, $cz, 110, 60.0);
+                return;
+            }
+        }
+        $this->withDimension('the_end', function () use ($end): void {
+            $catalog = $this->version->catalog;
+            $y = $end->minY + $end->height - 1;
+            while ($y > $end->minY && !$catalog->motionBlocking($end->get(0, $y, 0))) {
+                --$y;
+            }
+            while ($catalog->blockName($end->get(0, $y, 0)) === 'bedrock' && $y > 63) {
+                --$y;
+            }
+            $y = max($end->minY + 1, $y);
+            $state = static fn (string $name): int => $catalog->state($name);
+            for ($dz = -4; $dz <= 4; ++$dz) {
+                for ($dy = -1; $dy <= 32; ++$dy) {
+                    for ($dx = -4; $dx <= 4; ++$dx) {
+                        $distance = $dx * $dx + $dy * $dy + $dz * $dz;
+                        $insideRim = $distance < 6.25;
+                        if (!$insideRim && $distance >= 12.25) {
+                            continue;
+                        }
+                        $block = match (true) {
+                            $dy < 0 => $insideRim ? 'bedrock' : 'end_stone',
+                            $dy > 0 => 'air',
+                            default => $insideRim ? 'end_portal' : 'bedrock',
+                        };
+                        if ($catalog->blockName($end->get($dx, $y + $dy, $dz)) !== $block) {
+                            $this->setBlock($dx, $y + $dy, $dz, $state($block));
+                        }
+                    }
+                }
+            }
+            for ($dy = 0; $dy < 4; ++$dy) {
+                $this->setBlock(0, $y + $dy, 0, $state('bedrock'));
+            }
+            foreach (['north' => [0, -1], 'east' => [1, 0], 'south' => [0, 1], 'west' => [-1, 0]] as $facing => [$dx, $dz]) {
+                $this->setBlock($dx, $y + 2, $dz, $catalog->state('wall_torch', ['facing' => $facing]));
+            }
+            $end->setting('exitPortal', [0, $y, 0]);
         });
     }
 

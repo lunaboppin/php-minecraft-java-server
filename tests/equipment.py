@@ -61,11 +61,11 @@ def main():
                 assert collect(b,a.entity_id,start)=={0:{'item':wire.BLOCKS['items']['shield'],'count':1},1:{'item':wire.BLOCKS['items']['stone'],'count':12}}
                 start=len(b.seen);edit(a,5,None);edit(a,37,None);a.tick_barrier();b.tick_barrier()
                 assert collect(b,a.entity_id,start)=={0:None,5:None}
-                # Late observers receive every slot, including explicit empty hands/head.
+                # Late observers receive the occupied slots only (ServerEntity.sendPairingData).
                 late=Probe(port,'late').login('LateWatcher')
                 try:
                     snapshot=collect(late,a.entity_id)
-                    assert set(snapshot)==set(range(6)) and snapshot[0] is None and snapshot[5] is None
+                    assert 0 not in snapshot and 5 not in snapshot and None not in snapshot.values(),snapshot
                     assert snapshot[1]['count']==12 and snapshot[4]['item']==wire.BLOCKS['items']['diamond_chestplate']
                 finally:late.close()
                 command(a,'dimension the_nether');b.tick_barrier();start=len(b.seen)
@@ -93,7 +93,7 @@ def main():
             a=Probe(port,'restored').login('Wearer');b=Probe(port,'restored-observer').login('Watcher')
             try:
                 snapshot=collect(b,a.entity_id)
-                assert snapshot[0]['item']==wire.BLOCKS['items']['golden_axe'] and snapshot[5] is None
+                assert snapshot[0]['item']==wire.BLOCKS['items']['golden_axe'] and 5 not in snapshot
                 assert snapshot[0]['damage']==7,'damage component lost'
                 assert snapshot[0]['enchantments']=={'minecraft:sharpness':3,'minecraft:unbreaking':255},'enchantments lost on restore/equipment'
                 assert snapshot[0]['removedComponents']==['minecraft:enchantable'],'component removal lost'

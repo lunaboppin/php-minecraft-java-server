@@ -25,7 +25,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
  * Official Overworld chunks after each terrain stage: biomes, noise fill, material (surface)
  * rules and carvers, generated offline by the pinned server's own NoiseBasedChunkGenerator.
  * Structures are not placed, so chunks near structures with terrain adaptation differ from a
- * real world. Usage: output seed cx:cz [cx:cz ...]; -Ddimension=the_nether exports the Nether.
+ * real world. Usage: output seed cx:cz [cx:cz ...]; -Ddimension=the_nether or the_end exports that dimension.
  */
 public class ExportWorldgenChunks {
     public static void main(String[] args) throws Exception {
@@ -38,6 +38,7 @@ public class ExportWorldgenChunks {
             var preset = access.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).value();
             var stem = switch (System.getProperty("dimension", "overworld")) {
                 case "the_nether" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.NETHER);
+                case "the_end" -> preset.createWorldDimensions().dimensions().get(net.minecraft.world.level.dimension.LevelStem.END);
                 case "overworld" -> preset.overworld().orElseThrow();
                 default -> throw new IllegalArgumentException("Unsupported dimension");
             };

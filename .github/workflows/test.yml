@@ -148,6 +148,7 @@ jobs:
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
           python3 tests/spawn-protection.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-spawn-protection
           python3 tests/block-breaking.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
@@ -157,6 +158,7 @@ jobs:
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
             tools/.cache/block-breaking/
+            tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
             tools/.cache/equipment-stack-verification/

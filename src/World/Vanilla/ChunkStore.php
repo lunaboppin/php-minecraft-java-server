@@ -9,6 +9,9 @@ use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Decorator;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\ProtoChunk;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
 /**
  * Vanilla Overworld or Nether chunks stored in the world database while they move through
@@ -25,6 +28,8 @@ final class ChunkStore
     private ?OverworldGenerator $generator = null;
 
     private ?Decorator $decorator = null;
+
+    private ?ShapeUpdater $shapes = null;
 
     private ?Blocks $blocks = null;
 
@@ -66,7 +71,9 @@ final class ChunkStore
     ) {
         $db->exec('CREATE TABLE IF NOT EXISTS vanilla_chunks(cx INTEGER NOT NULL,cz INTEGER NOT NULL,status INTEGER NOT NULL,blocks BLOB NOT NULL,biomes BLOB NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_requests(cx INTEGER NOT NULL,cz INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(cx,cz));'
-            . 'CREATE TABLE IF NOT EXISTS vanilla_claims(cx INTEGER NOT NULL,cz INTEGER NOT NULL,claimed REAL NOT NULL,PRIMARY KEY(cx,cz))');
+            . 'CREATE TABLE IF NOT EXISTS vanilla_claims(cx INTEGER NOT NULL,cz INTEGER NOT NULL,claimed REAL NOT NULL,PRIMARY KEY(cx,cz));'
+            // Structure blocks whose shapes are updated once the chunk and its neighbours are decorated.
+            . 'CREATE TABLE IF NOT EXISTS vanilla_post_processing(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,PRIMARY KEY(x,y,z))');
         // Worldgen heightmaps of the carved chunk, kept while neighbours decorate into it.
         $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('heights', $columns, true)) {
@@ -86,12 +93,55 @@ final class ChunkStore
 
     private function generator(): OverworldGenerator
     {
-        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory, $this->dimension === 'the_nether' ? 'nether' : 'overworld');
+        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory, match ($this->dimension) { 'the_nether' => 'nether', 'the_end' => 'end', default => 'overworld' });
     }
 
     private function decorator(): Decorator
     {
-        return $this->decorator ??= new Decorator($this->blocks(), new BiomeClimate($this->version->directory . '/worldgen'), $this->version->directory . '/worldgen', $this->dimension);
+        if ($this->decorator === null) {
+            $this->decorator = new Decorator($this->blocks(), new BiomeClimate($this->version->directory . '/worldgen'), $this->version->directory . '/worldgen', $this->dimension);
+            $generator = $this->generator();
+            $this->decorator->structures = new Structures($generator->settings, $generator->biomes, $this->version->directory . '/worldgen', $this->db);
+        }
+        return $this->decorator;
+    }
+
+    /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
+    private function postProcess(int $cx, int $cz, array $blocks): array
+    {
+        $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=?');
+        $q->execute([$cx, $cz]);
+        $marks = $q->fetchAll(\PDO::FETCH_NUM);
+        if ($marks === []) {
+            return $blocks;
+        }
+        $minY = $this->generator()->settings->minY;
+        $neighbours = ["$cx,$cz" => &$blocks];
+        $get = function (int $x, int $y, int $z) use (&$neighbours, $minY): int {
+            $key = ($x >> 4) . ',' . ($z >> 4);
+            if (!array_key_exists($key, $neighbours)) {
+                $q = $this->db->prepare('SELECT blocks FROM vanilla_chunks WHERE cx=? AND cz=?');
+                $q->execute([$x >> 4, $z >> 4]);
+                $blob = $q->fetchColumn();
+                $neighbours[$key] = $blob === false ? null : self::decode($blob);
+            }
+            return $neighbours[$key][(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] ?? 0;
+        };
+        $this->shapes ??= new ShapeUpdater($this->blocks(), new Survival($this->blocks(), $this->version->directory . '/worldgen/block-behaviour.json'));
+        foreach ($marks as [$x, $y, $z]) {
+            $index = (($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15);
+            $updated = $this->shapes->update($blocks[$index], $x, $y, $z, $get);
+            if ($updated !== null) {
+                $blocks[$index] = $updated;
+            }
+        }
+        $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=? WHERE cx=? AND cz=?');
+        $update->bindValue(1, self::encode($blocks), \PDO::PARAM_LOB);
+        $update->bindValue(2, $cx, \PDO::PARAM_INT);
+        $update->bindValue(3, $cz, \PDO::PARAM_INT);
+        $update->execute();
+        $this->db->prepare('DELETE FROM vanilla_post_processing WHERE cx=? AND cz=?')->execute([$cx, $cz]);
+        return $blocks;
     }
 
     private static function encode(array $blocks): string
@@ -204,7 +254,7 @@ final class ChunkStore
         if (count($this->final) >= 64) {
             array_shift($this->final);
         }
-        $blocks = self::decode($blocks);
+        $blocks = $this->postProcess($cx, $cz, self::decode($blocks));
         $biomes = explode("\n", $biomes);
         // The Nether generates its lower 128 blocks; above them is air, and its biomes do not vary with height.
         if (count($blocks) < $this->worldHeight * 256) {
@@ -271,7 +321,15 @@ final class ChunkStore
                 return;
             }
             $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $settings->height, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed);
-            $this->decorator()->decorate($region);
+            $decorator = $this->decorator();
+            $decorator->decorate($region);
+            $marks = $this->db->prepare('INSERT OR IGNORE INTO vanilla_post_processing(cx,cz,x,y,z) VALUES(?,?,?,?,?)');
+            foreach ($decorator->structureContext?->postProcessing ?? [] as [$x, $y, $z]) {
+                $marks->execute([$x >> 4, $z >> 4, $x, $y, $z]);
+            }
+            if ($decorator->structureContext !== null) {
+                $decorator->structureContext->postProcessing = [];
+            }
             $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=?,status=MAX(status,?) WHERE cx=? AND cz=?');
             foreach ($chunks as $chunk) {
                 $update->bindValue(1, self::encode($chunk->blocks), \PDO::PARAM_LOB);

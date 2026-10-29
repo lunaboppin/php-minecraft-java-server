@@ -58,9 +58,9 @@ class World
         // Enabling vanilla terrain keeps every chunk players changed, with a margin, and the
         // chunks players are standing in; all other chunks are generated again with vanilla.
         if($dimension==='overworld' && $generator==='terrain' && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaTerrain());}
-        // The Nether recorded no generated chunks, so its edited chunks are recorded as kept instead.
-        if($dimension==='the_nether' && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaNether());}
-        $this->vanilla=(($dimension==='overworld' && $generator==='terrain') || $dimension==='the_nether') && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed,$dimension,$this->height):null;
+        // The Nether and End recorded no generated chunks, so their edited chunks are recorded as kept instead.
+        if(($dimension==='the_nether' || $dimension==='the_end') && $vanillaTerrain && $this->setting('vanilla')===null){$this->transaction(fn()=>$this->adoptVanillaDimension());}
+        $this->vanilla=(($dimension==='overworld' && $generator==='terrain') || $dimension!=='overworld') && $this->setting('vanilla')!==null?new Vanilla\ChunkStore($this->db,$version,$this->seed,$dimension,$this->height):null;
         if($this->vanilla!==null && $this->setting('vanillaSpawnPending')){
             // The spawn surface is refined to the decorated column once the chunk exists.
             $this->setting('spawn',$this->vanilla->findSpawn());
@@ -94,7 +94,7 @@ class World
         if($this->setting('spawn')===null && !isset($kept['0:0'])){$this->setting('vanillaSpawnPending',true);}
         $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>$moved]);
     }
-    private function adoptVanillaNether():void {
+    private function adoptVanillaDimension():void {
         $kept=$this->keptChunks();$q=$this->db->prepare('INSERT OR IGNORE INTO generation(cx,cz,legacy) VALUES(?,?,0)');
         foreach(array_keys($kept) as $key){[$cx,$cz]=explode(':',$key);$q->execute([(int)$cx,(int)$cz]);}
         $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>0]);
@@ -104,7 +104,7 @@ class World
         $q=$this->db->prepare('SELECT value FROM metadata WHERE key=?');$q->execute([$key]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
     }
     public function hashedSeed():int {return unpack('P',substr(hash('sha256',pack('P',$this->seed),true),0,8))[1];}
-    public function spawn():array {return $this->setting('spawn')??match($this->dimension){'the_end'=>[100.5,65.0,0.5],'the_nether'=>[0.5,72.0,0.5],default=>[0.5,$this->terrain===null?64.0:65.0,0.5]};}
+    public function spawn():array {return $this->setting('spawn')??match($this->dimension){'the_end'=>[100.5,$this->vanilla===null?65.0:49.0,0.5],'the_nether'=>[0.5,72.0,0.5],default=>[0.5,$this->terrain===null?64.0:65.0,0.5]};}
     private function generatorFor(int $cx,int $cz):TerrainGenerator|DimensionGenerator|Vanilla\ChunkStore|null {
         if($this->legacyTerrain===null && ($this->vanilla??null)===null){return $this->terrain;}
         $key=$cx.':'.$cz;if(isset($this->generationCache[$key])){return $this->generationCache[$key];}
