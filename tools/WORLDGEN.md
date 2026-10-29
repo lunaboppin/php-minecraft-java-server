@@ -84,12 +84,20 @@ Starts and their pieces' state live in the world database (`vanilla_structure_st
 
 Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: ocean ruins, strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+Ported so far: ruined portals, ocean ruins, strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
 - the hut at chunk -17, 22, including its stair shapes and fence connections;
 - the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
 - the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
 - the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
 - the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
+
+Ruined portals (`RuinedPortal`) port `RuinedPortalStructure` and `RuinedPortalPiece`.
+- **Start:** a weighted setup, the air pocket chance, the template (5% giant), rotation, mirror and pivot, then `findSuitableY` over the noise columns at the four corners (`NoiseChunk::baseColumn`), and the snowy-cold check.
+- **Placement:** only the chunk at the portal's centre places it, writing the whole box.
+- **Processors:** rule, block age, protected blocks, lava submerged and blackstone replace.
+- **Afterwards:** spread netherrack, drip columns, vines and overgrown leaves.
+
+For seed 42, the portal at chunk -19, -38 has the official template, box, rotation, mirror and properties, and none of its blocks differ.
 
 Ocean ruins (`OceanRuin`) port `OceanRuinPieces`:
 - Warm sandstone ruins.
