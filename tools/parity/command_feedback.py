@@ -284,6 +284,10 @@ SCRIPT = [
     ('damage @e[type=giant,limit=1] 1', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 0 101 0 minecraft:stone', False),
     ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 101 0 minecraft:air', False),
     ('!quiet gamemode creative @s', False),
+    # A dropped item has 5 health, truncated after each hit, and goes at 0; the operator stands clear of it.
+    ('!quiet tp @s 0 110 6', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
+    ('damage @e[type=item,limit=1] 2', False), ('damage @e[type=item,limit=1] 2.9 in_fire', False), ('damage @e[type=item,limit=1] 1', False),
+    ('damage @e[type=item,limit=1] 1', False),
     ('list', False),
 ]
 

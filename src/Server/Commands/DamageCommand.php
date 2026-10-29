@@ -37,12 +37,18 @@ trait DamageCommand
             $attacker = $attackers[0];
         }
         $target = $targets[0];
-        // Mobs take LivingEntity.hurtServer as players do; item entities are not supported yet.
-        $hurt = isset($target['client']) ? $this->damage($target['client'], $amount, $type, $attacker)
-            : (isset($target['mob']) && $this->withDimension($sender->dimension, fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)));
+        // The reply names the entity even when the damage removes it.
+        $name = $this->entityName($target);
+        // Mobs take LivingEntity.hurtServer as players do; dropped items take ItemEntity.hurtServer.
+        $hurt = match (true) {
+            isset($target['client']) => $this->damage($target['client'], $amount, $type, $attacker),
+            isset($target['mob']) => $this->withDimension($sender->dimension, fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)),
+            isset($target['item']) => $this->withDimension($sender->dimension, fn () => $this->hurtItem($target['item'], $amount, $type)),
+            default => false,
+        };
         if (!$hurt) {
             throw new CommandFailure(['translate' => 'commands.damage.invulnerable']);
         }
-        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, $this->entityName($target)]], true);
+        $this->sendSuccess($sender, ['translate' => 'commands.damage.success', 'with' => [$amount, $name]], true);
     }
 }

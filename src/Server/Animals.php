@@ -206,7 +206,7 @@ trait Animals
         if ($newWindow) {
             $animal['lastHurtTick'] = $this->ticks;
         }
-        $attributes = $this->version->catalog->mobs['entities'][$animal['kind']]['attributes'];
+        $attributes = $this->mobAttributes($animal);
         $applied = Combat::afterArmor($incoming, $attributes['armor'] ?? 0, $attributes['armor_toughness'] ?? 0);
         $animal['health'] = max(0.0, Float32::round($animal['health'] - $applied));
         if ($newWindow) {

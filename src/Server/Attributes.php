@@ -131,6 +131,18 @@ trait Attributes
         }
     }
 
+    /** The type's default attributes with the mob's own base values and modifiers applied. */
+    private function mobAttributes(array $mob): array
+    {
+        $attributes = $this->version->catalog->mobs['entities'][$mob['kind']]['attributes'];
+        foreach (array_keys(($mob['attributeBases'] ?? []) + ($mob['attributeModifiers'] ?? [])) as $name) {
+            if (isset($attributes[$name])) {
+                $attributes[$name] = $this->attributeValue($mob['kind'], $mob['attributeBases'] ?? [], $mob['attributeModifiers'] ?? [], $name);
+            }
+        }
+        return $attributes;
+    }
+
     /** A mob's synchronized attributes, as sent when it starts being tracked or changes. */
     private function mobAttributeEntries(array $mob, ?array $names = null): array
     {

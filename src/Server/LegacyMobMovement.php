@@ -17,7 +17,7 @@ trait LegacyMobMovement
     private function moveLegacyMob(array &$mob, Noise $noise): void
     {
         $kind = $mob['kind'];
-        $info = $this->version->catalog->mobs['entities'][$kind];
+        $info = ['attributes' => $this->mobAttributes($mob)] + $this->version->catalog->mobs['entities'][$kind];
         $collision = new Collision($this->version->catalog);
         $flying = in_array($kind, self::FLYING_MOBS, true);
         $swimming = in_array($kind, self::SWIMMING_MOBS, true);

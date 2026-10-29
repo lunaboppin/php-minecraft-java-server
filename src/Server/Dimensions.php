@@ -79,6 +79,8 @@ trait Dimensions
             $this->teleport($c, $position);
             return;
         }
+        // The player is a new entity there (or after respawning), with a fresh ServerEntity.
+        $c->motionTracker = null;
         $this->withDimension($c->dimension, function () use ($c): void {
             $this->closeWindow($c, true);
             foreach ($this->localPlayers() as $other) {
@@ -113,6 +115,7 @@ trait Dimensions
             $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
             $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
             $this->teleport($c, $position ?? $this->safeArrival($this->world->spawn()));
+            $this->playerMotionTracker($c);
             foreach ($this->localPlayers() as $other) {
                 if ($other !== $c) {
                     $this->spawnPlayer($c, $other);
