@@ -571,6 +571,8 @@ final class Server
         $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
         $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
         $this->scheduleChunks($c);
+        // The player's ServerEntity starts with them, counting ticks from here.
+        $this->playerMotionTracker($c);
         $this->broadcastPlayerPosition($c);
         foreach ($others as $other) {
             $this->spawnPlayer($c, $other);
@@ -599,15 +601,21 @@ final class Server
         if (isset($recipient->entities[$player->entityId]) || !$this->tracksPlayer($recipient, $player)) {
             return;
         }
-        $recipient->send($this->version, 'add_entity', Packets::addPlayer($player->entityId, $player->uuid, $this->version->blocks['player_entity_type'], $player->x, $player->y, $player->z, $player->yaw, $player->pitch));
-        $recipient->send($this->version, 'rotate_head', Packets::headRotation($player->entityId, $player->yaw));
-        $recipient->send($this->version, 'set_entity_data', Packets::playerAppearance($this->version->catalog, $player->entityId, $player->information['skinParts'] ?? 0, $player->information['mainHand'] ?? 1));
+        // ServerEntity.sendPairingData: the spawn from the last synced position, then the
+        // non-default entity data, the synchronized attributes and any equipment.
+        $recipient->send($this->version, 'add_entity', $this->playerMotionTracker($player)->spawnPacket($player->uuid, $this->version->blocks['player_entity_type']));
+        $data = $this->playerPairingData($player);
+        if ($data !== null) {
+            $recipient->send($this->version, 'set_entity_data', $data);
+        }
         $attributes = $this->pairingAttributes($player);
         if ($attributes !== null) {
             $recipient->send($this->version, 'update_attributes', $attributes);
         }
-        $recipient->send($this->version, 'set_equipment', Packets::equipment($player->entityId, $this->playerEquipment($player), $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
-        $recipient->send($this->version, 'set_entity_data', $this->playerMetadata($player));
+        $equipment = array_filter($this->playerEquipment($player), static fn (?array $stack): bool => $stack !== null);
+        if ($equipment !== []) {
+            $recipient->send($this->version, 'set_equipment', Packets::equipment($player->entityId, $equipment, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+        }
         $recipient->entities[$player->entityId] = true;
     }
 
@@ -1297,6 +1305,7 @@ final class Server
                         $c->attributesSent = true;
                     }
                     $this->refreshTracking($c);
+                    $this->synchronizePlayerMotion($c);
                 });
             } catch (ProtocolException $e) {
                 $this->disconnect($c, $e->getMessage());

@@ -22,7 +22,7 @@ def main():
                 b.until('rotate_head',lambda p:wire.read_vi(p)[0]==a.entity_id and p[-1]==32)
                 late=Probe(port,'late').login('LateObserver')
                 try:
-                    assert any(n=='rotate_head' and wire.read_vi(p)[0]==a.entity_id and p[-1]==32 for n,p in late.seen)
+                    # ServerEntity.sendPairingData carries the head yaw in the spawn, without a rotate_head.
                     spawned=next(p for n,p in late.seen if n=='add_entity' and wire.read_vi(p)[0]==a.entity_id)
                     _,off=wire.read_vi(spawned);_,off=wire.read_vi(spawned,off+16)
                     assert spawned[off+26]==32,'spawn head yaw'

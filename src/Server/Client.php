@@ -118,6 +118,9 @@ final class Client
     /** @var array<int, ?array> the equipment stacks whose attribute modifiers are applied */
     public array $equipmentModifierStacks = [];
     public ?string $lastPlayerMetadata = null;
+    public ?float $lastTrackedHealth = null;
+    /** ServerEntity's movement state for those tracking this player; a new entity starts afresh. */
+    public ?\PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker $motionTracker = null;
     public float $chatAt = 0;
     public int $packetsThisSecond = 0;
     public float $packetWindow;
