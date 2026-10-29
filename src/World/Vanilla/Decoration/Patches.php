@@ -837,7 +837,7 @@ final class Patches
             $thicknesses[] = $merged ? 'tip_merge' : 'tip';
         }
         foreach ($thicknesses as $thickness) {
-            $state = $this->blocks->with($this->blocks->with($pointed, 'tip_direction', $tip), 'thickness', $thickness);
+            $state = $this->blocks->with($this->blocks->with($pointed, 'vertical_direction', $tip), 'thickness', $thickness);
             $here = $region->get($x, $y, $z);
             $state = $this->blocks->with($state, 'waterlogged', $this->blocks->isWater($here) ? 'true' : 'false');
             $region->set($x, $y, $z, $state);
