@@ -345,6 +345,8 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->largeDripstone($feature, $region, $random, $x, $y, $z);
             case 'speleothem_cluster':
                 return ($this->patches ??= new Patches($this))->speleothemCluster($feature, $region, $random, $x, $y, $z);
+            case 'root_system':
+                return ($this->patches ??= new Patches($this))->rootSystem($feature, $region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }

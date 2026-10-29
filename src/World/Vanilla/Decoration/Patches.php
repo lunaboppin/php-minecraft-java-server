@@ -1221,4 +1221,84 @@ final class Patches
         }
         return $list;
     }
+
+    /** RootSystemFeature: a tree on the surface above, with roots down to the cave ceiling. */
+    public function rootSystem(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        if (!$this->blocks->isAir($region->get($x, $y, $z))) {
+            return false;
+        }
+        $treeY = $y;
+        for ($i = 0; $i < $feature['root_column_max_height']; ++$i) {
+            ++$treeY;
+            if ($region->height(Region::WORLD_SURFACE, $x, $z) < $treeY) {
+                return true;
+            }
+            if ($this->decorator->predicates->test($feature['allowed_tree_position'], $region, $x, $treeY, $z) && $this->spaceForTree($feature, $region, $x, $treeY, $z)) {
+                $below = $region->get($x, $treeY - 1, $z);
+                if ($this->blocks->isLava($below) || !$this->blocks->isSolid($below)) {
+                    return true;
+                }
+                if ($this->decorator->placePlaced($feature['feature'], $region, $random, [$x, $treeY, $z])) {
+                    for ($dirtY = $y; $dirtY < $y + $i; ++$dirtY) {
+                        $this->placeRootedDirt($feature, $region, $random, $x, $dirtY, $z);
+                    }
+                    $this->placeHangingRoots($feature, $region, $random, $x, $y, $z);
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+
+    private function spaceForTree(array $feature, Region $region, int $x, int $y, int $z): bool
+    {
+        for ($i = 1; $i <= $feature['required_vertical_space_for_tree']; ++$i) {
+            $state = $region->get($x, $y + $i, $z);
+            if (!$this->blocks->isAir($state) && !($i + 1 <= $feature['allowed_vertical_water_for_tree'] && $this->blocks->isWater($state))) {
+                return false;
+            }
+        }
+        $distance = $feature['level_test_distance'];
+        if ($distance > 0) {
+            $deviation = $feature['max_level_deviation'];
+            foreach ([[0, 1], [-1, 0], [0, -1], [1, 0]] as [$dx, $dz]) {
+                $cornerX = $x + $dx * $distance;
+                $cornerZ = $z + $dz * $distance;
+                if ($this->blocks->isAir($region->get($cornerX, $y - $deviation, $cornerZ)) || !$this->blocks->isAir($region->get($cornerX, $y + $deviation, $cornerZ))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private function placeRootedDirt(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): void
+    {
+        $radius = $feature['root_radius'];
+        for ($i = 0; $i < $feature['root_placement_attempts']; ++$i) {
+            $px = $x + $random->nextInt($radius) - $random->nextInt($radius);
+            $pz = $z + $random->nextInt($radius) - $random->nextInt($radius);
+            if ($this->blocks->is($region->get($px, $y, $pz), $feature['root_replaceable'])) {
+                $region->set($px, $y, $pz, $this->decorator->providers->state($feature['root_state_provider'], $region, $random, $px, $y, $pz));
+            }
+        }
+    }
+
+    private function placeHangingRoots(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): void
+    {
+        $radius = $feature['hanging_root_radius'];
+        $span = $feature['hanging_roots_vertical_span'];
+        for ($i = 0; $i < $feature['hanging_root_placement_attempts']; ++$i) {
+            $px = $x + $random->nextInt($radius) - $random->nextInt($radius);
+            $py = $y + $random->nextInt($span) - $random->nextInt($span);
+            $pz = $z + $random->nextInt($radius) - $random->nextInt($radius);
+            if ($this->blocks->isAir($region->get($px, $py, $pz))) {
+                $state = $this->decorator->providers->state($feature['hanging_root_state_provider'], $region, $random, $px, $py, $pz);
+                if ($this->decorator->survival->canSurvive($state, $region, $px, $py, $pz) && $this->blocks->sturdy($region->get($px, $py + 1, $pz), Blocks::DOWN)) {
+                    $region->set($px, $py, $pz, $state);
+                }
+            }
+        }
+    }
 }

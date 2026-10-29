@@ -53,6 +53,7 @@ Ported features:
 - Trees: straight, forking, giant, mega jungle, dark oak, fancy, bending, cherry and upwards branching (mangrove) trunks with the mangrove root placer; blob, bush, fancy, spruce, pine, mega pine, acacia, jungle, dark oak, random spread and cherry foliage; beehive, leaf and trunk vine, cocoa, alter ground, place-on-ground, attached-to-logs and attached-to-leaves decorators; leaf distances. Decorators walk logs and leaves in Java `HashSet` order sorted by Y, which decides their random draws, so that order is reproduced.
 
 - Fossils, placed from structure templates. `tools/update_reference.py` converts the templates the generator uses from NBT to JSON (`reference/26.3/worldgen/template`); `Templates` places them with rotation and the block rot, rule and protected blocks processors.
+- Root systems: rooted azalea trees, which reach from a lush cave ceiling to the surface with rooted dirt and hanging roots below them, and sulfur springs. For seed 42 chunks −9..−7, −25..−23, the rooted dirt, hanging roots and azalea leaves match the official server block for block.
 
 Not ported yet: structures, poplar trunks, block entity data in templates, and the tree edge shape updates.
 
