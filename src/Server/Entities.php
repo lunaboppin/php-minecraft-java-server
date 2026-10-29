@@ -100,6 +100,28 @@ trait Entities
         }
     }
 
+    /** ItemEntity.addAdditionalSaveData: what survives a restart, with its UUID but not its network ID. */
+    private function savedItem(array $item): array
+    {
+        return ['uuid' => bin2hex($item['uuid']), 'target' => $item['target'] === null ? null : bin2hex($item['target'])]
+            + array_intersect_key($item, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'stack', 'age', 'pickupDelay', 'health']));
+    }
+
+    /** Items saved with the world come back with new network IDs. */
+    private function restoreItems(): void
+    {
+        foreach ($this->world->setting('items') ?? [] as $saved) {
+            if (!isset($saved['stack']['item'], $saved['stack']['count'], $saved['uuid']) || $saved['stack']['count'] <= 0) {
+                continue;
+            }
+            $id = $this->nextEntity++;
+            $this->itemEntities[$id] = ['id' => $id, 'uuid' => hex2bin($saved['uuid']), 'x' => (float) $saved['x'], 'y' => (float) $saved['y'], 'z' => (float) $saved['z'],
+                'yaw' => (float) ($saved['yaw'] ?? 0.0), 'velocity' => array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), 'stack' => $saved['stack'],
+                'age' => (int) ($saved['age'] ?? 0), 'pickupDelay' => (int) ($saved['pickupDelay'] ?? 0), 'target' => isset($saved['target']) ? hex2bin($saved['target']) : null,
+                'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false, 'created' => $this->ticks, 'dirty' => true];
+        }
+    }
+
     private function itemMetadata(array $entity): string
     {
         return Binary::writeVarInt($entity['id']) . chr($this->version->catalog->itemMetadataIndex) . Binary::writeVarInt($this->version->catalog->itemMetadataSerializer) . Packets::stack($entity['stack'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks) . "\xff";

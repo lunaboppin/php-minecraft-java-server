@@ -91,6 +91,7 @@ final class Server
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
                 $this->restoreAnimals();
+                $this->restoreItems();
                 $this->restoreBlockSimulation();
             });
         }

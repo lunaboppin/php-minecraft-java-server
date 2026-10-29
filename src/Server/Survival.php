@@ -107,6 +107,7 @@ trait Survival
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();
                 $this->world->setting('animals', $this->animals);
+                $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });

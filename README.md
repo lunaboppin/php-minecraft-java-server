@@ -114,7 +114,7 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
   - **Where they appear:** broken blocks pop drops near the centre (10 ticks before pickup). Mobs drop at their feet (10 ticks). Players throw along their look from 0.3 below the eyes (40 ticks), and death scatters their inventory at random. Containers spill parts of 10 to 30 that can be taken at once. `/give` leftovers go only to their target, at once.
   - **Network:** items are tracked with their type's profile. Each new or changed stack is sent again with the next tracker update.
 
-  `tests/item-entities.py` checks these against the official server. Item entities are not saved across restarts yet.
+  `tests/item-entities.py` checks these against the official server. Items are saved with their dimension and come back after a restart with their UUID, stack, age, pickup delay, target and motion (`tests/item-persistence.py`).
 - Broader creative inventory access to plain vanilla items, and basic block placement properties for logs, stairs, slabs, facing blocks, doors and beds. Door/trapdoor/gate interactions toggle open states; beds set personal respawn points.
 - Server-owned inventory state with left/right clicking, shift transfer, number-key swaps, cloning in creative, dropping, collecting matching items, and drag distribution. Client-predicted item hashes never create authoritative stacks.
 - Ordinary vanilla 2×2 and 3×3 shaped/shapeless crafting recipes, including item-tag ingredients and mirrored patterns. Special crafting types, custom component results and the recipe book are not implemented.
