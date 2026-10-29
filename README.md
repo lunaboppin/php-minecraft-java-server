@@ -70,7 +70,7 @@ The generator name, seed, and algorithm version are saved in the database. **Use
 
 ### Vanilla Overworld terrain
 
-Set `"vanillaTerrain": true` to generate the Overworld with the official Minecraft 26.3 pipeline, ported to PHP in `src/World/Vanilla`. A given seed then produces vanilla terrain: noise-router shapes and caves, aquifers, multi-noise biomes, surface rules, ore veins, carvers and the decoration features. Those features include ores, trees, vegetation, lakes, lush-cave patches, monster rooms, geodes and freezing. Structures are not generated yet. See [the worldgen evidence](tools/WORLDGEN.md) for what is checked against the official server.
+Set `"vanillaTerrain": true` to generate the Overworld and the Nether with the official Minecraft 26.3 pipeline, ported to PHP in `src/World/Vanilla`. A given seed then produces vanilla terrain: noise-router shapes and caves, aquifers, multi-noise biomes, surface rules, ore veins, carvers and the decoration features. Those features include ores, trees, vegetation, lakes, lush-cave patches, monster rooms, geodes and freezing. Structures are not generated yet. See [the worldgen evidence](tools/WORLDGEN.md) for what is checked against the official server.
 
 Each chunk takes about a second of PHP, so `generationWorkers` background processes (default 3) generate chunks ahead of the players. A chunk is sent once it and its eight neighbours are decorated. Chunks near players come first. When no chunk is wanted, the workers generate the area within `pregenerateRadius` chunks of spawn (default 32; 0 turns it off), so that area loads straight away. Generated chunks are stored in the world database (`vanilla_chunks`), about 35 KB each; player edits overlay them as before.
 
@@ -127,6 +127,8 @@ Everyone can use `/help`, `/spawn`, `/list`, `/msg`, `/tell` and `/me`.
 Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. `/op` and `/deop` change the list in game and save it to `server.json` immediately, as vanilla saves `ops.json`; only the `operators` value is rewritten.
 
 As on a vanilla dedicated server, `spawnProtection` (default 16, the `spawn-protection` default) stops players who are not operators from breaking or using blocks whose x or z lies within that many blocks of the world spawn. They see vanilla's red `build.spawn_protection` notice instead. It applies only in the Overworld and only while at least one operator is set; 0 turns it off. `tests/spawn-protection.py` compares it with the official server.
+
+Movement packets are checked as the official server checks them. A client gets one position per tick, ended by `client_tick_end`. NaN coordinates, non-finite rotations, and a repeated confirmation of the latest teleport disconnect it with `multiplayer.disconnect.invalid_player_movement`. Coordinates beyond the world limits are clamped. While the `player_movement_check` game rule is on, a player who moves too far from where their last tick left them is teleported back. The limit is ten blocks for the tick's first movement packet. For later packets in the same tick, the squared distance may be 100 times the packet count; after five packets the count goes back to one. While a teleport is unconfirmed, movement packets only turn the player. After twenty ticks, the next one sends the teleport again. Rotations wrap to ±180 degrees, and pitch is kept within ±90. `tests/movement-checks.py` compares these cases with the official server.
 
 Operator commands include:
 

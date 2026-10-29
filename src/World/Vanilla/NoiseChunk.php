@@ -6,7 +6,8 @@ namespace PhpMinecraftJavaServer\World\Vanilla;
 
 /**
  * NoiseChunk and NoiseBasedChunkGenerator.doFill for one chunk: the final density volume and
- * the aquifer, sharing one caching sampler context with the later stages.
+ * the aquifer, sharing one caching sampler context with the later stages. Noise settings
+ * without aquifers (the Nether) use Aquifer.createDisabled.
  */
 final class NoiseChunk
 {
@@ -14,15 +15,15 @@ final class NoiseChunk
 
     public readonly Volume $volume;
 
-    public readonly Aquifer $aquifer;
+    public readonly ?Aquifer $aquifer;
 
     public function __construct(public readonly OverworldSettings $settings, int $chunkX, int $chunkZ, ?Volume $volume = null)
     {
         $this->context = new SamplerContext();
         $this->volume = $volume ?? new Volume(16, $settings->height, 16, $chunkX * 16, $settings->minY, $chunkZ * 16);
-        $aquifers = $settings->json['aquifers'];
+        $aquifers = $settings->json['aquifers'] ?? null;
         $state = $settings->state;
-        $this->aquifer = new Aquifer(
+        $this->aquifer = $aquifers === null ? null : new Aquifer(
             $this->context,
             $state->sampler($aquifers['barrier']),
             $state->sampler($aquifers['fluid_level_floodedness']),
@@ -36,6 +37,20 @@ final class NoiseChunk
         );
     }
 
+    /** Aquifer.computeSubstance: null keeps the default block. */
+    public function substance(int $x, int $y, int $z, float $density): ?string
+    {
+        if ($this->aquifer !== null) {
+            return $this->aquifer->computeSubstance($x, $y, $z, $density);
+        }
+        if ($density > 0.0) {
+            return null;
+        }
+        // NoiseBasedChunkGenerator.createFluidPicker
+        $seaLevel = $this->settings->seaLevel;
+        return $y < min(-54, $seaLevel) ? ($y < -54 ? 'lava' : 'air') : ($y < $seaLevel ? $this->settings->defaultFluid : 'air');
+    }
+
     /**
      * NoiseBasedChunkGenerator.iterateNoiseColumn: the highest non-air block of one column
      * before surface rules and carvers, and whether it is a fluid.
@@ -47,9 +62,9 @@ final class NoiseChunk
         $chunk = new self($settings, $x >> 4, $z >> 4, new Volume(1, $settings->height, 1, $x, $settings->minY, $z));
         $density = $settings->state->sampler($settings->json['noise_router']['final_density'])->volume($chunk->context, $chunk->volume);
         for ($y = $settings->height - 1; $y >= 0; --$y) {
-            $state = $chunk->aquifer->computeSubstance($x, $settings->minY + $y, $z, $density[$y]) ?? 'stone';
+            $state = $chunk->substance($x, $settings->minY + $y, $z, $density[$y]) ?? $settings->defaultBlock;
             if ($state !== 'air') {
-                return [$settings->minY + $y, $state !== 'stone'];
+                return [$settings->minY + $y, $state !== $settings->defaultBlock];
             }
         }
         return [$settings->minY, false];
@@ -70,8 +85,8 @@ final class NoiseChunk
             for ($x = 0; $x < 16; ++$x) {
                 $bx = $volume->minX + $x;
                 for ($y = $volume->sizeY - 1; $y >= 0; --$y) {
-                    $state = $this->aquifer->computeSubstance($bx, $volume->minY + $y, $bz, $density[$volume->index($x, $y, $z)]);
-                    $blocks[($y << 8) | ($z << 4) | $x] = $state ?? 'stone';
+                    $state = $this->substance($bx, $volume->minY + $y, $bz, $density[$volume->index($x, $y, $z)]);
+                    $blocks[($y << 8) | ($z << 4) | $x] = $state ?? $this->settings->defaultBlock;
                 }
             }
         }

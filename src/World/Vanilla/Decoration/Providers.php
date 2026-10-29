@@ -109,6 +109,17 @@ final class Providers
                 return $min + $random->nextInt($random->nextInt($random->nextInt($max - $min + 1) + 1) + 1);
             case 'clamped':
                 return min(max(self::int($json['source'], $random), $min), $max);
+            case 'trapezoid':
+                // TrapezoidInt
+                [$low, $high, $plateau] = [$json['min'], $json['max'], $json['plateau']];
+                if ($plateau === 0 && $high === -$low) {
+                    return $random->nextInt($high + 1) - $random->nextInt($high + 1);
+                }
+                if ($plateau === $high - $low) {
+                    return self::between($random, $low, $high);
+                }
+                $plateauStart = intdiv($high - $low - $plateau, 2);
+                return $low + self::between($random, 0, $high - $low - $plateauStart) + self::between($random, 0, $plateauStart);
             case 'clamped_normal':
                 $value = F32::r(F32::r((float) $json['mean']) + F32::r(F32::r($random->nextGaussian()) * F32::r((float) $json['deviation'])));
                 return (int) min(max($value, F32::r((float) $json['min_inclusive'])), F32::r((float) $json['max_inclusive']));

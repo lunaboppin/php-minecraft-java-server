@@ -31,6 +31,8 @@ def main():
         data = json.load(open(path))
         for chunk in data['chunks']:
             row = {'seed': data['seed'], 'x': chunk['x'], 'z': chunk['z'], 'biomes': digest(names(chunk['biomes']))}
+            if data.get('dimension', 'overworld') != 'overworld':
+                row['dimension'] = data['dimension']
             for stage in ('noise', 'surface', 'carvers'):
                 row[stage] = digest(names(chunk[stage]))
             chunks.append(row)
