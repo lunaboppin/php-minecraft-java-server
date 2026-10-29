@@ -277,6 +277,13 @@ SCRIPT = [
     ('damage @e[type=pig,limit=1] 3 in_fire', False), ('damage @e[type=pig,limit=1] 100 fall', False), ('damage @e[type=pig,limit=1] 1', False),
     ('summon chicken 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=chicken,limit=1] 1 fall', False),
     ('!quiet kill @e[type=!player]', False),
+    # Eyes inside sand suffocate a mob, not inside glass; a survival player suffocates in stone while
+    # saturated healing keeps pace.
+    ('!quiet gamemode survival @s', False), ('summon pig 0.5 100 0.5 {NoAI:1b}', False), ('!quiet setblock 0 100 0 minecraft:sand', False),
+    ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 100 0 minecraft:glass', False),
+    ('damage @e[type=giant,limit=1] 1', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 0 101 0 minecraft:stone', False),
+    ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 101 0 minecraft:air', False),
+    ('!quiet gamemode creative @s', False),
     # A dropped item has 5 health, truncated after each hit, and goes at 0; the operator stands clear of it.
     ('!quiet tp @s 0 110 6', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
     ('damage @e[type=item,limit=1] 2', False), ('damage @e[type=item,limit=1] 2.9 in_fire', False), ('damage @e[type=item,limit=1] 1', False),

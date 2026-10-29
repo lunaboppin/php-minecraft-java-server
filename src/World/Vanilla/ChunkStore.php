@@ -11,8 +11,8 @@ use PhpMinecraftJavaServer\World\Vanilla\Decoration\ProtoChunk;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 
 /**
- * Vanilla Overworld chunks stored in the world database while they move through vanilla's
- * stages: carved (status 1), then decorated (status 2). Decoration also writes into the eight
+ * Vanilla Overworld or Nether chunks stored in the world database while they move through
+ * vanilla's stages: carved (status 1), then decorated (status 2). Decoration also writes into the eight
  * neighbours, so a chunk is final, and may be sent, once every chunk around it is decorated.
  * Several processes may share the store: carving is idempotent and each decoration runs in
  * an immediate transaction.
@@ -56,8 +56,14 @@ final class ChunkStore
 
     private const STEP_BLOCKED = 3;
 
-    public function __construct(private readonly \PDO $db, private readonly Version $version, private readonly int $seed)
-    {
+    /** @param int $worldHeight the dimension's build height, which final() pads its output to */
+    public function __construct(
+        private readonly \PDO $db,
+        private readonly Version $version,
+        private readonly int $seed,
+        private readonly string $dimension = 'overworld',
+        private readonly int $worldHeight = 384,
+    ) {
         $db->exec('CREATE TABLE IF NOT EXISTS vanilla_chunks(cx INTEGER NOT NULL,cz INTEGER NOT NULL,status INTEGER NOT NULL,blocks BLOB NOT NULL,biomes BLOB NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_requests(cx INTEGER NOT NULL,cz INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_claims(cx INTEGER NOT NULL,cz INTEGER NOT NULL,claimed REAL NOT NULL,PRIMARY KEY(cx,cz))');
@@ -80,12 +86,12 @@ final class ChunkStore
 
     private function generator(): OverworldGenerator
     {
-        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory);
+        return $this->generator ??= new OverworldGenerator($this->seed, $this->version->directory, $this->dimension === 'the_nether' ? 'nether' : 'overworld');
     }
 
     private function decorator(): Decorator
     {
-        return $this->decorator ??= new Decorator($this->blocks(), new BiomeClimate($this->version->directory . '/worldgen'), $this->version->directory . '/worldgen');
+        return $this->decorator ??= new Decorator($this->blocks(), new BiomeClimate($this->version->directory . '/worldgen'), $this->version->directory . '/worldgen', $this->dimension);
     }
 
     private static function encode(array $blocks): string
@@ -198,7 +204,14 @@ final class ChunkStore
         if (count($this->final) >= 64) {
             array_shift($this->final);
         }
-        return $this->final["$cx,$cz"] = [self::decode($blocks), explode("\n", $biomes)];
+        $blocks = self::decode($blocks);
+        $biomes = explode("\n", $biomes);
+        // The Nether generates its lower 128 blocks; above them is air, and its biomes do not vary with height.
+        if (count($blocks) < $this->worldHeight * 256) {
+            $blocks = array_pad($blocks, $this->worldHeight * 256, 0);
+            $biomes = array_merge($biomes, ...array_fill(0, intdiv($this->worldHeight * 16 - count($biomes), 16), array_slice($biomes, -16)));
+        }
+        return $this->final["$cx,$cz"] = [$blocks, $biomes];
     }
 
     /** Carve a chunk unless it is stored already. */
@@ -280,7 +293,7 @@ final class ChunkStore
      * workers do not duplicate it), then its decorations. Without requests, the area set by
      * pregenerate() is generated ring by ring from its centre. Returns false when idle.
      */
-    public function work(): bool
+    public function work(bool $pregenerate = true): bool
     {
         $now = microtime(true);
         if ($now >= $this->expireAt) {
@@ -298,7 +311,7 @@ final class ChunkStore
                 return true;
             }
         }
-        return $this->pregenerateStep();
+        return $pregenerate && $this->pregenerateStep();
     }
 
     /** Generate the chunks within a radius of a centre chunk whenever no chunk is requested. */
