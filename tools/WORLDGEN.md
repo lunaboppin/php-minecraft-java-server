@@ -37,4 +37,25 @@ This scalar graph currently assumes a new, unblended world with no structure bea
 
 During development, every block of 47 seed-42 chunks matched vanilla through carvers, one chunk per Overworld surface biome plus far coordinates. The density and climate buffers matched bit for bit as well. Each chunk takes about 2–3 seconds in PHP without JIT and about half that with opcache JIT.
 
-Not done yet: structures and their terrain adaptation (beardifier), blending with old chunks, and every decoration step (features: trees, ores, vegetation, lakes, springs and the rest). `tools/ExportFeatureOrder.java` records the global placed-feature order per step that will seed feature placement. Nether and End noise generation are also still to be ported.
+## Decoration
+
+`Vanilla\Decoration\Decorator` ports `ChunkGenerator.applyBiomeDecoration`. Each step's placed features run in the generator's global order (`reference/26.3/worldgen/feature-order.json`, exported by `tools/ExportFeatureOrder.java`). Each one is seeded with `WorldgenRandom.setFeatureSeed` from the chunk's decoration seed. Over xoroshiro, `WorldgenRandom` keeps `LegacyRandomSource`'s algorithms, so `nextDouble` draws two longs. Placement follows 26.3's depth-first `FeaturePlacer` with all placement modifiers used in the Overworld. Block state providers, block predicates and ore rule tests come from the official feature JSON. Block behaviour is read from `reference/26.3/worldgen/block-behaviour.json`, exported by `tools/ExportBlockBehaviour.java`: solid, replaceable, sturdy faces, fluids, the heightmap tags and each block's class chain. `Survival` uses those class chains for `canSurvive`. Chunks have no light data while features are placed, so vanilla reads full sky light everywhere and mushrooms only survive on `mushroom_grow_block` soils.
+
+Chunks stay at the `TERRAIN` status while their features are placed, so only the final heightmaps (`WORLD_SURFACE`, `OCEAN_FLOOR`, `MOTION_BLOCKING`, `MOTION_BLOCKING_NO_LEAVES`) follow the placed blocks. `WORLD_SURFACE_WG` and `OCEAN_FLOOR_WG` keep their post-carving values, even after neighbours decorate into the chunk. `ProtoChunk` carries those two heightmaps, and `ChunkStore` saves them when it carves a chunk.
+
+Ported features:
+- Ores, scattered ores, simple blocks (including double plants), block columns (kelp, sugar cane, cacti), all selectors and sequences.
+- Disks, springs, freeze-top-layer, lakes, vegetation patches and their waterlogged variant (lush caves, clay pools), vines, block blobs, underwater magma, glow lichen with multiface spreading.
+- Monster rooms (spawner mob and chest loot draws, without storing the contents), amethyst geodes and huge mushrooms, fallen trees, bamboo, dripstone clusters, pointed dripstone, large dripstone, icebergs and blue ice.
+- Ice spikes.
+- Sculk patches: the world generation `SculkSpreader` with charge cursors, sculk veins, sensors and shriekers.
+- Coral reefs: the 26.3 overlay feature and cuboid placement, coral trees and claws, and coral survival rules.
+- Trees: straight, forking, giant, mega jungle, dark oak, fancy, bending, cherry and upwards branching (mangrove) trunks with the mangrove root placer; blob, bush, fancy, spruce, pine, mega pine, acacia, jungle, dark oak, random spread and cherry foliage; beehive, leaf and trunk vine, cocoa, alter ground, place-on-ground, attached-to-logs and attached-to-leaves decorators; leaf distances. Decorators walk logs and leaves in Java `HashSet` order sorted by Y, which decides their random draws, so that order is reproduced.
+
+- Fossils, placed from structure templates. `tools/update_reference.py` converts the templates the generator uses from NBT to JSON (`reference/26.3/worldgen/template`); `Templates` places them with rotation and the block rot, rule and protected blocks processors.
+
+Not ported yet: structures, poplar trunks, block entity data in templates, and the tree edge shape updates.
+
+`tools/parity/worldgen_regions.py` runs the official server on a seed (structures off), force-loads an area and decodes the saved region files. `php tools/parity/vanilla_decoration.php` decorates the same area in PHP and compares the middle 3×3 chunks. Two official runs of one seed differed by up to 555 blocks per chunk in testing, because vanilla decorates neighbouring chunks in a scheduling-dependent order and overlapping features overwrite each other. So exact agreement can only be expected away from such overlaps. Against official seed-42 chunks around the origin, ores, clay, tuff, gravel, dirt blobs, geodes, lush-cave moss and the trees and vegetation of interior chunks agreed. The remaining differences were overlaps at chunk borders, the same kind as between the two official runs.
+
+`Vanilla\ChunkStore` keeps chunks through the carved and decorated stages in the world database. Background workers (`bin/vanilla-worker.php`) generate requested chunks; carving is claimed per chunk and each decoration runs in an immediate transaction. Nether and End noise generation are still to be ported.

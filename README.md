@@ -68,6 +68,14 @@ Set `generator` to `terrain` and choose an integer `seed` in the signed 32-bit r
 
 The generator name, seed, and algorithm version are saved in the database. **Use a new `worldPath` to change the seed or generator**; changing them underneath an existing saved world is rejected. Chunk generation order and negative chunk coordinates do not change the generated result.
 
+### Vanilla Overworld terrain
+
+Set `"vanillaTerrain": true` to generate the Overworld with the official Minecraft 26.3 pipeline, ported to PHP in `src/World/Vanilla`. A given seed then produces vanilla terrain: noise-router shapes and caves, aquifers, multi-noise biomes, surface rules, ore veins, carvers and the decoration features. Those features include ores, trees, vegetation, lakes, lush-cave patches, monster rooms, geodes and freezing. Structures are not generated yet. See [the worldgen evidence](tools/WORLDGEN.md) for what is checked against the official server.
+
+Each chunk takes a few seconds of PHP, so `generationWorkers` background processes (default 3) generate chunks ahead of the players. A chunk is sent once it and its eight neighbours are decorated. Generated chunks are stored in the world database (`vanilla_chunks`); player edits overlay them as before.
+
+Turning `vanillaTerrain` on for an existing terrain world keeps every chunk that players changed, with one chunk around it, and the chunks players are standing in. All other recorded chunks are generated again with vanilla. Where kept and regenerated chunks meet, the terrain does not join up. If the old spawn area was regenerated, the spawn moves to dry vanilla land near the origin. Back up the world first; this is a forward migration.
+
 When opening an older `terrain-v1` save, the server preserves that algorithm for previously recorded explored/edited chunks. Newly generated chunks use `terrain-v2`, which keeps the same surface heights while improving underground tunnels and surface decoration. New saves use v2 throughout. Back up all world databases before upgrading; this is a forward migration.
 
 The original flat-world database remains separate at `data/world.sqlite`. To open it with the newer server, use:

@@ -78,7 +78,7 @@ final class Server
         $this->logger = new DailyLog($config->logDirectory, $config->logRetentionDays);
         $this->announcements = new Announcements($config->worldPath);
         $this->initializeAuthentication($sessions);
-        $this->world = new World($version, $config->worldPath, $config->generator, $config->seed);
+        $this->world = new World($version, $config->worldPath, $config->generator, $config->seed, 'overworld', $config->vanillaTerrain);
         $this->worlds['overworld'] = $this->world;
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
@@ -106,6 +106,44 @@ final class Server
         $this->running = false;
     }
 
+    /** @var list<array{0: resource, 1: array}> */
+    private array $generationWorkers = [];
+
+    /** Start the background processes that generate vanilla chunks. */
+    private function startGenerationWorkers(): void
+    {
+        if ($this->world->vanilla === null) {
+            return;
+        }
+        for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
+            $process = proc_open(
+                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed],
+                [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR],
+                $pipes,
+            );
+            if (is_resource($process)) {
+                $this->generationWorkers[] = [$process, $pipes];
+            }
+        }
+        $this->log('Vanilla terrain: ' . count($this->generationWorkers) . ' generation workers');
+        // Spawn chunks first.
+        [$x, , $z] = $this->world->spawn();
+        for ($dz = -3; $dz <= 3; ++$dz) {
+            for ($dx = -3; $dx <= 3; ++$dx) {
+                $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)));
+            }
+        }
+    }
+
+    private function stopGenerationWorkers(): void
+    {
+        foreach ($this->generationWorkers as [$process, $pipes]) {
+            @fclose($pipes[0]);
+            proc_close($process);
+        }
+        $this->generationWorkers = [];
+    }
+
     public function run(?int $maxTicks = null): void
     {
         $host = str_contains($this->config->host, ':') ? '[' . $this->config->host . ']' : $this->config->host;
@@ -117,6 +155,7 @@ final class Server
         $this->log('Listening on ' . stream_socket_get_name($this->listener, false) . ' (Minecraft ' . Version::NAME . ', protocol ' . Version::PROTOCOL . ')');
         $this->log('PHP ' . PHP_VERSION . ' (' . PHP_SAPI . ', ' . (PHP_INT_SIZE * 8) . '-bit)');
         $this->log(($this->config->onlineMode ? 'Online authentication: verified Mojang accounts. World: ' : 'Offline authentication: usernames are unverified. World: ') . $this->config->worldPath);
+        $this->startGenerationWorkers();
         if (function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGTERM, fn () => $this->stop());
@@ -211,6 +250,7 @@ final class Server
                 }
             }
         } finally {
+            $this->stopGenerationWorkers();
             $restartReason = RestartNotice::consume($this->config->worldPath, $this->stopReason ?? RestartNotice::FALLBACK);
             foreach ($this->clients as $client) {
                 if ($client->state === 'play') {
@@ -461,11 +501,26 @@ final class Server
         }
         $pending = $c->queuedChunks;
         uasort($pending, static fn (array $a, array $b): int => (($a[0] - $c->chunkX) ** 2 + ($a[1] - $c->chunkZ) ** 2) <=> (($b[0] - $c->chunkX) ** 2 + ($b[1] - $c->chunkZ) ** 2));
+        // Vanilla chunks are sent once the generation workers have finished them.
+        $batch = [];
+        foreach ($pending as $key => [$x, $z]) {
+            if (count($batch) >= (int) floor($c->batchQuota)) {
+                break;
+            }
+            if ($this->world->ready($x, $z)) {
+                $batch[$key] = [$x, $z];
+            } else {
+                $this->world->requestGeneration($x, $z, ($x - $c->chunkX) ** 2 + ($z - $c->chunkZ) ** 2);
+            }
+        }
+        if ($batch === []) {
+            return;
+        }
         $c->send($this->version, 'chunk_batch_start');
         ++$c->unacknowledgedBatches;
         $count = 0;
         $started = hrtime(true);
-        foreach (array_slice($pending, 0, (int) floor($c->batchQuota), true) as $key => [$x, $z]) {
+        foreach ($batch as $key => [$x, $z]) {
             $c->send($this->version, 'level_chunk_with_light', $this->world->chunk($x, $z));
             $c->loadedChunks[$key] = [$x, $z];
             $this->naturalAnimals($x, $z);

@@ -3,6 +3,7 @@
 Requires a Java 25+ JDK and Python 3.11+. Does not start a vanilla game server.
 """
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -12,6 +13,7 @@ import subprocess
 import urllib.request
 import zipfile
 from java_logging import plain_reference_logging
+from nbt import Nbt
 from worldgen_reference import export_worldgen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +54,8 @@ WORLDGEN_FIXTURE_CHUNKS = {
 
 def worldgen_resources(inner, out):
     """Copy the official Overworld worldgen registries the native generator reads at runtime."""
-    folders = ('density_function', 'noise', 'noise_settings', 'material_rule', 'material_condition', 'carver', 'biome')
+    folders = ('density_function', 'noise', 'noise_settings', 'material_rule', 'material_condition', 'carver', 'biome',
+               'placed_feature', 'feature', 'block_state_provider', 'processor_list')
     target = out / 'worldgen'
     for folder in folders:
         shutil.rmtree(target / folder, ignore_errors=True)
@@ -63,6 +66,31 @@ def worldgen_resources(inner, out):
                 destination = target / name[len(prefix):]
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(archive.read(name))
+
+
+# Structure templates the generator places, converted from NBT to JSON.
+TEMPLATE_FOLDERS = ('fossil',)
+
+
+def structure_templates(inner, out):
+    """Templates as JSON: size, block state palette and blocks (x, y, z, palette index, block entity NBT)."""
+    target = out / 'worldgen' / 'template'
+    shutil.rmtree(target, ignore_errors=True)
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            prefix = 'data/minecraft/structure/'
+            if not name.startswith(prefix) or not name.endswith('.nbt') or name[len(prefix):].split('/')[0] not in TEMPLATE_FOLDERS:
+                continue
+            nbt = Nbt(gzip.decompress(archive.read(name))).root()
+            palette = nbt['palette'] if 'palette' in nbt else nbt['palettes'][0]
+            template = {
+                'size': nbt['size'],
+                'palette': [{'id': entry.get('id', entry.get('Name')), 'properties': entry.get('properties', entry.get('Properties', {}))} for entry in palette],
+                'blocks': [block['pos'] + [block['state']] + ([block['nbt']] if 'nbt' in block else []) for block in nbt['blocks']],
+            }
+            destination = target / (name[len(prefix):-4] + '.json')
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            write_json(destination, template)
 
 
 def damage_types(inner):
@@ -259,6 +287,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportGameRules', str(out / 'gamerules.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobEffects', str(out / 'mob-effects.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
+    structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFeatureOrder', str(out / 'worldgen/feature-order.json')], check=True, cwd=cache)
     exports = []

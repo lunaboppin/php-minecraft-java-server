@@ -3,6 +3,7 @@ RUN docker-php-ext-install -j2 pcntl \
     && groupadd --gid 10001 minecraft \
     && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /app minecraft
 COPY deploy/docker/php-memory.ini /usr/local/etc/php/conf.d/zz-memory-limit.ini
+COPY deploy/docker/php-opcache.ini /usr/local/etc/php/conf.d/zz-opcache-jit.ini
 WORKDIR /app
 COPY --chown=10001:10001 . /app
 RUN mkdir -p /app/data && chown 10001:10001 /app/data \
