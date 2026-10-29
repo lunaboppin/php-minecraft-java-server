@@ -148,7 +148,7 @@ final class Decorator
     /** StructureStart.placeInChunk: the pieces that overlap the chunk being decorated. */
     private function placeStart(array $pieces, Region $region, RandomSource $random, array $chunkBox): void
     {
-        $context = $this->structureContext ??= new StructureContext($this->blocks, $region->seed);
+        $context = $this->structureContext ??= new StructureContext($this->blocks, $region->seed, $this->directory);
         // WorldGenRegion.getRandom
         $context->regionRandom ??= $this->structures->regionRandom($region->centerX, $region->centerZ);
         foreach ($pieces as $piece) {

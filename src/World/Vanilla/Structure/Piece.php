@@ -60,6 +60,7 @@ abstract class Piece
             'swamp_hut' => new SwampHut($piece['box'], $piece['orientation'], $piece['width'], $piece['height'], $piece['depth'], $piece['hpos']),
             'desert_pyramid' => DesertPyramid::restoreWith($piece),
             'jungle_temple' => JungleTemple::restoreWith($piece),
+            'igloo' => Igloo::restoreWith($piece),
         };
     }
 

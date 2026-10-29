@@ -18,7 +18,7 @@ final class StructureContext
     /** @var array<string, array{0: int, 1: int, 2: int}> ProtoChunk.markPosForPostProcessing, by "x,y,z" */
     public array $postProcessing = [];
 
-    public function __construct(public readonly Blocks $blocks, public readonly int $seed = 0)
+    public function __construct(public readonly Blocks $blocks, public readonly int $seed = 0, public readonly string $directory = '')
     {
         $this->transform = new BlockTransform($blocks);
     }

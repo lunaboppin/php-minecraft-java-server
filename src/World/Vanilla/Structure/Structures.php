@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 use PhpMinecraftJavaServer\World\Generation\Int64;
 use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeSource;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\NoiseChunk;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldSettings;
@@ -42,8 +43,11 @@ final class Structures
     /** @var array<string, int> heights by "x,z,type" */
     private array $heights = [];
 
-    public function __construct(private readonly OverworldSettings $settings, private readonly BiomeSource $biomes, private readonly string $directory, private readonly ?\PDO $db = null)
+    private readonly Blocks $blocks;
+
+    public function __construct(private readonly OverworldSettings $settings, private readonly BiomeSource $biomes, private readonly string $directory, private readonly ?\PDO $db = null, ?Blocks $blocks = null)
     {
+        $this->blocks = $blocks ?? new Blocks(new \PhpMinecraftJavaServer\Protocol\Version(), $directory . '/block-behaviour.json');
         $order = json_decode((string) file_get_contents($directory . '/structure-order.json'), true, 512, JSON_THROW_ON_ERROR);
         $byStep = [];
         foreach ($order['structures'] as [$name, $step]) {
@@ -215,6 +219,15 @@ final class Structures
                 return [SwampHut::create($random, $cx * 16, $cz * 16)];
             case 'jungle_temple':
                 return $this->singlePiece($structure, $cx, $cz, 12, 15) ? [JungleTemple::create($random, $cx * 16, $cz * 16)] : [];
+            case 'igloo':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z)) {
+                    return [];
+                }
+                // Rotation.getRandom
+                $rotation = $random->nextInt(4);
+                return Igloo::pieces($this->blocks, $this->directory, [$cx * 16, 90, $cz * 16], $rotation, $random);
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }
