@@ -286,7 +286,7 @@ final class ChunkStore
         if ($q->fetchColumn() !== false) {
             return;
         }
-        $chunk = $this->generator()->chunk($cx, $cz);
+        $chunk = $this->generator()->chunk($cx, $cz, false, $this->decorator()->structures?->beardifier($cx, $cz));
         $blocks = $this->blocks();
         $ids = array_map(static fn (string $name): int => $blocks->state($name), $chunk['blocks']);
         $settings = $this->generator()->settings;

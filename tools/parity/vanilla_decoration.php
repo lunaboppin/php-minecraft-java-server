@@ -45,7 +45,7 @@ if (($reference['structures'] ?? false) === true) {
 $chunks = [];
 for ($dz = -3; $dz <= 3; ++$dz) {
     for ($dx = -3; $dx <= 3; ++$dx) {
-        $chunk = $generator->chunk($centerX + $dx, $centerZ + $dz);
+        $chunk = $generator->chunk($centerX + $dx, $centerZ + $dz, false, $decorator->structures?->beardifier($centerX + $dx, $centerZ + $dz));
         $ids = array_map($blocks->state(...), $chunk['blocks']);
         $heights = ProtoChunk::worldgenHeights($blocks, $ids, $generator->settings->minY, $generator->settings->height);
         $chunks[($centerX + $dx) . ',' . ($centerZ + $dz)] = new ProtoChunk($centerX + $dx, $centerZ + $dz, $ids, $chunk['biomes'], $heights);
@@ -114,6 +114,10 @@ foreach ($reference['chunks'] as $official) {
         // Above the noise height (the End's 128 of 256) nothing is generated.
         $name = isset($mine[$i]) ? ($full ? $describe($mine[$i]) : $blocks->name($mine[$i])) : 'air';
         if ($official_name !== $name) {
+            // DIFFKIND=official<-php prints where that difference is.
+            if (getenv('DIFFKIND') === "$official_name<-$name" && ($shown = ($shown ?? 0) + 1) <= 8) {
+                echo '  ', $official['x'] * 16 + ($i & 15), ',', ($i >> 8) + $settings->minY, ',', $official['z'] * 16 + (($i >> 4) & 15), "\n";
+            }
             ++$total;
             $kinds["$official_name<-$name"] = ($kinds["$official_name<-$name"] ?? 0) + 1;
         }

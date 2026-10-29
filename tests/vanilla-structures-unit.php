@@ -24,12 +24,17 @@ foreach ([
     // The last piece of an igloo is its top; this one has a ladder shaft and laboratory below.
     [208, -305, 'igloo', [3328, 90, -4880, 3334, 94, -4873], 'north'],
     [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
+    [41, -19, 'village_plains', [647, 79, -313, 656, 85, -304], 186],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
     $starts = $structures->create($cx, $cz);
     $last = $starts === [] ? null : $starts[0]['pieces'][count($starts[0]['pieces']) - 1];
     $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $last->box, $last->orientation];
+    if ($structure === 'village_plains') {
+        // The official start has 186 pieces; the first is its meeting point.
+        $actual = [$starts[0]['structure'], $starts[0]['pieces'][0]->box, count($starts[0]['pieces'])];
+    }
     if ($actual !== [$structure, $box, $orientation]) {
         throw new RuntimeException("Structure start at $cx,$cz: " . json_encode($actual));
     }
