@@ -117,9 +117,11 @@ final class Server
         if ($this->world->vanilla === null) {
             return;
         }
+        [$spawnX, , $spawnZ] = $this->world->spawn();
+        $pregenerate = [(string) ((int) floor($spawnX) >> 4), (string) ((int) floor($spawnZ) >> 4), (string) $this->config->pregenerateRadius];
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
             $process = proc_open(
-                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed],
+                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate],
                 [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR],
                 $pipes,
             );
@@ -128,11 +130,11 @@ final class Server
             }
         }
         $this->log('Vanilla terrain: ' . count($this->generationWorkers) . ' generation workers');
-        // Spawn chunks first.
+        // Spawn chunks first, kept for ten minutes so the first player to join finds them ready.
         [$x, , $z] = $this->world->spawn();
         for ($dz = -3; $dz <= 3; ++$dz) {
             for ($dx = -3; $dx <= 3; ++$dx) {
-                $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)));
+                $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)), 600.0);
             }
         }
     }

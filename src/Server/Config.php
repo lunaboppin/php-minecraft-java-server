@@ -27,8 +27,11 @@ final class Config
         public readonly bool $vanillaTerrain = false,
         /** Background processes generating vanilla chunks. */
         public readonly int $generationWorkers = 3,
+        /** Chunks around spawn that idle generation workers generate before anyone visits them. */
+        public readonly int $pregenerateRadius = 32,
     ) {
         if ($generationWorkers < 0 || $generationWorkers > 16) { throw new \InvalidArgumentException('Invalid generation worker count'); }
+        if ($pregenerateRadius < 0 || $pregenerateRadius > 256) { throw new \InvalidArgumentException('Invalid pregeneration radius'); }
         if($logDirectory==='' || $logRetentionDays<1 || $logRetentionDays>90){throw new \InvalidArgumentException('Log retention must be between 1 and 90 days');}
         if (!in_array($generator,['flat','terrain'],true) || $seed < -2147483648 || $seed > 2147483647 || $defaultGameMode<0 || $defaultGameMode>3 || $difficulty<0 || $difficulty>3) { throw new \InvalidArgumentException('Invalid world settings'); }
         foreach($operators as $operator){if(!is_string($operator) || preg_match('/\A[A-Za-z0-9_]{1,16}\z/D',$operator)!==1){throw new \InvalidArgumentException('Invalid operator username');}}
@@ -48,7 +51,7 @@ final class Config
             if (!$object instanceof \stdClass) { throw new \InvalidArgumentException('Configuration must be a JSON object'); }
             $values = get_object_vars($object);
         }
-        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList','vanillaTerrain','generationWorkers'];
+        $allowed = ['host','port','motd','maxPlayers','viewDistance','compressionThreshold','worldPath','generator','seed','defaultGameMode','difficulty','operators','pvp','onlineMode','logDirectory','logRetentionDays','whiteList','vanillaTerrain','generationWorkers','pregenerateRadius'];
         foreach ($values as $key => $_) { if (!in_array($key,$allowed,true)) { throw new \InvalidArgumentException('Unknown configuration option: ' . $key); } }
         return new self(...array_replace($values,$overrides));
     }

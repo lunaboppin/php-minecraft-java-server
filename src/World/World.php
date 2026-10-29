@@ -111,9 +111,9 @@ class World
         $generator=$this->generatorFor($cx,$cz);
         return !$generator instanceof Vanilla\ChunkStore || $generator->ready($cx,$cz);
     }
-    public function requestGeneration(int $cx,int $cz,int $priority):void {
+    public function requestGeneration(int $cx,int $cz,int $priority,float $keepFor=15.0):void {
         $generator=$this->generatorFor($cx,$cz);
-        if($generator instanceof Vanilla\ChunkStore){$generator->request($cx,$cz,$priority);}
+        if($generator instanceof Vanilla\ChunkStore){$generator->request($cx,$cz,$priority,$keepFor);}
     }
     /** Vanilla quart biomes of a chunk as registry ids, in y, z, x order, or null for other generators. */
     private function vanillaBiomes(int $cx,int $cz):?array {

@@ -102,6 +102,20 @@ class Perlin implements Noise
 
     public function addToVolume(array &$buffer, Volume $volume, float $xzScale, float $yScale, float $amplitude): void
     {
+        // The Y terms depend only on the Y index, so every column shares them.
+        $floorYs = [];
+        $relativeYs = [];
+        $relativeY1s = [];
+        $alphaYs = [];
+        for ($iy = 0; $iy < $volume->sizeY; ++$iy) {
+            $y = self::wrap($volume->blockY($iy) * $yScale) + $this->offsetY;
+            $fy = (int) floor($y);
+            $ry = $this->relativeY($volume->blockY($iy) * $yScale, $y, $fy);
+            $floorYs[] = $fy;
+            $relativeYs[] = $ry;
+            $relativeY1s[] = F32::r($ry - 1.0);
+            $alphaYs[] = F32::smoothstep($this->alphaY($y, $fy, $ry));
+        }
         $index = 0;
         for ($iz = 0; $iz < $volume->sizeZ; ++$iz) {
             $z = self::wrap($volume->blockZ($iz) * $xzScale) + $this->offsetZ;
@@ -120,15 +134,14 @@ class Perlin implements Noise
                 $lastY = null;
                 $corners = [];
                 for ($iy = 0; $iy < $volume->sizeY; ++$iy) {
-                    $y = self::wrap($volume->blockY($iy) * $yScale) + $this->offsetY;
-                    $fy = (int) floor($y);
-                    $ry = $this->relativeY($volume->blockY($iy) * $yScale, $y, $fy);
-                    $ay = F32::smoothstep($this->alphaY($y, $fy, $ry));
+                    $fy = $floorYs[$iy];
+                    $ry = $relativeYs[$iy];
+                    $ry1 = $relativeY1s[$iy];
+                    $ay = $alphaYs[$iy];
                     if ($lastY !== $fy) {
                         $corners = $this->corners($x0, $x1, $fy, $fz, $rx, $rx1, $rz, $rz1);
                         $lastY = $fy;
                     }
-                    $ry1 = F32::r($ry - 1.0);
                     $value = self::lerp3(
                         $ax,
                         $ay,

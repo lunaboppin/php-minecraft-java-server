@@ -21,6 +21,9 @@ final class OverworldGenerator
 
     private readonly int $zoomSeed;
 
+    /** @var array<string, string> carver source chunk biomes, which neighbouring chunks share */
+    private array $sourceBiomes = [];
+
     public function __construct(int $seed, string $referenceDirectory)
     {
         $this->settings = new OverworldSettings($seed, $referenceDirectory . '/worldgen');
@@ -41,6 +44,19 @@ final class OverworldGenerator
     {
         [$qx, $qy, $qz] = BiomeClimate::zoom($this->zoomSeed, $x, $y, $z);
         return $this->biomes->uncached($qx, $qy, $qz);
+    }
+
+    /** The biome that picks a carver source chunk's carvers, kept for the chunks around it. */
+    private function sourceBiome(int $sourceX, int $sourceZ): string
+    {
+        $key = "$sourceX,$sourceZ";
+        if (!isset($this->sourceBiomes[$key])) {
+            if (count($this->sourceBiomes) >= 4096) {
+                $this->sourceBiomes = array_slice($this->sourceBiomes, 2048, null, true);
+            }
+            $this->sourceBiomes[$key] = $this->biomes->uncached($sourceX << 2, 0, $sourceZ << 2);
+        }
+        return $this->sourceBiomes[$key];
     }
 
     /**
@@ -68,7 +84,7 @@ final class OverworldGenerator
             $noise,
             $chunkX,
             $chunkZ,
-            fn (int $sourceX, int $sourceZ): string => $this->biomes->uncached($sourceX << 2, 0, $sourceZ << 2),
+            $this->sourceBiome(...),
             fn (array $current, int $x, int $y, int $z, bool $underFluid): ?string => $this->materials->topMaterial($current, $noise, $this->uncachedBiomeAt(...), $x, $y, $z, $underFluid),
         );
         $biomes = [];

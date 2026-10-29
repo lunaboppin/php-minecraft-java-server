@@ -37,6 +37,25 @@ final class ChunkStore
     /** @var array<string, float> when a not-ready chunk may be checked or requested again */
     private array $recheck = [];
 
+    /** When work() next deletes expired requests. */
+    private float $expireAt = 0.0;
+
+    /** @var ?array{0: int, 1: int, 2: int} centre chunk and radius generated while idle */
+    private ?array $pregenerate = null;
+
+    private int $pregenerateRing = 0;
+
+    /** @var array<int, array{0: int, 1: int}> chunks of the current ring not known to be final */
+    private array $pregenerateQueue = [];
+
+    private const STEP_READY = 0;
+
+    private const STEP_CARVED = 1;
+
+    private const STEP_DECORATED = 2;
+
+    private const STEP_BLOCKED = 3;
+
     public function __construct(private readonly \PDO $db, private readonly Version $version, private readonly int $seed)
     {
         $db->exec('CREATE TABLE IF NOT EXISTS vanilla_chunks(cx INTEGER NOT NULL,cz INTEGER NOT NULL,status INTEGER NOT NULL,blocks BLOB NOT NULL,biomes BLOB NOT NULL,PRIMARY KEY(cx,cz));'
@@ -46,6 +65,11 @@ final class ChunkStore
         $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('heights', $columns, true)) {
             $db->exec('ALTER TABLE vanilla_chunks ADD COLUMN heights BLOB');
+        }
+        // Requests nobody renews (a player moved away or left) expire instead of keeping the workers busy.
+        $columns = array_column($db->query('PRAGMA table_info(vanilla_requests)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
+        if (!in_array('expires', $columns, true)) {
+            $db->exec('ALTER TABLE vanilla_requests ADD COLUMN expires REAL NOT NULL DEFAULT 0');
         }
     }
 
@@ -133,16 +157,21 @@ final class ChunkStore
         return false;
     }
 
-    /** Ask the generation workers for a chunk; a lower priority is generated sooner. */
-    public function request(int $cx, int $cz, int $priority): void
+    /**
+     * Ask the generation workers for a chunk; a lower priority is generated sooner. Callers
+     * that still want the chunk renew the request at most every 5 seconds, so it is kept for
+     * 15 seconds by default.
+     */
+    public function request(int $cx, int $cz, int $priority, float $keepFor = 15.0): void
     {
         $key = "r$cx,$cz";
-        if (($this->recheck[$key] ?? 0.0) > microtime(true)) {
+        $now = microtime(true);
+        if (($this->recheck[$key] ?? 0.0) > $now) {
             return;
         }
-        $this->recheck[$key] = microtime(true) + 5.0;
-        $q = $this->db->prepare('INSERT INTO vanilla_requests(cx,cz,priority) VALUES(?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET priority=MIN(priority,excluded.priority)');
-        $q->execute([$cx, $cz, $priority]);
+        $this->recheck[$key] = $now + 5.0;
+        $q = $this->db->prepare('INSERT INTO vanilla_requests(cx,cz,priority,expires) VALUES(?,?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET priority=excluded.priority,expires=MAX(expires,excluded.expires)');
+        $q->execute([$cx, $cz, $priority, $now + $keepFor]);
     }
 
     /**
@@ -248,54 +277,106 @@ final class ChunkStore
 
     /**
      * One unit of background work: the most urgent request's missing carving (claimed so
-     * workers do not duplicate it), then its decorations. Returns false when idle.
+     * workers do not duplicate it), then its decorations. Without requests, the area set by
+     * pregenerate() is generated ring by ring from its centre. Returns false when idle.
      */
     public function work(): bool
     {
-        $request = $this->db->query('SELECT cx,cz FROM vanilla_requests ORDER BY priority LIMIT 8')->fetchAll(\PDO::FETCH_NUM);
-        if ($request === []) {
+        $now = microtime(true);
+        if ($now >= $this->expireAt) {
+            $this->db->prepare('DELETE FROM vanilla_requests WHERE expires<?')->execute([$now]);
+            $this->expireAt = $now + 5.0;
+        }
+        $q = $this->db->prepare('SELECT cx,cz FROM vanilla_requests WHERE expires>=? ORDER BY priority LIMIT 8');
+        $q->execute([$now]);
+        foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$cx, $cz]) {
+            $step = $this->advance((int) $cx, (int) $cz);
+            if ($step === self::STEP_READY || $step === self::STEP_DECORATED) {
+                $this->db->prepare('DELETE FROM vanilla_requests WHERE cx=? AND cz=?')->execute([$cx, $cz]);
+            }
+            if ($step === self::STEP_CARVED || $step === self::STEP_DECORATED) {
+                return true;
+            }
+        }
+        return $this->pregenerateStep();
+    }
+
+    /** Generate the chunks within a radius of a centre chunk whenever no chunk is requested. */
+    public function pregenerate(int $cx, int $cz, int $radius): void
+    {
+        $this->pregenerate = [$cx, $cz, $radius];
+        $this->pregenerateRing = 0;
+        $this->pregenerateQueue = [];
+    }
+
+    private function pregenerateStep(): bool
+    {
+        if ($this->pregenerate === null) {
             return false;
         }
-        foreach ($request as [$cx, $cz]) {
-            $cx = (int) $cx;
-            $cz = (int) $cz;
-            if ($this->ready($cx, $cz)) {
-                $this->db->prepare('DELETE FROM vanilla_requests WHERE cx=? AND cz=?')->execute([$cx, $cz]);
-                continue;
+        [$centerX, $centerZ, $radius] = $this->pregenerate;
+        while ($this->pregenerateQueue === []) {
+            if ($this->pregenerateRing > $radius) {
+                return false;
             }
-            $statuses = $this->statuses($cx, $cz, 2);
-            for ($radius = 0; $radius <= 2; ++$radius) {
-                for ($dz = -$radius; $dz <= $radius; ++$dz) {
-                    for ($dx = -$radius; $dx <= $radius; ++$dx) {
-                        if (max(abs($dx), abs($dz)) !== $radius || isset($statuses[($cx + $dx) . ',' . ($cz + $dz)])) {
-                            continue;
-                        }
-                        $claim = $this->db->prepare('INSERT INTO vanilla_claims(cx,cz,claimed) VALUES(?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET claimed=excluded.claimed WHERE claimed<?');
-                        $now = microtime(true);
-                        $claim->execute([$cx + $dx, $cz + $dz, $now, $now - 120]);
-                        if ($claim->rowCount() === 0) {
-                            continue;
-                        }
-                        try {
-                            $this->carve($cx + $dx, $cz + $dz);
-                        } finally {
-                            $this->db->prepare('DELETE FROM vanilla_claims WHERE cx=? AND cz=?')->execute([$cx + $dx, $cz + $dz]);
-                        }
-                        return true;
+            $ring = $this->pregenerateRing++;
+            for ($dz = -$ring; $dz <= $ring; ++$dz) {
+                for ($dx = -$ring; $dx <= $ring; ++$dx) {
+                    if (max(abs($dx), abs($dz)) === $ring) {
+                        $this->pregenerateQueue[] = [$centerX + $dx, $centerZ + $dz];
                     }
                 }
             }
-            if (count($this->statuses($cx, $cz, 2)) < 25) {
-                continue;
+        }
+        foreach ($this->pregenerateQueue as $index => [$cx, $cz]) {
+            $step = $this->advance($cx, $cz);
+            if ($step === self::STEP_READY || $step === self::STEP_DECORATED) {
+                unset($this->pregenerateQueue[$index]);
             }
-            for ($dz = -1; $dz <= 1; ++$dz) {
-                for ($dx = -1; $dx <= 1; ++$dx) {
-                    $this->decorate($cx + $dx, $cz + $dz);
+            if ($step !== self::STEP_BLOCKED && $step !== self::STEP_READY) {
+                return true;
+            }
+        }
+        // Everything left in this ring waits on other workers' carving.
+        return $this->pregenerateQueue === [] && $this->pregenerateRing <= $radius;
+    }
+
+    /** Take one step towards a chunk being final: carve one missing chunk, or decorate around it. */
+    private function advance(int $cx, int $cz): int
+    {
+        if ($this->ready($cx, $cz)) {
+            return self::STEP_READY;
+        }
+        $statuses = $this->statuses($cx, $cz, 2);
+        for ($radius = 0; $radius <= 2; ++$radius) {
+            for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                for ($dx = -$radius; $dx <= $radius; ++$dx) {
+                    if (max(abs($dx), abs($dz)) !== $radius || isset($statuses[($cx + $dx) . ',' . ($cz + $dz)])) {
+                        continue;
+                    }
+                    $claim = $this->db->prepare('INSERT INTO vanilla_claims(cx,cz,claimed) VALUES(?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET claimed=excluded.claimed WHERE claimed<?');
+                    $now = microtime(true);
+                    $claim->execute([$cx + $dx, $cz + $dz, $now, $now - 120]);
+                    if ($claim->rowCount() === 0) {
+                        continue;
+                    }
+                    try {
+                        $this->carve($cx + $dx, $cz + $dz);
+                    } finally {
+                        $this->db->prepare('DELETE FROM vanilla_claims WHERE cx=? AND cz=?')->execute([$cx + $dx, $cz + $dz]);
+                    }
+                    return self::STEP_CARVED;
                 }
             }
-            $this->db->prepare('DELETE FROM vanilla_requests WHERE cx=? AND cz=?')->execute([$cx, $cz]);
-            return true;
         }
-        return false;
+        if (count($this->statuses($cx, $cz, 2)) < 25) {
+            return self::STEP_BLOCKED;
+        }
+        for ($dz = -1; $dz <= 1; ++$dz) {
+            for ($dx = -1; $dx <= 1; ++$dx) {
+                $this->decorate($cx + $dx, $cz + $dz);
+            }
+        }
+        return self::STEP_DECORATED;
     }
 }
