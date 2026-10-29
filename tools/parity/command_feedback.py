@@ -284,6 +284,14 @@ SCRIPT = [
     ('damage @e[type=giant,limit=1] 1', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 0 101 0 minecraft:stone', False),
     ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 101 0 minecraft:air', False),
     ('!quiet gamemode creative @s', False),
+    # Command chat reaches unsigned clients as disguised chat with the bound chat type.
+    ('say hello there', False), ('say spaced   out  text', False), ('say @a', False), ('say @e[type=pig]', False), ('!witness say no permission', False),
+    ('me waves', False), ('me @e[type=player,limit=1] waves', False), ('!witness me @a stays literal', False),
+    ('msg Witness psst', False), ('tell Witness two', False), ('w Witness three', False), ('msg @a everyone', False),
+    ('!witness msg ParityProbe back', False), ('!witness msg Witness myself', False),
+    ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
+    ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
+    ('!quiet team remove chatters', False),
     ('list', False),
 ]
 
@@ -296,7 +304,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

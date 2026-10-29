@@ -19,6 +19,9 @@ trait Commands
     use CommandModules\SpawnCommand;
 
     use CommandModules\MeCommand;
+    use CommandModules\SayCommand;
+    use CommandModules\TeamMsgCommand;
+    use ChatMessages;
 
     use CommandModules\MessageCommand;
 
