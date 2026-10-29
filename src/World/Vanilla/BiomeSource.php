@@ -18,6 +18,9 @@ final class BiomeSource
     /** @var array<string, list<string>> */
     private array $chunks = [];
 
+    /** @var list<string> */
+    private readonly array $possible;
+
     /** TheEndBiomeSource replaces the climate search with island height thresholds. */
     private readonly bool $end;
 
@@ -25,6 +28,7 @@ final class BiomeSource
     {
         $this->end = $preset === 'end';
         if ($this->end) {
+            $this->possible = ['the_end', 'end_highlands', 'end_midlands', 'small_end_islands', 'end_barrens'];
             return;
         }
         $rows = json_decode((string) file_get_contents($settings->directory . '/biome-parameters.json'), true, 512, JSON_THROW_ON_ERROR)[$preset];
@@ -38,6 +42,17 @@ final class BiomeSource
             $leaves[] = [$bounds, null, $row[0]];
         }
         $this->root = self::build($leaves);
+        $this->possible = array_values(array_unique(array_column($rows, 0)));
+    }
+
+    /**
+     * BiomeSource.possibleBiomes
+     *
+     * @return list<string>
+     */
+    public function possible(): array
+    {
+        return $this->possible;
     }
 
     private static function center(array $parameter): int

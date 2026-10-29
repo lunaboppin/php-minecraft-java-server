@@ -73,6 +73,19 @@ The server generates the Nether with vanilla when `vanillaTerrain` is on. Enabli
 
 `tools/parity/worldgen_regions.py` runs the official server on a seed (structures off), force-loads an area and decodes the saved region files. `php tools/parity/vanilla_decoration.php` decorates the same area in PHP and compares the middle 3×3 chunks. Two official runs of one seed differed by up to 555 blocks per chunk in testing, because vanilla decorates neighbouring chunks in a scheduling-dependent order and overlapping features overwrite each other. So exact agreement can only be expected away from such overlaps. Against official seed-42 chunks around the origin, ores, clay, tuff, gravel, dirt blobs, geodes, lush-cave moss and the trees and vegetation of interior chunks agreed. The remaining differences were overlaps at chunk borders, the same kind as between the two official runs.
 
+## Structures
+
+`Vanilla\Structure\Structures` ports `ChunkGenerator.createStructures`. Structure sets are tried in registry order (`reference/26.3/worldgen/structure-order.json`, exported by `tools/ExportStructureOrder.java`), skipping sets with no biome in the dimension.
+- **Placement:** `random_spread` placement, with its linear and triangular spreads and all four frequency reducers.
+- **Selection:** weighted selection within a set.
+- **Start check:** each start is checked against the structure's biome tag at its surface height. That height is `getFirstOccupiedHeight`, computed from the noise column.
+
+Starts and their pieces' state live in the world database (`vanilla_structure_starts`). Each decorated chunk places the pieces of starts within 8 chunks that overlap it. Structures run before the features of each decoration step, in registry order, and each is seeded with its index in the step, as `applyBiomeDecoration` does.
+
+Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars and drops unsupported torches and ladders.
+
+Ported so far: swamp huts. For seed 42, the hut at chunk -17, 22 matches the official server block for block, including stair shapes and fence connections. Its witch and cat are not spawned yet. Other structure types are skipped: a set whose chosen structure is not ported places nothing.
+
 ## Vanilla End terrain
 
 The End uses the same pipeline with `noise_settings/end.json`. Its biomes come from `TheEndBiomeSource` instead of a climate search. Within 64 chunks of the origin the biome is `the_end`; further out, the `end/islands` density at the chunk's centre picks highlands, midlands, barrens or small islands. Six official End chunks for seed 42 are in the unit test fixture and match at every stage: the main island, its edge, and outer islands. Decoration ports these features:

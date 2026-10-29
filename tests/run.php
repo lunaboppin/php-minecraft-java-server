@@ -213,6 +213,7 @@ foreach ([
     'tick-cost-unit.php',
     'terrain-generator-unit.php',
     'vanilla-worldgen-unit.php',
+    'vanilla-structures-unit.php',
     'chunk-packet-unit.php',
     'loot-unit.php',
     'world-border-unit.php',
