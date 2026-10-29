@@ -22,10 +22,10 @@ final class Lighting
         $flags=$catalog->flags;
         foreach($sections as $section=>$states){
             $emitting=false;
-            foreach(array_count_values($states) as $state=>$_){if((($flags[$state]??0)>>4)>0){$emitting=true;break;}}
+            foreach(array_count_values($states) as $state=>$_){if((($flags[$state]??0)>>4&15)>0){$emitting=true;break;}}
             if(!$emitting){continue;}
             foreach($states as $index=>$state){
-                $emission=($flags[$state]??0)>>4;
+                $emission=($flags[$state]??0)>>4&15;
                 if($emission>0){$global=$section*4096+$index;$levels[$global]=chr($emission);$queue->enqueue($global);}
             }
         }
