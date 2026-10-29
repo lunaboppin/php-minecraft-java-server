@@ -269,12 +269,12 @@ SCRIPT = [
     ('kill @e[type=pig]', False), ('scoreboard players list @e[type=pig]', False), ('scoreboard players list', False),
     ('team list gone', False), ('scoreboard objectives remove dead', False), ('team remove gone', False),
     # A mob dropped six blocks inside a stone box takes fall damage; /damage hurts and kills mobs too.
-    # The failing /damage lines on a missing cow wait while still recording damage events.
+    # The failing /damage lines on a giant, which never spawns, wait while still recording damage events.
     ('!quiet fill -2 99 -2 2 108 2 minecraft:stone hollow', False), ('!quiet tp @s 0 100 0', False), ('!quiet kill @e[type=!player]', False),
-    ('summon pig 0.5 106 0.5', False), ('damage @e[type=cow,limit=1] 1', False), ('damage @e[type=cow,limit=1] 1', False),
-    ('damage @e[type=pig,limit=1] 2', False), ('damage @e[type=cow,limit=1] 1', False), ('damage @e[type=pig,limit=1] 1', False),
+    ('summon pig 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False),
+    ('damage @e[type=pig,limit=1] 2', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=pig,limit=1] 1', False),
     ('damage @e[type=pig,limit=1] 3 in_fire', False), ('damage @e[type=pig,limit=1] 100 fall', False), ('damage @e[type=pig,limit=1] 1', False),
-    ('summon chicken 0.5 106 0.5', False), ('damage @e[type=cow,limit=1] 1', False), ('damage @e[type=chicken,limit=1] 1 fall', False),
+    ('summon chicken 0.5 106 0.5', False), ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=chicken,limit=1] 1 fall', False),
     ('!quiet kill @e[type=!player]', False),
     ('list', False),
 ]
