@@ -7,6 +7,9 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Decoration;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Piece;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\StructureContext;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
 /**
  * ChunkGenerator.applyBiomeDecoration: each step's placed features in the generator's global
@@ -45,6 +48,11 @@ final class Decorator
     private ?Nether $nether = null;
 
     private ?End $end = null;
+
+    /** Structure starts to place; null generates no structures. */
+    public ?Structures $structures = null;
+
+    public ?StructureContext $structureContext = null;
 
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
@@ -98,7 +106,23 @@ final class Decorator
             }
         }
         $origin = [$originX, $region->minY, $originZ];
-        foreach ($this->order as $step => $features) {
+        $reaching = $this->structures?->reaching($region->centerX, $region->centerZ) ?? [];
+        // ChunkGenerator.getWritableArea
+        $chunkBox = [$originX, $region->minY + 1, $originZ, $originX + 15, $region->maxY(), $originZ + 15];
+        for ($step = 0; $step < max(count(Structures::STEPS), count($this->order)); ++$step) {
+            if ($reaching !== []) {
+                foreach ($this->structures->byStep[$step] ?? [] as $structureIndex => $name) {
+                    $random->setFeatureSeed($decorationSeed, $structureIndex, $step);
+                    foreach ($reaching as $entry) {
+                        foreach ($entry['reach'] as $startIndex) {
+                            if ($entry['starts'][$startIndex]['structure'] === $name) {
+                                $this->placeStart($entry['starts'][$startIndex]['pieces'], $region, $random, $chunkBox);
+                            }
+                        }
+                    }
+                }
+            }
+            $features = $this->order[$step] ?? [];
             $indexes = [];
             $index = array_flip($features);
             foreach (array_keys($possible) as $biome) {
@@ -111,6 +135,20 @@ final class Decorator
             foreach ($indexes as $featureIndex) {
                 $random->setFeatureSeed($decorationSeed, $featureIndex, $step);
                 $this->placePlaced($features[$featureIndex], $region, $random, $origin, $features[$featureIndex]);
+            }
+        }
+        foreach ($reaching as $origin => $entry) {
+            $this->structures->save($origin, $entry['starts']);
+        }
+    }
+
+    /** StructureStart.placeInChunk: the pieces that overlap the chunk being decorated. */
+    private function placeStart(array $pieces, Region $region, RandomSource $random, array $chunkBox): void
+    {
+        $this->structureContext ??= new StructureContext($this->blocks);
+        foreach ($pieces as $piece) {
+            if (Piece::intersects($piece->box, $chunkBox)) {
+                $piece->postProcess($this->structureContext, $region, $random, $chunkBox);
             }
         }
     }
