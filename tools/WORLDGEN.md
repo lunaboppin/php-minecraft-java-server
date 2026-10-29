@@ -84,12 +84,20 @@ Starts and their pieces' state live in the world database (`vanilla_structure_st
 
 Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+Ported so far: strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
 - the hut at chunk -17, 22, including its stair shapes and fence connections;
 - the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
 - the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
 - the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
 - the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
+
+Strongholds (`StrongholdPiece`) port `StrongholdPieces` and `StrongholdStructure`:
+- Every piece kind, grown from the start stairs by piece weight, including vanilla's fall-through when a chosen piece does not fit and the imposed five-way crossing after the start.
+- Pending children taken in random order.
+- Retries with the next seed until a portal room is placed, then sinking below sea level.
+- The portal room's eyes and portal, silverfish spawners and loot chests.
+
+Stronghold chunks come from `concentric_rings` placement, ported from `ChunkGeneratorStructureState.generateRingPositions`. Each ring's biome search, the expensive part, is run only for rings that start within 8 chunks of a queried chunk. Results are kept in `vanilla_structure_rings`. For seed 42 all 128 ring chunks match the official server in order (`tools/ExportStrongholds.java`). The first stronghold, at chunk -25, -141, has the official 97 pieces with identical boxes, and none of its blocks differ.
 
 Mineshafts (`MineshaftRoom`, `MineshaftCorridor`, `MineshaftCrossing`, `MineshaftStairs`) port `MineshaftPieces`:
 - Rooms, corridors, crossings and stairs, added one from another up to eight deep within 80 blocks, wherever they do not collide with existing pieces.

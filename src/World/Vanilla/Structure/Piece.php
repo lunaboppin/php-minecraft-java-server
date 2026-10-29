@@ -68,6 +68,7 @@ abstract class Piece
             'mineshaft_corridor' => MineshaftCorridor::restoreWith($piece),
             'mineshaft_crossing' => MineshaftCrossing::restoreWith($piece),
             'mineshaft_stairs' => MineshaftStairs::restoreWith($piece),
+            'stronghold' => StrongholdPiece::restoreWith($piece),
         };
     }
 
