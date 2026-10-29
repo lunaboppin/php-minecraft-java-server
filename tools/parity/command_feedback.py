@@ -154,12 +154,83 @@ SCRIPT = [
     ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
     ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
     ('clear Witness diamond_sword', False),
+    # Scoreboard objectives, scores, display slots and score components; "kill" respawns both players.
+    ('scoreboard objectives list', False), ('scoreboard objectives add kills dummy', False), ('scoreboard objectives add kills dummy', False),
+    ('scoreboard objectives add deaths deathCount {text:"Deaths",color:"red"}', False), ('scoreboard objectives add bad nope', False), ('scoreboard objectives add Ab_c-.+ dummy', False),
+    ('scoreboard objectives add averyveryveryveryveryveryverylongname dummy', False), ('scoreboard objectives list', False), ('scoreboard objectives modify kills displayname "Kills!"', False),
+    ('scoreboard objectives modify kills rendertype hearts', False), ('scoreboard objectives setdisplay sidebar kills', False), ('scoreboard objectives setdisplay sidebar kills', False),
+    ('scoreboard objectives setdisplay sidebar', False), ('scoreboard objectives setdisplay list deaths', False), ('scoreboard objectives setdisplay sidebar.team.red kills', False),
+    ('scoreboard objectives setdisplay belowName nope', False), ('scoreboard players set Witness kills 5', False), ('scoreboard players set @a kills 3', False),
+    ('scoreboard players add Witness kills 2', False), ('scoreboard players remove Witness kills 1', False), ('scoreboard players get Witness kills', False),
+    ('scoreboard players get Witness deaths', False), ('scoreboard players get Nobody kills', False), ('scoreboard players set fakeplayer kills 10', False),
+    ('scoreboard players set * kills 1', False), ('scoreboard players list', False), ('scoreboard players list Witness', False),
+    ('scoreboard players list Nobody', False), ('scoreboard players operation Witness kills += fakeplayer kills', False), ('scoreboard players operation Witness kills *= fakeplayer kills', False),
+    ('scoreboard players operation Witness kills %= fakeplayer kills', False), ('scoreboard players operation Witness kills >< fakeplayer kills', False), ('scoreboard players operation Witness kills /= Nobody kills', False),
+    ('scoreboard players get Witness kills', False), ('scoreboard players reset fakeplayer kills', False), ('scoreboard players reset fakeplayer', False),
+    ('scoreboard players enable Witness kills', False), ('scoreboard objectives add t trigger', False), ('scoreboard players enable Witness t', False),
+    ('scoreboard players enable @a t', False), ('tellraw @s {score:{name:"Witness",objective:"kills"}}', False), ('tellraw @s {score:{name:"@s",objective:"kills"}}', False),
+    ('kill @a[scores={kills=1..}]', False), ('scoreboard objectives remove kills', False), ('scoreboard objectives remove kills', False),
+    ('scoreboard objectives list', False),
+    # playerScores grows past 16 holders, keeps holders whose objective is removed, and lists them
+    # in its spliterator order; resetting an objective drops every holder it leaves empty.
+    ('scoreboard objectives add g dummy', False), ('scoreboard players set f01 g 1', False), ('scoreboard players set f02 g 1', False), ('scoreboard players set f03 g 1', False), ('scoreboard players set f04 g 1', False), ('scoreboard players set f05 g 1', False), ('scoreboard players set f06 g 1', False), ('scoreboard players set f07 g 1', False), ('scoreboard players set f08 g 1', False), ('scoreboard players set f09 g 1', False), ('scoreboard players set f10 g 1', False), ('scoreboard players set f11 g 1', False), ('scoreboard players set f12 g 1', False), ('scoreboard players set f13 g 1', False), ('scoreboard players set f14 g 1', False), ('scoreboard players set f15 g 1', False), ('scoreboard players set f16 g 1', False), ('scoreboard players set f17 g 1', False),
+    ('scoreboard players list', False), ('scoreboard objectives remove g', False), ('scoreboard players list', False),
+    ('scoreboard objectives add h dummy', False), ('scoreboard players set f05 h 5', False), ('scoreboard objectives setdisplay sidebar h', False),
+    ('scoreboard players reset f05', False), ('scoreboard players reset * h', False), ('scoreboard players list', False),
+    ('scoreboard objectives remove h', False),
+    ('!respawn', False),
+    # Summoned mobs with NBT, named and tagged selection; their random loot is cleared quietly.
+    # The operator stands inside a closed stone box first, so the crowded mobs can neither fall nor wander off.
+    ('!quiet tp @s 3 101 4', False), ('!quiet fill 0 100 1 6 104 7 minecraft:stone hollow', False),
+    ('summon pig ~ ~ ~ {NoAI:1b}', False), ('summon pig ~ ~ ~ {CustomName:"Bob"}', False), ('summon pig ~ ~ ~ {CustomName:{text:"Red",color:"red"}}', False),
+    ('summon cow ~ ~ ~ {Age:-24000}', False), ('summon cow ~ ~ ~ {Silent:1b,Invulnerable:1b,PersistenceRequired:1b}', False), ('summon pig ~ ~ ~ {Tags:["a","b"]}', False),
+    ('summon pig ~ ~ ~ {Health:5f}', False), ('summon pig ~ ~ ~ {Rotation:[90f,0f]}', False), ('summon pig ~ ~ ~ {NoAI:1b', False),
+    ('summon pig ~ ~ ~ {}', False), ('summon minecraft:player', False), ('summon pig 0 -10000 0', False),
+    ('kill @e[name=Bob]', False), ('kill @e[name=Red]', False), ('kill @e[tag=a]', False),
+    ('kill @e[tag=!a,type=pig,name=Pig]', False), ('!quiet kill @e[type=!player]', False),
+    # Teams: packets, team-formatted names, selectors and death message visibility.
+    ('team list', False), ('team add red', False), ('team add red', False),
+    ('team add blue {text:"Blue Team",color:"blue"}', False), ('team list', False), ('team list red', False),
+    ('team join red', False), ('team join red Witness', False), ('team join blue Witness', False),
+    ('team list red', False), ('team list blue', False), ('team modify red color red', False),
+    ('team modify red color red', False), ('team modify red prefix {text:"[R] "}', False), ('team modify red suffix " !"', False),
+    ('team modify red friendlyFire false', False), ('team modify red seeFriendlyInvisibles false', False), ('team modify red nametagVisibility hideForOtherTeams', False),
+    ('team modify red deathMessageVisibility never', False), ('team modify red collisionRule pushOwnTeam', False), ('team modify red displayName {text:"Reds"}', False),
+    ('team modify nope color red', False), ('list', False), ('tellraw @a {selector:"@a[team=red]"}', False),
+    ('kill @a[team=blue]', False), ('!respawn', False), ('team join red Witness', False),
+    ('kill Witness', False), ('!respawn', False), ('team modify red deathMessageVisibility hideForOwnTeam', False),
+    ('kill Witness', False), ('!respawn', False), ('team modify red deathMessageVisibility hideForOtherTeams', False),
+    ('kill Witness', False), ('!respawn', False), ('team leave Witness', False),
+    ('team leave Witness', False), ('team empty red', False), ('team empty red', False),
+    ('team remove blue', False), ('team remove red', False), ('team list', False),
+    # /trigger by the non-operator, enabled by the operator.
+    ('scoreboard objectives add t trigger', False), ('scoreboard objectives add d dummy', False), ('!witness trigger t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t', False), ('!witness trigger t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t add 5', False), ('scoreboard players enable Witness t', False),
+    ('!witness trigger t set 42', False), ('scoreboard players get Witness t', False), ('!witness trigger d', False),
+    ('!witness trigger nope', False), ('!witness trigger t set', False), ('scoreboard objectives setdisplay sidebar t', False),
+    ('scoreboard players enable Witness t', False), ('!witness trigger t add -3', False), ('scoreboard objectives remove t', False),
+    ('scoreboard objectives remove d', False),
+    # Status effects and their packets; long effects are infinite so no 30-second resync lands mid-script.
+    ('effect give Witness speed', False), ('effect give Witness speed infinite 1', False), ('effect give Witness speed infinite 1', False),
+    ('effect give Witness minecraft:strength infinite 2 true', False), ('effect give @a night_vision infinite', False), ('effect give Witness speed 0', False),
+    ('effect give Witness speed 1000001', False), ('effect give Witness speed 10 256', False), ('effect give Witness nope', False),
+    ('effect clear Witness speed', False), ('effect clear Witness speed', False), ('effect clear Witness night_vision', False),
+    ('effect clear Witness', False), ('effect clear Witness', False), ('effect clear @a', False),
+    ('effect give Witness instant_health 1 0', False), ('effect give Witness instant_damage 1 0', False), ('effect give Witness poison 5', False),
+    ('effect clear Witness poison', False), ('effect clear', False),
     ('list', False),
 ]
 
 
 def collect(client, since):
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in ('system_chat', 'disconnect')]
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if name in COMPARED]
+
+
+# Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
+COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
+            'set_title_text', 'set_subtitle_text', 'set_action_bar_text', 'set_titles_animation', 'clear_titles', 'update_mob_effect', 'remove_mob_effect',
+            'set_border_size', 'set_border_lerp_size', 'set_border_center', 'set_border_warning_distance', 'set_border_warning_delay')
 
 
 def record(kind, output, java, jar, eula, script=SCRIPT):
@@ -178,8 +249,10 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 witness.tick_barrier()
                 operator.tick_barrier()
             if command == '!respawn':
-                # Not a command: the witness leaves the death screen before the next step.
-                witness.send('client_command', wire.vi(0))
+                # Not a command: dead players leave the death screen before the next step. Both
+                # servers ignore the request from a living player.
+                for client in (operator, witness):
+                    client.send('client_command', wire.vi(0))
                 witness.tick_barrier()
                 operator.tick_barrier()
                 continue
@@ -222,6 +295,23 @@ def normalize_uuids(items):
                                          uuid_tag.sub('0b0004' + b'uuid'.hex() + '00000004' + '0' * 32, item['hex']))} for item in items]
 
 
+# Packets that start with the affected entity's network ID as a VarInt.
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes')
+
+
+def normalize_entity_ids(items):
+    """Zero the entity network ID that entity-addressed packets start with.
+
+    Each server numbers entities from its own counter, so IDs drift apart once the scripts have
+    created different numbers of short-lived entities (loot, summons, reconnected players).
+    """
+    def strip(payload):
+        data = bytes.fromhex(payload)
+        end = next(i for i, byte in enumerate(data) if byte < 0x80) + 1
+        return '00' + data[end:].hex()
+    return [{**item, 'hex': strip(item['hex'])} if item['packet'] in ENTITY_ADDRESSED else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
@@ -231,7 +321,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(expected[role]) != key(actual[role]):
+            if key(normalize_entity_ids(expected[role])) != key(normalize_entity_ids(actual[role])):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 

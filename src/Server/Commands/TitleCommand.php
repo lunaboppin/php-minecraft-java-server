@@ -46,7 +46,7 @@ trait TitleCommand
     private function titleFeedback(Client $sender, string $key, array $targets): void
     {
         $this->sendSuccess($sender, count($targets) === 1
-            ? ['translate' => $key . '.single', 'with' => [Packets::playerName($targets[0]->name, $targets[0]->uuid)]]
+            ? ['translate' => $key . '.single', 'with' => [$this->displayName($targets[0])]]
             : ['translate' => $key . '.multiple', 'with' => [count($targets)]], true);
     }
 }

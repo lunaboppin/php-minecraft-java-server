@@ -76,6 +76,9 @@ trait TeleportCommand
 
     private function rotateEntity(array $target, float $yaw, float $pitch): void
     {
+        if (isset($target['item'])) {
+            return;
+        }
         if (isset($target['client'])) {
             $target['client']->yaw = $yaw;
             $target['client']->pitch = $pitch;
@@ -93,6 +96,9 @@ trait TeleportCommand
     private function faceEntity(array $target, array $facing): void
     {
         [$x, $y, $z, $entity, $anchor] = $facing;
+        if (isset($target['item'])) {
+            return;
+        }
         [$fromX, $fromY, $fromZ] = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z] : [$this->animals[$target['mob']]['x'], $this->animals[$target['mob']]['y'], $this->animals[$target['mob']]['z']];
         $dx = $x - $fromX;
         $dy = $y - $fromY;
@@ -110,6 +116,16 @@ trait TeleportCommand
     /** Move a selected player (across dimensions if needed) or a mob in the sender's dimension. */
     private function moveEntity(array $target, string $dimension, array $position): void
     {
+        if (isset($target['item'])) {
+            $item = &$this->itemEntities[$target['item']];
+            [$item['x'], $item['y'], $item['z']] = $position;
+            foreach ($this->localPlayers() as $player) {
+                if (isset($player->entities[$target['item']])) {
+                    $player->send($this->version, 'teleport_entity', \PhpMinecraftJavaServer\Protocol\Packets::teleportEntity($target['item'], $position[0], $position[1], $position[2], 0, 0, false));
+                }
+            }
+            return;
+        }
         if (!isset($target['client'])) {
             $this->teleportAnimal($target['mob'], $position);
             return;

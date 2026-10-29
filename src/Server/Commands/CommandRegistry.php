@@ -15,6 +15,7 @@ final class CommandRegistry
             new CommandDefinition('list', 'executeList', false),
             new CommandDefinition('msg', 'executeMessage', false, ['tell']),
             new CommandDefinition('me', 'executeMe', false),
+            new CommandDefinition('trigger', 'executeTrigger', false),
             // A dedicated server requires game-master permission for /version.
             new CommandDefinition('version', 'executeVersion', true),
             new CommandDefinition('gamemode', 'executeGameMode', true),
@@ -52,6 +53,9 @@ final class CommandRegistry
             new CommandDefinition('whitelist', 'executeWhitelist', true),
             new CommandDefinition('tellraw', 'executeTellraw', true),
             new CommandDefinition('title', 'executeTitle', true),
+            new CommandDefinition('scoreboard', 'executeScoreboard', true),
+            new CommandDefinition('team', 'executeTeam', true),
+            new CommandDefinition('effect', 'executeEffect', true),
         ];
     }
 

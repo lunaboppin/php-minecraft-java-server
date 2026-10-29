@@ -56,8 +56,17 @@ trait TellrawCommand
                 1 => $names[0],
                 default => ['text' => '', 'extra' => array_merge(...array_map(static fn (array $name, int $index): array => $index === 0 ? [$name] : [$separator, $name], $names, array_keys($names)))],
             };
-        } elseif (isset($component['score']) || isset($component['nbt'])) {
-            // No scoreboards or entity NBT sources: vanilla resolves a missing value to empty text.
+        } elseif (isset($component['score'])) {
+            // ScoreContents.resolve: a selector names its single match; a missing score is empty text.
+            $name = (string) ($component['score']['name'] ?? '');
+            if (str_starts_with($name, '@')) {
+                $matches = $this->selectEntities($name, $sender);
+                $name = $matches === [] ? $name : self::scoreboardName($matches[0]);
+            }
+            $value = $this->scoreboard()->scores[$name][(string) ($component['score']['objective'] ?? '')]['value'] ?? null;
+            $resolved = ['text' => $value === null ? '' : (string) $value];
+        } elseif (isset($component['nbt'])) {
+            // No entity or block NBT sources yet: vanilla resolves a missing value to empty text.
             $resolved = ['text' => ''];
         } else {
             $resolved = array_diff_key($component, $style + ['extra' => true]);

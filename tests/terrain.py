@@ -187,8 +187,9 @@ def main():
                 nonce = struct.pack('>q', 777)
                 b.send('ping_request', nonce)
                 net.check(b.until('pong_response') == nonce, 'play continues after death and respawn')
-                command(a, 'time set night', 'commands.time.set.time_marker')
+                # Stop the clock first, so no tick passes between setting and stopping it.
                 command(a, 'gamerule advance_time false', 'commands.gamerule.set')
+                command(a, 'time set night', 'commands.time.set.time_marker')
                 command(a, 'weather rain', 'commands.weather.set.rain')
                 a.send('move_player_pos', struct.pack('>dddB', 1.5, 65, .5, 1))
                 command(a, 'save-all', 'commands.save.success')

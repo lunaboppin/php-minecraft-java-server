@@ -43,6 +43,7 @@ final class ArgumentReader
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
+            'minecraft:mob_effect' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/mob-effects.json'), true, 512, JSON_THROW_ON_ERROR)['effects'])),
             'minecraft:enchantment' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/enchantments.json'), true, 512, JSON_THROW_ON_ERROR))),
             // Items with a default maximum damage.
             'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),
@@ -129,6 +130,46 @@ final class ArgumentReader
             case 'minecraft:vec3':
                 $this->coordinates($reader, 3, false);
                 return;
+            case 'minecraft:objective':
+            case 'minecraft:team':
+                $reader->readUnquotedString();
+                return;
+            case 'minecraft:color':
+                $color = $reader->readUnquotedString();
+                if (!in_array($color, ['black', 'dark_blue', 'dark_green', 'dark_aqua', 'dark_red', 'dark_purple', 'gold', 'gray', 'dark_gray', 'blue', 'green', 'aqua', 'red', 'light_purple', 'yellow', 'white', 'reset'], true)) {
+                    throw $reader->error('argument.color.invalid', [$color]);
+                }
+                return;
+            case 'minecraft:objective_criteria':
+                $this->criteria($reader);
+                return;
+            case 'minecraft:scoreboard_slot':
+                $slot = $reader->readUnquotedString();
+                if (!isset(\PhpMinecraftJavaServer\World\Scoreboard::SLOTS[$slot])) {
+                    throw $reader->error('argument.scoreboardDisplaySlot.invalid', [$slot]);
+                }
+                return;
+            case 'minecraft:score_holder':
+                if ($reader->canRead() && $reader->peek() === '@') {
+                    EntitySelector::read($reader, $this->selectors, $this->registries['minecraft:entity_type'] ?? null);
+                    return;
+                }
+                while ($reader->canRead() && $reader->peek() !== ' ') {
+                    $reader->skip();
+                }
+                return;
+            case 'minecraft:operation':
+                $start = $reader->cursor;
+                while ($reader->canRead() && $reader->peek() !== ' ') {
+                    $reader->skip();
+                }
+                if (!in_array(substr($reader->string, $start, $reader->cursor - $start), ['=', '+=', '-=', '*=', '/=', '%=', '<', '>', '><'], true)) {
+                    throw $reader->error('arguments.operation.invalid');
+                }
+                return;
+            case 'minecraft:style':
+                Snbt::read($reader);
+                return;
             case 'minecraft:component':
                 TextComponentArgument::read($reader);
                 return;
@@ -150,8 +191,15 @@ final class ArgumentReader
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
                 return;
+            case 'minecraft:nbt_compound_tag':
+                $start = $reader->cursor;
+                if (Snbt::read($reader)['type'] !== 'compound') {
+                    $reader->cursor = $start;
+                    throw $reader->error('argument.nbt.expected.compound');
+                }
+                return;
             default:
-                // nbt_compound_tag and other structured values: one balanced token.
+                // Other structured values: one balanced token.
                 self::balanced($reader);
         }
     }
@@ -279,6 +327,24 @@ final class ArgumentReader
         $reader->skip();
         if ($reader->canRead() && $reader->peek() !== ' ') {
             $reader->readDouble();
+        }
+    }
+
+    /** ObjectiveCriteriaArgument: a built-in criterion, a team colour criterion or a statistic. */
+    private function criteria(StringReader $reader): void
+    {
+        $start = $reader->cursor;
+        while ($reader->canRead() && $reader->peek() !== ' ') {
+            $reader->skip();
+        }
+        $name = substr($reader->string, $start, $reader->cursor - $start);
+        $colors = 'black|dark_blue|dark_green|dark_aqua|dark_red|dark_purple|gold|gray|dark_gray|blue|green|aqua|red|light_purple|yellow|white';
+        $valid = in_array($name, ['dummy', 'trigger', 'deathCount', 'playerKillCount', 'totalKillCount', 'health', 'food', 'air', 'armor', 'xp', 'level'], true)
+            || preg_match('/\A(teamkill|killedByTeam)\.(' . $colors . ')\z/D', $name) === 1
+            || preg_match('/\A[a-z0-9_.\-]+\.[a-z0-9_.\-\/]+:[a-z0-9_.\-]+\.[a-z0-9_.\-\/]+\z/D', $name) === 1;
+        if (!$valid) {
+            $reader->cursor = $start;
+            throw $reader->error('argument.criteria.invalid', [$name]);
         }
     }
 

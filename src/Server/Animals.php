@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Binary;
+use PhpMinecraftJavaServer\Protocol\Nbt;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\World\Noise;
 use PhpMinecraftJavaServer\World\Collision;
@@ -108,6 +109,33 @@ trait Animals
         $this->spawnAnimal($kind, $x + 1.5, $column['height'] + 1, $z + 0.5);
     }
 
+    /** Types whose entity data index 16 is DATA_BABY_ID: AgeableMob subclasses and the zombie family. */
+    private const BABY_INDEX_TYPES = ['cow', 'pig', 'sheep', 'chicken', 'rabbit', 'mooshroom', 'goat', 'wolf', 'cat', 'ocelot', 'fox', 'panda', 'polar_bear', 'turtle', 'llama', 'trader_llama', 'horse', 'donkey', 'mule', 'skeleton_horse', 'zombie_horse', 'camel', 'sniffer', 'armadillo', 'bee', 'axolotl', 'strider', 'hoglin', 'parrot', 'frog', 'villager', 'wandering_trader', 'zombie', 'husk', 'drowned', 'zombie_villager'];
+
+    /**
+     * SynchedEntityData for the state summon NBT can set: the custom name (2) and its visibility
+     * (3), silence (4), the mob flags' no-AI bit (15) and the baby flag (16).
+     */
+    private function mobState(array $animal): string
+    {
+        $entries = '';
+        if (isset($animal['customName'])) {
+            $entries .= "\x02" . Binary::writeVarInt(6) . "\1" . Nbt::component($animal['customName']);
+        }
+        foreach ([3 => 'customNameVisible', 4 => 'silent'] as $index => $field) {
+            if (isset($animal[$field])) {
+                $entries .= chr($index) . Binary::writeVarInt(8) . ($animal[$field] ? "\1" : "\0");
+            }
+        }
+        if (isset($animal['noAi'])) {
+            $entries .= "\x0f" . Binary::writeVarInt(0) . ($animal['noAi'] ? "\1" : "\0");
+        }
+        if (($animal['baby'] ?? false) && in_array($animal['kind'], self::BABY_INDEX_TYPES, true)) {
+            $entries .= "\x10" . Binary::writeVarInt(8) . "\1";
+        }
+        return Binary::writeVarInt($animal['id']) . $entries . "\xff";
+    }
+
     private function showAnimal(Client $c, array $animal): void
     {
         $id = $animal['id'];
@@ -121,6 +149,9 @@ trait Animals
         $c->send($this->version, 'add_entity', $spawn);
         $c->entities[$id] = true;
         $c->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $animal['health']));
+        if (array_intersect_key($animal, array_flip(['customName', 'customNameVisible', 'silent', 'noAi', 'baby'])) !== []) {
+            $c->send($this->version, 'set_entity_data', $this->mobState($animal));
+        }
         if (isset($animal['soundVariant'])) {
             $c->send($this->version, 'set_entity_data', Packets::mobSoundVariant($this->version, $id, $animal['kind'], $animal['soundVariant']));
         }
@@ -161,7 +192,8 @@ trait Animals
         if (Combat::strength($weapon['speed'], $elapsed, 1.0) < $weapon['minimum_charge']) {
             return true;
         }
-        $damage = Combat::attack($weapon['damage'], $weapon['speed'], $elapsed);
+        // Strength and weakness modify the attack_damage attribute before the cooldown scales it.
+        $damage = Combat::attack($this->effectAttackDamage($c, (float) $weapon['damage']), $weapon['speed'], $elapsed);
         $c->lastAttackTick = $this->ticks;
         $newWindow = $this->ticks - ($animal['lastHurtTick'] ?? -100) >= 10;
         if (!$newWindow && $damage <= ($animal['lastHurtAmount'] ?? 0)) {
@@ -205,6 +237,7 @@ trait Animals
             }
         }
         if ($animal['health'] <= 0) {
+            $this->incrementCriteria('totalKillCount', $c->name);
             $this->animalDeathLoot($animal, $c);
             if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
                 $this->giveExperiencePoints($c, random_int(1, 3));
@@ -296,6 +329,11 @@ trait Animals
                 }
                 continue;
             }
+            // Entity.checkBelowWorld: a mob 64 blocks below the world is discarded, without loot.
+            if ($animal['y'] < $this->world->minY - 64) {
+                $this->removeAnimal($id);
+                continue;
+            }
             $near = false;
             foreach ($this->localPlayers() as $p) {
                 if ($this->ticks % 4 === 0) {
@@ -305,7 +343,8 @@ trait Animals
                     $near = true;
                 }
             }
-            if (!$near) {
+            // Mob.isNoAi: no goals and no travel, so a NoAI mob stays where it is.
+            if (!$near || ($animal['noAi'] ?? false)) {
                 continue;
             }
             $this->moveMob($animal, $noise);
