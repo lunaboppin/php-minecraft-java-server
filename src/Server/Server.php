@@ -126,11 +126,11 @@ final class Server
             }
         }
         $this->log('Vanilla terrain: ' . count($this->generationWorkers) . ' generation workers');
-        // Spawn chunks first.
+        // Spawn chunks first, kept for ten minutes so the first player to join finds them ready.
         [$x, , $z] = $this->world->spawn();
         for ($dz = -3; $dz <= 3; ++$dz) {
             for ($dx = -3; $dx <= 3; ++$dx) {
-                $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)));
+                $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)), 600.0);
             }
         }
     }

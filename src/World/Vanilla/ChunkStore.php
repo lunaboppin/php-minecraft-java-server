@@ -37,6 +37,9 @@ final class ChunkStore
     /** @var array<string, float> when a not-ready chunk may be checked or requested again */
     private array $recheck = [];
 
+    /** When work() next deletes expired requests. */
+    private float $expireAt = 0.0;
+
     public function __construct(private readonly \PDO $db, private readonly Version $version, private readonly int $seed)
     {
         $db->exec('CREATE TABLE IF NOT EXISTS vanilla_chunks(cx INTEGER NOT NULL,cz INTEGER NOT NULL,status INTEGER NOT NULL,blocks BLOB NOT NULL,biomes BLOB NOT NULL,PRIMARY KEY(cx,cz));'
@@ -46,6 +49,11 @@ final class ChunkStore
         $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('heights', $columns, true)) {
             $db->exec('ALTER TABLE vanilla_chunks ADD COLUMN heights BLOB');
+        }
+        // Requests nobody renews (a player moved away or left) expire instead of keeping the workers busy.
+        $columns = array_column($db->query('PRAGMA table_info(vanilla_requests)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
+        if (!in_array('expires', $columns, true)) {
+            $db->exec('ALTER TABLE vanilla_requests ADD COLUMN expires REAL NOT NULL DEFAULT 0');
         }
     }
 
@@ -133,16 +141,21 @@ final class ChunkStore
         return false;
     }
 
-    /** Ask the generation workers for a chunk; a lower priority is generated sooner. */
-    public function request(int $cx, int $cz, int $priority): void
+    /**
+     * Ask the generation workers for a chunk; a lower priority is generated sooner. Callers
+     * that still want the chunk renew the request at most every 5 seconds, so it is kept for
+     * 15 seconds by default.
+     */
+    public function request(int $cx, int $cz, int $priority, float $keepFor = 15.0): void
     {
         $key = "r$cx,$cz";
-        if (($this->recheck[$key] ?? 0.0) > microtime(true)) {
+        $now = microtime(true);
+        if (($this->recheck[$key] ?? 0.0) > $now) {
             return;
         }
-        $this->recheck[$key] = microtime(true) + 5.0;
-        $q = $this->db->prepare('INSERT INTO vanilla_requests(cx,cz,priority) VALUES(?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET priority=MIN(priority,excluded.priority)');
-        $q->execute([$cx, $cz, $priority]);
+        $this->recheck[$key] = $now + 5.0;
+        $q = $this->db->prepare('INSERT INTO vanilla_requests(cx,cz,priority,expires) VALUES(?,?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET priority=excluded.priority,expires=MAX(expires,excluded.expires)');
+        $q->execute([$cx, $cz, $priority, $now + $keepFor]);
     }
 
     /**
@@ -252,7 +265,14 @@ final class ChunkStore
      */
     public function work(): bool
     {
-        $request = $this->db->query('SELECT cx,cz FROM vanilla_requests ORDER BY priority LIMIT 8')->fetchAll(\PDO::FETCH_NUM);
+        $now = microtime(true);
+        if ($now >= $this->expireAt) {
+            $this->db->prepare('DELETE FROM vanilla_requests WHERE expires<?')->execute([$now]);
+            $this->expireAt = $now + 5.0;
+        }
+        $q = $this->db->prepare('SELECT cx,cz FROM vanilla_requests WHERE expires>=? ORDER BY priority LIMIT 8');
+        $q->execute([$now]);
+        $request = $q->fetchAll(\PDO::FETCH_NUM);
         if ($request === []) {
             return false;
         }
