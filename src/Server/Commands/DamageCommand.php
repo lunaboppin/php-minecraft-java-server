@@ -39,10 +39,11 @@ trait DamageCommand
         $target = $targets[0];
         // The reply names the entity even when the damage removes it.
         $name = $this->entityName($target);
-        // Mobs take LivingEntity.hurtServer as players do, and orbs ExperienceOrb.hurtServer; item entities are not supported yet.
+        // Mobs take LivingEntity.hurtServer as players do; dropped items take ItemEntity.hurtServer and orbs ExperienceOrb.hurtServer.
         $hurt = match (true) {
             isset($target['client']) => $this->damage($target['client'], $amount, $type, $attacker),
             isset($target['mob']) => $this->withDimension($sender->dimension, fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)),
+            isset($target['item']) => $this->withDimension($sender->dimension, fn () => $this->hurtItem($target['item'], $amount, $type)),
             isset($target['orb']) => $this->withDimension($sender->dimension, fn () => $this->hurtOrb($target['orb'], $amount)),
             default => false,
         };

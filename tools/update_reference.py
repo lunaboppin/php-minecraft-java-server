@@ -260,7 +260,7 @@ def main():
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
         'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
-        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportExperience.java',
+        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportExperience.java', 'ExportItemEntities.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -291,6 +291,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportConsumables', str(out / 'consumables.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportAttributes', str(out / 'attributes.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportExperience', str(out / 'experience.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportItemEntities', str(out / 'item-entities.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
     structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
