@@ -305,11 +305,11 @@ def record(kind, output, java, jar, eula, script=SCRIPT):
                 operator.tick_barrier()
             if command == '!respawn':
                 # Not a command: dead players leave the death screen before the next step. Both
-                # servers ignore the request from a living player.
+                # servers ignore the request from a living player. One at a time, since a
+                # respawned player moves to the end of the player list.
                 for client in (operator, witness):
                     client.send('client_command', wire.vi(0))
-                witness.tick_barrier()
-                operator.tick_barrier()
+                    client.tick_barrier()
                 continue
             if command == '!reconnect':
                 # The witness joins again, for instance after a kick or a pardon.
