@@ -7,11 +7,14 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Noise;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 
-/** synth.NormalNoise: builds the paired octave stack for a noise definition. */
+/**
+ * synth.NormalNoise: builds the paired octave stack for a noise definition. The Nether's
+ * temperature and vegetation noises use the deprecated legacy initialisation instead.
+ */
 final class NormalNoise
 {
     /** @param array{first_octave?: int, firstOctave?: int, amplitudes?: list<float>} $parameters */
-    public static function create(RandomSource $random, array $parameters): NoiseStack
+    public static function create(RandomSource $random, array $parameters, bool $legacyNetherBiome = false): NoiseStack
     {
         $octave = $parameters['base_octave'] ?? 0;
         $count = $parameters['octave_count'] ?? 1;
@@ -52,6 +55,9 @@ final class NormalNoise
         if ($mode === 'legacy' && $normalization != 0.0) {
             $normalization = $base * 0.5 * 0.3333333333333333 / (0.1 * (1.0 + 1.0 / ($last - $first + 1)));
         }
+        if ($legacyNetherBiome) {
+            return self::legacyNetherBiome($random, $octave, $count, $modifiers, F32::r($normalization * $base));
+        }
         $firstRandom = $random->forkPositional();
         $secondRandom = $random->forkPositional();
         $layers = [];
@@ -61,5 +67,61 @@ final class NormalNoise
             $layers[] = [new Perlin($secondRandom->fromHashOf($seed)), $octaveFrequency * 1.0181268882175227, $weight];
         }
         return new NoiseStack($layers);
+    }
+
+    /**
+     * NormalNoise.createForLegacyNetherBiome: two LegacyFbmInitializer stacks drawn from one
+     * legacy random, flattened by NoiseStack.Builder.addStack.
+     *
+     * @param list<float> $modifiers
+     */
+    private static function legacyNetherBiome(RandomSource $random, int $firstOctave, int $count, array $modifiers, float $valueFactor): NoiseStack
+    {
+        $amplitudes = $modifiers === [] ? array_fill(0, $count, 1.0) : array_map(floatval(...), $modifiers);
+        $layers = [];
+        foreach ([1.0, 1.0181268882175227] as $frequency) {
+            foreach (self::legacyFbm($random, $firstOctave, $amplitudes) as [$noise, $octaveFrequency, $amplitude]) {
+                $layers[] = [$noise, $octaveFrequency * $frequency, F32::r($amplitude * $valueFactor)];
+            }
+        }
+        return new NoiseStack($layers);
+    }
+
+    /**
+     * LegacyFbmInitializer.createForLegacyNetherBiome
+     *
+     * @param list<float> $amplitudes
+     * @return list<array{0: Perlin, 1: float, 2: float}>
+     */
+    private static function legacyFbm(RandomSource $random, int $firstOctave, array $amplitudes): array
+    {
+        $octaves = count($amplitudes);
+        $zeroOctaveIndex = -$firstOctave;
+        $levels = array_fill(0, $octaves, null);
+        $zeroOctave = new Perlin($random);
+        if ($zeroOctaveIndex >= 0 && $zeroOctaveIndex < $octaves && $amplitudes[$zeroOctaveIndex] != 0.0) {
+            $levels[$zeroOctaveIndex] = $zeroOctave;
+        }
+        for ($i = $zeroOctaveIndex - 1; $i >= 0; --$i) {
+            if ($i < $octaves && $amplitudes[$i] != 0.0) {
+                $levels[$i] = new Perlin($random);
+            } else {
+                $random->consumeCount(262);
+            }
+        }
+        if ($zeroOctaveIndex < $octaves - 1) {
+            throw new \InvalidArgumentException('Positive octaves are temporarily disabled');
+        }
+        $factor = 2.0 ** -$zeroOctaveIndex;
+        $valueFactor = 2.0 ** ($octaves - 1) / (2.0 ** $octaves - 1.0);
+        $layers = [];
+        foreach ($levels as $index => $noise) {
+            if ($noise !== null) {
+                $layers[] = [$noise, $factor, F32::r($valueFactor * $amplitudes[$index])];
+            }
+            $factor *= 2.0;
+            $valueFactor /= 2.0;
+        }
+        return $layers;
     }
 }

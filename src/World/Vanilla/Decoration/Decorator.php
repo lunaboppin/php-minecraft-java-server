@@ -42,6 +42,8 @@ final class Decorator
 
     private ?Templates $templates = null;
 
+    private ?Nether $nether = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -49,11 +51,14 @@ final class Decorator
         public readonly Blocks $blocks,
         private readonly BiomeClimate $climate,
         private readonly string $directory,
+        string $dimension = 'overworld',
     ) {
-        $this->order = json_decode((string) file_get_contents($directory . '/feature-order.json'), true, 512, JSON_THROW_ON_ERROR)['steps'];
+        $order = $dimension === 'overworld' ? 'feature-order.json' : 'feature-order-' . preg_replace('/^the_/', '', $dimension) . '.json';
+        $this->order = json_decode((string) file_get_contents($directory . '/' . $order), true, 512, JSON_THROW_ON_ERROR)['steps'];
         $this->predicates = new Predicates($blocks);
         $this->survival = new Survival($blocks, $directory . '/block-behaviour.json');
         $this->predicates->survival = $this->survival;
+        $this->survival->skyLight = $dimension === 'overworld';
         $this->providers = new Providers($blocks, $directory, $this->predicates);
     }
 
@@ -122,22 +127,57 @@ final class Decorator
         if ($placement === []) {
             return $this->place($feature, $region, $random, ...$origin);
         }
+        return $this->placeFrom($feature, $placement, 0, $region, $random, $origin, $top);
+    }
+
+    /** The modifiers from one index on, each output passed on before the modifier continues. */
+    private function placeFrom(mixed $feature, array $placement, int $index, Region $region, RandomSource $random, array $position, ?string $top): bool
+    {
+        if ($index === count($placement)) {
+            return $this->place($feature, $region, $random, ...$position);
+        }
         $placedAny = false;
-        $stack = [[$origin, 0]];
-        while ($stack !== []) {
-            [$position, $modifierIndex] = array_pop($stack);
-            $modified = $this->modify($placement[$modifierIndex], $region, $random, $position, $top);
-            if ($modifierIndex + 1 < count($placement)) {
-                for ($i = count($modified) - 1; $i >= 0; --$i) {
-                    $stack[] = [$modified[$i], $modifierIndex + 1];
+        if (preg_replace('/^minecraft:/', '', $placement[$index]['type']) === 'count_on_every_layer') {
+            // CountOnEveryLayerPlacement: its outputs interleave with the random draws of what follows.
+            $layer = 0;
+            do {
+                $foundAny = false;
+                for ($i = 0; $i < Providers::int($placement[$index]['count'], $random); ++$i) {
+                    $x = $random->nextInt(16) + $position[0];
+                    $z = $random->nextInt(16) + $position[2];
+                    $y = $this->onGroundY($region, $x, $region->height(Region::MOTION_BLOCKING, $x, $z), $z, $layer);
+                    if ($y !== PHP_INT_MAX) {
+                        $placedAny = $this->placeFrom($feature, $placement, $index + 1, $region, $random, [$x, $y, $z], $top) || $placedAny;
+                        $foundAny = true;
+                    }
                 }
-            } else {
-                foreach ($modified as $next) {
-                    $placedAny = $this->place($feature, $region, $random, ...$next) || $placedAny;
-                }
-            }
+                ++$layer;
+            } while ($foundAny);
+            return $placedAny;
+        }
+        foreach ($this->modify($placement[$index], $region, $random, $position, $top) as $next) {
+            $placedAny = $this->placeFrom($feature, $placement, $index + 1, $region, $random, $next, $top) || $placedAny;
         }
         return $placedAny;
+    }
+
+    /** CountOnEveryLayerPlacement.findOnGroundYPosition: the top of the given solid layer below a column's start. */
+    private function onGroundY(Region $region, int $x, int $startY, int $z, int $layer): int
+    {
+        $empty = fn (int $state): bool => $this->blocks->isAir($state) || in_array($this->blocks->name($state), ['water', 'lava'], true);
+        $current = $region->get($x, $startY, $z);
+        $found = 0;
+        for ($y = $startY; $y >= $region->minY + 1; --$y) {
+            $below = $region->get($x, $y - 1, $z);
+            if (!$empty($below) && $empty($current) && $this->blocks->name($below) !== 'bedrock') {
+                if ($found === $layer) {
+                    return $y;
+                }
+                ++$found;
+            }
+            $current = $below;
+        }
+        return PHP_INT_MAX;
     }
 
     /** @return list<array{0: int, 1: int, 2: int}> */
@@ -347,6 +387,20 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->speleothemCluster($feature, $region, $random, $x, $y, $z);
             case 'root_system':
                 return ($this->patches ??= new Patches($this))->rootSystem($feature, $region, $random, $x, $y, $z);
+            case 'huge_fungus':
+                return ($this->nether ??= new Nether($this))->hugeFungus($feature, $region, $random, $x, $y, $z);
+            case 'netherrack_replace_blobs':
+                return ($this->nether ??= new Nether($this))->replaceBlobs($feature, $region, $random, $x, $y, $z);
+            case 'delta_feature':
+                return ($this->nether ??= new Nether($this))->delta($feature, $region, $random, $x, $y, $z);
+            case 'random_neighbor_spread':
+                return ($this->nether ??= new Nether($this))->randomNeighborSpread($feature, $region, $random, $x, $y, $z);
+            case 'single_block_pillar':
+                return ($this->nether ??= new Nether($this))->singleBlockPillar($feature, $region, $random, $x, $y, $z);
+            case 'projected_random_patchy_square':
+                return ($this->nether ??= new Nether($this))->projectedPatchySquare($feature, $region, $random, $x, $y, $z);
+            case 'stepped_column_cluster':
+                return ($this->nether ??= new Nether($this))->steppedColumnCluster($feature, $region, $random, $x, $y, $z);
             case 'no_op':
                 return false;
         }
