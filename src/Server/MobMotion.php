@@ -61,7 +61,7 @@ trait MobMotion
         if (!$this->ordinaryMobTravel($mob)) {
             return;
         }
-        $attributes = $this->version->catalog->mobs['entities'][$mob['kind']]['attributes'];
+        $attributes = $this->mobAttributes($mob);
         $result = EntityPhysics::knockback(
             $mob['velocity'],
             $this->version->catalog->movement['default_knockback_strength'],

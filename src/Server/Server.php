@@ -115,6 +115,11 @@ final class Server
     /** @var list<array{0: resource, 1: array}> */
     private array $generationWorkers = [];
 
+    /** @var list<string> */
+    private array $generationWorkerCommand = [];
+
+    private float $generationWorkersCheckedAt = 0.0;
+
     /** Start the background processes that generate vanilla chunks. */
     private function startGenerationWorkers(): void
     {
@@ -126,14 +131,11 @@ final class Server
         if (($this->worlds['the_nether'] ?? null)?->vanilla !== null) {
             $pregenerate[] = $this->config->worldPath . '.the_nether.sqlite';
         }
+        $this->generationWorkerCommand = [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate];
         for ($i = 0; $i < $this->config->generationWorkers; ++$i) {
-            $process = proc_open(
-                [PHP_BINARY, '-d', 'memory_limit=768M', __DIR__ . '/../../bin/vanilla-worker.php', $this->config->worldPath, (string) $this->world->seed, ...$pregenerate],
-                [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR],
-                $pipes,
-            );
-            if (is_resource($process)) {
-                $this->generationWorkers[] = [$process, $pipes];
+            $worker = $this->spawnGenerationWorker();
+            if ($worker !== null) {
+                $this->generationWorkers[] = $worker;
             }
         }
         $this->log('Vanilla terrain: ' . count($this->generationWorkers) . ' generation workers');
@@ -142,6 +144,34 @@ final class Server
         for ($dz = -3; $dz <= 3; ++$dz) {
             for ($dx = -3; $dx <= 3; ++$dx) {
                 $this->world->requestGeneration(((int) floor($x) >> 4) + $dx, ((int) floor($z) >> 4) + $dz, 100 + max(abs($dx), abs($dz)), 600.0);
+            }
+        }
+    }
+
+    /** @return array{0: resource, 1: array}|null */
+    private function spawnGenerationWorker(): ?array
+    {
+        $process = proc_open($this->generationWorkerCommand, [0 => ['pipe', 'r'], 1 => STDOUT, 2 => STDERR], $pipes);
+        return is_resource($process) ? [$process, $pipes] : null;
+    }
+
+    /** Replace generation workers that have exited, so chunk generation never silently stops. */
+    private function checkGenerationWorkers(): void
+    {
+        foreach ($this->generationWorkers as $index => [$process, $pipes]) {
+            $status = proc_get_status($process);
+            if ($status['running']) {
+                continue;
+            }
+            @fclose($pipes[0]);
+            proc_close($process);
+            $how = $status['signaled'] ? 'was killed by signal ' . $status['termsig'] : 'exited with code ' . $status['exitcode'];
+            $this->log('Vanilla terrain: generation worker ' . $how . '; restarting it');
+            $worker = $this->spawnGenerationWorker();
+            if ($worker === null) {
+                unset($this->generationWorkers[$index]);
+            } else {
+                $this->generationWorkers[$index] = $worker;
             }
         }
     }
@@ -1322,6 +1352,10 @@ final class Server
             }
         }
         $this->tickDimensions();
+        if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
+            $this->generationWorkersCheckedAt = $now;
+            $this->checkGenerationWorkers();
+        }
         foreach ($this->clients as $id => $c) {
             if ($c->closing) {
                 if ($c->output === '' || $now - $c->closingAt > 2) {

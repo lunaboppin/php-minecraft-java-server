@@ -69,7 +69,9 @@ def observe(server, output):
         server.start()
         actor = MotionProbe(server.port, server.kind + '-actor').login()
         observer = MotionProbe(server.port, server.kind + '-observer').login('ParityObserver')
-        for text in ['gamerule minecraft:spawn_mobs false', 'time set 18000',
+        # Vanilla scatters joining players within respawn_radius of the spawn; the late observer
+        # must not land beside the giant and push it.
+        for text in ['gamerule minecraft:spawn_mobs false', 'gamerule minecraft:respawn_radius 0', 'time set 18000',
                      'fill -12 63 -12 12 63 12 minecraft:stone',
                      'fill -12 64 -12 12 82 12 minecraft:air',
                      'tp @s 5 64 0.5', 'tp ParityObserver 8.5 64 8.5', 'setworldspawn 8 64 8']:

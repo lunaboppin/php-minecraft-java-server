@@ -25,11 +25,12 @@ $open = static function (string $path): PDO {
     return $db;
 };
 $version = new Version();
-$store = new ChunkStore($open($argv[1]), $version, (int) $argv[2]);
+$databases = [$open($argv[1])];
+$store = new ChunkStore($databases[0], $version, (int) $argv[2]);
 if ($argc >= 6) {
     $store->pregenerate((int) $argv[3], (int) $argv[4], (int) $argv[5]);
 }
-$nether = $argc === 7 ? new ChunkStore($open($argv[6]), $version, (int) $argv[2], 'the_nether', 256) : null;
+$nether = $argc === 7 ? new ChunkStore($databases[] = $open($argv[6]), $version, (int) $argv[2], 'the_nether', 256) : null;
 // Generation yields the CPU to the server's main loop, which keeps ticking players.
 @proc_nice(10);
 stream_set_blocking(STDIN, false);
@@ -45,5 +46,14 @@ while (true) {
     } catch (PDOException $e) {
         // Another process holds the database; try again shortly.
         usleep(200000);
+    } catch (Throwable $e) {
+        // A generation bug fails only this unit of work: its claim expires and it is retried later.
+        fwrite(STDERR, sprintf("[%s] vanilla worker: %s: %s at %s:%d\n", date('Y-m-d H:i:s'), $e::class, $e->getMessage(), $e->getFile(), $e->getLine()));
+        foreach ($databases as $db) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+        }
+        usleep(1000000);
     }
 }
