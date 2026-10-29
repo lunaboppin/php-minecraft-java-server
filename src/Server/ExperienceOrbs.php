@@ -338,7 +338,12 @@ trait ExperienceOrbs
                 }
             }
         }
-        foreach ($this->orbTracker($orb)->update($this->orbState($orb)) as $packet) {
+        $state = $this->orbState($orb);
+        $packets = $this->orbTracker($orb)->update($state);
+        if ($packets !== []) {
+            $this->experienceOrbs[$id]['needsSync'] = false;
+        }
+        foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {
                 if (isset($player->entities[$id])) {
                     $player->send($this->version, $packet['name'], $packet['payload']);
