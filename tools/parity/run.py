@@ -43,12 +43,12 @@ def free_port():
 
 
 class Server:
-    def __init__(self,path,kind,java,jar,eula,difficulty=0):
+    def __init__(self,path,kind,java,jar,eula,difficulty=0,spawn_protection=0):
         self.path=path;path.mkdir();self.kind=kind;self.java=java;self.jar=jar;self.eula=eula;self.proc=None
         self.port=free_port();self.log=path/'server.log'
         if kind=='php':
             (path/'server.json').write_text(json.dumps({'host':'127.0.0.1','port':self.port,'worldPath':str(path/'world.sqlite'),
-                'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':difficulty,'operators':['ParityProbe']}))
+                'logDirectory':str(path/'logs'),'generator':'flat','seed':42,'viewDistance':2,'defaultGameMode':1,'difficulty':difficulty,'operators':['ParityProbe'],'spawnProtection':spawn_protection}))
         else:
             plain_reference_logging(jar,path/'log4j2-plain.xml')
             # Copy an existing acknowledgement. This harness never accepts the EULA on the user's behalf.
@@ -58,7 +58,7 @@ class Server:
             settings={'layers':[{'height':124,'block':'minecraft:air'},{'height':1,'block':'minecraft:bedrock'},
                 {'height':2,'block':'minecraft:dirt'},{'height':1,'block':'minecraft:grass_block'}],'biome':'minecraft:plains','features':False,'lakes':False}
             props={'server-ip':'127.0.0.1','server-port':self.port,'online-mode':'false','enforce-secure-profile':'false','white-list':'false','max-players':20,
-                'view-distance':2,'simulation-distance':2,'gamemode':'creative','difficulty':['peaceful','easy','normal','hard'][difficulty],'spawn-protection':0,
+                'view-distance':2,'simulation-distance':2,'gamemode':'creative','difficulty':['peaceful','easy','normal','hard'][difficulty],'spawn-protection':spawn_protection,
                 'level-seed':42,'level-type':'minecraft:flat','generator-settings':json.dumps(settings),'generate-structures':'false',
                 'spawn-animals':'false','spawn-monsters':'false','pause-when-empty-seconds':0,'network-compression-threshold':256}
             (path/'server.properties').write_text(''.join(f'{k}={v}\n' for k,v in props.items()))
