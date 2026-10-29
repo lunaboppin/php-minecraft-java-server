@@ -20,6 +20,8 @@ if ($argc !== 3) {
 $db = new PDO('sqlite:' . $argv[1], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $db->exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=30000');
 $store = new ChunkStore($db, new Version(), (int) $argv[2]);
+// Generation yields the CPU to the server's main loop, which keeps ticking players.
+@proc_nice(10);
 stream_set_blocking(STDIN, false);
 while (true) {
     $line = fgets(STDIN);
