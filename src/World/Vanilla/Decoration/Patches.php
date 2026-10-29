@@ -13,7 +13,6 @@ use PhpMinecraftJavaServer\World\Vanilla\F32;
 /**
  * Ground and fluid features: vegetation patches (lush cave moss and clay pools), lakes,
  * vines, block blobs, underwater magma and multiface growth.
- * first face but does not spread further yet.
  */
 final class Patches
 {
