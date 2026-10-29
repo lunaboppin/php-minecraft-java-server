@@ -160,8 +160,8 @@ jobs:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
     # Each command script runs once on PHP and once on the official server; with several
-    # hundred commands and reconnects this takes about an hour on a hosted runner.
-    timeout-minutes: 90
+    # hundred commands and reconnects this takes about an hour and a half on a hosted runner.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
