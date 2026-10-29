@@ -90,9 +90,14 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** Whether a position arrived since the client's last client_tick_end. */
+    public bool $positionThisTick = false;
+    /** Where the player's last tick left them, and the movement packets since. */
+    public ?array $tickPosition = null;
+    public int $movesThisTick = 0;
     public int $teleportCounter = 0;
     public ?int $teleport = null;
-    public float $teleportAt = 0;
+    public int $teleportTick = 0;
     public int $chunkX = 0;
     public int $chunkZ = 0;
     public array $loadedChunks = [];
