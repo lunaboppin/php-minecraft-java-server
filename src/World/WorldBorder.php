@@ -16,14 +16,23 @@ final class WorldBorder
     public const ABSOLUTE_MAX = 29999984;
 
     public float $centerX = 0.0;
+
     public float $centerZ = 0.0;
+
     public float $fromSize = self::MAX_SIZE;
+
     public float $toSize = self::MAX_SIZE;
+
     public int $lerpStart = 0;
+
     public int $lerpDuration = 0;
+
     public float $damagePerBlock = 0.2;
+
     public float $safeZone = 5.0;
+
     public int $warningBlocks = 5;
+
     public int $warningTime = 300;
 
     public static function fromArray(?array $data): self
@@ -78,6 +87,14 @@ final class WorldBorder
         $minZ = max(-self::ABSOLUTE_MAX, $this->centerZ - $half);
         $maxZ = min(self::ABSOLUTE_MAX, $this->centerZ + $half);
         return min($x - $minX, $maxX - $x, $z - $minZ, $maxZ - $z);
+    }
+
+    /** WorldBorder.isWithinBounds: from the minimum edge inclusive to the maximum exclusive. */
+    public function contains(float $x, float $z, int $gameTime): bool
+    {
+        $half = $this->size($gameTime) / 2.0;
+        return $x >= max(-self::ABSOLUTE_MAX, $this->centerX - $half) && $x < min(self::ABSOLUTE_MAX, $this->centerX + $half)
+            && $z >= max(-self::ABSOLUTE_MAX, $this->centerZ - $half) && $z < min(self::ABSOLUTE_MAX, $this->centerZ + $half);
     }
 
     /** ClientboundInitializeBorderPacket */

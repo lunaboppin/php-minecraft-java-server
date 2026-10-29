@@ -99,7 +99,8 @@ trait Dimensions
             // Respawning creates a fresh player in vanilla: a new chunk sender and newly set attributes.
             $c->attributesSent = false;
             [$c->desiredChunksPerTick, $c->maxUnacknowledgedBatches, $c->unacknowledgedBatches, $c->batchQuota] = [9.0, 1, 0, 0.0];
-            $c->mining = null;
+            // A fresh ServerPlayerGameMode: no block breaking and its tick count from zero.
+            [$c->mining, $c->miningPosition, $c->delayedDestroy, $c->miningTicks, $c->miningStarted, $c->miningSent] = [null, null, null, 0, 0, -1];
             $c->eating = null;
             $c->playerLoaded = false;
             $c->send($this->version, 'respawn', Packets::respawn($this->version, $c->gameMode, $this->world->generator === 'flat' && $c->dimension === 'overworld', $this->world->hashedSeed(), $c->dimension));

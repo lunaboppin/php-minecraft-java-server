@@ -147,6 +147,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
           python3 tests/spawn-protection.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-spawn-protection
+          python3 tests/block-breaking.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -154,6 +155,7 @@ jobs:
           path: |
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
+            tools/.cache/block-breaking/
             tools/.cache/equipment-stack-verification/
           retention-days: 7
 

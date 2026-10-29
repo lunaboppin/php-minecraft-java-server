@@ -48,6 +48,12 @@ final class Client
     public ?Client $lastHurtByPlayer = null;
     public int $lastHurtByPlayerTick = -1000;
     public ?array $mining = null;
+    /** ServerPlayerGameMode: the last block started, its start tick, the crack stage sent, an early stop's delayed destroy and the game mode's tick count. */
+    public ?array $miningPosition = null;
+    public int $miningStarted = 0;
+    public int $miningSent = -1;
+    public ?array $delayedDestroy = null;
+    public int $miningTicks = 0;
     public ?array $eating = null;
     public ?array $cursor = null;
     public array $dragSlots = [];
@@ -90,6 +96,8 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** The highest block change sequence to acknowledge in the next tick, or -1. */
+    public int $ackUpTo = -1;
     public int $teleportCounter = 0;
     public ?int $teleport = null;
     public float $teleportAt = 0;
