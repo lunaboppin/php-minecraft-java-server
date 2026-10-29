@@ -350,7 +350,8 @@ def main():
                 check(spawned[off:off+16] == b.uuid, 'multiplayer spawn UUID')
                 # Use exact serverbound packet payloads emitted by official Java codecs.
                 a.send('chat', bytes.fromhex(FIXTURES['client_chat']))
-                b.until('system_chat', lambda p: b'<Steve> Hello' in p)
+                # Unsigned chat reaches others as vanilla's player_chat with the sender's UUID and text.
+                b.until('player_chat', lambda p: a.uuid in p and b'\x05Hello' in p)
                 check(True, 'chat relayed to other player')
                 # As on a vanilla dedicated server, /version needs operator permission.
                 a.send('chat_command', string('version'))

@@ -23,8 +23,30 @@ trait ChatMessages
 
     private function sendDisguisedChat(Client $to, array $content, string $type, array $name, ?array $target = null): void
     {
+        // ServerPlayer.acceptsChatMessages: only players showing all chat receive it.
+        if (($to->information['chatVisibility'] ?? 0) !== 0) {
+            return;
+        }
         $to->send($this->version, 'disguised_chat', Nbt::component($content) . Binary::writeVarInt($this->chatTypeId($type) + 1) . Nbt::component($name)
             . ($target === null ? "\0" : "\1" . Nbt::component($target)));
+    }
+
+    /**
+     * PlayerList.broadcastChatMessage for an unsigned chat message: ClientboundPlayerChatPacket
+     * with no signature, the server's timestamp and the chat type bound to the sender's name, to
+     * each player who shows chat.
+     */
+    private function broadcastPlayerChat(Client $sender, string $message): void
+    {
+        $this->log('[Not Secure] <' . $sender->name . '> ' . $message);
+        $body = Binary::writeString($message) . pack('J', (int) floor(microtime(true) * 1000)) . pack('J', 0) . Binary::writeVarInt(0);
+        $type = Binary::writeVarInt($this->chatTypeId('chat') + 1) . Nbt::component($this->displayName($sender)) . "\0";
+        foreach ($this->players() as $player) {
+            if (($player->information['chatVisibility'] ?? 0) !== 0) {
+                continue;
+            }
+            $player->send($this->version, 'player_chat', Binary::writeVarInt($player->chatIndex++) . $sender->uuid . Binary::writeVarInt(0) . "\0" . $body . "\0" . Binary::writeVarInt(0) . $type);
+        }
     }
 
     /**

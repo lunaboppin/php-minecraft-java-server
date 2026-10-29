@@ -128,7 +128,10 @@ final class Client
     public ?float $lastTrackedHealth = null;
     /** ServerEntity's movement state for those tracking this player; a new entity starts afresh. */
     public ?\PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker $motionTracker = null;
-    public float $chatAt = 0;
+    /** ServerGamePacketListenerImpl.chatSpamThrottler's count. */
+    public int $chatSpam = 0;
+    /** ClientboundPlayerChatPacket.globalIndex: the player chat messages this client has been sent. */
+    public int $chatIndex = 0;
     public int $packetsThisSecond = 0;
     public float $packetWindow;
     public function __construct(public readonly mixed $socket, public readonly string $peer) {
@@ -141,6 +144,15 @@ final class Client
         $this->input=$this->decryptor->transform($this->input);
     }
     public function send(Version $version, string $name, string $payload = ''): void {
+        // ServerPlayer.acceptsSystemMessages: with chat hidden, only action-bar messages arrive.
+        if ($name === 'system_chat' && ($this->information['chatVisibility'] ?? 0) === 2 && $this->state === 'play' && str_ends_with($payload, "\0")) {
+            return;
+        }
+        $this->sendUnfiltered($version, $name, $payload);
+    }
+
+    /** Packets the connection sends directly, past the player's chat settings. */
+    public function sendUnfiltered(Version $version, string $name, string $payload = ''): void {
         if ($this->closing) { return; }
         $frame = Framing::encode($version->id($this->state,$name),$payload,$this->compression);
         if (strlen($this->output) + strlen($frame) > 8*1024*1024) {

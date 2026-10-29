@@ -821,13 +821,22 @@ final class Server
                 $r->bytes(3);
                 $r->byte();
                 $r->end();
-                if (self::now() - $c->chatAt < 0.5) {
-                    return;
-                } $c->chatAt = self::now();
+                // ServerGamePacketListenerImpl.handleChat: illegal characters disconnect.
                 if (preg_match('/[\x00-\x1f\x7f\x{00a7}]/u', $message)) {
-                    throw new ProtocolException('Invalid chat characters');
+                    $this->disconnect($c, ['translate' => 'multiplayer.disconnect.illegal_characters']);
+                    return;
                 }
-                $this->broadcast('<' . $c->name . '> ' . $message);
+                // tryHandleChat: a player who hides chat is told so instead.
+                if (($c->information['chatVisibility'] ?? 0) === 2) {
+                    $c->sendUnfiltered($this->version, 'system_chat', Packets::systemChat(['translate' => 'chat.disabled.options', 'color' => 'red']));
+                    return;
+                }
+                $this->broadcastPlayerChat($c, $message);
+                // chatSpamThrottler: twenty a message, one less each tick; operators are never kicked.
+                $c->chatSpam += 20;
+                if ($c->chatSpam >= 200 && !$this->operator($c)) {
+                    $this->disconnect($c, ['translate' => 'disconnect.spam']);
+                }
                 return;
             case 'command_suggestion':
                 $id = $r->varInt();
@@ -1401,6 +1410,10 @@ final class Server
                 continue;
             }
             try {
+                // ServerGamePacketListenerImpl.tick: the chat spam count falls by one a tick.
+                if ($c->chatSpam > 0) {
+                    --$c->chatSpam;
+                }
                 if ($c->keepAlive === null && $now - $c->lastKeepAlive >= 15) {
                     $c->keepAlive = random_int(1, PHP_INT_MAX);
                     $c->lastKeepAlive = $now;
