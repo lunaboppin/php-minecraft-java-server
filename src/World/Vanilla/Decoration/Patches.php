@@ -12,7 +12,7 @@ use PhpMinecraftJavaServer\World\Vanilla\F32;
 
 /**
  * Ground and fluid features: vegetation patches (lush cave moss and clay pools), lakes,
- * vines, block blobs, underwater magma and multiface growth. Multiface growth places its
+ * vines, block blobs, underwater magma and multiface growth.
  * first face but does not spread further yet.
  */
 final class Patches
@@ -356,21 +356,65 @@ final class Patches
             if (!$this->matches($feature['can_be_placed_on'], $neighbour)) {
                 continue;
             }
-            if (!$this->blocks->sturdy($neighbour, $direction ^ 1)) {
+            $state = $this->multifaceState($region, $block, $region->get($x, $y, $z), $x, $y, $z, $direction);
+            if ($state === null) {
                 return false;
             }
-            $old = $region->get($x, $y, $z);
-            $state = $this->blocks->name($old) === $block ? $old : $this->blocks->state($block);
-            $state = $this->blocks->with($state, self::DIRECTIONS[$direction], 'true');
-            if ($this->blocks->has($state, 'waterlogged')) {
-                $state = $this->blocks->with($state, 'waterlogged', $this->blocks->name($old) === 'water' ? 'true' : 'false');
-            }
             $region->set($x, $y, $z, $state);
-            // MultifaceSpreader is not ported; its chance still draws from the random.
-            $random->nextFloat();
+            if ($random->nextFloat() < F32::r((float) ($feature['chance_of_spreading'] ?? 0.5))) {
+                $this->spreadMultiface($region, $block, $state, $x, $y, $z, $direction, $random);
+            }
             return true;
         }
         return false;
+    }
+
+    /** MultifaceBlock.getStateForPlacement, or null when the face cannot be added there. */
+    private function multifaceState(Region $region, string $block, int $old, int $x, int $y, int $z, int $face): ?int
+    {
+        $same = $this->blocks->name($old) === $block;
+        if ($same && ($this->blocks->properties($old)[self::DIRECTIONS[$face]] ?? null) === 'true') {
+            return null;
+        }
+        [$dx, $dy, $dz] = Blocks::OFFSETS[$face];
+        if (!$this->blocks->sturdy($region->get($x + $dx, $y + $dy, $z + $dz), $face ^ 1)) {
+            return null;
+        }
+        if ($same) {
+            $state = $old;
+        } else {
+            $state = $this->blocks->state($block);
+            foreach (self::DIRECTIONS as $name) {
+                $state = $this->blocks->with($state, $name, 'false');
+            }
+            $water = $this->blocks->name($old) === 'water' && $this->blocks->isSource($old);
+            $state = $this->blocks->with($state, 'waterlogged', $water ? 'true' : 'false');
+        }
+        return $this->blocks->with($state, self::DIRECTIONS[$face], 'true');
+    }
+
+    /** MultifaceSpreader.spreadFromFaceTowardRandomDirection with the default spreader. */
+    private function spreadMultiface(Region $region, string $block, int $state, int $x, int $y, int $z, int $face, RandomSource $random): void
+    {
+        $has = fn (int $s, int $d): bool => ($this->blocks->properties($s)[self::DIRECTIONS[$d]] ?? null) === 'true';
+        foreach ($this->shuffle([0, 1, 2, 3, 4, 5], $random) as $direction) {
+            if (($direction >> 1) === ($face >> 1) || !$has($state, $face) || $has($state, $direction)) {
+                continue;
+            }
+            [$dx, $dy, $dz] = Blocks::OFFSETS[$direction];
+            [$fx, $fy, $fz] = Blocks::OFFSETS[$face];
+            foreach ([[$x, $y, $z, $direction], [$x + $dx, $y + $dy, $z + $dz, $face], [$x + $dx + $fx, $y + $dy + $fy, $z + $dz + $fz, $direction ^ 1]] as [$px, $py, $pz, $targetFace]) {
+                $existing = $region->get($px, $py, $pz);
+                $replaceable = $this->blocks->isAir($existing) || $this->blocks->name($existing) === $block
+                    || ($this->blocks->name($existing) === 'water' && $this->blocks->isSource($existing));
+                if (!$replaceable || $this->multifaceState($region, $block, $existing, $px, $py, $pz, $targetFace) === null) {
+                    continue;
+                }
+                $placed = $this->multifaceState($region, $block, $existing, $px, $py, $pz, $targetFace);
+                $region->set($px, $py, $pz, $placed);
+                return;
+            }
+        }
     }
 
     /** HugeRedMushroomFeature and HugeBrownMushroomFeature. */

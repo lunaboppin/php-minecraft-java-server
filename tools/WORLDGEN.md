@@ -45,7 +45,7 @@ Chunks stay at the `TERRAIN` status while their features are placed, so only the
 
 Ported features:
 - Ores, scattered ores, simple blocks (including double plants), block columns (kelp, sugar cane, cacti), all selectors and sequences.
-- Disks, springs, freeze-top-layer, lakes, vegetation patches and their waterlogged variant (lush caves, clay pools), vines, block blobs, underwater magma, glow lichen (placement without spreading).
+- Disks, springs, freeze-top-layer, lakes, vegetation patches and their waterlogged variant (lush caves, clay pools), vines, block blobs, underwater magma, glow lichen with multiface spreading.
 - Monster rooms (spawner mob and chest loot draws, without storing the contents), amethyst geodes and huge mushrooms, fallen trees, bamboo, dripstone clusters, pointed dripstone, large dripstone, icebergs and blue ice.
 - Ice spikes.
 - Sculk patches: the world generation `SculkSpreader` with charge cursors, sculk veins, sensors and shriekers.
