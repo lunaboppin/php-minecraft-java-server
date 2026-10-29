@@ -177,6 +177,9 @@ def main():
                 time.sleep(.6)
                 a.send('attack', net.vi(cow_id))
                 a.until('entity_event', lambda p: struct.unpack_from('>i', p)[0] == cow_id and p[4] == 3)
+                # Knockback can carry the cow out of pickup reach before it dies, so bring any drops over.
+                time.sleep(1.2)
+                command(a, 'tp @e[type=item] @s')
                 inventory(a, lambda: total(a, 'beef') > 0)
                 net.check(total(a, 'beef') > 0, 'animal combat drops collectible food')
                 command(a, 'kill Visitor')
