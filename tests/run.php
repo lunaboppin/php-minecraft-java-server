@@ -262,6 +262,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/movement-checks.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/item-entities.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/dimensions.py'), $code);
 if ($code !== 0) {
     exit($code);

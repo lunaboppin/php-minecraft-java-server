@@ -267,7 +267,8 @@ trait Survival
             $this->closeWindow($c, true);
             if (!$this->keepInventory) {
                 foreach ($c->inventory as $slot => $stack) {
-                    $this->dropStack($c->x, $c->y + 0.5, $c->z, $stack);
+                    // Inventory.dropAll scatters the stacks at random.
+                    $this->playerDrop($c, $stack, true);
                 }$c->inventory = [];
                 [$c->experience, $c->experienceLevel, $c->experienceProgress] = [0, 0, 0.0];
             }
@@ -450,7 +451,7 @@ trait Survival
             }
             $data = $containerData;
             foreach ($data['slots'] as $stack) {
-                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, $stack);
+                $this->dropContainerStack($x, $y, $z, $stack);
             }$this->world->deleteContainer([$x, $y, $z]);
         }
         if ($c->gameMode !== 0) {
@@ -470,7 +471,7 @@ trait Survival
             foreach ($this->loot()->drops('minecraft:blocks/' . $name, $context) as [$drop, $count]) {
                 $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
                 if ($item !== null) {
-                    $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+                    $this->popResource($x, $y, $z, ['item' => $item, 'count' => $count]);
                 }
             }
             // DropExperienceBlock and RedStoneOreBlock experience, which silk touch prevents.

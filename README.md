@@ -107,6 +107,14 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 - Survival, creative, adventure and spectator modes, including appropriate flight/editing restrictions and game-mode updates.
 - Saved player positions, rotations, selected hotbar slots, inventories, tool wear, game modes, health, hunger, saturation, experience and respawn points.
 - Timed survival mining, basic tool material/tier checks, common block and ore drops, dropped item entities, pickup, hotbar/offhand swapping, and tool durability.
+- Dropped items behave as vanilla `ItemEntity`s:
+  - **Movement:** they fall with gravity 0.04, are slowed in water and lava, slide with block friction and drag, and bounce off the ground with half their fall speed. Resting items move every fourth tick.
+  - **Merging:** a smaller matching stack joins a larger one within half a block, every 2 ticks while moving and every 40 at rest.
+  - **Despawn and pickup:** they despawn after 6000 ticks. A player touching an item takes what fits once its pickup delay ends; creative players take the rest too.
+  - **Where they appear:** broken blocks pop drops near the centre (10 ticks before pickup). Mobs drop at their feet (10 ticks). Players throw along their look from 0.3 below the eyes (40 ticks), and death scatters their inventory at random. Containers spill parts of 10 to 30 that can be taken at once. `/give` leftovers go only to their target, at once.
+  - **Network:** items are tracked with their type's profile. Each new or changed stack is sent again with the next tracker update.
+
+  `tests/item-entities.py` checks these against the official server. Item entities are not saved across restarts yet.
 - Broader creative inventory access to plain vanilla items, and basic block placement properties for logs, stairs, slabs, facing blocks, doors and beds. Door/trapdoor/gate interactions toggle open states; beds set personal respawn points.
 - Server-owned inventory state with left/right clicking, shift transfer, number-key swaps, cloning in creative, dropping, collecting matching items, and drag distribution. Client-predicted item hashes never create authoritative stacks.
 - Ordinary vanilla 2×2 and 3×3 shaped/shapeless crafting recipes, including item-tag ingredients and mirrored patterns. Special crafting types, custom component results and the recipe book are not implemented.
