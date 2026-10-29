@@ -124,7 +124,11 @@ An inward-facing ring of twelve End portal frames activates when its final Eye o
 
 Everyone can use `/help`, `/spawn`, `/list`, `/msg`, `/tell` and `/me`.
 
-Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. `/op` and `/deop` change the list in game and save it to `server.json` immediately, as vanilla saves `ops.json`; only the `operators` value is rewritten. Operator commands include:
+Set `operators` in `server.json` to the usernames that should have administrative commands. Name matching is case-insensitive. `/op` and `/deop` change the list in game and save it to `server.json` immediately, as vanilla saves `ops.json`; only the `operators` value is rewritten.
+
+As on a vanilla dedicated server, `spawnProtection` (default 16, the `spawn-protection` default) stops players who are not operators from breaking or using blocks whose x or z lies within that many blocks of the world spawn. They see vanilla's red `build.spawn_protection` notice instead. It applies only in the Overworld and only while at least one operator is set; 0 turns it off. `tests/spawn-protection.py` compares it with the official server.
+
+Operator commands include:
 
 ```text
 /dimension overworld|the_nether|the_end
