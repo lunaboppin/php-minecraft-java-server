@@ -252,6 +252,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/terrain.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-protection.py') . ' --output ' . escapeshellarg(sys_get_temp_dir() . '/php-minecraft-spawn-protection-' . bin2hex(random_bytes(6))), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/dimensions.py'), $code);
 if ($code !== 0) {
     exit($code);

@@ -944,6 +944,25 @@ final class Server
             && ($x + 0.5 - $c->x) ** 2 + ($y + 0.5 - ($c->y + 1.62)) ** 2 + ($z + 0.5 - $c->z) ** 2 <= 64;
     }
 
+    /**
+     * DedicatedServer.isUnderSpawnProtection: in the spawn's dimension, while any operator exists,
+     * non-operators may not change blocks whose x or z is within the radius of the world spawn.
+     */
+    private function underSpawnProtection(Client $c, int $x, int $z): bool
+    {
+        if ($c->dimension !== 'overworld' || $this->config->operators === [] || $this->operator($c) || $this->config->spawnProtection <= 0) {
+            return false;
+        }
+        [$spawnX, , $spawnZ] = $this->worlds['overworld']->spawn();
+        return max(abs($x - (int) floor($spawnX)), abs($z - (int) floor($spawnZ))) <= $this->config->spawnProtection;
+    }
+
+    /** ServerPlayer.sendSpawnProtectionMessage: a red action-bar notice naming the block. */
+    private function spawnProtectionMessage(Client $c, int $x, int $y, int $z): void
+    {
+        $c->send($this->version, 'system_chat', Nbt::component(['translate' => 'build.spawn_protection', 'with' => [['text' => $x . ', ' . $y . ', ' . $z]], 'color' => 'red']) . "\1");
+    }
+
     private function dig(Client $c, Binary $r): void
     {
         $action = $r->varInt();
@@ -978,6 +997,11 @@ final class Server
             } else {
                 $c->inventory[45] = $main;
             }$this->syncInventory($c);
+        } elseif ($action === 0 && $this->editable($c, $x, $y, $z) && $this->underSpawnProtection($c, $x, $z)) {
+            // ServerPlayerGameMode.handleBlockBreakAction: the notice alone, without a block update.
+            $this->spawnProtectionMessage($c, $x, $y, $z);
+            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            return;
         } elseif ($action === 0 && $this->editable($c, $x, $y, $z)) {
             $state = $this->world->get($x, $y, $z);
             if ($this->version->catalog->blockName($state) === 'note_block') {
@@ -1025,6 +1049,12 @@ final class Server
         $clicked = $this->world->get($x, $y, $z);
         $name = $this->version->catalog->blockName($clicked);
         $within = !$c->dead && ($x + 0.5 - $c->x) ** 2 + ($y + 0.5 - $c->y - 1.62) ** 2 + ($z + 0.5 - $c->z) ** 2 <= 64;
+        // ServerGamePacketListenerImpl.handleUseItemOn: spawn protection stops any use on the block.
+        if ($within && $y >= $this->world->minY && $y < $this->world->minY + $this->world->height && $this->underSpawnProtection($c, $x, $z)) {
+            $this->spawnProtectionMessage($c, $x, $y, $z);
+            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            return;
+        }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
             $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
             return;
