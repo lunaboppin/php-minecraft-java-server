@@ -238,12 +238,11 @@ trait Animals
                 $this->syncInventory($c);
             }
         }
+        // LivingEntity.hurtServer: a player's hit is remembered for 100 ticks for experience.
+        $animal['lastHurtByPlayerTick'] = $this->ticks;
         if ($animal['health'] <= 0) {
             $this->incrementCriteria('totalKillCount', $c->name);
             $this->animalDeathLoot($animal, $c);
-            if (in_array($animal['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
-                $this->giveExperiencePoints($c, random_int(1, 3));
-            }
         }
         return true;
     }
@@ -279,6 +278,9 @@ trait Animals
             $mob['lastHurtTick'] = $this->ticks;
         }
         $mob['lastHurtAmount'] = $amount;
+        if ($attacker !== null) {
+            $mob['lastHurtByPlayerTick'] = $this->ticks;
+        }
         if (!$is('minecraft:bypasses_armor')) {
             $value = fn (string $name): float => $this->attributeValue($mob['kind'], $mob['attributeBases'] ?? [], $mob['attributeModifiers'] ?? [], $name);
             $taken = Combat::afterArmor($taken, $value('armor'), $value('armor_toughness'));
@@ -308,11 +310,8 @@ trait Animals
         if ($attacker !== null) {
             $this->incrementCriteria('totalKillCount', $attacker->name);
         }
-        // LivingEntity.die: the loot, then the death event.
+        // LivingEntity.die: the loot and experience, then the death event.
         $this->animalDeathLoot($mob, $attacker, $type);
-        if ($attacker !== null && in_array($mob['kind'], ['cow', 'pig', 'sheep', 'chicken'], true)) {
-            $this->giveExperiencePoints($attacker, random_int(1, 3));
-        }
         foreach ($this->localPlayers() as $p) {
             if (isset($p->entities[$id])) {
                 $p->send($this->version, 'entity_event', pack('N', $id) . "\3");
@@ -414,6 +413,28 @@ trait Animals
     private function animalDeathLoot(array &$animal, ?Client $killer = null, ?string $type = null): void
     {
         $animal['deadAt'] = $this->ticks + 20;
+        // LivingEntity.dropAllDeathLoot: loot table drops, then experience when a player hurt it lately.
+        $this->dropMobLoot($animal, $killer, $type);
+        $playerKilled = $killer !== null || $this->ticks - ($animal['lastHurtByPlayerTick'] ?? -1000) < 100;
+        if ($playerKilled && !($animal['baby'] ?? false) && $this->gameRule('mob_drops') === 'true') {
+            $this->awardExperience($animal['x'], $animal['y'], $animal['z'], $this->mobExperienceReward($animal));
+        }
+    }
+
+    /** Mob.getBaseExperienceReward and its overrides, from each type's exported xpReward. */
+    private function mobExperienceReward(array $mob): int
+    {
+        $row = $this->experienceReference()['mobs'][$mob['kind']] ?? ['xp_reward' => 0, 'reward_class' => 'Mob'];
+        return match ($row['reward_class']) {
+            'Animal', 'WaterAnimal', 'AgeableWaterCreature', 'Chicken' => 1 + random_int(0, 2),
+            'SulfurCube' => ($mob['baby'] ?? false) ? 0 : 1 + random_int(0, 1),
+            'Zombie' => ($mob['baby'] ?? false) ? (int) ($row['xp_reward'] * 2.5) : $row['xp_reward'],
+            default => $row['xp_reward'],
+        };
+    }
+
+    private function dropMobLoot(array &$animal, ?Client $killer, ?string $type): void
+    {
         // LivingEntity.shouldDropLoot: not for babies, and only while mob_drops is on.
         if (($animal['baby'] ?? false) || $this->gameRule('mob_drops') !== 'true') {
             return;

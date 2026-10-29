@@ -95,6 +95,8 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** Player.takeXpDelay: ticks until the player can take another experience orb. */
+    public int $takeXpDelay = 0;
     /** Whether a position arrived since the client's last client_tick_end. */
     public bool $positionThisTick = false;
     /** Where the player's last tick left them, and the movement packets since. */

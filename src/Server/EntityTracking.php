@@ -38,6 +38,9 @@ trait EntityTracking
         foreach($this->itemEntities as $entity){
             if($this->tracksPosition($viewer,$entity['x'],$entity['z'],'item')){$wanted[$entity['id']]=true;$this->showItem($viewer,$entity);}
         }
+        foreach($this->experienceOrbs as $orb){
+            if($this->tracksPosition($viewer,$orb['x'],$orb['z'],'experience_orb')){$wanted[$orb['id']]=true;$this->showOrb($viewer,$orb);}
+        }
         foreach(array_keys($viewer->entities) as $id){if(!isset($wanted[$id])){$this->forgetEntity($viewer,$id);}}
         $viewer->trackingDirty=false;
     }

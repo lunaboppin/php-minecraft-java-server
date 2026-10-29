@@ -15,6 +15,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use ExperienceOrbs;
+
     use InventoryManagement;
 
     use Entities;
