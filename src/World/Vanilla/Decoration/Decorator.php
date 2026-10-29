@@ -40,6 +40,8 @@ final class Decorator
 
     private ?Sculk $sculk = null;
 
+    private ?Templates $templates = null;
+
     /** @var array<string, int> features not implemented yet, by type */
     public array $skipped = [];
 
@@ -331,6 +333,8 @@ final class Decorator
                 return ($this->patches ??= new Patches($this))->speleothem($feature, $region, $random, $x, $y, $z);
             case 'iceberg':
                 return ($this->ice ??= new Ice($this))->iceberg($feature, $region, $random, $x, $z);
+            case 'fossil':
+                return ($this->templates ??= new Templates($this, $this->directory))->fossil($feature, $region, $random, $x, $y, $z);
             case 'sculk_patch':
                 return ($this->sculk ??= new Sculk($this))->patch($feature, $region, $random, $x, $y, $z);
             case 'spike':

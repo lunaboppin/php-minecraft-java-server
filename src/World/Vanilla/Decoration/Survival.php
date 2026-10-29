@@ -41,7 +41,7 @@ final class Survival
         return match ($class) {
             'SeagrassBlock', 'TallSeagrassBlock' => $blocks->sturdy($below, Blocks::UP) && !$blocks->inTag($below, 'cannot_support_seagrass'),
             'LilyPadBlock' => ($blocks->isWater($below) || $blocks->inTag($below, 'supports_lily_pad')) && !$blocks->hasFluid($region->get($x, $y + 1, $z)),
-            'MushroomBlock' => $blocks->flag($below, 1 << 20) && $blocks->flag($below, Blocks::FULL_CUBE),
+            'MushroomBlock' => $blocks->inTag($below, 'mushroom_grow_block'),
             'DryVegetationBlock', 'ShortDryGrassBlock' => $blocks->inTag($below, 'supports_dry_vegetation'),
             'AzaleaBlock' => $blocks->inTag($below, 'supports_azalea'),
             'MangrovePropaguleBlock' => $blocks->inTag($below, 'supports_mangrove_propagule'),
