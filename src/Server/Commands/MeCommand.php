@@ -8,9 +8,13 @@ use PhpMinecraftJavaServer\Server\Client;
 
 trait MeCommand
 {
-    private function executeMe(Client $sender, array $arguments): void
+    /** EmoteCommands: the action to everyone as emote_command chat from the sender. */
+    private function executeMe(Client $sender, array $arguments, string $text): void
     {
-        $this->broadcast('* ' . $sender->name . ' ' . implode(' ', $arguments));
-        return;
+        $content = $this->messageComponent($sender, CommandArguments::rest($text, 0));
+        $this->log('* ' . $sender->name . ' ' . CommandArguments::rest($text, 0));
+        foreach ($this->players() as $player) {
+            $this->sendDisguisedChat($player, $content, 'emote_command', $this->displayName($sender));
+        }
     }
 }
