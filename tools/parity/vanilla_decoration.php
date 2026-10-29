@@ -90,7 +90,16 @@ foreach ($reference['chunks'] as $official) {
         ksort($properties);
         return $name . '[' . implode(',', array_map(static fn ($k, $v): string => "$k=$v", array_keys($properties), $properties)) . ']';
     };
+    // BOX=x0,z0,x1,z1 compares only those columns.
+    $area = getenv('BOX') ? array_map('intval', explode(',', getenv('BOX'))) : null;
     foreach ($names as $i => $name) {
+        if ($area !== null) {
+            $bx = $official['x'] * 16 + ($i & 15);
+            $bz = $official['z'] * 16 + (($i >> 4) & 15);
+            if ($bx < $area[0] || $bx > $area[2] || $bz < $area[1] || $bz > $area[3]) {
+                continue;
+            }
+        }
         $official_name = $full ? $name : preg_replace('/\[.*$/', '', $name);
         // Above the noise height (the End's 128 of 256) nothing is generated.
         $name = isset($mine[$i]) ? ($full ? $describe($mine[$i]) : $blocks->name($mine[$i])) : 'air';
@@ -100,5 +109,5 @@ foreach ($reference['chunks'] as $official) {
         }
     }
     arsort($kinds);
-    printf("chunk %d,%d: %d of %d blocks differ %s\n", $official['x'], $official['z'], $total, count($names), json_encode(array_slice($kinds, 0, 8)));
+    printf("chunk %d,%d: %d of %d blocks differ %s\n", $official['x'], $official['z'], $total, count($names), json_encode(array_slice($kinds, 0, (int) (getenv("TOP") ?: 8))));
 }

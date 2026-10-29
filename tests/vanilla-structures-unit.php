@@ -19,6 +19,8 @@ $checks = 0;
 foreach ([
     [-17, 22, 'swamp_hut', [-272, 64, 352, -264, 70, 358], 'east'],
     [-51, -23, 'swamp_hut', [-816, 64, -368, -808, 70, -362], 'east'],
+    [-86, -110, 'desert_pyramid', [-1376, 64, -1760, -1356, 78, -1740], 'east'],
+    [-85, 180, 'jungle_pyramid', [-1360, 64, 2880, -1346, 73, 2891], 'east'],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
