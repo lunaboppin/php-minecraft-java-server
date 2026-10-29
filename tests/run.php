@@ -334,6 +334,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/tracking.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/player-motion.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-eggs.py'), $code);
 if ($code !== 0) {
     exit($code);

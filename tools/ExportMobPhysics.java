@@ -105,6 +105,9 @@ public class ExportMobPhysics {
     var box=type.getDimensions().makeBoundingBox(position[0],position[1],position[2]);var row=new JsonObject();row.addProperty("kind",entry.getKey());row.add("position_bits",bits(position));row.add("expected_bits",bits(box.minX,box.minY,box.minZ,box.maxX,box.maxY,box.maxZ));bounds.add(row);
    }
   }constants.add("profiles",profiles);root.add("bounds",bounds);
+  // Players are tracked by the same ServerEntity, with their own type's interval.
+  var playerType=BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("minecraft:player"));
+  var player=new JsonObject();player.addProperty("update_interval",playerType.updateInterval());player.addProperty("track_deltas",playerType.trackDeltas());constants.add("player_tracking",player);
   Files.writeString(Path.of(args[0]).resolveSibling("movement.json"),new GsonBuilder().setPrettyPrinting().create().toJson(constants)+"\n");
   Files.writeString(Path.of(args[0]),new GsonBuilder().setPrettyPrinting().create().toJson(root)+"\n");System.out.println("Exported "+rows.size()+" actual motion codec, "+knockbacks.size()+" knockback, "+inputs.size()+" input, "+frictions.size()+" friction and "+speeds.size()+" speed cases");
  }

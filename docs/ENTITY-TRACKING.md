@@ -25,6 +25,16 @@ python3 tests/parity/entity-motion.py
 
 The three-client comparison passed against the pinned official server, with six unique common late-viewer updates checked in each process. The extended comparison also verifies that a supported idle shulker retains its position and zero velocity. Full packet captures are independently decoded by the official codecs. The ordinary movement foundation and its actual-world trajectory tests are documented in [MOB-MOVEMENT.md](MOB-MOVEMENT.md).
 
+## Players
+
+Players are tracked by the same `EntityMovementTracker`, with the player type's profile from `movement.json` (`player_tracking`: every second tick, no velocity). Pairing follows `ServerEntity.sendPairingData`. It sends `add_entity` at the tracker's last synced position, then only non-default entity data, the synchronized attributes, and equipment for occupied slots.
+
+The ground flag in movement packets follows vanilla's server-side state. A confirmed teleport takes the player off the ground. Each tick, vanilla's own travel step moves the player by their server-side vertical movement before snapping them back to the client's position, which puts them on the ground again over a floor. A jump starts that movement at 0.42.
+
+`tests/player-motion.py` makes an observer watch a player walk, turn, move nine blocks at once, teleport, leave range and come back, and compares the observer's packets with the official server byte for byte. Two things in vanilla depend on timing, so the test controls for them:
+- The 60-tick zero-delta heartbeat is timed from when the tracker last ran, and vanilla skips players whose chunk is not yet entity-ticking. The test leaves zero-delta heartbeats out.
+- Vanilla handles packets at the start of a tick, while PHP handles them as they arrive. The moving client therefore confirms a teleport and reports its position in one write, as a real client does in one tick.
+
 ## Remaining acceptance scope
 
 This work covers the ordinary unmounted movement path integrated for the existing 63 mapped ground/air profiles outside fluids. It does not complete #13/#86: species navigation and look controllers, passengers/vehicles, item-specific precision, flying/swimming/fluid paths, metadata/equipment lifecycle ordering, entity pushing, all visibility transitions and full native simulation/chunk tracking still need implementation or broader verification. Existing special-travel behavior remains a separate fallback. These issues must stay open until their complete acceptance criteria are met.
