@@ -77,6 +77,10 @@ trait TeleportCommand
 
     private function rotateEntity(array $target, float $yaw, float $pitch): void
     {
+        if (isset($target['orb'])) {
+            $this->experienceOrbs[$target['orb']]['yaw'] = $yaw;
+            return;
+        }
         if (isset($target['item'])) {
             return;
         }
@@ -97,7 +101,7 @@ trait TeleportCommand
     private function faceEntity(array $target, array $facing): void
     {
         [$x, $y, $z, $entity, $anchor] = $facing;
-        if (isset($target['item'])) {
+        if (isset($target['item']) || isset($target['orb'])) {
             return;
         }
         [$fromX, $fromY, $fromZ] = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z] : [$this->animals[$target['mob']]['x'], $this->animals[$target['mob']]['y'], $this->animals[$target['mob']]['z']];
@@ -117,6 +121,13 @@ trait TeleportCommand
     /** Move a selected player (across dimensions if needed) or a mob in the sender's dimension. */
     private function moveEntity(array $target, string $dimension, array $position): void
     {
+        if (isset($target['orb'])) {
+            // The orb's tracker sends the new position with its next update.
+            $orb = &$this->experienceOrbs[$target['orb']];
+            [$orb['x'], $orb['y'], $orb['z']] = $position;
+            $orb['needsSync'] = true;
+            return;
+        }
         if (isset($target['item'])) {
             $item = &$this->itemEntities[$target['item']];
             [$item['x'], $item['y'], $item['z']] = $position;

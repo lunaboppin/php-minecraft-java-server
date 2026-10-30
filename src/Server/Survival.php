@@ -109,6 +109,9 @@ trait Survival
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();
                 $this->world->setting('animals', $this->animals);
+                // ExperienceOrb.addAdditionalSaveData: value, count, age and health keep; the network ID does not.
+                $this->world->setting('experienceOrbs', array_values(array_map(static fn (array $orb): array => ['uuid' => bin2hex($orb['uuid'])]
+                    + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
                 $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
@@ -277,6 +280,10 @@ trait Survival
                     // Inventory.dropAll scatters the stacks at random.
                     $this->playerDrop($c, $stack, true);
                 }$c->inventory = [];
+                // Player.getBaseExperienceReward: players always drop seven points a level, at most 100.
+                if ($c->gameMode !== 3) {
+                    $this->awardExperience($c->x, $c->y, $c->z, min($c->experienceLevel * 7, 100));
+                }
                 [$c->experience, $c->experienceLevel, $c->experienceProgress] = [0, 0, 0.0];
             }
             // ServerPlayer.die: the death screen always opens; the message is shared only if the rule allows it.
@@ -481,10 +488,14 @@ trait Survival
                     $this->popResource($x, $y, $z, ['item' => $item, 'count' => $count]);
                 }
             }
-            // DropExperienceBlock and RedStoneOreBlock experience, which silk touch prevents.
-            $experience = ['coal_ore' => [0, 2], 'deepslate_coal_ore' => [0, 2], 'diamond_ore' => [3, 7], 'deepslate_diamond_ore' => [3, 7], 'emerald_ore' => [3, 7], 'deepslate_emerald_ore' => [3, 7], 'lapis_ore' => [2, 5], 'deepslate_lapis_ore' => [2, 5], 'nether_quartz_ore' => [2, 5], 'nether_gold_ore' => [0, 1], 'redstone_ore' => [1, 5], 'deepslate_redstone_ore' => [1, 5]][$name] ?? null;
+            // DropExperienceBlock and RedStoneOreBlock experience as orbs at the block's centre, which
+            // silk touch prevents.
+            $experience = $this->experienceReference()['blocks'][$name] ?? (in_array($name, ['redstone_ore', 'deepslate_redstone_ore'], true) ? [1, 5] : null);
             if ($experience !== null && !isset($toolStack['enchantments']['minecraft:silk_touch'])) {
-                $this->giveExperiencePoints($c, random_int(...$experience));
+                $points = random_int(...$experience);
+                if ($points > 0) {
+                    $this->awardExperience($x + 0.5, $y + 0.5, $z + 0.5, $points);
+                }
             }
         }
         $slot = 36 + $c->heldSlot;
@@ -543,6 +554,10 @@ trait Survival
 
     private function tickSurvival(Client $c): void
     {
+        // Player.tick: the delay before the next experience orb counts down.
+        if ($c->takeXpDelay > 0) {
+            --$c->takeXpDelay;
+        }
         $selected = $c->inventory[36 + $c->heldSlot]['item'] ?? -1;
         if ($selected !== $c->lastAttackItem) {
             $c->lastAttackItem = $selected;

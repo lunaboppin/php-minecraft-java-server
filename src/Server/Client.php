@@ -97,6 +97,8 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** Player.takeXpDelay: ticks until the player can take another experience orb. */
+    public int $takeXpDelay = 0;
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
     /** Whether a position arrived since the client's last client_tick_end. */

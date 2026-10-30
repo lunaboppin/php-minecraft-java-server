@@ -68,6 +68,11 @@ abstract class Piece
             'mineshaft_corridor' => MineshaftCorridor::restoreWith($piece),
             'mineshaft_crossing' => MineshaftCrossing::restoreWith($piece),
             'mineshaft_stairs' => MineshaftStairs::restoreWith($piece),
+            'stronghold' => StrongholdPiece::restoreWith($piece),
+            'ocean_ruin' => OceanRuin::restoreWith($piece),
+            'ruined_portal' => RuinedPortal::restoreWith($piece),
+            'nether_fortress' => NetherFortressPiece::restoreWith($piece),
+            'end_city' => EndCity::restoreWith($piece),
         };
     }
 
