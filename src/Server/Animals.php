@@ -34,30 +34,37 @@ trait Animals
     {
         $this->naturalSpawns = $this->world->setting('naturalSpawns') ?? [];
         foreach ($this->world->setting('animals') ?? [] as $animal) {
-            if (isset($animal['deadAt']) || !isset($this->version->catalog->mobs['entities'][$animal['kind'] ?? '']['attributes']['max_health'])) {
-                continue;
-            }
-            if ($this->config->difficulty === 0 && !$this->version->catalog->mobs['entities'][$animal['kind']]['peaceful']) {
-                continue;
-            }
-            $id = $this->nextEntity++;
-            if ($animal['kind'] === 'ender_dragon') {
-                $this->nextEntity += 8;
-            }
-            foreach (['x', 'y', 'z', 'yaw'] as $field) {
-                $animal[$field] = (float) $animal[$field];
-            }
-            unset($animal['lastHurtTick'], $animal['lastHurtAmount'], $animal['needsSync'], $animal['syncVelocity'], $animal['syncPosition']);
-            $animal['equipment'] ??= $this->mobEquipment($animal['kind']);
-            if (isset($this->version->catalog->mobSounds['mobs'][$animal['kind']]['variants'])) {
-                $animal['soundVariant'] ??= 'minecraft:classic';
-            }
-            $animal['id'] = $id;
-            $animal['nextWander'] = 0;
-            $animal['velocity'] ??= [0.0, 0.0, 0.0];
-            $this->animals[$id] = $animal;
-            $this->trackPushingMob($this->animals[$id]);
+            $this->restoreAnimal($animal);
         }
+    }
+
+    /** A saved mob back in the world under a new entity id, or null when it cannot exist here. */
+    private function restoreAnimal(array $animal): ?int
+    {
+        if (isset($animal['deadAt']) || !isset($this->version->catalog->mobs['entities'][$animal['kind'] ?? '']['attributes']['max_health'])) {
+            return null;
+        }
+        if ($this->config->difficulty === 0 && !$this->version->catalog->mobs['entities'][$animal['kind']]['peaceful']) {
+            return null;
+        }
+        $id = $this->nextEntity++;
+        if ($animal['kind'] === 'ender_dragon') {
+            $this->nextEntity += 8;
+        }
+        foreach (['x', 'y', 'z', 'yaw'] as $field) {
+            $animal[$field] = (float) $animal[$field];
+        }
+        unset($animal['lastHurtTick'], $animal['lastHurtAmount'], $animal['needsSync'], $animal['syncVelocity'], $animal['syncPosition']);
+        $animal['equipment'] ??= $this->mobEquipment($animal['kind']);
+        if (isset($this->version->catalog->mobSounds['mobs'][$animal['kind']]['variants'])) {
+            $animal['soundVariant'] ??= 'minecraft:classic';
+        }
+        $animal['id'] = $id;
+        $animal['nextWander'] = 0;
+        $animal['velocity'] ??= [0.0, 0.0, 0.0];
+        $this->animals[$id] = $animal;
+        $this->trackPushingMob($this->animals[$id]);
+        return $id;
     }
 
     /** @param array<string, mixed> $state saved mob fields set before the mob is first shown, such as yaw */
@@ -527,6 +534,7 @@ trait Animals
 
     private function tickAnimals(): void
     {
+        $this->unloadDistantMobs();
         $this->preparePushingWorld();
         foreach ($this->animals as &$tracked) {
             if (!isset($tracked['deadAt']) && $this->mobIsTicking($tracked) && $this->ordinaryMobTravel($tracked)) {

@@ -43,6 +43,8 @@ final class Server
 
     use Animals;
 
+    use ChunkMobs;
+
     use Dimensions;
 
     use BlockSimulation;
@@ -578,6 +580,7 @@ final class Server
         foreach ($batch as $key => [$x, $z]) {
             $c->send($this->version, 'level_chunk_with_light', $this->world->chunk($x, $z));
             $c->loadedChunks[$key] = [$x, $z];
+            $this->loadChunkMobs($x, $z);
             if ($this->world->vanilla !== null) {
                 $this->generatedEntities($x, $z);
             } else {
