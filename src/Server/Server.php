@@ -16,6 +16,7 @@ use PhpMinecraftJavaServer\World\World;
 final class Server
 {
     use Mining;
+
     use PlayerSpawning;
 
     use InventoryManagement;
