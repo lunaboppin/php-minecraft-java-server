@@ -1450,6 +1450,7 @@ final class Server
         if ($this->runGameElements) {
             $this->tickTime();
         }
+        $this->tickSwings();
         $this->tickDimensions();
         $this->tickClients($now);
     }
@@ -1470,9 +1471,6 @@ final class Server
                 $this->$total += $whole;
             }
         }
-        $this->tickSwings();
-        $this->tickDimensions();
-
     }
 
     /** Generation workers, then each connection and its player. */

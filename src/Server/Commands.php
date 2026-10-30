@@ -667,12 +667,10 @@ trait Commands
         // player's view as soon as they are placed, before the chunks reach the client.
         [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
         $dimension ??= $client->dimension;
-        if (array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
-
         // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
-        $forced = array_filter($this->forcedChunks($client->dimension), static fn (array $chunk): bool => abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2);
+        $forced = array_filter($this->forcedChunks($dimension), static fn (array $chunk): bool => abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2);
         if ($forced === []
-            && array_filter($this->players(), fn (Client $player): bool => $player->dimension === $client->dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
+            && array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
         $world = $this->worlds[$dimension];
