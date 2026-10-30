@@ -161,6 +161,9 @@ final class Server
             }
         }
         $this->log('Vanilla terrain: ' . count($this->generationWorkers) . ' generation workers');
+        // ChunkGeneratorStructureState.ensureStructuresGenerated: stronghold rings are resolved
+        // (and saved) in the background at startup, so /locate and eyes of ender find them quickly.
+        $this->startLocate(null, 'overworld', 'structure', ['stronghold'], [0, 0, 0], 'minecraft:stronghold', false);
         // Spawn chunks first, kept for ten minutes so the first player to join finds them ready.
         [$x, , $z] = $this->world->spawn();
         for ($dz = -3; $dz <= 3; ++$dz) {
@@ -1449,6 +1452,9 @@ final class Server
         }
         $this->tickSwings();
         $this->tickDimensions();
+        if ($this->locating !== []) {
+            $this->pollLocates();
+        }
         $this->tickClients($now);
     }
 

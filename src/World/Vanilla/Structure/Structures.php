@@ -129,20 +129,31 @@ final class Structures
     }
 
     /** AbstractSpreadingStructurePlacement.isStructureChunk without exclusion zones. */
+    /**
+     * RandomSpreadStructurePlacement.getPotentialStructureChunk: the chunk the placement picks in
+     * the spacing cell holding a chunk.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function potentialChunk(array $placement, int $cx, int $cz): array
+    {
+        $spacing = $placement['spacing'];
+        $gridX = intdiv($cx - ($cx < 0 ? $spacing - 1 : 0), $spacing);
+        $gridZ = intdiv($cz - ($cz < 0 ? $spacing - 1 : 0), $spacing);
+        $random = self::saltedRandom($this->settings->state->seed, $gridX, $gridZ, $placement['salt']);
+        $limit = $spacing - $placement['separation'];
+        $triangular = ($placement['spread_type'] ?? 'linear') === 'triangular';
+        $spreadX = $triangular ? intdiv($random->nextInt($limit) + $random->nextInt($limit), 2) : $random->nextInt($limit);
+        $spreadZ = $triangular ? intdiv($random->nextInt($limit) + $random->nextInt($limit), 2) : $random->nextInt($limit);
+        return [$gridX * $spacing + $spreadX, $gridZ * $spacing + $spreadZ];
+    }
+
     private function isStructureChunk(array $placement, int $cx, int $cz): bool
     {
         $seed = $this->settings->state->seed;
         switch (preg_replace('/^minecraft:/', '', $placement['type'])) {
             case 'random_spread':
-                $spacing = $placement['spacing'];
-                $gridX = intdiv($cx - ($cx < 0 ? $spacing - 1 : 0), $spacing);
-                $gridZ = intdiv($cz - ($cz < 0 ? $spacing - 1 : 0), $spacing);
-                $random = self::saltedRandom($seed, $gridX, $gridZ, $placement['salt']);
-                $limit = $spacing - $placement['separation'];
-                $triangular = ($placement['spread_type'] ?? 'linear') === 'triangular';
-                $spreadX = $triangular ? intdiv($random->nextInt($limit) + $random->nextInt($limit), 2) : $random->nextInt($limit);
-                $spreadZ = $triangular ? intdiv($random->nextInt($limit) + $random->nextInt($limit), 2) : $random->nextInt($limit);
-                if ($gridX * $spacing + $spreadX !== $cx || $gridZ * $spacing + $spreadZ !== $cz) {
+                if ($this->potentialChunk($placement, $cx, $cz) !== [$cx, $cz]) {
                     return false;
                 }
                 break;
@@ -607,39 +618,182 @@ final class Structures
     {
         $starts = [];
         foreach ($this->sets as [, $set]) {
-            if (!$this->isStructureChunk($set['placement'], $cx, $cz)) {
-                continue;
-            }
-            $options = $set['structures'];
-            $random = count($options) > 1 ? self::largeFeatureRandom($this->settings->state->seed, $cx, $cz) : null;
-            $total = array_sum(array_column($options, 'weight'));
-            while ($options !== []) {
-                $index = 0;
-                if ($random !== null) {
-                    $choice = $random->nextInt($total);
-                    foreach ($options as $option) {
-                        $choice -= $option['weight'];
-                        if ($choice < 0) {
-                            break;
-                        }
-                        ++$index;
-                    }
-                }
-                $name = preg_replace('/^minecraft:/', '', $options[$index]['structure']);
-                $pieces = $this->generate($this->structure($name), $cx, $cz);
-                if ($pieces === null) {
-                    // Not ported: count it as generated so the set picks nothing else.
-                    break;
-                }
-                if ($pieces !== []) {
-                    $starts[] = ['structure' => $name, 'pieces' => $pieces];
-                    break;
-                }
-                $total -= $options[$index]['weight'];
-                array_splice($options, $index, 1);
+            if (($start = $this->startFor($set, $cx, $cz)) !== null) {
+                $starts[] = $start;
             }
         }
         return $starts;
+    }
+
+    /**
+     * ChunkGenerator.createStructures for one structure set: its weighted choices are tried until
+     * one starts.
+     *
+     * @return array{structure: string, pieces: list<Piece>}|null
+     */
+    private function startFor(array $set, int $cx, int $cz): ?array
+    {
+        if (!$this->isStructureChunk($set['placement'], $cx, $cz)) {
+            return null;
+        }
+        $options = $set['structures'];
+        $random = count($options) > 1 ? self::largeFeatureRandom($this->settings->state->seed, $cx, $cz) : null;
+        $total = array_sum(array_column($options, 'weight'));
+        while ($options !== []) {
+            $index = 0;
+            if ($random !== null) {
+                $choice = $random->nextInt($total);
+                foreach ($options as $option) {
+                    $choice -= $option['weight'];
+                    if ($choice < 0) {
+                        break;
+                    }
+                    ++$index;
+                }
+            }
+            $name = preg_replace('/^minecraft:/', '', $options[$index]['structure']);
+            $pieces = $this->generate($this->structure($name), $cx, $cz);
+            if ($pieces === null) {
+                // Not ported: count it as generated so the set picks nothing else.
+                return null;
+            }
+            if ($pieces !== []) {
+                return ['structure' => $name, 'pieces' => $pieces];
+            }
+            $total -= $options[$index]['weight'];
+            array_splice($options, $index, 1);
+        }
+        return null;
+    }
+
+    /** @var array<string, ?string> the structure each set starts in a chunk, by "set,x,z" */
+    private array $located = [];
+
+    /**
+     * ChunkGenerator.findNearestMapStructure without adding references: the nearest start of the
+     * wanted structures, from their sets' ring positions and from spacing cells in growing
+     * squares around the position, and where /locate reports it (StructurePlacement.getLocatePos).
+     *
+     * @param list<string> $wanted structure names without "minecraft:", in their tag's order
+     * @return array{0: int, 1: int, 2: int, 3: string}|null
+     */
+    public function locate(array $wanted, int $x, int $y, int $z, int $maxRadius = 100): ?array
+    {
+        $scans = [];
+        foreach ($wanted as $name) {
+            foreach ($this->sets as $index => [, $set]) {
+                foreach ($set['structures'] as $option) {
+                    if (preg_replace('/^minecraft:/', '', $option['structure']) === $name) {
+                        $scans[$index] ??= [];
+                        $scans[$index][] = $name;
+                    }
+                }
+            }
+        }
+        $distance = static fn (array $found): int => ($found[0] - $x) ** 2 + ($found[1] - $y) ** 2 + ($found[2] - $z) ** 2;
+        $nearest = null;
+        $spread = [];
+        foreach ($scans as $index => $names) {
+            $placement = $this->sets[$index][1]['placement'];
+            if (preg_replace('/^minecraft:/', '', $placement['type']) === 'random_spread') {
+                $spread[$index] = $names;
+                continue;
+            }
+            // ChunkGenerator.getNearestGeneratedStructure for concentric rings: the ring chunks by
+            // their centre's distance, checking only those nearer than the nearest start so far.
+            $closest = null;
+            $closestDistance = 0;
+            foreach ($this->ringPositions($placement) as $chunk) {
+                [$cx, $cz] = array_map('intval', explode(',', $chunk));
+                $ringDistance = ($cx * 16 + 8 - $x) ** 2 + (32 - $y) ** 2 + ($cz * 16 + 8 - $z) ** 2;
+                if ($closest === null || $ringDistance < $closestDistance) {
+                    if (($found = $this->generatingAt($index, $names, $cx, $cz)) !== null) {
+                        $closest = $found;
+                        $closestDistance = $ringDistance;
+                    }
+                }
+            }
+            if ($closest !== null && ($nearest === null || $distance($closest) < $distance($nearest))) {
+                $nearest = $closest;
+            }
+        }
+        if ($spread === []) {
+            return $nearest;
+        }
+        $originX = $x >> 4;
+        $originZ = $z >> 4;
+        for ($radius = 0; $radius <= $maxRadius; ++$radius) {
+            $foundSomething = false;
+            foreach ($spread as $index => $names) {
+                $placement = $this->sets[$index][1]['placement'];
+                $found = null;
+                for ($dx = -$radius; $dx <= $radius && $found === null; ++$dx) {
+                    $xEdge = $dx === -$radius || $dx === $radius;
+                    for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                        if (!$xEdge && $dz !== -$radius && $dz !== $radius) {
+                            continue;
+                        }
+                        [$cx, $cz] = $this->potentialChunk($placement, $originX + $placement['spacing'] * $dx, $originZ + $placement['spacing'] * $dz);
+                        if (($found = $this->generatingAt($index, $names, $cx, $cz)) !== null) {
+                            break;
+                        }
+                    }
+                }
+                if ($found !== null) {
+                    $foundSomething = true;
+                    if ($nearest === null || $distance($found) < $distance($nearest)) {
+                        $nearest = $found;
+                    }
+                }
+            }
+            if ($foundSomething) {
+                return $nearest;
+            }
+        }
+        return $nearest;
+    }
+
+    /**
+     * ChunkGenerator.getStructureGeneratingAt: a wanted structure the set starts in the chunk
+     * (saved starts first), at the placement's locate position.
+     *
+     * @param list<string> $names
+     * @return array{0: int, 1: int, 2: int, 3: string}|null
+     */
+    private function generatingAt(int $index, array $names, int $cx, int $cz): ?array
+    {
+        $key = "$index,$cx,$cz";
+        if (!array_key_exists($key, $this->located)) {
+            $set = $this->sets[$index][1];
+            $structures = array_map(static fn (array $option): string => preg_replace('/^minecraft:/', '', $option['structure']), $set['structures']);
+            $saved = null;
+            if ($this->db !== null) {
+                $q = $this->db->prepare('SELECT starts FROM vanilla_structure_starts WHERE cx=? AND cz=?');
+                $q->execute([$cx, $cz]);
+                $json = $q->fetchColumn();
+                $saved = $json === false ? null : json_decode((string) $json, true, 512, JSON_THROW_ON_ERROR);
+            }
+            if ($saved !== null) {
+                $started = null;
+                foreach ($saved as $start) {
+                    if (in_array($start['structure'], $structures, true)) {
+                        $started = $start['structure'];
+                    }
+                }
+                $this->located[$key] = $started;
+            } else {
+                $this->located[$key] = $this->startFor($set, $cx, $cz)['structure'] ?? null;
+            }
+            if (count($this->located) > 65536) {
+                $this->located = [$key => $this->located[$key]];
+            }
+        }
+        $started = $this->located[$key];
+        if ($started === null || !in_array($started, $names, true)) {
+            return null;
+        }
+        $offset = $this->sets[$index][1]['placement']['locate_offset'] ?? [0, 0, 0];
+        return [$cx * 16 + $offset[0], $offset[1], $cz * 16 + $offset[2], $started];
     }
 
     private static function encode(array $starts): string

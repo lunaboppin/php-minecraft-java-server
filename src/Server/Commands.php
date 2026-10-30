@@ -44,6 +44,8 @@ trait Commands
 
     use CommandModules\SeedCommand;
 
+    use CommandModules\LocateCommand;
+
     use CommandModules\GameModeCommand;
 
     use CommandModules\GiveCommand;
