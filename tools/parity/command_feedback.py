@@ -308,6 +308,13 @@ SCRIPT = [
     ('bossbar set raid players @a', False), ('bossbar set raid players', False), ('bossbar set raid players', False), ('bossbar set alpha players @s', False),
     ('!reconnect', False), ('bossbar get nothing value', False), ('bossbar remove nothing', False), ('bossbar remove raid', False), ('bossbar remove minecraft:alpha', False),
     ('bossbar remove zeta:omega', False), ('bossbar list', False), ('!witness bossbar list', False),
+    # Entity tags: the one entity changed is named, several are counted, and lists are sorted.
+    ('!quiet kill @e[type=!player]', False), ('tag @s list', False), ('tag @s add red', False), ('tag @s add red', False), ('tag @a add blue', False),
+    ('tag @s list', False), ('tag Witness list', False), ('tag @a list', False), ('tag @a add green', False), ('tag @s add k5', False),
+    ('tag @a list', False), ('tag @e[tag=red] list', False), ('tag @e[tag=!red] list', False), ('tag @e[tag=] list', False),
+    ('tag @s remove red', False), ('tag @s remove red', False), ('tag @a remove blue', False), ('!witness tag @s add nope', False),
+    ('!quiet tag @a remove green', False), ('!quiet tag @s remove k5', False),
+    ('setidletimeout 5', False), ('setidletimeout 0', False), ('!witness setidletimeout 3', False),
     ('list', False),
 ]
 

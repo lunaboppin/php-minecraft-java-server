@@ -76,7 +76,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/scoreboard` | [ScoreboardCommand.php](../src/Server/Commands/ScoreboardCommand.php) | Partial handler; native behavior incomplete | — |
 | `/seed` | [SeedCommand.php](../src/Server/Commands/SeedCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setblock` | [SetBlockCommand.php](../src/Server/Commands/SetBlockCommand.php) | Partial handler; native behavior incomplete | — |
-| `/setidletimeout` | — | Unimplemented | — |
+| `/setidletimeout` | [SetIdleTimeoutCommand.php](../src/Server/Commands/SetIdleTimeoutCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setworldspawn` | [SetWorldSpawnCommand.php](../src/Server/Commands/SetWorldSpawnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spawnpoint` | [SpawnPointCommand.php](../src/Server/Commands/SpawnPointCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spectate` | — | Unimplemented | — |
@@ -86,7 +86,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/stopwatch` | — | Unimplemented | — |
 | `/summon` | [SummonCommand.php](../src/Server/Commands/SummonCommand.php) | Partial handler; native behavior incomplete | — |
 | `/swing` | — | Unimplemented | — |
-| `/tag` | — | Unimplemented | — |
+| `/tag` | [TagCommand.php](../src/Server/Commands/TagCommand.php) | Partial handler; native behavior incomplete | — |
 | `/team` | [TeamCommand.php](../src/Server/Commands/TeamCommand.php) | Partial handler; native behavior incomplete | — |
 | `/teammsg` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | — |
 | `/teleport` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | — |

@@ -62,6 +62,8 @@ final class CommandRegistry
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
             new CommandDefinition('bossbar', 'executeBossBar', true),
+            new CommandDefinition('tag', 'executeTag', true),
+            new CommandDefinition('setidletimeout', 'executeSetIdleTimeout', true),
             new CommandDefinition('say', 'executeSay', true),
         ];
     }

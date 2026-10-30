@@ -22,6 +22,10 @@ trait Commands
 
     use CommandModules\BossBarCommand;
 
+    use CommandModules\TagCommand;
+
+    use CommandModules\SetIdleTimeoutCommand;
+
     use CommandModules\SayCommand;
 
     use CommandModules\TeamMsgCommand;
@@ -240,8 +244,8 @@ trait Commands
                 }
             }
             foreach ($options['tag'] ?? [] as [$negated, $value]) {
-                // "" matches entities without tags; players carry none until /tag exists.
-                $tags = isset($entity['mob']) ? ($this->animals[$entity['mob']]['tags'] ?? []) : [];
+                // "" matches entities without tags.
+                $tags = $this->entityTags($entity);
                 if (($value === '' ? $tags === [] : in_array($value, $tags, true)) === $negated) {
                     return false;
                 }
@@ -336,6 +340,28 @@ trait Commands
     private function experienceLevel(Client $client): int
     {
         return $client->experienceLevel;
+    }
+
+    /** Entity.entityTags for a selected player, mob or item, in the order they were added. */
+    private function entityTags(array $entity): array
+    {
+        return match (true) {
+            isset($entity['client']) => $entity['client']->tags,
+            isset($entity['mob']) => $this->animals[$entity['mob']]['tags'] ?? [],
+            isset($entity['item']) => $this->itemEntities[$entity['item']]['tags'] ?? [],
+            default => [],
+        };
+    }
+
+    private function setEntityTags(array $entity, array $tags): void
+    {
+        if (isset($entity['client'])) {
+            $entity['client']->tags = $tags;
+        } elseif (isset($entity['mob'])) {
+            $this->animals[$entity['mob']]['tags'] = $tags;
+        } elseif (isset($entity['item'])) {
+            $this->itemEntities[$entity['item']]['tags'] = $tags;
+        }
     }
 
     /** An entity's display name: the player name or the mob's type description. */
