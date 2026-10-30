@@ -672,7 +672,9 @@ final class Structures
             foreach ($start['pieces'] as $piece) {
                 $union = $include($union, $piece->box);
             }
-            if (!Piece::intersects($union, $column)) {
+            // The start references the chunk when its box, inflated by 12 for terrain adaptation
+            // (Structure.adjustBoundingBox), reaches it.
+            if (!Piece::intersects([$union[0] - 12, $union[1] - 12, $union[2] - 12, $union[3] + 12, $union[4] + 12, $union[5] + 12], $column)) {
                 continue;
             }
             foreach ($start['pieces'] as $piece) {
