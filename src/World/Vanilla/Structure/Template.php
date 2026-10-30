@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 
+use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Generation\Int64;
 use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
@@ -131,7 +132,7 @@ final class Template
      * @param ?callable(array, array): ?array $process
      * @return bool whether the template has blocks to place
      */
-    public function place(StructureContext $context, Region $region, array $position, int $mirror, int $rotation, array $pivot, array $chunkBox, RandomSource $random, ?callable $process, bool $waterlog = true, bool $processWholePiece = false, bool $updateShapes = true, ?callable $finalize = null): bool
+    public function place(StructureContext $context, Region $region, array $position, int $mirror, int $rotation, array $pivot, array $chunkBox, RandomSource $random, ?callable $process, bool $waterlog = true, bool $processWholePiece = false, bool $updateShapes = true, ?callable $finalize = null, bool $placeEntities = true, bool $finalizeEntities = false): bool
     {
         $blocks = $context->blocks;
         $list = $this->palette($position);
@@ -250,6 +251,65 @@ final class Template
                 }
             }
         }
+        if ($placeEntities) {
+            $this->placeEntities($context, $position, $mirror, $rotation, $pivot, $chunkBox, $finalizeEntities);
+        }
         return true;
+    }
+
+    /**
+     * StructureTemplate.placeEntities: the template's entities whose block is inside the chunk, at
+     * their transformed positions, turned with the piece (Entity.rotate and Entity.mirror).
+     */
+    private function placeEntities(StructureContext $context, array $position, int $mirror, int $rotation, array $pivot, array $chunkBox, bool $finalize): void
+    {
+        foreach ($this->entities as $info) {
+            [$x, $y, $z] = self::transform($info['blockPos'][0], $info['blockPos'][1], $info['blockPos'][2], $mirror, $rotation, $pivot);
+            $block = [$x + $position[0], $y + $position[1], $z + $position[2]];
+            if (!Piece::inside($chunkBox, ...$block)) {
+                continue;
+            }
+            [$px, $py, $pz] = self::transformVector($info['pos'], $mirror, $rotation, $pivot);
+            $nbt = $info['nbt'];
+            unset($nbt['UUID']);
+            $nbt['Pos'] = [$px + $position[0], $py + $position[1], $pz + $position[2]];
+            if (isset($nbt['block_pos'])) {
+                $nbt['block_pos'] = $block;
+            }
+            $nbt['Rotation'] = [self::entityYaw((float) ($nbt['Rotation'][0] ?? 0.0), $mirror, $rotation), (float) ($nbt['Rotation'][1] ?? 0.0)];
+            $context->entities[] = ['nbt' => $nbt, 'finalize' => $finalize];
+        }
+    }
+
+    /** Entity.rotate(rotation) + Entity.mirror(mirror) - yaw, in float arithmetic. */
+    public static function entityYaw(float $yaw, int $mirror, int $rotation): float
+    {
+        $yaw = Float32::round($yaw);
+        $wrapped = Float32::wrapDegrees($yaw);
+        $turned = Float32::round($wrapped + [0.0, 90.0, 180.0, 270.0][$rotation & 3]);
+        $mirrored = match ($mirror) {
+            BlockTransform::FRONT_BACK => -$wrapped,
+            BlockTransform::LEFT_RIGHT => Float32::round(180.0 - $wrapped),
+            default => $wrapped,
+        };
+        return Float32::round(Float32::round($turned + $mirrored) - $yaw);
+    }
+
+    /** StructureTemplate.transform(Vec3, ...) */
+    public static function transformVector(array $pos, int $mirror, int $rotation, array $pivot): array
+    {
+        [$x, $y, $z] = array_map('floatval', $pos);
+        if ($mirror === BlockTransform::LEFT_RIGHT) {
+            $z = 1.0 - $z;
+        } elseif ($mirror === BlockTransform::FRONT_BACK) {
+            $x = 1.0 - $x;
+        }
+        [$px, , $pz] = $pivot;
+        return match ($rotation & 3) {
+            3 => [$px - $pz + $z, $y, $px + $pz + 1 - $x],
+            1 => [$px + $pz + 1 - $z, $y, $pz - $px + $x],
+            2 => [$px + $px + 1 - $x, $y, $pz + $pz + 1 - $z],
+            default => [$x, $y, $z],
+        };
     }
 }

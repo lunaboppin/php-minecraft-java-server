@@ -7,7 +7,7 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 
-/** SwampHutPiece: a spruce hut on oak stilts. Its witch and cat are not spawned yet. */
+/** SwampHutPiece: a spruce hut on oak stilts, with a witch and a cat. */
 final class SwampHut extends ScatteredPiece
 {
     public static function create(RandomSource $random, int $west, int $north): self
@@ -58,6 +58,13 @@ final class SwampHut extends ScatteredPiece
         for ($z = 2; $z <= 7; $z += 5) {
             for ($x = 1; $x <= 5; $x += 4) {
                 $this->fillColumnDown($context, $region, $log, $x, -1, $z, $chunkBox);
+            }
+        }
+        // The witch, then SwampHutPiece.spawnCat, both persistent, inside the hut.
+        [$x, $y, $z] = $this->worldPos(2, 2, 5);
+        if (self::inside($chunkBox, $x, $y, $z)) {
+            foreach (['witch', 'cat'] as $id) {
+                $context->addEntity($id, [$x + 0.5, (float) $y, $z + 0.5], ['PersistenceRequired' => 1], true);
             }
         }
     }

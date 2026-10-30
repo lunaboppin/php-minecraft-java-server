@@ -75,7 +75,10 @@ final class ChunkStore
             // Structure blocks whose shapes are updated once the chunk and its neighbours are decorated.
             . 'CREATE TABLE IF NOT EXISTS vanilla_post_processing(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,PRIMARY KEY(x,y,z));'
             // Block entities generation placed: containers' loot tables and seeds.
-            . 'CREATE TABLE IF NOT EXISTS vanilla_block_entities(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(x,y,z))');
+            . 'CREATE TABLE IF NOT EXISTS vanilla_block_entities(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(x,y,z));'
+            // Entities generation added, in order, in the chunk holding each one's block position.
+            . 'CREATE TABLE IF NOT EXISTS vanilla_entities(id INTEGER PRIMARY KEY AUTOINCREMENT,cx INTEGER NOT NULL,cz INTEGER NOT NULL,data TEXT NOT NULL);'
+            . 'CREATE INDEX IF NOT EXISTS vanilla_entities_chunk ON vanilla_entities(cx,cz)');
         // Worldgen heightmaps of the carved chunk, kept while neighbours decorate into it.
         $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('heights', $columns, true)) {
@@ -147,6 +150,19 @@ final class ChunkStore
             $out["$x,$y,$z"] = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
         return $out;
+    }
+
+    /**
+     * The entities generation added to a chunk, in order: each one's saved tags and whether
+     * Mob.finalizeSpawn runs when it is spawned.
+     *
+     * @return list<array{nbt: array, finalize: bool}>
+     */
+    public function entities(int $cx, int $cz): array
+    {
+        $q = $this->db->prepare('SELECT data FROM vanilla_entities WHERE cx=? AND cz=? ORDER BY id');
+        $q->execute([$cx, $cz]);
+        return array_map(static fn (string $data): array => json_decode($data, true, 512, JSON_THROW_ON_ERROR), $q->fetchAll(\PDO::FETCH_COLUMN));
     }
 
     /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
@@ -374,9 +390,14 @@ final class ChunkStore
                 [$x, $y, $z] = array_map('intval', explode(',', $position));
                 $entities->execute([$x >> 4, $z >> 4, $x, $y, $z, json_encode($data, JSON_THROW_ON_ERROR)]);
             }
+            $added = $this->db->prepare('INSERT INTO vanilla_entities(cx,cz,data) VALUES(?,?,?)');
+            foreach ($decorator->structureContext?->entities ?? [] as $entity) {
+                $added->execute([(int) floor($entity['nbt']['Pos'][0]) >> 4, (int) floor($entity['nbt']['Pos'][2]) >> 4, json_encode($entity, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)]);
+            }
             if ($decorator->structureContext !== null) {
                 $decorator->structureContext->postProcessing = [];
                 $decorator->structureContext->blockEntities = [];
+                $decorator->structureContext->entities = [];
             }
             $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=?,status=MAX(status,?) WHERE cx=? AND cz=?');
             foreach ($chunks as $chunk) {
