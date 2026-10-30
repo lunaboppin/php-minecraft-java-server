@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 from run import Server
 
-WATCHED = ('open_screen', 'container_close', 'block_event', 'sound', 'block_update', 'container_set_content')
+WATCHED = ('open_screen', 'container_close', 'block_event', 'sound', 'block_update', 'section_blocks_update', 'container_set_content')
 
 
 LAST_EVENTS = {}
@@ -32,6 +32,9 @@ def collect(client, who):
     seen = []
     while True:
         name, payload = client.receive()
+        # The player's own inventory reaches it slot by slot in vanilla.
+        if name == 'container_set_content' and payload[0] == 0:
+            continue
         if name in WATCHED:
             # The pitch is random, and so is the seed after it.
             entry = [who, name, (payload[:-12].hex() + '00' * 12) if name == 'sound' else payload.hex()]
@@ -60,7 +63,8 @@ def record(kind, output, java, jar, eula):
             client.tick_barrier()
         for command in ('fill -3 199 -3 3 199 3 stone', 'fill -3 200 -3 3 203 3 air', 'tp ParityProbe 0 200 0 0 0', 'tp Witness 0 200 -1 0 0',
                         'setblock 1 200 1 chest[facing=north]', 'setblock -1 200 1 barrel[facing=up]', 'setblock 1 200 -1 ender_chest[facing=south]',
-                        'item replace entity ParityProbe enderchest.4 with diamond 3', 'gamemode survival @a'):
+                        'item replace entity ParityProbe enderchest.4 with diamond 3', 'item replace entity ParityProbe weapon.mainhand with chest 4',
+                        'gamemode survival @a'):
             operator.send('chat_command', wire.string(command))
         for client in (operator, witness):
             client.tick_barrier()
@@ -78,6 +82,9 @@ def record(kind, output, java, jar, eula):
             lambda: operator.send('chat_command', wire.string('setblock 2 200 0 chest[facing=north,type=left]')),
             lambda: use(operator, (2, 200, 0), 5), lambda: use(witness, (3, 200, 0), 3),
             lambda: operator.send('container_close', wire.vi(5)), lambda: witness.send('container_close', wire.vi(3)),
+            # Chests placed side by side facing the placer join, which nearby players hear.
+            lambda: use(operator, (-2, 199, -2), 6), lambda: use(operator, (-1, 199, -2), 7),
+            lambda: operator.send('chat_command', wire.string('setblock -1 200 -2 air')),
         ]
         for action in actions:
             action()

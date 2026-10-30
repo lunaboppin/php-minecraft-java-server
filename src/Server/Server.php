@@ -1371,6 +1371,9 @@ final class Server
                 if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
                     $this->joinChest([$tx, $ty, $tz]);
                 }
+                if (!str_ends_with($itemName, '_bucket')) {
+                    $this->placeSound($c, $tx, $ty, $tz, $blockName);
+                }
                 if (str_ends_with($blockName, '_sign')) {
                     $this->openSign($c, $tx, $ty, $tz, 1);
                 }
@@ -1392,8 +1395,8 @@ final class Server
                 $this->useSwing($c, $hand);
             }
         }
-        $this->blockUpdate($c, $tx, $ty, $tz);
         $this->acknowledge($c, $sequence);
+        $this->resendUsedBlocks($c, $x, $y, $z, $face);
     }
 
     private function creativeSlot(Client $c, Binary $r): void
@@ -1489,6 +1492,23 @@ final class Server
                         $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * BlockItem.place: the block's place sound, at its SoundType's volume eased toward full and
+     * 80% of its pitch, for the players near it but not the placer, who plays it themself.
+     */
+    private function placeSound(Client $placer, int $x, int $y, int $z, string $block): void
+    {
+        [$sound, $volume, $pitch] = $this->version->catalog->simulation['place_sounds'][$block];
+        $volume = Float32::round(($volume + 1.0) / 2.0);
+        $payload = Packets::sound($sound, 4, $x + 0.5, $y + 0.5, $z + 0.5, $volume, Float32::round($pitch * Float32::round(0.8)), unpack('J', random_bytes(8))[1]);
+        $range = $volume > 1.0 ? 16.0 * $volume : 16.0;
+        foreach ($this->localPlayers() as $player) {
+            if ($player !== $placer && ($player->x - $x - 0.5) ** 2 + ($player->y - $y - 0.5) ** 2 + ($player->z - $z - 0.5) ** 2 < $range ** 2) {
+                $player->send($this->version, 'sound', $payload);
             }
         }
     }
