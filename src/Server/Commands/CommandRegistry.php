@@ -74,6 +74,7 @@ final class CommandRegistry
             new CommandDefinition('swing', 'executeSwing', true),
             new CommandDefinition('stopwatch', 'executeStopwatch', true),
             new CommandDefinition('tick', 'executeTick', true),
+            new CommandDefinition('transfer', 'executeTransfer', true),
         ];
     }
 

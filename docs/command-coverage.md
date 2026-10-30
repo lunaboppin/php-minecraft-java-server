@@ -98,7 +98,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/title` | [TitleCommand.php](../src/Server/Commands/TitleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tm` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | `/teammsg` |
 | `/tp` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | `/teleport` |
-| `/transfer` | — | Unimplemented | — |
+| `/transfer` | [TransferCommand.php](../src/Server/Commands/TransferCommand.php) | Partial handler; native behavior incomplete | — |
 | `/trigger` | [TriggerCommand.php](../src/Server/Commands/TriggerCommand.php) | Partial handler; native behavior incomplete | — |
 | `/version` | [VersionCommand.php](../src/Server/Commands/VersionCommand.php) | Partial handler; native behavior incomplete | — |
 | `/w` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |

@@ -24,7 +24,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 9 | `resource_pack_push` | Unsupported |
 | 10 | `post_effects` | Emission reference |
 | 11 | `store_cookie` | Unsupported |
-| 12 | `transfer` | Unsupported |
+| 12 | `transfer` | Emission reference |
 | 13 | `update_enabled_features` | Emission reference |
 | 14 | `update_tags` | Emission reference |
 | 15 | `select_known_packs` | Emission reference |
@@ -212,7 +212,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 129 | `test_instance_block_status` | Unsupported |
 | 130 | `ticking_state` | Emission reference |
 | 131 | `ticking_step` | Emission reference |
-| 132 | `transfer` | Unsupported |
+| 132 | `transfer` | Emission reference |
 | 133 | `update_advancements` | Unsupported |
 | 134 | `update_attributes` | Emission reference |
 | 135 | `update_mob_effect` | Emission reference |
