@@ -21,6 +21,8 @@ final class Blocks
     public const SOURCE = 262144;
     public const FULL_CUBE = 524288;
     public const MOTION_NO_LEAVES = 2097152;
+    /** BlockState.isSolidRender: an opaque full-block occlusion shape. */
+    public const SOLID_RENDER = 134217728;
     /** Direction indexes of Direction.get3DDataValue. */
     public const DOWN = 0;
     public const UP = 1;

@@ -46,7 +46,7 @@ final class Survival
             'SeagrassBlock', 'TallSeagrassBlock' => $blocks->sturdy($below, Blocks::UP) && !$blocks->inTag($below, 'cannot_support_seagrass'),
             'LilyPadBlock' => ($blocks->isWater($below) || $blocks->inTag($below, 'supports_lily_pad')) && !$blocks->hasFluid($region->get($x, $y + 1, $z)),
             'MushroomBlock' => $blocks->inTag($below, 'overrides_mushroom_light_requirement')
-                || (!$this->skyLight && $blocks->flag($below, 1 << 20) && $blocks->flag($below, Blocks::FULL_CUBE)),
+                || (!$this->skyLight && $blocks->flag($below, Blocks::SOLID_RENDER)),
             // Each Nether root and fungus block has its own supports_<block> tag.
             'NetherRootsBlock', 'NetherFungusBlock' => $blocks->inTag($below, 'supports_' . $blocks->name($state)),
             'NetherSproutsBlock' => $blocks->inTag($below, 'supports_nether_sprouts'),

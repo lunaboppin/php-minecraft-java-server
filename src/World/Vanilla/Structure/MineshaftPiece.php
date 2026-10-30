@@ -101,7 +101,7 @@ abstract class MineshaftPiece extends Piece
 
     protected static function solidRender(StructureContext $c, int $state): bool
     {
-        return $c->blocks->flag($state, 1 << 20) && $c->blocks->flag($state, Blocks::FULL_CUBE);
+        return $c->blocks->flag($state, Blocks::SOLID_RENDER);
     }
 
     protected function canBeReplaced(StructureContext $context, Region $region, int $x, int $y, int $z, array $chunkBox): bool
