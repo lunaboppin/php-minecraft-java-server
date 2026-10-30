@@ -40,6 +40,14 @@ final class Carvers
         $this->minMaskY = $settings->minY + 1;
         // Seven blocks are protected at the top of a newly generated chunk.
         $this->maskHeight = $settings->minY + $settings->height - 1 - 7 - $this->minMaskY + 1;
+        // PHP 8.5.12's tracing JIT turns carve's source-chunk loop into an endless loop once a
+        // process has computed structure starts (seed 42, Nether chunk -17,-4), which would hang a
+        // generation worker; carve itself costs little next to the carvers it calls.
+        static $blacklisted = false;
+        if (!$blacklisted && function_exists('opcache_jit_blacklist')) {
+            opcache_jit_blacklist($this->carve(...));
+            $blacklisted = true;
+        }
     }
 
     private function sin(float $value): float
