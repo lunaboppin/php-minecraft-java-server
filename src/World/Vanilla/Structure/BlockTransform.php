@@ -72,6 +72,10 @@ final class BlockTransform
             };
             return $this->blocks->with($this->rotate($state, 2), 'shape', $swapped);
         }
+        if (str_ends_with($name, 'rail') && isset($properties['shape'])) {
+            $swap = $mirror === self::LEFT_RIGHT ? ['north' => 'south', 'south' => 'north'] : ['east' => 'west', 'west' => 'east'];
+            return $this->blocks->with($state, 'shape', self::railShape($properties['shape'], static fn (string $side): string => $swap[$side] ?? $side));
+        }
         if (isset($properties['hinge']) && $facing !== null) {
             $state = $this->rotate($state, self::mirrorRotation($mirror, $facing));
             return $this->blocks->with($state, 'hinge', $properties['hinge'] === 'left' ? 'right' : 'left');
@@ -91,6 +95,27 @@ final class BlockTransform
         return $state;
     }
 
+    /**
+     * BaseRailBlock.rotate and mirror: each side of a rail shape mapped, named north or south
+     * first as RailShape is.
+     *
+     * @param callable(string): string $map
+     */
+    private static function railShape(string $shape, callable $map): string
+    {
+        if (str_starts_with($shape, 'ascending_')) {
+            return 'ascending_' . $map(substr($shape, 10));
+        }
+        $sides = array_map($map, explode('_', $shape));
+        $northSouth = array_values(array_intersect($sides, ['north', 'south']));
+        $eastWest = array_values(array_intersect($sides, ['east', 'west']));
+        return match (count($northSouth)) {
+            2 => 'north_south',
+            0 => 'east_west',
+            default => $northSouth[0] . '_' . $eastWest[0],
+        };
+    }
+
     public function rotate(int $state, int $rotation): int
     {
         $rotation &= 3;
@@ -98,6 +123,9 @@ final class BlockTransform
             return $state;
         }
         $properties = $this->blocks->properties($state);
+        if (str_ends_with($this->blocks->name($state), 'rail') && isset($properties['shape'])) {
+            return $this->blocks->with($state, 'shape', self::railShape($properties['shape'], static fn (string $side): string => self::HORIZONTAL[(array_search($side, self::HORIZONTAL, true) + $rotation) % 4]));
+        }
         if (isset($properties['facing']) && ($index = array_search($properties['facing'], self::HORIZONTAL, true)) !== false) {
             $state = $this->blocks->with($state, 'facing', self::HORIZONTAL[($index + $rotation) % 4]);
         }

@@ -519,7 +519,7 @@ final class DesertPyramid extends ScatteredPiece
     }
 
     /** DesertPyramidStructure.afterPlace: five to seven of the cellar's sand blocks become suspicious sand. */
-    public function afterPlace(StructureContext $c, Region $r, array $b): void
+    public function afterPlace(StructureContext $c, Region $r, array $b, array $pieces): void
     {
         $this->placeSuspiciousSand($c, $r, $b, $this->collapsedRoof);
         $positions = array_values($this->sand);

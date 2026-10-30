@@ -8,6 +8,7 @@ use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Piece;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\StructureContext;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
@@ -159,6 +160,7 @@ final class Decorator
         // WorldGenRegion.getRandom
         $context->regionRandom ??= $this->structures->regionRandom($region->centerX, $region->centerZ);
         $context->survival ??= $this->survival;
+        $context->shapes ??= new ShapeUpdater($this->blocks, $this->survival);
         $context->biomeInTag ??= $this->structures->biomeInTag(...);
         $context->placeFeature ??= fn (string $feature, Region $region, RandomSource $random, array $position): bool => $this->placeFeature($feature, $region, $random, $position);
         // BoundingBox.getCenter of the first piece, at its bottom.
@@ -169,9 +171,7 @@ final class Decorator
                 $piece->postProcess($context, $region, $random, $chunkBox);
             }
         }
-        foreach ($pieces as $piece) {
-            $piece->afterPlace($context, $region, $chunkBox);
-        }
+        $pieces[0]->afterPlace($context, $region, $chunkBox, $pieces);
     }
 
     /**

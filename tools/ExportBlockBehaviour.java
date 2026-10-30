@@ -8,6 +8,9 @@ import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Per block state behaviour that world generation tests: air, isSolid, blocksMotion,
@@ -15,6 +18,10 @@ import net.minecraft.world.level.material.Fluids;
  * state id; bit layout in the "bits" field.
  */
 public class ExportBlockBehaviour {
+    /** WallBlock.TEST_SHAPE_POST and TEST_SHAPES_WALL */
+    private static final VoxelShape WALL_POST = Block.column(2.0, 0.0, 16.0);
+    private static final java.util.Map<Direction, VoxelShape> WALL_SIDES = Shapes.rotateHorizontal(Block.boxZ(2.0, 16.0, 0.0, 9.0));
+
     public static void main(String[] args) throws Exception {
         if (args.length != 1) throw new IllegalArgumentException("Expected output path");
         net.minecraft.SharedConstants.tryDetectVersion();
@@ -46,11 +53,19 @@ public class ExportBlockBehaviour {
             if (state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) bits |= 1 << 19;
             if (state.canOcclude()) bits |= 1 << 20;
             if (state.is(net.minecraft.tags.BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES)) bits |= 1 << 21;
+            // WallBlock.isCovered: whether the bottom face of the state's collision shape covers a
+            // wall's post, and its north, east, south and west sides.
+            var down = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).getFaceShape(Direction.DOWN);
+            if (!Shapes.joinIsNotEmpty(WALL_POST, down, BooleanOp.ONLY_FIRST)) bits |= 1 << 22;
+            Direction[] sides = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+            for (int i = 0; i < 4; ++i) {
+                if (!Shapes.joinIsNotEmpty(WALL_SIDES.get(sides[i]), down, BooleanOp.ONLY_FIRST)) bits |= 1 << (23 + i);
+            }
             flags.putInt(bits);
         }
         var root = new JsonObject();
         root.addProperty("version", net.minecraft.SharedConstants.getCurrentVersion().id());
-        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves");
+        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves, 4194304 bottom face covers a wall post, 8388608<<s bottom face covers a wall side (s: north, east, south, west)");
         root.addProperty("states", count);
         root.addProperty("flags", Base64.getEncoder().encodeToString(flags.array()));
         // Block classes decide survival and placement rules; plain blocks are omitted.

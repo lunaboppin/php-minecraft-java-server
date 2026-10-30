@@ -549,6 +549,37 @@ final class Structures
                 return StrongholdPiece::generate($this->settings->state->seed, $cx, $cz, $this->settings->seaLevel, $this->settings->minY);
             case 'mineshaft':
                 return $this->mineshaft($structure, $cx, $cz, $random);
+            case 'nether_fossil':
+                // NetherFossilStructure.findGenerationPoint: down from a random height to air over a
+                // sturdy floor, above sea level.
+                $x = $cx * 16 + $random->nextInt(16);
+                $z = $cz * 16 + $random->nextInt(16);
+                $context = new Region($this->blocks, $cx, $cz, [], $this->settings->minY, $this->settings->height, $this->settings->seaLevel, 0, $this->settings->state->seed);
+                $y = Providers::height($structure['height'], $random, $context);
+                $column = NoiseChunk::baseColumn($this->settings, $x, $z);
+                $block = fn (int $y): string => $column[$y - $this->settings->minY] ?? 'air';
+                while ($y > $this->settings->seaLevel) {
+                    $current = $block($y);
+                    $below = $block(--$y);
+                    if ($current === 'air' && ($below === 'soul_sand' || $this->blocks->sturdy($this->blocks->state($below), Blocks::UP))) {
+                        break;
+                    }
+                }
+                if ($y <= $this->settings->seaLevel || !$this->validBiome($structure, $x, $y, $z)) {
+                    return [];
+                }
+                return [NetherFossil::create($this->blocks, $this->directory, [$x, $y, $z], $random)];
+            case 'woodland_mansion':
+                // WoodlandMansionStructure.findGenerationPoint: the lowest corner of a 5 by 5 box, at least y 60.
+                $x = $cx * 16 + 7;
+                $z = $cz * 16 + 7;
+                $rotation = $random->nextInt(4);
+                [$offsetX, $offsetZ] = [[5, 5], [-5, 5], [-5, -5], [5, -5]][$rotation];
+                $y = $this->lowestY($x, $z, $offsetX, $offsetZ);
+                if ($y < 60 || !$this->validBiome($structure, $x, $y, $z)) {
+                    return [];
+                }
+                return WoodlandMansion::generate($this->blocks, $this->directory, [$x, $y, $z], $rotation, $random);
             case 'ocean_monument':
                 // OceanMonumentStructure.findGenerationPoint: every biome within 29 blocks is an
                 // ocean or river, and the start sits on the ocean floor at the chunk's centre.

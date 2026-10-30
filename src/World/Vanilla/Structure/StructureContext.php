@@ -50,6 +50,9 @@ final class StructureContext
     /** Block class chains, for checks such as FallingBlock. */
     public ?Survival $survival = null;
 
+    /** Block.updateFromNeighbourShapes for the blocks a template places. */
+    public ?ShapeUpdater $shapes = null;
+
     /** @var (\Closure(string, string): bool)|null whether a biome is in a biome tag */
     public ?\Closure $biomeInTag = null;
 
