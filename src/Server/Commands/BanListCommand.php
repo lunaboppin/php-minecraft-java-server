@@ -8,10 +8,15 @@ use PhpMinecraftJavaServer\Server\Client;
 
 trait BanListCommand
 {
-    /** BanListCommands: the player bans (IP bans are not supported, so that list is empty). */
+    /** BanListCommands: player bans, IP bans, or both in that order. */
     private function executeBanList(Client $sender, array $arguments): void
     {
-        $entries = ($arguments[0] ?? 'players') === 'ips' ? [] : $this->orderedEntries('banned-players.json');
+        $ips = array_map(static fn (array $entry): array => ['name' => $entry['ip']] + $entry, $this->orderedIpBans());
+        $entries = match ($arguments[0] ?? null) {
+            'players' => $this->orderedEntries('banned-players.json'),
+            'ips' => $ips,
+            default => [...$this->orderedEntries('banned-players.json'), ...$ips],
+        };
         if ($entries === []) {
             $this->sendSuccess($sender, ['translate' => 'commands.banlist.none'], false);
             return;

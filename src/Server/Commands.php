@@ -26,6 +26,10 @@ trait Commands
 
     use CommandModules\SetIdleTimeoutCommand;
 
+    use CommandModules\BanIpCommand;
+
+    use CommandModules\PardonIpCommand;
+
     use CommandModules\SayCommand;
 
     use CommandModules\TeamMsgCommand;

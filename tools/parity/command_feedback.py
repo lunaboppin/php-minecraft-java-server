@@ -315,6 +315,11 @@ SCRIPT = [
     ('tag @s remove red', False), ('tag @s remove red', False), ('tag @a remove blue', False), ('!witness tag @s add nope', False),
     ('!quiet tag @a remove green', False), ('!quiet tag @s remove k5', False),
     ('setidletimeout 5', False), ('setidletimeout 0', False), ('!witness setidletimeout 3', False),
+    # IP bans on addresses no test client uses; banning a connected player would disconnect them all.
+    ('banlist ips', False), ('ban-ip 10.0.0.5', False), ('ban-ip 10.0.0.5', False), ('ban-ip 10.0.0.6 Griefing  the spawn', False),
+    ('ban-ip 192.168.1.20 @a', False), ('ban-ip nobody', False), ('ban-ip 999.1.1.1', False), ('banlist ips', False), ('banlist', False),
+    ('pardon-ip 10.0.0.5', False), ('pardon-ip 10.0.0.5', False), ('pardon-ip notanip', False), ('!quiet pardon-ip 10.0.0.6', False),
+    ('!quiet pardon-ip 192.168.1.20', False), ('!witness ban-ip 10.0.0.9', False),
     ('list', False),
 ]
 

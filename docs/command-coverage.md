@@ -18,7 +18,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/advancement` | — | Unimplemented | — |
 | `/attribute` | [AttributeCommand.php](../src/Server/Commands/AttributeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban` | [BanCommand.php](../src/Server/Commands/BanCommand.php) | Partial handler; native behavior incomplete | — |
-| `/ban-ip` | — | Unimplemented | — |
+| `/ban-ip` | [BanIpCommand.php](../src/Server/Commands/BanIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/banlist` | [BanListCommand.php](../src/Server/Commands/BanListCommand.php) | Partial handler; native behavior incomplete | — |
 | `/bossbar` | [BossBarCommand.php](../src/Server/Commands/BossBarCommand.php) | Partial handler; native behavior incomplete | — |
 | `/clear` | [ClearCommand.php](../src/Server/Commands/ClearCommand.php) | Partial handler; native behavior incomplete | — |
@@ -56,7 +56,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/msg` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/op` | [OpCommand.php](../src/Server/Commands/OpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/pardon` | [PardonCommand.php](../src/Server/Commands/PardonCommand.php) | Partial handler; native behavior incomplete | — |
-| `/pardon-ip` | — | Unimplemented | — |
+| `/pardon-ip` | [PardonIpCommand.php](../src/Server/Commands/PardonIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/particle` | — | Unimplemented | — |
 | `/perf` | — | Unimplemented | — |
 | `/place` | — | Unimplemented | — |

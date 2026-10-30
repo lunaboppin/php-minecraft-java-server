@@ -1491,6 +1491,23 @@ final class Server
         $c->closingAt = self::now();
     }
 
+    /** ComponentSerialization's JSON: a component with only text is written as a bare string, at any depth. */
+    private static function compactComponent(mixed $component): mixed
+    {
+        if (!is_array($component)) {
+            return $component;
+        }
+        if (array_keys($component) === ['text'] && is_string($component['text'])) {
+            return $component['text'];
+        }
+        foreach (['with', 'extra'] as $list) {
+            if (isset($component[$list]) && is_array($component[$list])) {
+                $component[$list] = array_map(self::compactComponent(...), $component[$list]);
+            }
+        }
+        return $component;
+    }
+
     /** @param string|array $reason plain text, or a text component */
     private function disconnect(Client $c, string|array $reason): void
     {
@@ -1499,7 +1516,7 @@ final class Server
         }
         if (in_array($c->state, ['login', 'configuration', 'play'], true)) {
             $component = is_array($reason) ? $reason : ['text' => $reason];
-            $payload = $c->state === 'login' ? Binary::writeString(json_encode($component, JSON_THROW_ON_ERROR)) : Nbt::component($component);
+            $payload = $c->state === 'login' ? Binary::writeString(json_encode(self::compactComponent($component), JSON_THROW_ON_ERROR)) : Nbt::component($component);
             try {
                 $c->send($this->version, $c->state === 'login' ? 'login_disconnect' : 'disconnect', $payload);
             } catch (ProtocolException) {
