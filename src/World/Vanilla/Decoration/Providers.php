@@ -32,7 +32,7 @@ final class Providers
         return match (true) {
             isset($anchor['absolute']) => $anchor['absolute'],
             isset($anchor['above_bottom']) => $region->minY + $anchor['above_bottom'],
-            isset($anchor['below_top']) => $region->minY + $region->height - 1 - $anchor['below_top'],
+            isset($anchor['below_top']) => $region->minY + $region->genHeight - 1 - $anchor['below_top'],
             isset($anchor['relative_to_sea_level']) => $region->seaLevel + $anchor['relative_to_sea_level'],
         };
     }

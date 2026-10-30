@@ -25,6 +25,8 @@ final class Region
 
     private readonly int $air;
 
+    public readonly int $genHeight;
+
     /** @var array<string, int> heightmap cache: "type,x,z" => first free Y */
     private array $heights = [];
 
@@ -39,7 +41,10 @@ final class Region
         public readonly int $seaLevel,
         private readonly int $zoomSeed,
         public readonly int $seed,
+        ?int $genHeight = null,
     ) {
+        // The generator's height (ChunkGenerator.getGenDepth), below a taller world's build height.
+        $this->genHeight = $genHeight ?? $height;
         $this->voidAir = $blocks->state('void_air');
         $this->air = $blocks->state('air');
     }
@@ -139,7 +144,7 @@ final class Region
         if ($chunk === null) {
             return 'plains';
         }
-        $quartY = min(max($qy - ($this->minY >> 2), 0), intdiv($this->height, 4) - 1);
+        $quartY = min(max($qy - ($this->minY >> 2), 0), intdiv($this->genHeight, 4) - 1);
         return $chunk->biomes[($quartY << 4) | (($qz & 3) << 2) | ($qx & 3)];
     }
 }
