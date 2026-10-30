@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     # The full suite, including the command feedback network tests, takes about 16 minutes.
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
@@ -64,7 +64,7 @@ jobs:
         run: python3 tests/panel_egg.py --container
   parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -119,7 +119,7 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -150,6 +150,7 @@ jobs:
           python3 tests/spawn-scatter.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/experience-orbs.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
@@ -162,6 +163,7 @@ jobs:
             tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
+            tools/.cache/experience-orbs/
             tools/.cache/item-entities/
             tools/.cache/equipment-stack-verification/
           retention-days: 7
