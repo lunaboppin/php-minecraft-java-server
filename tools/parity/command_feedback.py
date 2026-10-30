@@ -364,6 +364,14 @@ SCRIPT = [
     ('particle block{block_state:{id:"oak_log",properties:{axis:"q"}}} 0 201 0', False), ('particle block{} 0 201 0', False),
     ('particle dust_color_transition{} 0 201 0', False), ('particle geyser_base{water_blocks:1} 0 201 0', False),
     ('particle dust{color:[1,0,0],scale:0.001} 0 201 0', False), ('particle dust{color:[1,0,0],scale:4.5} 0 201 0', False),
+    # Spectator cameras on a platform both players stand on, with their set_camera packets.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('!quiet gamemode creative @s', False), ('spectate', False),
+    ('spectate Witness', False), ('!witness spectate ParityProbe', False), ('!quiet gamemode spectator @s', False), ('spectate @s', False),
+    ('spectate Witness', False), ('spectate Witness ParityProbe', False), ('spectate', False), ('spectate', False),
+    ('spectate @e[type=pig]', False), ('!quiet summon pig 1 200 1', False), ('spectate @e[type=pig,limit=1]', False),
+    ('spectate @e[type=pig]', False), ('spectate ParityProbe Witness', False), ('gamemode creative @s', False), ('spectate Witness', False),
+    ('!quiet gamemode spectator @s', False), ('spectate Witness', False), ('tp @s 3 200 3', False), ('spectate Witness', False),
+    ('!quiet kill @e[type=pig]', False), ('!quiet gamemode creative @s', False),
     ('list', False),
 ]
 
@@ -376,7 +384,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -454,7 +462,7 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event', 'set_camera')
 
 
 def normalize_entity_ids(items):

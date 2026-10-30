@@ -26,6 +26,8 @@ final class Client
     public bool $dead = false;
     public bool $flying = false;
     public bool $sneaking = false;
+    /** @var array|null the selected entity a spectator views through (ServerPlayer.camera), or null */
+    public ?array $camera = null;
     public int $lastAttackTick = -20;
     public ?int $lastAttackItem = null;
     public bool $sprinting = false;

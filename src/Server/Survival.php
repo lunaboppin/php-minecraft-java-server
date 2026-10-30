@@ -156,6 +156,10 @@ trait Survival
         $c->mining = null;
         $this->abilities($c);
         $c->send($this->version, 'game_event', "\3" . pack('G', $mode));
+        // ServerPlayer.setGameMode: leaving spectator mode ends any camera view.
+        if ($mode !== 3) {
+            $this->setCamera($c, null);
+        }
         // Creative mode adds the interaction range modifiers, which are then sent as changed.
         if (($previous === 1) !== ($mode === 1)) {
             $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $c->entityId, $this->interactionRanges($c)));

@@ -56,6 +56,8 @@ final class Server
     use MobMovement;
 
     use Authentication;
+
+    use Cameras;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -1456,6 +1458,7 @@ final class Server
                         return;
                     }
                     $this->tickSurvival($c);
+                    $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
                     $this->syncEquipment($c);
                     $this->syncPlayerMetadata($c);

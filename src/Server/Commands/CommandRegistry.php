@@ -70,6 +70,7 @@ final class CommandRegistry
             new CommandDefinition('clone', 'executeClone', true),
             new CommandDefinition('forceload', 'executeForceLoad', true),
             new CommandDefinition('particle', 'executeParticle', true),
+            new CommandDefinition('spectate', 'executeSpectate', true),
         ];
     }
 

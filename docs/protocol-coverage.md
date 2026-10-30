@@ -175,7 +175,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 92 | `set_border_size` | Unsupported |
 | 93 | `set_border_warning_delay` | Unsupported |
 | 94 | `set_border_warning_distance` | Unsupported |
-| 95 | `set_camera` | Unsupported |
+| 95 | `set_camera` | Emission reference |
 | 96 | `set_chunk_cache_center` | Emission reference |
 | 97 | `set_chunk_cache_radius` | Emission reference |
 | 98 | `set_cursor_item` | Unsupported |

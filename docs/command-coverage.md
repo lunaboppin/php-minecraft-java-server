@@ -79,7 +79,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/setidletimeout` | [SetIdleTimeoutCommand.php](../src/Server/Commands/SetIdleTimeoutCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setworldspawn` | [SetWorldSpawnCommand.php](../src/Server/Commands/SetWorldSpawnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spawnpoint` | [SpawnPointCommand.php](../src/Server/Commands/SpawnPointCommand.php) | Partial handler; native behavior incomplete | — |
-| `/spectate` | — | Unimplemented | — |
+| `/spectate` | [SpectateCommand.php](../src/Server/Commands/SpectateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spreadplayers` | — | Unimplemented | — |
 | `/stop` | [StopCommand.php](../src/Server/Commands/StopCommand.php) | Partial handler; native behavior incomplete | — |
 | `/stopsound` | [StopSoundCommand.php](../src/Server/Commands/StopSoundCommand.php) | Partial handler; native behavior incomplete | — |

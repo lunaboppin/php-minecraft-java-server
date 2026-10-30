@@ -74,6 +74,8 @@ trait Commands
 
     use CommandModules\ParticleCommand;
 
+    use CommandModules\SpectateCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
