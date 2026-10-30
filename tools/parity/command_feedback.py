@@ -461,9 +461,10 @@ SCRIPT = [
     # CombatTracker: a living attacker's hit starts combat; death ends it with its duration.
     ('!quiet gamemode survival Witness', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 40 minecraft:mob_attack by ParityProbe', False), ('!respawn', False), ('!quiet gamemode creative Witness', False),
     # Player knockback: hurt_animation's direction and the motion the player and its trackers get.
-    # A respawned witness starts without motion that earlier mobs may have pushed into it.
-    ('!quiet kill @e[type=!player]', False), ('!quiet kill Witness', False), ('!respawn', False), ('!quiet fill -3 199 -3 3 199 5 stone', False), ('!quiet tp Witness 2 200 3 90 0', False),
-    ('!quiet tp ParityProbe 0 200 0', False), ('!quiet gamemode survival Witness', False),
+    # The air above the platform is cleared: water left from the /execute lines would flow under
+    # the witness, and vanilla's current would push it before the hit.
+    ('!quiet kill @e[type=!player]', False), ('!quiet fill -3 199 -3 3 199 5 stone', False), ('!quiet fill -3 200 -3 3 202 5 air', False),
+    ('!quiet tp Witness 2 200 3 90 0', False), ('!quiet tp ParityProbe 0 200 0', False), ('!quiet gamemode survival Witness', False),
     ('damage Witness 3 minecraft:mob_attack by ParityProbe', False), ('!quiet effect give Witness instant_health 1 10', False),
     ('!quiet gamemode creative Witness', False),
     # Riding: set_passengers, the rider's teleport into the seat and the dismount beside the vehicle.
