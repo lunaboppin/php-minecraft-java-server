@@ -1324,7 +1324,7 @@ final class Trees
             $above = $this->get($x, $y + 1, $z);
             $here = $this->get($x, $y, $z);
             if (($this->blocks->isAir($above) || $this->blocks->name($above) === 'vine')
-                && $this->blocks->flag($here, 1 << 20) && $this->blocks->flag($here, Blocks::FULL_CUBE)
+                && $this->blocks->flag($here, Blocks::SOLID_RENDER)
                 && $this->region->height(Region::MOTION_BLOCKING_NO_LEAVES, $x, $z) <= $y + 1) {
                 $this->setDecoration($x, $y + 1, $z, $this->providers->state($decorator['block_state_provider'], $this->region, $random, $x, $y + 1, $z));
             }

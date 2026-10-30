@@ -597,7 +597,7 @@ final class Patches
     /** StructurePiece.reorient: a chest faces away from its one solid neighbour, or away from walls. */
     public static function reorient(Blocks $blocks, Region $region, int $x, int $y, int $z, int $chest): int
     {
-        $solidRender = fn (int $state): bool => $blocks->flag($state, 1 << 20) && $blocks->flag($state, Blocks::FULL_CUBE);
+        $solidRender = fn (int $state): bool => $blocks->flag($state, Blocks::SOLID_RENDER);
         $direction = null;
         foreach (self::HORIZONTAL as $i => [$dx, $dz]) {
             $state = $region->get($x + $dx, $y, $z + $dz);

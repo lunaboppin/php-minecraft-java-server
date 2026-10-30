@@ -65,6 +65,7 @@ public class ExportBlockBehaviour {
             for (int i = 0; i < 4; ++i) {
                 if (!Shapes.joinIsNotEmpty(WALL_SIDES.get(sides[i]), down, BooleanOp.ONLY_FIRST)) bits |= 1 << (23 + i);
             }
+            if (state.isSolidRender()) bits |= 1 << 27;
             flags.putInt(bits);
             // Light and natural spawning: getLightDampening, propagatesSkylightDown and pathfinding on land, then the light
             // emission and the spawn checks generation runs for creatures (a cow stands for those
@@ -78,7 +79,7 @@ public class ExportBlockBehaviour {
         }
         var root = new JsonObject();
         root.addProperty("version", net.minecraft.SharedConstants.getCurrentVersion().id());
-        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves, 4194304 bottom face covers a wall post, 8388608<<s bottom face covers a wall side (s: north, east, south, west)");
+        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves, 4194304 bottom face covers a wall post, 8388608<<s bottom face covers a wall side (s: north, east, south, west), 134217728 solid render");
         root.addProperty("states", count);
         root.addProperty("flags", Base64.getEncoder().encodeToString(flags.array()));
         // Block classes decide survival and placement rules; plain blocks are omitted.
