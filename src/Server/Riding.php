@@ -143,6 +143,40 @@ trait Riding
         }
     }
 
+    /**
+     * ServerGamePacketListenerImpl.handleInteract on a mob within reach: Pig.mobInteract mounts a
+     * saddled pig unless the player holds its food or uses the secondary action.
+     */
+    private function interactEntity(Client $player, int $id, int $hand, bool $secondary): void
+    {
+        $mob = $this->animals[$id] ?? null;
+        if ($mob === null || isset($mob['deadAt']) || $player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1) {
+            return;
+        }
+        $size = $this->version->catalog->mobs['entities'][$mob['kind']];
+        $scale = $this->attachmentScale($mob);
+        $box = Collision::bounds($mob['x'], $mob['y'], $mob['z'], $size['width'] * $scale, $size['height'] * $scale);
+        $eye = [$player->x, $player->y + ($player->sneaking ? 1.27 : 1.62), $player->z];
+        $distance = 0.0;
+        foreach ([0, 1, 2] as $axis) {
+            $distance += max($box[$axis] - $eye[$axis], 0.0, $eye[$axis] - $box[$axis + 3]) ** 2;
+        }
+        // Player.isWithinEntityInteractionRange with the server's 3-block allowance.
+        if ($distance >= (3.0 + 3.0) ** 2) {
+            return;
+        }
+        $held = $player->inventory[$hand === 0 ? 36 + $player->heldSlot : 45] ?? null;
+        $heldName = $held === null ? null : $this->version->catalog->itemName($held['item']);
+        $saddle = $mob['equipment'][7] ?? null;
+        if ($mob['kind'] !== 'pig' || in_array($heldName, ['carrot', 'potato', 'beetroot'], true) || $saddle === null
+            || ($mob['passengers'] ?? []) !== [] || $secondary || ($mob['baby'] ?? false)) {
+            return;
+        }
+        if ($this->startRiding(['client' => $player, 'id' => $player->entityId], $id)) {
+            $this->useSwing($player, $hand);
+        }
+    }
+
     /** A player who dies or leaves is taken off the vehicle where it is, without dismounting. */
     private function leaveVehicle(Client $player): void
     {

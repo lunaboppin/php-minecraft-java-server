@@ -6,6 +6,7 @@ namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\Framing;
+use PhpMinecraftJavaServer\Protocol\LowPrecisionVector;
 use PhpMinecraftJavaServer\Protocol\Nbt;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\ProtocolException;
@@ -1009,6 +1010,17 @@ final class Server
             case 'attack': $id = $r->varInt();
                 $r->end();
                 $this->attackEntity($c, $id);
+                return;
+            case 'interact':
+                $id = $r->varInt();
+                $hand = $r->varInt();
+                LowPrecisionVector::decode($r);
+                $secondary = $r->bool();
+                $r->end();
+                if ($c->playerLoaded) {
+                    $c->lastActionTime = self::now();
+                    $this->interactEntity($c, $id, $hand, $secondary);
+                }
                 return;
             default:
                 // Optional client telemetry and unsupported interactions have no world effects.
