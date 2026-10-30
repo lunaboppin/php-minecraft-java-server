@@ -18,6 +18,9 @@ final class ShapeUpdater
     /** Direction indexes of Blocks::sturdy: down, up, north, south, west, east. */
     private const SIDES = ['north' => [0, -1, 3], 'south' => [0, 1, 2], 'west' => [-1, 0, 5], 'east' => [1, 0, 4]];
 
+    /** @var (\Closure(int, int, int): int)|null the finished chunk's raw brightness, for mushrooms */
+    public ?\Closure $light = null;
+
     public function __construct(private readonly Blocks $blocks, private readonly Survival $survival)
     {
     }
@@ -64,6 +67,14 @@ final class ShapeUpdater
     public function update(int $state, int $x, int $y, int $z, callable $get, bool $placement = false): ?int
     {
         $name = $this->blocks->name($state);
+        if ($this->light !== null && ($name === 'red_mushroom' || $name === 'brown_mushroom')) {
+            // MushroomBlock.canSurvive once the chunk is lit: its override blocks, or a solid
+            // block in light below 13.
+            $below = $get($x, $y - 1, $z);
+            $survives = $this->blocks->inTag($below, 'overrides_mushroom_light_requirement')
+                || (($this->light)($x, $y, $z) < 13 && $this->blocks->flag($below, Blocks::SOLID_RENDER));
+            return $survives ? null : $this->blocks->state('air');
+        }
         if ($this->survival->isA($state, 'WallBlock')) {
             $updated = $this->wall($state, $x, $y, $z, $get);
             return $updated === $state ? null : $updated;

@@ -27,8 +27,20 @@ final class Region
 
     public readonly int $genHeight;
 
+    private readonly int $redMushroom;
+
+    private readonly int $brownMushroom;
+
     /** @var array<string, int> heightmap cache: "type,x,z" => first free Y */
     private array $heights = [];
+
+    /**
+     * Blocks WorldGenRegion.setBlock marked for post-processing: mushrooms (Blocks.postProcessSelf),
+     * which LevelChunk.postProcessGeneration removes again where the finished chunk is too bright.
+     *
+     * @var list<array{0: int, 1: int, 2: int}>
+     */
+    public array $postProcessing = [];
 
     /** @param array<string, ProtoChunk> $chunks keyed "x,z" */
     public function __construct(
@@ -47,6 +59,8 @@ final class Region
         $this->genHeight = $genHeight ?? $height;
         $this->voidAir = $blocks->state('void_air');
         $this->air = $blocks->state('air');
+        $this->redMushroom = $blocks->state('red_mushroom');
+        $this->brownMushroom = $blocks->state('brown_mushroom');
     }
 
     public function maxY(): int
@@ -93,6 +107,9 @@ final class Region
         }
         $chunk = $this->chunks[($x >> 4) . ',' . ($z >> 4)];
         $chunk->blocks[(($y - $this->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
+        if ($state === $this->redMushroom || $state === $this->brownMushroom) {
+            $this->postProcessing[] = [$x, $y, $z];
+        }
         foreach ([self::WORLD_SURFACE, self::OCEAN_FLOOR, self::MOTION_BLOCKING, self::MOTION_BLOCKING_NO_LEAVES] as $type) {
             unset($this->heights["$type,$x,$z"]);
         }

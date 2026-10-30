@@ -209,7 +209,7 @@ final class ChunkStore
         }
     }
 
-    /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
+    /** LevelChunk.postProcessGeneration: update the blocks structure pieces and features marked in a chunk. */
     private function postProcess(int $cx, int $cz, array $blocks): array
     {
         $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=? ORDER BY rowid');
@@ -231,6 +231,8 @@ final class ChunkStore
             return $neighbours[$key][(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] ?? 0;
         };
         $this->shapes ??= new ShapeUpdater($this->blocks(), new Survival($this->blocks(), $this->version->directory . '/worldgen/block-behaviour.json'));
+        $light = new Light($get, $minY, $minY + $this->worldHeight - 1, $this->dimension === 'overworld', $this->version->directory . '/worldgen/block-behaviour.json');
+        $this->shapes->light = $light->brightness(...);
         $this->shapes->updateAll($marks, $get, static function (int $x, int $y, int $z, int $state) use (&$blocks, $minY): void {
             $blocks[(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
         });
@@ -460,7 +462,7 @@ final class ChunkStore
             $decorator = $this->decorator();
             $decorator->decorate($region);
             $marks = $this->db->prepare('INSERT OR IGNORE INTO vanilla_post_processing(cx,cz,x,y,z) VALUES(?,?,?,?,?)');
-            foreach ($decorator->structureContext?->postProcessing ?? [] as [$x, $y, $z]) {
+            foreach ([...$decorator->structureContext?->postProcessing ?? [], ...$region->postProcessing] as [$x, $y, $z]) {
                 $marks->execute([$x >> 4, $z >> 4, $x, $y, $z]);
             }
             $entities = $this->db->prepare('INSERT OR REPLACE INTO vanilla_block_entities(cx,cz,x,y,z,data) VALUES(?,?,?,?,?,?)');
