@@ -296,6 +296,16 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Random sequences, which both servers seed from world seed 42.
+    ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random roll 1..100 dice', False),
+    ('random value 1..6 minecraft:other', False), ('random value -5..5 dice', False), ('random value 5 dice', False),
+    ('random value .. dice', False), ('random value ..10 dice', False), ('random value 1.. dice', False), ('random value 3..1 dice', False),
+    ('random value 0..2147483646 dice', False), ('random value -2147483648..-2 dice', False), ('random reset dice', False),
+    ('random value 1..6 dice', False), ('random reset dice 7', False), ('random value 1..6 dice', False), ('random reset dice 7 false', False),
+    ('random value 1..6 dice', False), ('random reset dice 7 false false', False), ('random value 1..6 dice', False),
+    ('random value 1..6 other', False), ('random reset *', False), ('random value 1..6 dice', False), ('random reset * 3 true false', False),
+    ('random value 1..6 dice', False), ('random value 1..6 other', False), ('random reset * 0', False),
+    ('!witness random value 1..6 dice', False), ('!witness random reset *', False),
     ('list', False),
 ]
 

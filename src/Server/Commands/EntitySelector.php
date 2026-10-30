@@ -220,7 +220,7 @@ final class EntitySelector
      *
      * @return array{?float, ?float}
      */
-    private static function readBounds(StringReader $reader, bool $integers): array
+    public static function readBounds(StringReader $reader, bool $integers): array
     {
         if (!$reader->canRead()) {
             throw $reader->error('argument.range.empty');

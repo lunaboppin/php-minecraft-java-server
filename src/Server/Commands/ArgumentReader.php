@@ -196,6 +196,9 @@ final class ArgumentReader
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
                 return;
+            case 'minecraft:int_range':
+                EntitySelector::readBounds($reader, true);
+                return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
                 if (Snbt::read($reader)['type'] !== 'compound') {

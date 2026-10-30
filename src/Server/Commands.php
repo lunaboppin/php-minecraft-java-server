@@ -57,6 +57,7 @@ trait Commands
     use CommandModules\SetBlockCommand;
 
     use CommandModules\FillCommand;
+    use CommandModules\RandomCommand;
 
     use CommandModules\SaveAllCommand;
 
