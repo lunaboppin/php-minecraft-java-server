@@ -644,13 +644,9 @@ final class Server
         $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
         $this->sendJoinWeather($c);
         $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
-        // The server ticks at 20 per second, unfrozen and without pending steps.
-        $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
-        $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
+        $this->sendTickingState($c);
         // CustomBossEvents.onPlayerConnect.
         $this->bossBarsConnect($c);
-
-        $this->sendTickingState($c);
         $this->scheduleChunks($c);
         // The player's ServerEntity starts with them, counting ticks from here.
         $this->playerMotionTracker($c);
