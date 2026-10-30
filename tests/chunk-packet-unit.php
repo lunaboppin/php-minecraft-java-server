@@ -29,7 +29,7 @@ try {
         }
         unset($world);
     }
-    if (hash_final($chunkHash) !== '1f7bb4c880b0fa7c4e85d7dedd35b6fc5c6f808135fb42f0e7ec858661d3a26a') {
+    if (hash_final($chunkHash) !== '28282aac09be2c86b9563d9294df958536b4a6b8de2bc3b7fc0c9d314148bccb') {
         throw new RuntimeException('Chunk packet bytes changed');
     }
 } finally {

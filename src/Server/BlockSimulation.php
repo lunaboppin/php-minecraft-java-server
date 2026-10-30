@@ -30,6 +30,8 @@ trait BlockSimulation
     }
     private function changedSimulation(int $x,int $y,int $z):void {
         $this->fluidsChanged($x,$y,$z);
+        $this->randomTickChanged($x,$y,$z,$this->world->get($x,$y,$z));
+        $this->leavesChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -49,6 +51,7 @@ trait BlockSimulation
             unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
             if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
             elseif($kind==='water_block' || $kind==='bubble_column'){$this->tickColumn($kind,$x,$y,$z);}
+            elseif($kind==='leaves'){$this->tickLeaves($x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);

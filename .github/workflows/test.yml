@@ -112,7 +112,8 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/water.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-water
           python3 tools/parity/run.py --scenario tests/parity/fluids.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-fluids
           python3 tools/parity/run.py --scenario tests/parity/bubble-columns.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bubbles
-          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
+          python3 tools/parity/run.py --scenario tests/parity/random-ticks.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-random
+          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -127,6 +128,7 @@ jobs:
             tools/.cache/parity-water/
             tools/.cache/parity-fluids/
             tools/.cache/parity-bubbles/
+            tools/.cache/parity-random/
           retention-days: 7
 
   multiplayer-parity:
