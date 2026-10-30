@@ -84,6 +84,11 @@ public class ExportMobPhysics {
   var mapping=JsonParser.parseString(Files.readString(Path.of(args[1]))).getAsJsonObject();var profiles=new JsonObject();var bounds=new JsonArray();
   for(var entry:mapping.entrySet()){
    var clazz=Class.forName(entry.getValue().getAsString());var type=BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("minecraft:"+entry.getKey()));var profile=new JsonObject();profile.addProperty("update_interval",type.updateInterval());profile.addProperty("track_deltas",type.trackDeltas());profile.addProperty("travel_owner",clazz.getMethod("travel",Vec3.class).getDeclaringClass().getName());
+   // Where a rider is put down, and whether the seat moves away from the PASSENGER points.
+   profile.addProperty("dismount_owner",clazz.getMethod("getDismountLocationForPassenger",LivingEntity.class).getDeclaringClass().getName());
+   for(Class<?> owner=clazz;owner!=null;owner=owner.getSuperclass()){
+    try{owner.getDeclaredMethod("getPassengerAttachmentPoint",Entity.class,net.minecraft.world.entity.EntityDimensions.class,float.class);profile.addProperty("passenger_point_owner",owner.getName());break;}catch(NoSuchMethodException ignored){}
+   }
    for(Class<?> owner=clazz;owner!=null;owner=owner.getSuperclass()){
     try{owner.getDeclaredMethod("omnidirectionalAirMover");profile.addProperty("omnidirectional_owner",owner.getName());break;}catch(NoSuchMethodException ignored){}
    }

@@ -82,6 +82,8 @@ trait Commands
 
     use CommandModules\SpectateCommand;
 
+    use CommandModules\RideCommand;
+
     use CommandModules\SwingCommand;
 
     use CommandModules\StopwatchCommand;

@@ -125,6 +125,11 @@ public class ExportReference {
             // Entity dimensions are floats widened to doubles during collision.
             // Retain those exact values rather than shortening them to decimals.
             info.addProperty("width",(double)type.getWidth());info.addProperty("height",(double)type.getHeight());info.addProperty("eye_height",(double)type.getDimensions().eyeHeight());
+            // Riders sit at the vehicle's PASSENGER points and hang from their own VEHICLE point.
+            var attachments=type.getDimensions().attachments();var passengerPoints=new JsonArray();
+            for(int i=0;attachments.getNullable(net.minecraft.world.entity.EntityAttachment.PASSENGER,i,0.0F)!=null;i++){var point=attachments.getNullable(net.minecraft.world.entity.EntityAttachment.PASSENGER,i,0.0F);var xyz=new JsonArray();xyz.add(point.x);xyz.add(point.y);xyz.add(point.z);passengerPoints.add(xyz);}
+            var vehiclePoint=attachments.get(net.minecraft.world.entity.EntityAttachment.VEHICLE,0,0.0F);var vehicleXyz=new JsonArray();vehicleXyz.add(vehiclePoint.x);vehicleXyz.add(vehiclePoint.y);vehicleXyz.add(vehiclePoint.z);
+            info.add("passenger_attachments",passengerPoints);info.add("vehicle_attachment",vehicleXyz);
             info.addProperty("category",type.getCategory().getName());info.addProperty("fire_immune",type.fireImmune());info.addProperty("summonable",type.canSummon());
             info.addProperty("peaceful",type.isAllowedInPeaceful());info.addProperty("enabled",type.isEnabled(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
             var stats=new JsonObject();

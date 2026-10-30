@@ -157,9 +157,9 @@ final class Packets
         return pack('EEEEEEGG', $x, $y, $z, ...[...$velocity, $yaw, $pitch]);
     }
 
-    public static function position(int $teleportId, float $x, float $y, float $z, float $yaw = 0, float $pitch = 0): string
+    public static function position(int $teleportId, float $x, float $y, float $z, float $yaw = 0, float $pitch = 0, int $relative = 0): string
     {
-        return Binary::writeVarInt($teleportId) . self::moveRotation($x, $y, $z, $yaw, $pitch) . pack('N', 0);
+        return Binary::writeVarInt($teleportId) . self::moveRotation($x, $y, $z, $yaw, $pitch) . pack('N', $relative);
     }
 
     /** Protocol 777 confirms the teleport ID, three doubles and two floats. */

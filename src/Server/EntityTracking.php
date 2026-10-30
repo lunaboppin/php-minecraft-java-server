@@ -78,7 +78,7 @@ trait EntityTracking
 
     private function playerMotionState(Client $c):array {
         return ['position'=>[$c->x,$c->y,$c->z],'velocity'=>[0.0,0.0,0.0],'yaw'=>$c->yaw,'pitch'=>$c->pitch,'head'=>$c->yaw,'ground'=>$c->ground,
-            'needs_sync'=>false,'sync_velocity'=>false,'sync_position'=>false];
+            'needs_sync'=>false,'sync_velocity'=>false,'sync_position'=>false,'passenger'=>$c->vehicle!==null];
     }
 
     private function playerMotionTracker(Client $c):EntityMovementTracker {

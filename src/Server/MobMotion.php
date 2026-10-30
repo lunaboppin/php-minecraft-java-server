@@ -28,6 +28,7 @@ trait MobMotion
             'sync_position' => $mob['syncPosition'] ?? false,
             'precise' => $mob['requiresPrecisePosition'] ?? false,
             'predicted' => $mob['predictedMovement'] ?? [0.0, 0.0, 0.0],
+            'passenger' => isset($mob['vehicle']),
         ];
     }
 

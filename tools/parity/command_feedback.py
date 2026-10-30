@@ -465,6 +465,17 @@ SCRIPT = [
     ('!quiet tp ParityProbe 0 200 0', False), ('!quiet gamemode survival Witness', False),
     ('damage Witness 3 minecraft:mob_attack by ParityProbe', False), ('!quiet effect give Witness instant_health 1 10', False),
     ('!quiet gamemode creative Witness', False),
+    # Riding: set_passengers, the rider's teleport into the seat and the dismount beside the vehicle.
+    ('!quiet kill @e[type=!player]', False), ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["ridea"],Rotation:[0f,0f]}', False), ('!quiet summon cow -1 200 1 {NoAI:1b,Tags:["rideb"],Rotation:[0f,0f]}', False),
+    ('ride @e[tag=ridea,limit=1] dismount', False), ('ride @e[tag=ridea,limit=1] mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[tag=ridea,limit=1] mount @e[tag=rideb,limit=1]', False), ('ride @e[tag=rideb,limit=1] mount @e[tag=ridea,limit=1]', False),
+    ('ride @e[tag=rideb,limit=1] mount @s', False), ('ride @e[tag=rideb,limit=1] mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[tag=ridea,limit=1] dismount', False), ('ride @s mount @e[tag=ridea,limit=1]', False), ('ride @s mount @e[tag=rideb,limit=1]', False),
+    ('ride @s dismount', False), ('ride @s dismount', False), ('!witness ride @s mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[type=player] mount @e[tag=ridea,limit=1]', False), ('ride Witness mount @e[tag=rideb,limit=1]', False),
+    ('ride ParityProbe mount @e[tag=rideb,limit=1]', False), ('!quiet kill @e[tag=rideb]', False), ('ride Witness dismount', False),
+    ('!quiet kill @e[type=!player]', False),
     ('list', False),
 ]
 
@@ -477,7 +488,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+EXTRA = {'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -607,16 +618,53 @@ def normalize_boss_bars(items):
     return [{**item, 'hex': '00' * 16 + item['hex'][32:]} if item['packet'] == 'boss_event' else item for item in items]
 
 
+def normalize_riding(items):
+    """Zero the entity IDs in set_passengers and entity_position_sync, and drop syncs of mobs off the test platform.
+
+    Vanilla's naturally spawned animals wander far below the platform at y=200.
+    """
+    def varint(data, at):
+        value = shift = 0
+        while True:
+            byte = data[at]
+            at += 1
+            value |= (byte & 0x7f) << shift
+            shift += 7
+            if byte < 0x80:
+                return value, at
+    def passengers(payload):
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        count, at = varint(data, at)
+        return '00' + bytes([count]).hex() + '00' * count
+    def sync(payload):
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        return '00' + data[at:].hex()
+    def far(payload):
+        # The ID, then a PositionPath: a linear end point, or a step count and steps.
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        if data[at] == 1:
+            _, at = varint(data, at + 1)
+        else:
+            at += 1
+        return struct.unpack('>d', data[at + 8:at + 16])[0] < 150
+    return [{**item, 'hex': passengers(item['hex'])} if item['packet'] == 'set_passengers'
+            else {**item, 'hex': sync(item['hex'])} if item['packet'] == 'entity_position_sync'
+            else item for item in items if not (item['packet'] == 'entity_position_sync' and far(item['hex']))]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
         # A summoned entity has a random UUID on each server.
-        random_ids = expected['command'].startswith('summon ') or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
+        random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))) != key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))):
+            if key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))))) != key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 

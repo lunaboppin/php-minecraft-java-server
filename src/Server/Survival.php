@@ -285,6 +285,7 @@ trait Survival
         }
         if ($c->health <= 0) {
             $c->dead = true;
+            $this->leaveVehicle($c);
             // The respawned player starts without effects or absorption.
             [$c->effects, $c->absorption] = [[], 0.0];
             // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.

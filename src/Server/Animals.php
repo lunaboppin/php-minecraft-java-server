@@ -33,6 +33,7 @@ trait Animals
     private function restoreAnimals(): void
     {
         $this->naturalSpawns = $this->world->setting('naturalSpawns') ?? [];
+        $renumbered = [];
         foreach ($this->world->setting('animals') ?? [] as $animal) {
             if (isset($animal['deadAt']) || !isset($this->version->catalog->mobs['entities'][$animal['kind'] ?? '']['attributes']['max_health'])) {
                 continue;
@@ -52,11 +53,32 @@ trait Animals
             if (isset($this->version->catalog->mobSounds['mobs'][$animal['kind']]['variants'])) {
                 $animal['soundVariant'] ??= 'minecraft:classic';
             }
+            if (isset($animal['id'])) {
+                $renumbered[$animal['id']] = $id;
+            }
             $animal['id'] = $id;
             $animal['nextWander'] = 0;
             $animal['velocity'] ??= [0.0, 0.0, 0.0];
             $this->animals[$id] = $animal;
             $this->trackPushingMob($this->animals[$id]);
+        }
+        // Mobs ride each other again under their new IDs; players do not stay aboard.
+        foreach ($this->animals as &$restored) {
+            if (isset($restored['passengers'])) {
+                $restored['passengers'] = array_values(array_filter(array_map(static fn (int $old): ?int => $renumbered[$old] ?? null, $restored['passengers']), static fn (?int $new): bool => $new !== null));
+                if ($restored['passengers'] === []) {
+                    unset($restored['passengers']);
+                }
+            }
+            if (isset($restored['vehicle'])) {
+                $restored['vehicle'] = $renumbered[$restored['vehicle']] ?? null;
+            }
+        }
+        unset($restored);
+        foreach ($this->animals as $id => $restored) {
+            if (isset($restored['vehicle']) && !in_array($id, $this->animals[$restored['vehicle']]['passengers'] ?? [], true)) {
+                unset($this->animals[$id]['vehicle']);
+            }
         }
     }
 
@@ -159,12 +181,24 @@ trait Animals
         if (($animal['equipment'] ?? []) !== []) {
             $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
         }
+        $this->pairPassengers($c, $animal);
     }
 
     private function removeAnimal(int $id): void
     {
         unset($this->mobRandomSources[$id], $this->mobMovementTrackers[$id]);
         $this->forgetPushingEntity($id);
+        // Entity.remove: the riders stay where they are, and the vehicle forgets this one.
+        if (isset($this->animals[$id])) {
+            $this->ejectPassengers($id);
+            $vehicle = $this->animals[$id]['vehicle'] ?? null;
+            if ($vehicle !== null && isset($this->animals[$vehicle])) {
+                $this->animals[$vehicle]['passengers'] = array_values(array_diff($this->animals[$vehicle]['passengers'] ?? [], [$id]));
+                if ($this->animals[$vehicle]['passengers'] === []) {
+                    unset($this->animals[$vehicle]['passengers']);
+                }
+            }
+        }
         if (isset($this->animals[$id])) {
             $this->entityRemoved(hex2bin($this->animals[$id]['uuid']));
         }
@@ -501,6 +535,9 @@ trait Animals
     {
         $this->preparePushingWorld();
         foreach ($this->animals as &$tracked) {
+            if (!isset($tracked['deadAt'])) {
+                $this->synchronizePassengers($tracked);
+            }
             if (!isset($tracked['deadAt']) && $this->mobIsTicking($tracked) && $this->ordinaryMobTravel($tracked)) {
                 $this->synchronizeMobMotion($tracked);
             }
@@ -537,12 +574,14 @@ trait Animals
                     $near = true;
                 }
             }
-            // Mob.isNoAi: no goals and no travel, so a NoAI mob stays where it is.
-            if (!$near || ($animal['noAi'] ?? false)) {
+            // Mob.isNoAi: no goals and no travel, so a NoAI mob stays where it is; a passenger's
+            // vehicle places it.
+            if (!$near || ($animal['noAi'] ?? false) || isset($animal['vehicle'])) {
                 continue;
             }
             $this->moveMob($animal, $noise);
         }
         unset($animal);
+        $this->tickRiders();
     }
 }

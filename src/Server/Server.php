@@ -66,6 +66,8 @@ final class Server
     use TickRates;
 
     use CommandSources;
+
+    use Riding;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -764,7 +766,8 @@ final class Server
         return $wrapped;
     }
 
-    private function sendPosition(Client $c, array $position): void
+    /** A relative rotation leaves the player's own and sends zero degrees, as ServerPlayer's mounts and dismounts do. */
+    private function sendPosition(Client $c, array $position, int $relative = 0): void
     {
         [$c->x, $c->y, $c->z] = $position;
         // ServerPlayer.teleport resets the connection's movement check to the destination.
@@ -774,7 +777,8 @@ final class Server
         $c->velocityY = 0.0;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
-        $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
+        $rotation = ($relative & 0x18) === 0x18 ? [0.0, 0.0] : [$c->yaw, $c->pitch];
+        $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, ...$rotation, relative: $relative));
     }
 
     /** ChunkTrackingView.isWithinDistance: the cylinder of chunks a player's view keeps, with its border. */
@@ -1057,6 +1061,13 @@ final class Server
             }
             $c->yaw = $yaw;
             $c->pitch = $pitch;
+            return;
+        }
+        // handlePlayerPositionChange: a passenger only turns; its vehicle places it.
+        if ($c->vehicle !== null) {
+            $c->yaw = $yaw;
+            $c->pitch = $pitch;
+            $this->broadcastPlayerPosition($c);
             return;
         }
         // handlePlayerPositionChange: more than ten blocks from where the tick began, allowing more
@@ -1612,6 +1623,7 @@ final class Server
         }
         $this->sessionVerifier?->cancel($id);
         $this->forgetPushingEntity($c->entityId, $c->dimension);
+        $this->leaveVehicle($c);
         unset($this->clients[$id]);
         if ($c->state === 'play') {
             $this->closeWindow($c);

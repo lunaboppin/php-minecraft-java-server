@@ -127,6 +127,8 @@ final class Client
     public int $movesThisTick = 0;
     public int $teleportCounter = 0;
     public ?int $teleport = null;
+    /** The mob this player rides, by entity ID. */
+    public ?int $vehicle = null;
     public int $teleportTick = 0;
     public int $chunkX = 0;
     public int $chunkZ = 0;
