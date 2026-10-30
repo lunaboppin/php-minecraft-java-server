@@ -203,7 +203,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 120 | `start_configuration` | Unsupported |
 | 121 | `stop_sound` | Emission reference |
 | 122 | `store_cookie` | Unsupported |
-| 123 | `swing_animation` | Unsupported |
+| 123 | `swing_animation` | Emission reference |
 | 124 | `system_chat` | Emission reference |
 | 125 | `tab_list` | Unsupported |
 | 126 | `tag_query` | Unsupported |
@@ -275,7 +275,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 43 | `player_input` | Partial handler |
 | 44 | `player_loaded` | Partial handler |
 | 45 | `pong` | Optional telemetry ignored without payload validation |
-| 46 | `punch` | Unsupported |
+| 46 | `punch` | Partial handler |
 | 47 | `recipe_book_change_settings` | Unsupported |
 | 48 | `recipe_book_seen_recipe` | Unsupported |
 | 49 | `rename_item` | Unsupported |

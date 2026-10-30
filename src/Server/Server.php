@@ -58,6 +58,8 @@ final class Server
     use Authentication;
 
     use Cameras;
+
+    use Swinging;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -941,6 +943,14 @@ final class Server
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
                 return;
+            case 'punch':
+                $r->end();
+                // ServerGamePacketListenerImpl.handlePunch: the main hand's attack swing, for trackers only.
+                if (!$c->dead) {
+                    [$type, $duration] = $this->attackAnimation($c->inventory[36 + $c->heldSlot] ?? null);
+                    $this->swing($c->entityId, 0, $type, $duration, $c);
+                }
+                return;
             case 'player_input': $flags = $r->byte();
                 $r->end();
                 if ($c->playerLoaded) {
@@ -1174,10 +1184,12 @@ final class Server
             return;
         }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
             $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
             return;
         }
         if ($within && !$c->sneaking && $this->useSpecialBlock($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
             $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
             return;
         }
@@ -1187,6 +1199,7 @@ final class Server
             };
             if ($type !== null) {
                 $this->openWindow($c, $type, [$x, $y, $z]);
+                $this->useSwing($c, $hand);
                 $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
                 return;
             }
@@ -1202,11 +1215,14 @@ final class Server
                         $this->setBlock($x, $otherY, $z, $this->version->catalog->state($name, $other));
                     }
                 }
+                $this->useSwing($c, $hand);
                 $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
                 return;
             }
             if (str_ends_with($name, '_bed') && $c->dimension === 'overworld') {
                 $c->personalSpawn = [$x + 0.5, (float) $y + 1, $z + 0.5];
+                // BedBlock answers SUCCESS_SERVER, which the sleeper sees too.
+                $this->useSwing($c, $hand, true);
                 $this->savePlayer($c);
                 $this->tell($c, 'Respawn point set');
                 $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
@@ -1217,11 +1233,13 @@ final class Server
         $replace = $this->version->catalog->blocks[$name]['replaceable'];
         [$tx, $ty, $tz] = $replace ? [$x, $y, $z] : [$x + $dx, $y + $dy, $z + $dz];
         if ($this->useSpawnEggOn($c, $slot, $x, $y, $z, $face)) {
+            $this->useSwing($c, $hand);
             $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
         if ($itemName === 'flint_and_steel' && $this->ignitePortal($c, $tx, $ty, $tz, $slot)) {
+            $this->useSwing($c, $hand);
             $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
             return;
         }
@@ -1306,6 +1324,7 @@ final class Server
                         $this->giveStack($c, ['item' => $this->version->blocks['items']['bucket'], 'count' => 1]);
                     }$this->syncInventory($c);
                 }
+                $this->useSwing($c, $hand);
             }
         }
         $this->blockUpdate($c, $tx, $ty, $tz);
@@ -1418,6 +1437,7 @@ final class Server
                 $this->$total += $whole;
             }
         }
+        $this->tickSwings();
         $this->tickDimensions();
         if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
             $this->generationWorkersCheckedAt = $now;

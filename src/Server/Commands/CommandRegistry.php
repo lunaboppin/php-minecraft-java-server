@@ -71,6 +71,7 @@ final class CommandRegistry
             new CommandDefinition('forceload', 'executeForceLoad', true),
             new CommandDefinition('particle', 'executeParticle', true),
             new CommandDefinition('spectate', 'executeSpectate', true),
+            new CommandDefinition('swing', 'executeSwing', true),
         ];
     }
 

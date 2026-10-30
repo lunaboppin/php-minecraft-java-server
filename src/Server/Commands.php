@@ -76,6 +76,8 @@ trait Commands
 
     use CommandModules\SpectateCommand;
 
+    use CommandModules\SwingCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

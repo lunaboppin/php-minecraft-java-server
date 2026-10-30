@@ -208,6 +208,11 @@ final class ArgumentReader
                 }
                 if ($reader->canRead() && $reader->peek() === '{') {
                     Snbt::read($reader);
+            case 'minecraft:swing_animation':
+                // SwingAnimationArgument: a SwingAnimationType name, reported after it.
+                $name = $reader->readUnquotedString();
+                if (!in_array($name, ['none', 'whack', 'stab'], true)) {
+                    throw $reader->error('argument.swing_animation.invalid', [$name]);
                 }
                 return;
             case 'minecraft:nbt_compound_tag':
