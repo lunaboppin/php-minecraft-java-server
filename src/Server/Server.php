@@ -15,6 +15,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use BossBars;
+
     use ExperienceOrbs;
 
     use PlayerSpawning;
@@ -616,6 +618,8 @@ final class Server
         // The server ticks at 20 per second, unfrozen and without pending steps.
         $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
         $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
+        // CustomBossEvents.onPlayerConnect.
+        $this->bossBarsConnect($c);
         $this->scheduleChunks($c);
         // The player's ServerEntity starts with them, counting ticks from here.
         $this->playerMotionTracker($c);

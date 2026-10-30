@@ -61,6 +61,7 @@ final class CommandRegistry
             new CommandDefinition('stopsound', 'executeStopSound', true),
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
+            new CommandDefinition('bossbar', 'executeBossBar', true),
             new CommandDefinition('say', 'executeSay', true),
         ];
     }

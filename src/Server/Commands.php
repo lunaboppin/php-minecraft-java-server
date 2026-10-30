@@ -20,6 +20,8 @@ trait Commands
 
     use CommandModules\MeCommand;
 
+    use CommandModules\BossBarCommand;
+
     use CommandModules\SayCommand;
 
     use CommandModules\TeamMsgCommand;
