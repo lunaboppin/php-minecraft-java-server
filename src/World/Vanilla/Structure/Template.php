@@ -276,7 +276,8 @@ final class Template
             if (isset($nbt['block_pos'])) {
                 $nbt['block_pos'] = $block;
             }
-            $nbt['Rotation'] = [self::entityYaw((float) ($nbt['Rotation'][0] ?? 0.0), $mirror, $rotation), (float) ($nbt['Rotation'][1] ?? 0.0)];
+            // Entity.load keeps the yaw within a turn (yRot % 360) once the entity is saved and read.
+            $nbt['Rotation'] = [fmod(self::entityYaw((float) ($nbt['Rotation'][0] ?? 0.0), $mirror, $rotation), 360.0), (float) ($nbt['Rotation'][1] ?? 0.0)];
             $context->entities[] = ['nbt' => $nbt, 'finalize' => $finalize];
         }
     }
