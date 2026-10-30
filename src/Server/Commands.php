@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\ParticleCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

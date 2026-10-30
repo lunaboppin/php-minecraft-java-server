@@ -40,6 +40,7 @@ final class ArgumentReader
             'block' => array_combine(array_map(static fn (string $name): string => 'minecraft:' . $name, array_keys($version->catalog->blocks)), array_map(static fn (array $block): array => array_map(static fn (array $property): array => array_map('strval', $property['values']), $block['properties']), $version->catalog->blocks)),
             'minecraft:data_component_type' => array_flip(array_keys(json_decode((string) file_get_contents($version->directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR)['component_ids'])),
             'minecraft:entity_type' => $ids(array_keys($version->blocks['entity_types'])),
+            'minecraft:particle_type' => $ids(array_keys($version->blocks['particle_types'])),
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
@@ -195,6 +196,16 @@ final class ArgumentReader
                 return;
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
+                return;
+            case 'minecraft:particle':
+                // ParticleArgument: a particle type, then its options as an optional compound.
+                $id = $reader->readIdentifier();
+                if (!isset($this->registries['minecraft:particle_type'][$id])) {
+                    throw $reader->error('particle.notFound', [$id]);
+                }
+                if ($reader->canRead() && $reader->peek() === '{') {
+                    Snbt::read($reader);
+                }
                 return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
