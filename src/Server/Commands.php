@@ -84,6 +84,8 @@ trait Commands
 
     use CommandModules\TransferCommand;
 
+    use CommandModules\RandomCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

@@ -62,7 +62,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/place` | — | Unimplemented | — |
 | `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/posteffect` | — | Unimplemented | — |
-| `/random` | — | Unimplemented | — |
+| `/random` | [RandomCommand.php](../src/Server/Commands/RandomCommand.php) | Partial handler; native behavior incomplete | — |
 | `/recipe` | — | Unimplemented | — |
 | `/reload` | — | Unimplemented | — |
 | `/return` | — | Unimplemented | — |

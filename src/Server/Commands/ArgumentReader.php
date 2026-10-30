@@ -214,6 +214,8 @@ final class ArgumentReader
                 if (!in_array($name, ['none', 'whack', 'stab'], true)) {
                     throw $reader->error('argument.swing_animation.invalid', [$name]);
                 }
+            case 'minecraft:int_range':
+                EntitySelector::readBounds($reader, true);
                 return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;

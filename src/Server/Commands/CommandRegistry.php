@@ -17,6 +17,8 @@ final class CommandRegistry
             new CommandDefinition('me', 'executeMe', false),
             new CommandDefinition('teammsg', 'executeTeamMsg', false, ['tm']),
             new CommandDefinition('trigger', 'executeTrigger', false),
+            // Anyone may draw; sequences and resets need game-master permission in the command tree.
+            new CommandDefinition('random', 'executeRandom', false),
             // A dedicated server requires game-master permission for /version.
             new CommandDefinition('version', 'executeVersion', true),
             new CommandDefinition('gamemode', 'executeGameMode', true),

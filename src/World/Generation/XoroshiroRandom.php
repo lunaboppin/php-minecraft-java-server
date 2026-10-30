@@ -14,6 +14,8 @@ final class XoroshiroRandom extends RandomSource
         $low=$seed^7640891576956012809;$high=Int64::add($low,-7046029254386353131);
         $this->initialize(Int64::mixStafford13($low),Int64::mixStafford13($high));
     }
+    /** @return array{int, int} the low and high state words */
+    public function state():array {return [$this->low,$this->high];}
     public function nextLong():int {
         $low=$this->low;$high=$this->high;$result=Int64::add(Int64::rotateLeft(Int64::add($low,$high),17),$low);
         $high^=$low;$this->low=Int64::rotateLeft($low,49)^$high^($high<<21);$this->high=Int64::rotateLeft($high,28);return $result;
