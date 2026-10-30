@@ -8,6 +8,7 @@ use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldGenerator;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\BlockTransform;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Piece;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
 // Structure starts the official 26.3 server generates for seed 42 (tools/parity/worldgen_regions.py
@@ -46,6 +47,16 @@ foreach ([
     }
     ++$checks;
 }
+
+// The ocean monument at 49,-11: the official building facing east, and its rooms after saving.
+$monument = $structures->create(49, -11);
+$building = $monument[0]['pieces'][0] ?? null;
+$restored = $building === null ? null : Piece::restore(json_decode(json_encode(['type' => $building->type(), 'box' => $building->box, 'orientation' => $building->orientation] + $building->data()), true));
+$actual = [$monument[0]['structure'] ?? null, $building?->box, $building?->orientation, count($building->children ?? []), $restored?->data() === $building?->data()];
+if ($actual !== ['monument', [755, 39, -205, 812, 61, -148], 'east', 26, true]) {
+    throw new RuntimeException('Ocean monument start at 49,-11: ' . json_encode($actual));
+}
+++$checks;
 
 // The Nether fortress at the origin: the official start's 90 pieces.
 $nether = new OverworldGenerator(42, $version->directory, 'nether');
