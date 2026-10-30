@@ -549,6 +549,17 @@ final class Structures
                 return StrongholdPiece::generate($this->settings->state->seed, $cx, $cz, $this->settings->seaLevel, $this->settings->minY);
             case 'mineshaft':
                 return $this->mineshaft($structure, $cx, $cz, $random);
+            case 'woodland_mansion':
+                // WoodlandMansionStructure.findGenerationPoint: the lowest corner of a 5 by 5 box, at least y 60.
+                $x = $cx * 16 + 7;
+                $z = $cz * 16 + 7;
+                $rotation = $random->nextInt(4);
+                [$offsetX, $offsetZ] = [[5, 5], [-5, 5], [-5, -5], [5, -5]][$rotation];
+                $y = $this->lowestY($x, $z, $offsetX, $offsetZ);
+                if ($y < 60 || !$this->validBiome($structure, $x, $y, $z)) {
+                    return [];
+                }
+                return WoodlandMansion::generate($this->blocks, $this->directory, [$x, $y, $z], $rotation, $random);
             case 'ocean_monument':
                 // OceanMonumentStructure.findGenerationPoint: every biome within 29 blocks is an
                 // ocean or river, and the start sits on the ocean floor at the chunk's centre.

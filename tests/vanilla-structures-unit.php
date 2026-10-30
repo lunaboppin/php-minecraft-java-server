@@ -58,6 +58,15 @@ if ($actual !== ['monument', [755, 39, -205, 812, 61, -148], 'east', 26, true]) 
 }
 ++$checks;
 
+// The woodland mansion at 531,-274: the official start's 598 pieces, from its entrance.
+$mansion = $structures->create(531, -274);
+$entrance = $mansion[0]['pieces'][0] ?? null;
+$actual = [$mansion[0]['structure'] ?? null, count($mansion[0]['pieces'] ?? []), $entrance?->template, $entrance?->position, $entrance?->rotation];
+if ($actual !== ['mansion', 598, 'woodland_mansion/entrance', [8503, 63, -4368], 3]) {
+    throw new RuntimeException('Woodland mansion start at 531,-274: ' . json_encode($actual));
+}
+++$checks;
+
 // The Nether fortress at the origin: the official start's 90 pieces.
 $nether = new OverworldGenerator(42, $version->directory, 'nether');
 $fortress = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(0, 0);

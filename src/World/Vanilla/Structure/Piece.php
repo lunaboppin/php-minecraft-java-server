@@ -48,8 +48,13 @@ abstract class Piece
 
     abstract public function postProcess(StructureContext $context, Region $region, RandomSource $random, array $chunkBox): void;
 
-    /** Structure.afterPlace, after the start's pieces are placed in a chunk. */
-    public function afterPlace(StructureContext $context, Region $region, array $chunkBox): void
+    /**
+     * Structure.afterPlace, once the start's pieces are placed in a chunk; it is called on the
+     * start's first piece.
+     *
+     * @param list<Piece> $pieces
+     */
+    public function afterPlace(StructureContext $context, Region $region, array $chunkBox, array $pieces): void
     {
     }
 
@@ -74,6 +79,7 @@ abstract class Piece
             'nether_fortress' => NetherFortressPiece::restoreWith($piece),
             'end_city' => EndCity::restoreWith($piece),
             'ocean_monument' => OceanMonument::restoreWith($piece),
+            'woodland_mansion' => WoodlandMansion::restoreWith($piece),
         };
     }
 

@@ -9,8 +9,9 @@ use PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival;
 
 /**
  * LevelChunk.postProcessGeneration for the blocks structure pieces mark
- * (StructurePiece.SHAPE_CHECK_BLOCKS): Block.updateFromNeighbourShapes connects fences and iron
- * bars to their neighbours, and torches and ladders without support break.
+ * (StructurePiece.SHAPE_CHECK_BLOCKS), and StructureTemplate.placeInWorld's shape updates:
+ * Block.updateFromNeighbourShapes connects fences, walls and iron bars to their neighbours, pairs
+ * chests, and torches and ladders without support break.
  */
 final class ShapeUpdater
 {
@@ -55,13 +56,22 @@ final class ShapeUpdater
     }
 
     /**
-     * The block's shape after its neighbours are known, or null when it is unchanged.
+     * The block's shape after its neighbours are known, or null when it is unchanged. Chests pair
+     * up or split only when a template places them ($placement), as later updates leave them.
      *
      * @param callable(int, int, int): int $get
      */
-    public function update(int $state, int $x, int $y, int $z, callable $get): ?int
+    public function update(int $state, int $x, int $y, int $z, callable $get, bool $placement = false): ?int
     {
         $name = $this->blocks->name($state);
+        if ($this->survival->isA($state, 'WallBlock')) {
+            $updated = $this->wall($state, $x, $y, $z, $get);
+            return $updated === $state ? null : $updated;
+        }
+        if ($placement && $this->survival->isA($state, 'ChestBlock')) {
+            $updated = $this->chest($state, $x, $y, $z, $get);
+            return $updated === $state ? null : $updated;
+        }
         $air = $this->blocks->state('air');
         if ($name === 'torch') {
             return $this->blocks->sturdyCenter($get($x, $y - 1, $z), 1) ? null : $air;
@@ -103,6 +113,57 @@ final class ShapeUpdater
     }
 
     private const FACINGS = ['north' => [0, -1], 'east' => [1, 0], 'south' => [0, 1], 'west' => [-1, 0]];
+
+    private const CLOCKWISE = ['north' => 'east', 'east' => 'south', 'south' => 'west', 'west' => 'north'];
+
+    /** WallBlock.connectsTo for each side, then its sides' heights and post from the block above. */
+    private function wall(int $state, int $x, int $y, int $z, callable $get): int
+    {
+        $above = $get($x, $y + 1, $z);
+        $sides = [];
+        foreach (self::SIDES as $side => [$dx, $dz, $face]) {
+            $neighbour = $get($x + $dx, $y, $z + $dz);
+            $gate = $this->survival->isA($neighbour, 'FenceGateBlock')
+                && in_array($this->blocks->properties($neighbour)['facing'], $dx !== 0 ? ['north', 'south'] : ['east', 'west'], true);
+            $connects = $this->blocks->inTag($neighbour, 'walls') || !$this->exception($neighbour) && $this->blocks->sturdy($neighbour, $face)
+                || $this->survival->isA($neighbour, 'IronBarsBlock') || $gate;
+            $sides[$side] = $connects ? ($this->blocks->coversWall($above, $side) ? 'tall' : 'low') : 'none';
+            $state = $this->blocks->with($state, $side, $sides[$side]);
+        }
+        // WallBlock.shouldRaisePost
+        if ($this->survival->isA($above, 'WallBlock') && $this->blocks->properties($above)['up'] === 'true') {
+            $post = true;
+        } elseif ($sides['north'] === 'none' && $sides['south'] === 'none' && $sides['west'] === 'none' && $sides['east'] === 'none'
+            || ($sides['north'] === 'none') !== ($sides['south'] === 'none') || ($sides['west'] === 'none') !== ($sides['east'] === 'none')) {
+            $post = true;
+        } elseif ($sides['north'] === 'tall' && $sides['south'] === 'tall' || $sides['east'] === 'tall' && $sides['west'] === 'tall') {
+            $post = false;
+        } else {
+            $post = $this->blocks->inTag($above, 'wall_post_override') || $this->blocks->coversWall($above, null);
+        }
+        return $this->blocks->with($state, 'up', $post ? 'true' : 'false');
+    }
+
+    /** ChestBlock.updateShape from each horizontal neighbour, in Block.UPDATE_SHAPE_ORDER. */
+    private function chest(int $state, int $x, int $y, int $z, callable $get): int
+    {
+        $name = $this->blocks->name($state);
+        $connected = static fn (array $p): string => $p['type'] === 'left' ? self::CLOCKWISE[$p['facing']] : self::COUNTER_CLOCKWISE[$p['facing']];
+        foreach (['west', 'east', 'north', 'south'] as $direction) {
+            [$dx, $dz] = self::FACINGS[$direction];
+            $neighbour = $get($x + $dx, $y, $z + $dz);
+            $properties = $this->blocks->properties($state);
+            if ($this->blocks->name($neighbour) === $name) {
+                $other = $this->blocks->properties($neighbour);
+                if ($properties['type'] === 'single' && $other['type'] !== 'single' && $properties['facing'] === $other['facing'] && $connected($other) === self::OPPOSITE[$direction]) {
+                    $state = $this->blocks->with($state, 'type', $other['type'] === 'left' ? 'right' : 'left');
+                }
+            } elseif ($properties['type'] !== 'single' && $connected($properties) === $direction) {
+                $state = $this->blocks->with($state, 'type', 'single');
+            }
+        }
+        return $state;
+    }
 
     private const COUNTER_CLOCKWISE = ['north' => 'west', 'west' => 'south', 'south' => 'east', 'east' => 'north'];
 
