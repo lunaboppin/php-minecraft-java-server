@@ -17,6 +17,8 @@ final class Server
 {
     use BossBars;
 
+    use ExperienceOrbs;
+
     use PlayerSpawning;
 
     use InventoryManagement;
@@ -98,6 +100,7 @@ final class Server
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
                 $this->restoreAnimals();
+                $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreBlockSimulation();
             });

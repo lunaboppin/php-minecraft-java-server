@@ -203,6 +203,9 @@ trait Commands
             foreach ($this->itemEntities as $id => $item) {
                 $items[] = ['item' => $id, 'x' => $item['x'], 'y' => $item['y'], 'z' => $item['z'], 'yaw' => 0.0, 'pitch' => 0.0, 'type' => 'minecraft:item', 'width' => 0.25, 'height' => 0.25, 'id' => $id, 'uuid' => $item['uuid']];
             }
+            foreach ($this->experienceOrbs as $id => $orb) {
+                $items[] = ['orb' => $id, 'x' => $orb['x'], 'y' => $orb['y'], 'z' => $orb['z'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:experience_orb', 'width' => 0.5, 'height' => 0.5, 'id' => $id, 'uuid' => $orb['uuid']];
+            }
             foreach ($this->animals as $id => $animal) {
                 if (!isset($animal['deadAt'])) {
                     $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -338,6 +341,9 @@ trait Commands
     /** An entity's display name: the player name or the mob's type description. */
     private function entityName(array $entity): array
     {
+        if (isset($entity['orb'])) {
+            return $this->entityComponent('experience_orb', $entity['uuid'], null);
+        }
         if (isset($entity['item'])) {
             // ItemEntity.getName: the item's name.
             $stack = $this->itemEntities[$entity['item']]['stack'];
