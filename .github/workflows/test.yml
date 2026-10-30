@@ -161,6 +161,7 @@ jobs:
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/ip-bans.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/player-chat.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/experience-orbs.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-swings.py --eula-file tools/.cache/parity-consent/eula.txt
@@ -177,6 +178,7 @@ jobs:
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
             tools/.cache/ip-bans/
+            tools/.cache/player-chat/
             tools/.cache/experience-orbs/
             tools/.cache/item-entities/
             tools/.cache/equipment-stack-verification/
