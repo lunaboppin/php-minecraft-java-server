@@ -100,7 +100,10 @@ def main():
                 a.until('player_position')
                 a.until('chunk_batch_finished')
                 ping(a)
-                net.check(a.dimension == 'overworld' and position(a) == (.5, 64., .5), 'death in End returns to Overworld')
+                # PlayerSpawnFinder stands the player on the column's top full face: the diamond block at y 70.
+                net.check(a.dimension == 'overworld' and position(a) == (.5, 71., .5), 'death in End returns to Overworld')
+                command(a, 'tp @s 0.5 64 0.5', 'commands.teleport.success.location.single')
+                ping(a)
                 # Construct a 2x3 interior obsidian frame, ignite it with flint and steel.
                 for x in range(2, 6):
                     for y in range(63, 68):

@@ -15,6 +15,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use PlayerSpawning;
+
     use InventoryManagement;
 
     use Entities;
@@ -84,6 +86,9 @@ final class Server
         $this->initializeAuthentication($sessions);
         $this->world = new World($version, $config->worldPath, $config->generator, $config->seed, 'overworld', $config->vanillaTerrain);
         $this->worlds['overworld'] = $this->world;
+        if ((array) $config->initialGameRules !== [] && $this->world->setting('gameRules') === null) {
+            $this->world->setting('gameRules', (array) $config->initialGameRules);
+        }
         foreach (['the_nether', 'the_end'] as $dimension) {
             $path = $config->worldPath . '.' . $dimension . '.sqlite';
             $this->worlds[$dimension] = new World($version, $path, 'terrain', $config->seed, $dimension, $config->vanillaTerrain);
@@ -722,6 +727,13 @@ final class Server
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
         $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
+    }
+
+    /** ChunkTrackingView.isWithinDistance: the cylinder of chunks a player's view keeps, with its border. */
+    private function chunkInView(Client $c, int $x, int $z): bool
+    {
+        $view = $this->viewDistance($c);
+        return max(0, abs($x - (int) floor($c->x / 16)) - 2) ** 2 + max(0, abs($z - (int) floor($c->z / 16)) - 2) ** 2 < $view * $view;
     }
 
     private function scheduleChunks(Client $c): void
