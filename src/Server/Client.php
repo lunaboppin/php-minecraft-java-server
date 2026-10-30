@@ -18,6 +18,8 @@ final class Client
     /** FoodData.tickTimer, and the ticks since the player was created (Entity.tickCount). */
     public int $foodTimer = 0;
     public int $livingTicks = 0;
+    /** @var array{in: bool, taking: bool, last: int, start: int, end: int} CombatTracker, timed in livingTicks */
+    public array $combat = ['in' => false, 'taking' => false, 'last' => 0, 'start' => 0, 'end' => 0];
     /** Health, food and whether saturation was empty, as last sent. */
     public array $lastSentVitals = [];
     public float $fallDistance = 0;

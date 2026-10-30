@@ -242,6 +242,16 @@ trait Survival
             $this->setAbsorption($c, $c->absorption - $absorbed);
             $amount -= $absorbed;
         }
+        // CombatTracker.recordDamage, before the health falls: damage from a living attacker starts combat.
+        if ($amount != 0.0) {
+            $this->recheckCombat($c);
+            $c->combat['last'] = $c->livingTicks;
+            $c->combat['taking'] = true;
+            if (!$c->combat['in'] && $attacker !== null) {
+                $c->combat = ['in' => true, 'start' => $c->livingTicks, 'end' => $c->livingTicks] + $c->combat;
+                $c->send($this->version, 'player_combat_enter', '');
+            }
+        }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
@@ -301,6 +311,8 @@ trait Survival
             } else {
                 $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component(['text' => '']));
             }
+            // LivingEntity.die rechecks combat, which a dead player always leaves.
+            $this->recheckCombat($c);
             // ServerPlayer.die: the death counts, then the killer's kill counts (awardKillScore).
             $this->incrementCriteria('deathCount', $c->name);
             $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
@@ -332,6 +344,20 @@ trait Survival
         return $credit === null
             ? ['translate' => $key, 'with' => [$victim]]
             : ['translate' => $key . '.player', 'with' => [$victim, $this->displayName($credit)]];
+    }
+
+    /** CombatTracker.recheckStatus: combat ends 300 ticks after the last damage (100 when only hurt), or at death. */
+    private function recheckCombat(Client $c): void
+    {
+        $reset = $c->combat['in'] ? 300 : 100;
+        if ($c->combat['taking'] && ($c->dead || $c->livingTicks - $c->combat['last'] > $reset)) {
+            $wasInCombat = $c->combat['in'];
+            $c->combat = ['in' => false, 'taking' => false, 'end' => $c->livingTicks] + $c->combat;
+            if ($wasInCombat) {
+                // ServerPlayer.onLeaveCombat: the combat's duration in ticks.
+                $c->send($this->version, 'player_combat_end', \PhpMinecraftJavaServer\Protocol\Binary::writeVarInt($c->combat['end'] - $c->combat['start']));
+            }
+        }
     }
 
     private function respawnPlayer(Client $c): void
@@ -602,6 +628,9 @@ trait Survival
             return;
         }
         ++$c->livingTicks;
+        if ($c->livingTicks % 20 === 0) {
+            $this->recheckCombat($c);
+        }
         $peaceful = $this->config->difficulty === 0;
         if ($peaceful && $this->naturalRegeneration) {
             if ($c->livingTicks % 20 === 0) {
