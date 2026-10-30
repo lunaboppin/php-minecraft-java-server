@@ -18,6 +18,7 @@ require __DIR__ . '/../../src/bootstrap.php';
 use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
 use PhpMinecraftJavaServer\World\Vanilla\GenerationSpawner;
+use PhpMinecraftJavaServer\World\Vanilla\Light;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Decorator;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\ProtoChunk;
@@ -55,20 +56,24 @@ for ($dz = -3; $dz <= 3; ++$dz) {
     }
 }
 $settings = $generator->settings;
+$featureMarks = [];
 for ($dz = -2; $dz <= 2; ++$dz) {
     for ($dx = -2; $dx <= 2; ++$dx) {
-        $decorator->decorate(new Region($blocks, $centerX + $dx, $centerZ + $dz, $chunks, $settings->minY, $buildHeight, $settings->seaLevel, BiomeClimate::zoomSeed($seed), $seed, $settings->height));
+        $region = new Region($blocks, $centerX + $dx, $centerZ + $dz, $chunks, $settings->minY, $buildHeight, $settings->seaLevel, BiomeClimate::zoomSeed($seed), $seed, $settings->height);
+        $decorator->decorate($region);
+        array_push($featureMarks, ...$region->postProcessing);
     }
 }
-// LevelChunk.postProcessGeneration for the shapes structure pieces marked.
+// LevelChunk.postProcessGeneration for the blocks structure pieces and features marked, once lit.
 $shapes = new ShapeUpdater($blocks, new Survival($blocks, $version->directory . '/worldgen/block-behaviour.json'));
 $get = static function (int $x, int $y, int $z) use (&$chunks, $settings): int {
-    return $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)];
+    return $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)] ?? 0;
 };
+$shapes->light = (new Light($get, $settings->minY, $settings->minY + $buildHeight - 1, $dimension === 'overworld', $version->directory . '/worldgen/block-behaviour.json'))->brightness(...);
 if (getenv('MARKORDER')) {
     echo 'mark order: ', implode(' ', array_keys(array_filter($decorator->structureContext?->postProcessing ?? [], static fn ($p) => in_array(implode(',', $p), explode(';', getenv('MARKORDER')), true)))), "\n";
 }
-$shapes->updateAll(array_values($decorator->structureContext?->postProcessing ?? []), $get, static function (int $x, int $y, int $z, int $state) use (&$chunks, $settings): void {
+$shapes->updateAll([...array_values($decorator->structureContext?->postProcessing ?? []), ...$featureMarks], $get, static function (int $x, int $y, int $z, int $state) use (&$chunks, $settings): void {
     $chunks[($x >> 4) . ',' . ($z >> 4)]->blocks[(($y - $settings->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
 });
 if (getenv('NEIGHBOURS')) {

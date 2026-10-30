@@ -69,7 +69,6 @@ final class Decorator
         $this->predicates = new Predicates($blocks);
         $this->survival = new Survival($blocks, $directory . '/block-behaviour.json');
         $this->predicates->survival = $this->survival;
-        $this->survival->skyLight = $dimension === 'overworld';
         $this->providers = new Providers($blocks, $directory, $this->predicates);
     }
 

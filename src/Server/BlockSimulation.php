@@ -48,6 +48,7 @@ trait BlockSimulation
         foreach([array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)] as $batch)foreach($batch as $key=>[,$kind,$position]){
             unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
             if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
+            elseif($kind==='water_block' || $kind==='bubble_column'){$this->tickColumn($kind,$x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);

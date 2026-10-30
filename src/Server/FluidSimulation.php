@@ -115,6 +115,7 @@ trait FluidSimulation
     {
         $fluids = $this->fluids();
         $level = $this->fluidLevel();
+        $this->bubbleColumnsChanged($x, $y, $z);
         $schedule = function (int $a, int $b, int $c) use ($fluids, $level): void {
             $fluid = $fluids->fluid($this->world->get($a, $b, $c));
             if ($fluid !== null && $fluids->shouldSpread($level, $a, $b, $c)) {
@@ -135,6 +136,43 @@ trait FluidSimulation
             if (!$liquid($x + $dx, $y + $dy, $z + $dz)) {
                 $schedule($x + $dx, $y + $dy, $z + $dz);
             }
+        }
+    }
+
+    /**
+     * LiquidBlock.onPlace and updateShape from below: a water source over soul sand or magma
+     * builds its bubble column 20 ticks later. BubbleColumnBlock.updateShape: a column re-checks
+     * itself 5 ticks after the block below changes, when it can no longer stand, or when water it
+     * could fill appears above.
+     */
+    private function bubbleColumnsChanged(int $x, int $y, int $z): void
+    {
+        $fluids = $this->fluids();
+        $get = fn (int $a, int $b, int $c): int => $this->world->get($a, $b, $c);
+        foreach ([[$x, $y, $z], [$x, $y + 1, $z]] as [$a, $b, $c]) {
+            $state = $get($a, $b, $c);
+            if ($this->version->catalog->blockName($state) === 'water' && $fluids->canHoldColumn($state) && $fluids->raisesColumn($get($a, $b - 1, $c))) {
+                $this->scheduleFluid('water_block', $a, $b, $c, 20);
+            }
+        }
+        foreach ([[0, 1, 0], [0, -1, 0], [-1, 0, 0], [1, 0, 0], [0, 0, -1], [0, 0, 1]] as [$dx, $dy, $dz]) {
+            [$a, $b, $c] = [$x + $dx, $y + $dy, $z + $dz];
+            if ($this->version->catalog->blockName($get($a, $b, $c)) !== 'bubble_column') {
+                continue;
+            }
+            $above = $get($a, $b + 1, $c);
+            if (!$fluids->columnSurvives($get($a, $b - 1, $c)) || $dy === 1 || $dy === -1 && $fluids->canHoldColumn($above) && $this->version->catalog->blockName($above) !== 'bubble_column') {
+                $this->scheduleFluid('bubble_column', $a, $b, $c, 5);
+            }
+        }
+    }
+
+    /** LiquidBlock.tick and BubbleColumnBlock.tick: build or clear the column from this block up. */
+    private function tickColumn(string $kind, int $x, int $y, int $z): void
+    {
+        $name = $this->version->catalog->blockName($this->world->get($x, $y, $z));
+        if ($kind === 'bubble_column' ? $name === 'bubble_column' : $name === 'water' && $this->fluids()->canHoldColumn($this->world->get($x, $y, $z))) {
+            $this->fluids()->updateColumn($this->fluidLevel(), $x, $y, $z);
         }
     }
 
