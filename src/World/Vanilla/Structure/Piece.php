@@ -80,6 +80,7 @@ abstract class Piece
             'end_city' => EndCity::restoreWith($piece),
             'ocean_monument' => OceanMonument::restoreWith($piece),
             'woodland_mansion' => WoodlandMansion::restoreWith($piece),
+            'nether_fossil' => NetherFossil::restoreWith($piece),
         };
     }
 

@@ -76,6 +76,15 @@ if ($actual !== ['fortress', 90, [2, 69, 2, 20, 78, 20]]) {
 }
 ++$checks;
 
+// A Nether fossil at -12,0: the official template, rotation and position.
+$fossil = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(-12, 0);
+$piece = $fossil[0]['pieces'][0] ?? null;
+$actual = [$fossil[0]['structure'] ?? null, $piece?->template, $piece?->rotation, $piece?->position, $piece?->box];
+if ($actual !== ['nether_fossil', 'nether_fossils/fossil_3', 3, [-192, 55, 1], [-192, 55, -1, -191, 58, 1]]) {
+    throw new RuntimeException('Nether fossil start at -12,0: ' . json_encode($actual));
+}
+++$checks;
+
 // An End city: the official start's 104 pieces.
 $end = new OverworldGenerator(42, $version->directory, 'end');
 $city = (new Structures($end->settings, $end->biomes, $version->directory . '/worldgen'))->create(66, -38);
