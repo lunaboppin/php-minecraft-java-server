@@ -25,6 +25,7 @@ final class CommandRegistry
             new CommandDefinition('time', 'executeTime', true),
             new CommandDefinition('weather', 'executeWeather', true),
             new CommandDefinition('seed', 'executeSeed', true),
+            new CommandDefinition('locate', 'executeLocate', true),
             new CommandDefinition('setworldspawn', 'executeSetWorldSpawn', true),
             new CommandDefinition('spawnpoint', 'executeSpawnPoint', true),
             new CommandDefinition('kill', 'executeKill', true),

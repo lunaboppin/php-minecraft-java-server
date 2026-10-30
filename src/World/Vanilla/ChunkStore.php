@@ -109,6 +109,31 @@ final class ChunkStore
     }
 
     /**
+     * LocateCommand's structure search (ChunkGenerator.findNearestMapStructure, 100 spacing cells).
+     *
+     * @param list<string> $structures
+     * @return array{0: int, 1: int, 2: int, 3: string}|null
+     */
+    public function locateStructure(array $structures, int $x, int $y, int $z): ?array
+    {
+        return $this->decorator()->structures->locate($structures, $x, $y, $z, 100);
+    }
+
+    /**
+     * LocateCommand's biome search (ServerLevel.findClosestBiome3d within 6400 blocks, sampled
+     * every 32 blocks across and 64 up).
+     *
+     * @param list<string> $biomes
+     * @return array{0: int, 1: int, 2: int, 3: string}|null
+     */
+    public function locateBiome(array $biomes, int $x, int $y, int $z): ?array
+    {
+        $generator = $this->generator();
+        $minY = $generator->settings->minY;
+        return $generator->biomes->findClosest3d($biomes, $x, $y, $z, 6400, 32, 64, $minY, $minY + $this->worldHeight - 1);
+    }
+
+    /**
      * The block entities generation placed in a chunk, by "x,y,z".
      *
      * @return array<string, array>

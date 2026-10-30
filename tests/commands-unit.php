@@ -11,7 +11,7 @@ use PhpMinecraftJavaServer\Server\Server;
 $publicCommands = ['help', 'spawn', 'list', 'msg', 'tell', 'w', 'me', 'teammsg', 'tm', 'trigger'];
 $operatorCommands = [
     ...$publicCommands,
-    'version', 'gamemode', 'give', 'tp', 'teleport', 'time', 'weather', 'seed', 'setworldspawn',
+    'version', 'gamemode', 'give', 'tp', 'teleport', 'time', 'weather', 'seed', 'locate', 'setworldspawn',
     'spawnpoint', 'kill', 'heal', 'setblock', 'fill', 'gamerule', 'save-all', 'summon', 'dimension',
     'difficulty', 'defaultgamemode', 'op', 'deop', 'kick', 'save-on', 'save-off', 'stop', 'damage',
     'experience', 'xp', 'clear', 'worldborder', 'enchant', 'ban', 'pardon', 'banlist', 'whitelist', 'tellraw', 'title', 'scoreboard', 'team', 'effect', 'playsound', 'stopsound', 'rotate', 'attribute', 'say',

@@ -48,6 +48,14 @@ foreach ([
     ++$checks;
 }
 
+// /locate from 0 70 0, as the official server answers: the nearest mineshaft and monument, and
+// the nearest plains sampled in the biome spiral.
+$actual = [$structures->locate(['mineshaft', 'mineshaft_mesa'], 0, 70, 0), $structures->locate(['monument'], 0, 70, 0), $generator->biomes->findClosest3d(['plains'], 0, 70, 0, 6400, 32, 64, -64, 319)];
+if ($actual !== [[64, 0, 0, 'mineshaft'], [784, 0, -176, 'monument'], [352, 70, -320, 'plains']]) {
+    throw new RuntimeException('Locate from 0 70 0: ' . json_encode($actual));
+}
+++$checks;
+
 // The ocean monument at 49,-11: the official building facing east, and its rooms after saving.
 $monument = $structures->create(49, -11);
 $building = $monument[0]['pieces'][0] ?? null;

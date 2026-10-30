@@ -209,6 +209,73 @@ final class BiomeSource
         return $biomes[($y << 4) | (($quartZ & 3) << 2) | ($quartX & 3)];
     }
 
+    /**
+     * BiomeSource.findClosestBiome3d: sample columns spiralling out from the origin
+     * (BlockPos.spiralAround east then south), each at heights stepping out from the origin's
+     * (Mth.outFromOrigin), for the first allowed biome.
+     *
+     * @param list<string> $allowed biome names without "minecraft:"
+     * @return array{0: int, 1: int, 2: int, 3: string}|null
+     */
+    public function findClosest3d(array $allowed, int $x, int $y, int $z, int $radius, int $horizontal, int $vertical, int $minY, int $maxY): ?array
+    {
+        $candidates = array_intersect_key(array_fill_keys($allowed, true), array_fill_keys($this->possible, true));
+        if ($candidates === []) {
+            return null;
+        }
+        // Mth.outFromOrigin(y, minY + 1, maxY + 1, vertical)
+        $lower = $minY + 1;
+        $upper = $maxY + 1;
+        $origin = min(max($y, $lower), $upper);
+        $heights = [];
+        for ($cursor = $origin; ; ) {
+            $heights[] = $cursor;
+            $wasNegative = $cursor <= $origin;
+            $current = abs($origin - $cursor);
+            $next = $origin + $current + $vertical;
+            if (!$wasNegative || $origin + $current + $vertical > $upper) {
+                $attempt = $origin - $current - ($wasNegative ? $vertical : 0);
+                if ($attempt >= $lower) {
+                    $next = $attempt;
+                }
+            }
+            $cursor = $next;
+            $distance = abs($origin - $cursor);
+            if (!($origin - $distance >= $lower || $origin + $distance <= $upper)) {
+                break;
+            }
+        }
+        // BlockPos.spiralAround(ZERO, radius / horizontal, EAST, SOUTH)
+        $directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+        $legs = 4 * intdiv($radius, $horizontal);
+        [$cx, $cz] = [0, 1];
+        $leg = -1;
+        $legSize = 0;
+        $legIndex = 0;
+        while (true) {
+            [$dx, $dz] = $directions[($leg + 4) % 4];
+            $cx += $dx;
+            $cz += $dz;
+            if ($legIndex >= $legSize) {
+                if ($leg >= $legs) {
+                    return null;
+                }
+                ++$leg;
+                $legIndex = 0;
+                $legSize = intdiv($leg, 2) + 1;
+            }
+            ++$legIndex;
+            $blockX = $x + $cx * $horizontal;
+            $blockZ = $z + $cz * $horizontal;
+            foreach ($heights as $blockY) {
+                $biome = $this->uncached($blockX >> 2, $blockY >> 2, $blockZ >> 2);
+                if (isset($candidates[$biome])) {
+                    return [$blockX, $blockY, $blockZ, $biome];
+                }
+            }
+        }
+    }
+
     /** BiomeSource.createUncachedResolver: climate sampled point by point without caches. */
     public function uncached(int $quartX, int $quartY, int $quartZ): string
     {
