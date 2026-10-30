@@ -68,6 +68,11 @@ final class ShapeUpdater
             $updated = $this->wall($state, $x, $y, $z, $get);
             return $updated === $state ? null : $updated;
         }
+        if ($placement && ($this->survival->isA($state, 'WallBannerBlock') || $this->survival->isA($state, 'WallSignBlock'))) {
+            // WallBannerBlock and WallSignBlock.canSurvive: the block behind must be solid.
+            [$dx, $dz] = self::FACINGS[$this->blocks->properties($state)['facing']];
+            return $this->blocks->isSolid($get($x - $dx, $y, $z - $dz)) ? null : $this->blocks->state('air');
+        }
         if ($placement && $this->survival->isA($state, 'ChestBlock')) {
             $updated = $this->chest($state, $x, $y, $z, $get);
             return $updated === $state ? null : $updated;
