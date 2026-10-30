@@ -24,17 +24,46 @@ foreach ([
     // The last piece of an igloo is its top; this one has a ladder shaft and laboratory below.
     [208, -305, 'igloo', [3328, 90, -4880, 3334, 94, -4873], 'north'],
     [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
+    [41, -19, 'village_plains', [647, 79, -313, 656, 85, -304], 186],
+    [4, 0, 'mineshaft', [66, 5, 2, 76, 11, 14], 135],
+    // The first stronghold ring chunk, after its biome search.
+    [-25, -141, 'stronghold', [-398, -27, -2254, -394, -17, -2250], 97],
+    // A cold ruin's three layers; the last is its mossy layer, before settling on the floor.
+    [3, 10, 'ocean_ruin_cold', [43, 90, 154, 48, 96, 160], 'north'],
+    [-19, -38, 'ruined_portal', [-304, 70, -615, -296, 78, -608], 'north'],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
     $starts = $structures->create($cx, $cz);
     $last = $starts === [] ? null : $starts[0]['pieces'][count($starts[0]['pieces']) - 1];
     $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $last->box, $last->orientation];
+    if (in_array($structure, ['village_plains', 'mineshaft', 'stronghold'], true)) {
+        // Official starts: the village's 186 pieces, the mineshaft's 135 and the stronghold's 97, from their first piece.
+        $actual = [$starts[0]['structure'], $starts[0]['pieces'][0]->box, count($starts[0]['pieces'])];
+    }
     if ($actual !== [$structure, $box, $orientation]) {
         throw new RuntimeException("Structure start at $cx,$cz: " . json_encode($actual));
     }
     ++$checks;
 }
+
+// The Nether fortress at the origin: the official start's 90 pieces.
+$nether = new OverworldGenerator(42, $version->directory, 'nether');
+$fortress = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(0, 0);
+$actual = [$fortress[0]['structure'] ?? null, count($fortress[0]['pieces'] ?? []), $fortress[0]['pieces'][0]->box ?? null];
+if ($actual !== ['fortress', 90, [2, 69, 2, 20, 78, 20]]) {
+    throw new RuntimeException('Nether fortress start at 0,0: ' . json_encode($actual));
+}
+++$checks;
+
+// An End city: the official start's 104 pieces.
+$end = new OverworldGenerator(42, $version->directory, 'end');
+$city = (new Structures($end->settings, $end->biomes, $version->directory . '/worldgen'))->create(66, -38);
+$actual = [$city[0]['structure'] ?? null, count($city[0]['pieces'] ?? [])];
+if ($actual !== ['end_city', 104]) {
+    throw new RuntimeException('End city start at 66,-38: ' . json_encode($actual));
+}
+++$checks;
 
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
 $transform = new BlockTransform($blocks);

@@ -259,7 +259,27 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-protection.py') . ' --out
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-scatter.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/movement-checks.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/experience-orbs.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/orb-persistence.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/item-entities.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/item-persistence.py'), $code);
 if ($code !== 0) {
     exit($code);
 }

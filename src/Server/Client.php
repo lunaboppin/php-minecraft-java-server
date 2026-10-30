@@ -99,6 +99,8 @@ final class Client
     public array $tags = [];
     /** ServerPlayer.lastActionTime, in seconds. */
     public float $lastActionTime = 0.0;
+    /** Player.takeXpDelay: ticks until the player can take another experience orb. */
+    public int $takeXpDelay = 0;
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
     /** Whether a position arrived since the client's last client_tick_end. */

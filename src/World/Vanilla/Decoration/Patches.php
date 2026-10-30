@@ -815,6 +815,42 @@ final class Patches
         return true;
     }
 
+    /** BlockPileFeature: an uneven pile of blocks, as village hay. */
+    public function blockPile(array $feature, Region $region, RandomSource $random, int $x, int $y, int $z): bool
+    {
+        if ($y < $region->minY + 5) {
+            return false;
+        }
+        $xr = 2 + $random->nextInt(2);
+        $zr = 2 + $random->nextInt(2);
+        $place = function (int $px, int $py, int $pz) use ($feature, $region, $random): void {
+            if (!$this->blocks->isAir($region->get($px, $py, $pz))) {
+                return;
+            }
+            $below = $region->get($px, $py - 1, $pz);
+            $supported = $this->blocks->name($below) === 'dirt_path' ? $random->nextBoolean() : $this->blocks->sturdy($below, 1);
+            if ($supported) {
+                $region->set($px, $py, $pz, $this->decorator->providers->state($feature['state_provider'], $region, $random, $px, $py, $pz));
+            }
+        };
+        // BlockPos.betweenClosed: x fastest, then y, then z.
+        for ($pz = $z - $zr; $pz <= $z + $zr; ++$pz) {
+            for ($py = $y; $py <= $y + 1; ++$py) {
+                for ($px = $x - $xr; $px <= $x + $xr; ++$px) {
+                    $xd = $x - $px;
+                    $zd = $z - $pz;
+                    $a = F32::r($random->nextFloat() * 10.0);
+                    if ($xd * $xd + $zd * $zd <= F32::r($a - F32::r($random->nextFloat() * 6.0))) {
+                        $place($px, $py, $pz);
+                    } elseif ($random->nextFloat() < 0.031) {
+                        $place($px, $py, $pz);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     /** SpeleothemUtils.growSpeleothem */
     private function growSpeleothem(array $feature, Region $region, int $x, int $y, int $z, int $direction, int $height, bool $merged): void
     {

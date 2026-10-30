@@ -42,7 +42,13 @@ trait GiveCommand
                 $size = min($maxStack, $remaining);
                 $left = $this->giveStack($target, ['item' => $item, 'count' => $size] + $patch);
                 $drop = $left === 0 ? ['item' => $item, 'count' => 1] + $patch : ['item' => $item, 'count' => $left] + $patch;
-                $this->withDimension($target->dimension, fn () => $this->dropStack($target->x, $target->y + 1.32, $target->z, $drop, $left === 0 ? 5999 : 0));
+                $this->withDimension($target->dimension, function () use ($target, $drop, $left): void {
+                    $id = $this->playerDrop($target, $drop, false, $left === 0 ? 5999 : 0);
+                    if ($id !== null) {
+                        // makeFakeItem never lets the fake be picked up; a real leftover is the target's at once.
+                        [$this->itemEntities[$id]['pickupDelay'], $this->itemEntities[$id]['target']] = $left === 0 ? [32767, null] : [0, $target->uuid];
+                    }
+                });
             }
             $this->syncInventory($target);
         }

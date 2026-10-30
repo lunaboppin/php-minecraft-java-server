@@ -273,6 +273,8 @@ final class ChunkStore
         // The Nether generates its lower 128 blocks; above them is air, and its biomes do not vary with height.
         if (count($blocks) < $this->worldHeight * 256) {
             $blocks = array_pad($blocks, $this->worldHeight * 256, 0);
+        }
+        if (count($biomes) < $this->worldHeight * 16) {
             $biomes = array_merge($biomes, ...array_fill(0, intdiv($this->worldHeight * 16 - count($biomes), 16), array_slice($biomes, -16)));
         }
         return $this->final["$cx,$cz"] = [$blocks, $biomes];
@@ -286,7 +288,7 @@ final class ChunkStore
         if ($q->fetchColumn() !== false) {
             return;
         }
-        $chunk = $this->generator()->chunk($cx, $cz);
+        $chunk = $this->generator()->chunk($cx, $cz, false, $this->decorator()->structures?->beardifier($cx, $cz));
         $blocks = $this->blocks();
         $ids = array_map(static fn (string $name): int => $blocks->state($name), $chunk['blocks']);
         $settings = $this->generator()->settings;
@@ -322,7 +324,8 @@ final class ChunkStore
             $done = false;
             $settings = $this->generator()->settings;
             foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $status, $blocks, $biomes, $heights]) {
-                $ids = self::decode($blocks);
+                // A dimension taller than its generator (the Nether, the End) decorates up to its build height.
+                $ids = array_pad(self::decode($blocks), $this->worldHeight * 256, 0);
                 // Chunks stored before heightmaps were kept use their current blocks.
                 $heights = $heights === null ? ProtoChunk::worldgenHeights($this->blocks(), $ids, $settings->minY, $settings->height) : array_values(unpack('s*', $heights));
                 $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, $ids, explode("\n", $biomes), $heights);
@@ -334,7 +337,7 @@ final class ChunkStore
                 $this->db->exec('COMMIT');
                 return;
             }
-            $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $settings->height, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed);
+            $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $this->worldHeight, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed, $settings->height);
             $decorator = $this->decorator();
             $decorator->decorate($region);
             $marks = $this->db->prepare('INSERT OR IGNORE INTO vanilla_post_processing(cx,cz,x,y,z) VALUES(?,?,?,?,?)');

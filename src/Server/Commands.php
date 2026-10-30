@@ -205,6 +205,9 @@ trait Commands
             foreach ($this->itemEntities as $id => $item) {
                 $items[] = ['item' => $id, 'x' => $item['x'], 'y' => $item['y'], 'z' => $item['z'], 'yaw' => 0.0, 'pitch' => 0.0, 'type' => 'minecraft:item', 'width' => 0.25, 'height' => 0.25, 'id' => $id, 'uuid' => $item['uuid']];
             }
+            foreach ($this->experienceOrbs as $id => $orb) {
+                $items[] = ['orb' => $id, 'x' => $orb['x'], 'y' => $orb['y'], 'z' => $orb['z'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:experience_orb', 'width' => 0.5, 'height' => 0.5, 'id' => $id, 'uuid' => $orb['uuid']];
+            }
             foreach ($this->animals as $id => $animal) {
                 if (!isset($animal['deadAt'])) {
                     $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -362,6 +365,9 @@ trait Commands
     /** An entity's display name: the player name or the mob's type description. */
     private function entityName(array $entity): array
     {
+        if (isset($entity['orb'])) {
+            return $this->entityComponent('experience_orb', $entity['uuid'], null);
+        }
         if (isset($entity['item'])) {
             // ItemEntity.getName: the item's name.
             $stack = $this->itemEntities[$entity['item']]['stack'];
@@ -631,9 +637,10 @@ trait Commands
             throw new \InvalidArgumentException('Expected x y z coordinates');
         }
         $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $client->x), $this->coordinate($arguments[1], $client->y), $this->coordinate($arguments[2], $client->z)]);
-        // A chunk is loaded while a player in the dimension has it loaded.
-        $key = ($position[0] >> 4) . ':' . ($position[2] >> 4);
-        if (array_filter($this->players(), static fn (Client $player): bool => $player->dimension === $client->dimension && isset($player->loadedChunks[$key])) === []) {
+        // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
+        // player's view as soon as they are placed, before the chunks reach the client.
+        [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
+        if (array_filter($this->players(), fn (Client $player): bool => $player->dimension === $client->dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
         $world = $this->worlds[$client->dimension];

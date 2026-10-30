@@ -85,7 +85,7 @@ final class Nether
         if ($random->nextInt(12) === 0) {
             $height *= 2;
         }
-        if (!$planted && $y + $height + 1 >= $region->height) {
+        if (!$planted && $y + $height + 1 >= $region->genHeight) {
             return false;
         }
         $huge = !$planted && $random->nextFloat() < F32::r(0.06);
