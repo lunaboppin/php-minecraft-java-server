@@ -69,6 +69,7 @@ final class CommandRegistry
             new CommandDefinition('say', 'executeSay', true),
             new CommandDefinition('clone', 'executeClone', true),
             new CommandDefinition('forceload', 'executeForceLoad', true),
+            new CommandDefinition('particle', 'executeParticle', true),
         ];
     }
 

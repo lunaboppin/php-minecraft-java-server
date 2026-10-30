@@ -337,6 +337,7 @@ def main():
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     # Sound events the server plays outside mob audio.
     data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death']}
+    data['particle_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:particle_type']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))

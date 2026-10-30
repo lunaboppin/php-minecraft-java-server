@@ -128,7 +128,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 45 | `keep_alive` | Emission reference |
 | 46 | `level_chunk_with_light` | Emission reference |
 | 47 | `level_event` | Emission reference |
-| 48 | `level_particles` | Unsupported |
+| 48 | `level_particles` | Emission reference |
 | 49 | `light_update` | Emission reference |
 | 50 | `login` | Emission reference |
 | 51 | `low_disk_space_warning` | Unsupported |

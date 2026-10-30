@@ -342,6 +342,28 @@ SCRIPT = [
     ('setblock 2032 100 2032 stone', False), ('setblock 2048 100 2032 stone', False), ('setblock 1968 100 1968 stone', False),
     ('setblock 1952 100 1968 stone', False), ('forceload query 1 2 3', False), ('forceload query 1.5 2', False), ('forceload add 1', False),
     ('forceload remove all', False),
+    # Particles on a platform both players stand on, with their level_particles packets.
+    ('!quiet fill -2 199 -2 2 199 2 stone', False), ('!quiet tp @a 0 200 0', False), ('particle flame 0 201 0', False),
+    ('particle minecraft:heart 0.25 201 -1 1 2 3 0.5 10', False), ('particle crit 0 201 0 0 0 0 0 5 force', False),
+    ('particle crit 0 201 0 0 0 0 0 5 normal Witness', False), ('particle crit 0 201 0 0 0 0 0 5 force @a[name=nobody]', False),
+    ('particle crit 0 250 0 0 0 0 0 5 normal', False), ('particle crit 0 250 0 0 0 0 0 5 force', False),
+    ('particle nothing_here 0 201 0', False), ('particle dust{color:[1.0,0.5,0.0],scale:2} 0 201 0', False),
+    ('particle dust{color:16711680,scale:1.5f} 0 201 0', False), ('particle dust{color:[1.0, 0.0, 0.0], scale:1} 0 201 0', False),
+    ('particle dust{color:[1,0,0],scale:5} 0 201 0', False), ('particle dust 0 201 0', False), ('particle dust{scale:1} 0 201 0', False),
+    ('particle dust_color_transition{from_color:[1,0,0],to_color:[0,0,1],scale:1} 0 201 0', False),
+    ('particle block{block_state:"stone"} 0 201 0', False),
+    ('particle block{block_state:{Name:"minecraft:oak_log",Properties:{axis:"x"}}} 0 201 0', False),
+    ('particle falling_dust{block_state:"minecraft:sand"} 0 201 0', False), ('particle entity_effect{color:[1,0,0,0.5]} 0 201 0', False),
+    ('particle entity_effect{color:-1} 0 201 0', False), ('particle effect 0 201 0', False),
+    ('particle effect{color:[0,1,0],power:2} 0 201 0', False), ('particle dragon_breath 0 201 0', False),
+    ('particle dragon_breath{power:3} 0 201 0', False), ('particle sculk_charge{roll:1.5} 0 201 0', False),
+    ('particle shriek{delay:7} 0 201 0', False), ('particle geyser{water_blocks:3} 0 201 0', False),
+    ('particle geyser_base{water_blocks:3,burst_impulse_base:0.5} 0 201 0', False), ('particle flash{color:[1,1,1,1]} 0 201 0', False),
+    ('particle tinted_leaves{color:255} 0 201 0', False), ('particle flame{ignored:1} 0 201 0 ^ ^ ^1 0 1', False),
+    ('particle flame ~ ~ ~', False), ('particle block{block_state:{id:"minecraft:oak_log",properties:{axis:"x"}}} 0 201 0', False),
+    ('particle block{block_state:{id:"oak_log",properties:{axis:"q"}}} 0 201 0', False), ('particle block{} 0 201 0', False),
+    ('particle dust_color_transition{} 0 201 0', False), ('particle geyser_base{water_blocks:1} 0 201 0', False),
+    ('particle dust{color:[1,0,0],scale:0.001} 0 201 0', False), ('particle dust{color:[1,0,0],scale:4.5} 0 201 0', False),
     ('list', False),
 ]
 
@@ -354,7 +376,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

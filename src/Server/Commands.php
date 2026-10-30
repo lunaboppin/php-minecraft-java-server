@@ -72,6 +72,8 @@ trait Commands
 
     use CommandModules\ForceLoadCommand;
 
+    use CommandModules\ParticleCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
