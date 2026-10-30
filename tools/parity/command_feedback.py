@@ -378,6 +378,11 @@ SCRIPT = [
     ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1', False),
     ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
     ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
+    # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
+    ('stopwatch query lap', False), ('stopwatch create lap', False), ('stopwatch create minecraft:lap', False),
+    ('stopwatch create custom:timer', False), ('stopwatch restart lap', False), ('stopwatch restart nothing', False),
+    ('stopwatch remove lap', False), ('stopwatch remove lap', False), ('stopwatch remove custom:timer', False), ('stopwatch create Bad', False),
+    ('!witness stopwatch create lap', False),
     ('list', False),
 ]
 

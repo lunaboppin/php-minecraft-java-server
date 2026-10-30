@@ -106,6 +106,7 @@ trait Survival
         foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $this->worlds['overworld']->setting($key, $this->$key);
         }
+        $this->saveStopwatches();
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();

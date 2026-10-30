@@ -72,6 +72,7 @@ final class CommandRegistry
             new CommandDefinition('particle', 'executeParticle', true),
             new CommandDefinition('spectate', 'executeSpectate', true),
             new CommandDefinition('swing', 'executeSwing', true),
+            new CommandDefinition('stopwatch', 'executeStopwatch', true),
         ];
     }
 

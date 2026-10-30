@@ -78,6 +78,8 @@ trait Commands
 
     use CommandModules\SwingCommand;
 
+    use CommandModules\StopwatchCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

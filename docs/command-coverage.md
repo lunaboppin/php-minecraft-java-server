@@ -83,7 +83,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/spreadplayers` | — | Unimplemented | — |
 | `/stop` | [StopCommand.php](../src/Server/Commands/StopCommand.php) | Partial handler; native behavior incomplete | — |
 | `/stopsound` | [StopSoundCommand.php](../src/Server/Commands/StopSoundCommand.php) | Partial handler; native behavior incomplete | — |
-| `/stopwatch` | — | Unimplemented | — |
+| `/stopwatch` | [StopwatchCommand.php](../src/Server/Commands/StopwatchCommand.php) | Partial handler; native behavior incomplete | — |
 | `/summon` | [SummonCommand.php](../src/Server/Commands/SummonCommand.php) | Partial handler; native behavior incomplete | — |
 | `/swing` | — | Unimplemented | — |
 | `/tag` | [TagCommand.php](../src/Server/Commands/TagCommand.php) | Partial handler; native behavior incomplete | — |
