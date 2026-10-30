@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     # The full suite, including the command feedback network tests, takes about 16 minutes.
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
