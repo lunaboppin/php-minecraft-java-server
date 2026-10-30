@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **53** have an existing PHP handler; **39** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **55** have an existing PHP handler; **37** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -18,7 +18,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/advancement` | — | Unimplemented | — |
 | `/attribute` | [AttributeCommand.php](../src/Server/Commands/AttributeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban` | [BanCommand.php](../src/Server/Commands/BanCommand.php) | Partial handler; native behavior incomplete | — |
-| `/ban-ip` | — | Unimplemented | — |
+| `/ban-ip` | [BanIpCommand.php](../src/Server/Commands/BanIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/banlist` | [BanListCommand.php](../src/Server/Commands/BanListCommand.php) | Partial handler; native behavior incomplete | — |
 | `/bossbar` | — | Unimplemented | — |
 | `/clear` | [ClearCommand.php](../src/Server/Commands/ClearCommand.php) | Partial handler; native behavior incomplete | — |
@@ -56,7 +56,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/msg` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/op` | [OpCommand.php](../src/Server/Commands/OpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/pardon` | [PardonCommand.php](../src/Server/Commands/PardonCommand.php) | Partial handler; native behavior incomplete | — |
-| `/pardon-ip` | — | Unimplemented | — |
+| `/pardon-ip` | [PardonIpCommand.php](../src/Server/Commands/PardonIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/particle` | — | Unimplemented | — |
 | `/perf` | — | Unimplemented | — |
 | `/place` | — | Unimplemented | — |

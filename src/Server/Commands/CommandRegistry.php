@@ -51,6 +51,8 @@ final class CommandRegistry
             new CommandDefinition('ban', 'executeBan', true),
             new CommandDefinition('pardon', 'executePardon', true),
             new CommandDefinition('banlist', 'executeBanList', true),
+            new CommandDefinition('ban-ip', 'executeBanIp', true),
+            new CommandDefinition('pardon-ip', 'executePardonIp', true),
             new CommandDefinition('whitelist', 'executeWhitelist', true),
             new CommandDefinition('tellraw', 'executeTellraw', true),
             new CommandDefinition('title', 'executeTitle', true),

@@ -20,6 +20,10 @@ trait Commands
 
     use CommandModules\MeCommand;
 
+    use CommandModules\BanIpCommand;
+
+    use CommandModules\PardonIpCommand;
+
     use CommandModules\SayCommand;
 
     use CommandModules\TeamMsgCommand;
