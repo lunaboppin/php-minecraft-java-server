@@ -19,9 +19,17 @@ trait ChunkMobs
         if ($this->ticks % 20 !== 0) {
             return;
         }
+        // Chunks sent to a player, and those around it it is still waiting for, keep their mobs.
         $loaded = [];
+        $radius = $this->config->viewDistance;
         foreach ($this->localPlayers() as $player) {
             $loaded += $player->loadedChunks;
+            [$px, $pz] = [(int) floor($player->x / 16), (int) floor($player->z / 16)];
+            for ($dx = -$radius; $dx <= $radius; ++$dx) {
+                for ($dz = -$radius; $dz <= $radius; ++$dz) {
+                    $loaded[($px + $dx) . ':' . ($pz + $dz)] = true;
+                }
+            }
         }
         $byChunk = [];
         foreach ($this->animals as $id => $mob) {

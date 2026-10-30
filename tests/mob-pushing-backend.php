@@ -122,7 +122,9 @@ try {
     for ($tick = 0; $tick < 3; ++$tick) {
         $backendInvoke($server, 'tick', hrtime(true) / 1e9);
     }
-    if (count($backendProperty('animals')->getValue($server)) !== 40) {
+    // With no player online their chunks are not loaded, so the restored mobs wait in per-chunk storage.
+    $stored = (int) (new PDO('sqlite:' . $directory . '/world.sqlite'))->query('SELECT COUNT(*) FROM chunk_mobs')->fetchColumn();
+    if (count($backendProperty('animals')->getValue($server)) + $stored !== 40) {
         throw new RuntimeException('Idle saved mobs were not restored');
     }
     $generated = (new ReflectionProperty(World::class, 'baseCache'))->getValue($backendProperty('world')->getValue($server));
