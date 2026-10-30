@@ -21,6 +21,8 @@ trait KillCommand
                 $this->damage($target['client'], 3.4028234663852886E38, 'generic_kill');
             } elseif (isset($target['item'])) {
                 $this->removeItem($target['item']);
+            } elseif (isset($target['orb'])) {
+                $this->removeOrb($target['orb']);
             } else {
                 $this->killAnimal($target['mob']);
             }

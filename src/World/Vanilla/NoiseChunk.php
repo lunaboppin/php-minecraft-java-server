@@ -91,6 +91,22 @@ final class NoiseChunk
     }
 
     /**
+     * NoiseBasedChunkGenerator.getBaseColumn: the noise column's block names from the bottom.
+     *
+     * @return list<string>
+     */
+    public static function baseColumn(OverworldSettings $settings, int $x, int $z): array
+    {
+        $chunk = new self($settings, $x >> 4, $z >> 4, new Volume(1, $settings->height, 1, $x, $settings->minY, $z));
+        $density = $settings->state->sampler($settings->json['noise_router']['final_density'])->volume($chunk->context, $chunk->volume);
+        $column = [];
+        for ($y = 0; $y < $settings->height; ++$y) {
+            $column[] = $chunk->substance($x, $settings->minY + $y, $z, $density[$y]) ?? $settings->defaultBlock;
+        }
+        return $column;
+    }
+
+    /**
      * Block names in y, z, x order from the bottom of the chunk.
      *
      * @return list<string>
