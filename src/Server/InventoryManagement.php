@@ -169,6 +169,9 @@ trait InventoryManagement
         if ($notify) {
             $c->send($this->version, 'container_close', Binary::writeVarInt($c->windowId));
         }
+        if ($c->windowPosition !== null && $c->windowType === 'chest') {
+            $this->containerClosed($c, $c->windowPosition);
+        }
         $c->dragSlots = [];
         $c->dragType = -1;
         $c->windowType = 'player';
@@ -178,17 +181,25 @@ trait InventoryManagement
 
     private function openWindow(Client $c, string $type, array $position): void
     {
-        $this->closeWindow($c, true);
-        $c->windowId = 1;
+        // ServerPlayer.openMenu closes an open container first.
+        $this->closeWindow($c, $c->windowType !== 'player');
+        // ServerPlayer.nextContainerCounter: window IDs run from 1 to 100.
+        $c->windowId = $c->containerCounter = $c->containerCounter % 100 + 1;
         $c->windowType = $type;
         $c->windowPosition = $position;
         $menu = match ($type) {
             'crafting' => 'crafting','furnace' => 'furnace',default => 'generic_9x3'
         };
+        // The block entity's default name, or the crafting table's.
         $title = match ($type) {
-            'crafting' => 'Crafting','furnace' => 'Furnace',default => 'Chest'
+            'crafting' => 'container.crafting','furnace' => 'container.furnace',
+            default => $this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest'
         };
-        $c->send($this->version, 'open_screen', "\1" . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::text($title));
+        // The menu's constructor opens the container before the screen is sent.
+        if ($type === 'chest') {
+            $this->containerOpened($c, $position);
+        }
+        $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
         if ($type === 'furnace') {
             $this->activeFurnaces[implode(':', $position)] = $position;
         }

@@ -3304,6 +3304,10 @@
     "zombified_piglin": 158
   },
   "sounds": {
+    "block.chest.open": 349,
+    "block.chest.close": 347,
+    "block.barrel.open": 141,
+    "block.barrel.close": 140,
     "entity.player.levelup": 1321,
     "entity.player.hurt": 1316,
     "entity.player.hurt_drown": 1317,

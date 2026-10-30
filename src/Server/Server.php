@@ -69,6 +69,8 @@ final class Server
     use CommandSources;
 
     use Riding;
+
+    use ContainerOpeners;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -1239,6 +1241,11 @@ final class Server
                 $this->openWindow($c, $type, [$x, $y, $z]);
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
+                // handleUseItemOn resends the used block and the one on its clicked face.
+                [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
+                foreach ([[$x, $y, $z], [$x + $dx, $y + $dy, $z + $dz]] as [$bx, $by, $bz]) {
+                    $c->send($this->version, 'block_update', Binary::writePosition($bx, $by, $bz) . Binary::writeVarInt($this->world->get($bx, $by, $bz)));
+                }
                 return;
             }
             $properties = $this->version->catalog->properties($clicked);

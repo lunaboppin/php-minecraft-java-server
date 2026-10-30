@@ -69,6 +69,7 @@ final class Client
     public int $dragType = -1;
     public int $inventoryRevision = 0;
     public int $windowId = 0;
+    public int $containerCounter = 0;
     public string $windowType = 'player';
     public ?array $windowPosition = null;
     public array $craftGrid = [];

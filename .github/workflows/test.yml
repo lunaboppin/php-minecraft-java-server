@@ -166,6 +166,7 @@ jobs:
           python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-swings.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/pig-riding.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/container-openers.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
