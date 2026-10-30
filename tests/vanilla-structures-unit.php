@@ -25,14 +25,15 @@ foreach ([
     [208, -305, 'igloo', [3328, 90, -4880, 3334, 94, -4873], 'north'],
     [12, 28, 'shipwreck', [184, 90, 459, 211, 98, 467], 'north'],
     [41, -19, 'village_plains', [647, 79, -313, 656, 85, -304], 186],
+    [4, 0, 'mineshaft', [66, 5, 2, 76, 11, 14], 135],
     [-17, 21, null, null, null],
     [0, 0, null, null, null],
 ] as [$cx, $cz, $structure, $box, $orientation]) {
     $starts = $structures->create($cx, $cz);
     $last = $starts === [] ? null : $starts[0]['pieces'][count($starts[0]['pieces']) - 1];
     $actual = $starts === [] ? [null, null, null] : [$starts[0]['structure'], $last->box, $last->orientation];
-    if ($structure === 'village_plains') {
-        // The official start has 186 pieces; the first is its meeting point.
+    if ($structure === 'village_plains' || $structure === 'mineshaft') {
+        // Official starts: the village's 186 pieces from its meeting point, the mineshaft's 135 from its room.
         $actual = [$starts[0]['structure'], $starts[0]['pieces'][0]->box, count($starts[0]['pieces'])];
     }
     if ($actual !== [$structure, $box, $orientation]) {

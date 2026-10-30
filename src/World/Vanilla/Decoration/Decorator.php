@@ -158,6 +158,8 @@ final class Decorator
         $context = $this->structureContext ??= new StructureContext($this->blocks, $region->seed, $this->directory);
         // WorldGenRegion.getRandom
         $context->regionRandom ??= $this->structures->regionRandom($region->centerX, $region->centerZ);
+        $context->survival ??= $this->survival;
+        $context->biomeInTag ??= $this->structures->biomeInTag(...);
         $context->placeFeature ??= fn (string $feature, Region $region, RandomSource $random, array $position): bool => $this->placeFeature($feature, $region, $random, $position);
         // BoundingBox.getCenter of the first piece, at its bottom.
         $first = $pieces[0]->box;
