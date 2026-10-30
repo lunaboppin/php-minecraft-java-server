@@ -261,7 +261,7 @@ class World
         }
         $heightmaps="\2";
         foreach([1=>$surface,4=>$motion] as $type=>$values){$packed=Palette::pack($values,9);$heightmaps.=Binary::writeVarInt($type).Binary::writeVarInt(intdiv(strlen($packed),8)).$packed;}
-        $light=$this->terrain===null?self::light():Lighting::build($sections,$surface,$catalog,$this->dimension!=='the_nether');
+        $light=$this->terrain===null?self::light():Lighting::build($sections,$surface,$catalog,$this->dimension==='overworld',$this->version->directory);
         $payload=pack('NN',$cx,$cz).$heightmaps.Binary::writeVarInt(strlen($bytes)).$bytes.Binary::writeVarInt(count($entities)).implode('',$entities).$light;
         if(count($this->cache)>=64){$first=array_key_first($this->cache);unset($this->cache[$first],$this->lightCache[$first]);}
         $this->lightCache[$key]=$light;return $this->cache[$key]=$payload;

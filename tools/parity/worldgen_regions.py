@@ -89,7 +89,10 @@ def decode_chunk(nbt, dimension='overworld'):
         biomes.extend(names[i] for i in indices)
     # Structure starts saved in their start chunk: each piece's type, bounding box and placement.
     starts = {name: start for name, start in nbt.get('structures', {}).get('starts', {}).items() if start.get('id') != 'INVALID'}
-    return blocks, biomes, starts
+    # Saved light nibbles by section Y, where the official light engine stored them.
+    light = {kind: {section['Y']: base64.b64encode(bytes(b & 0xff for b in section[kind])).decode() for section in sections if kind in section}
+             for kind in ('SkyLight', 'BlockLight')}
+    return blocks, biomes, starts, light
 
 
 def region_chunks(directory):
@@ -141,6 +144,7 @@ def main():
     parser.add_argument('--margin', type=int, default=0, help='extra force-loaded chunks around the rectangle')
     parser.add_argument('--structures', action='store_true')
     parser.add_argument('--entities', action='store_true', help='also decode the entities saved in each chunk')
+    parser.add_argument('--light', action='store_true', help='also keep the sky and block light saved in each section')
     parser.add_argument('--dimension', choices=sorted(SECTIONS), default='overworld')
     parser.add_argument('--threads', type=int, help='limit the official server to this many background (generation) threads')
     parser.add_argument('--output', type=Path, required=True)
@@ -218,11 +222,12 @@ def main():
     chunks = read_regions(work / f'world/dimensions/minecraft/{args.dimension}', wanted, args.dimension)
     entities = read_entities(work / f'world/dimensions/minecraft/{args.dimension}', wanted) if args.entities else {}
     out = {'version': '26.3', 'seed': args.seed, 'dimension': args.dimension, 'structures': args.structures, 'chunks': []}
-    for (x, z), (blocks, biomes, starts) in sorted(chunks.items()):
+    for (x, z), (blocks, biomes, starts, light) in sorted(chunks.items()):
         out['chunks'].append({'x': x, 'z': z, 'blocks': base64.b64encode(zlib.compress('\n'.join(blocks).encode(), 9)).decode(),
                               'biomes': base64.b64encode(zlib.compress('\n'.join(biomes).encode(), 9)).decode(),
                               **({'starts': starts} if starts else {}),
-                              **({'entities': entities[x, z]} if (x, z) in entities else {})})
+                              **({'entities': entities[x, z]} if (x, z) in entities else {}),
+                              **({'light': light} if args.light else {})})
     args.output.write_text(json.dumps(out, default=lambda value: list(value) if isinstance(value, (bytes, bytearray)) else str(value)) + '\n')
     print(f'{len(out["chunks"])} of {len(wanted)} chunks decoded to {args.output}')
 
