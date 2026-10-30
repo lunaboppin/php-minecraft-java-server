@@ -296,6 +296,18 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Command boss bars, their boss_event packets (random UUIDs aside) and a rejoining listed player.
+    ('bossbar list', False), ('bossbar add raid "Raid"', False), ('bossbar add raid "Again"', False), ('bossbar add minecraft:alpha {"text":"Alpha","color":"red"}', False),
+    ('bossbar add zeta:omega "Omega"', False), ('bossbar list', False), ('bossbar get raid value', False), ('bossbar get raid max', False),
+    ('bossbar get raid visible', False), ('bossbar get raid players', False), ('bossbar set raid players @s', False), ('bossbar set raid players @s', False),
+    ('bossbar get raid players', False), ('bossbar set raid value 40', False), ('bossbar set raid value 40', False), ('bossbar set raid max 80', False),
+    ('bossbar set raid max 80', False), ('bossbar set raid value 200', False), ('bossbar set raid color red', False), ('bossbar set raid color red', False),
+    ('bossbar set raid style notched_10', False), ('bossbar set raid style notched_10', False), ('bossbar set raid name {"text":"Big raid","bold":true}', False),
+    ('bossbar set raid name {"text":"Big raid","bold":true}', False), ('bossbar set raid visible false', False), ('bossbar set raid visible false', False),
+    ('bossbar get raid visible', False), ('bossbar set raid value 10', False), ('bossbar set raid visible true', False), ('bossbar set raid players Witness', False),
+    ('bossbar set raid players @a', False), ('bossbar set raid players', False), ('bossbar set raid players', False), ('bossbar set alpha players @s', False),
+    ('!reconnect', False), ('bossbar get nothing value', False), ('bossbar remove nothing', False), ('bossbar remove raid', False), ('bossbar remove minecraft:alpha', False),
+    ('bossbar remove zeta:omega', False), ('bossbar list', False), ('!witness bossbar list', False),
     ('list', False),
 ]
 
@@ -308,7 +320,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -433,6 +445,11 @@ def normalize_attribute_order(items):
     return [{**item, 'hex': sort(item['hex'])} if item['packet'] == 'update_attributes' else item for item in items]
 
 
+def normalize_boss_bars(items):
+    # Each server gives a boss bar a random UUID; the operation and its data must match.
+    return [{**item, 'hex': '00' * 16 + item['hex'][32:]} if item['packet'] == 'boss_event' else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
@@ -442,7 +459,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))) != key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))):
+            if key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))) != key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
