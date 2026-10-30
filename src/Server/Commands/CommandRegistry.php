@@ -62,6 +62,7 @@ final class CommandRegistry
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
             new CommandDefinition('say', 'executeSay', true),
+            new CommandDefinition('posteffect', 'executePostEffect', true),
         ];
     }
 

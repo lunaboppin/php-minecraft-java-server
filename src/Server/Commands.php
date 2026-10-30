@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\PostEffectCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
