@@ -436,6 +436,22 @@ final class Structures
         return $this->validBiome($structure, $cx * 16 + 8, 50 + $dy, $cz * 16) ? $pieces : [];
     }
 
+    /** BiomeSource.getBiomesWithin: whether every biome in the quarts within a radius is in a tag. */
+    private function biomesWithin(int $x, int $y, int $z, int $radius, string $tag): bool
+    {
+        $tag = $this->tag($tag);
+        for ($qx = ($x - $radius) >> 2; $qx <= ($x + $radius) >> 2; ++$qx) {
+            for ($qz = ($z - $radius) >> 2; $qz <= ($z + $radius) >> 2; ++$qz) {
+                for ($qy = ($y - $radius) >> 2; $qy <= ($y + $radius) >> 2; ++$qy) {
+                    if (!isset($tag[$this->biomes->uncached($qx, $qy, $qz)])) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     /** Whether a biome is in a biome tag. */
     public function biomeInTag(string $biome, string $tag): bool
     {
@@ -533,6 +549,18 @@ final class Structures
                 return StrongholdPiece::generate($this->settings->state->seed, $cx, $cz, $this->settings->seaLevel, $this->settings->minY);
             case 'mineshaft':
                 return $this->mineshaft($structure, $cx, $cz, $random);
+            case 'ocean_monument':
+                // OceanMonumentStructure.findGenerationPoint: every biome within 29 blocks is an
+                // ocean or river, and the start sits on the ocean floor at the chunk's centre.
+                if (!$this->biomesWithin($cx * 16 + 9, $this->settings->seaLevel, $cz * 16 + 9, 29, 'required_ocean_monument_surrounding')) {
+                    return [];
+                }
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, true), $z)) {
+                    return [];
+                }
+                return [OceanMonument::create($random, $cx * 16 - 29, $cz * 16 - 29, Piece::HORIZONTAL[$random->nextInt(4)])];
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }

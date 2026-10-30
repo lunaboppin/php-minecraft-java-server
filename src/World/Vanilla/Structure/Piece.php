@@ -73,6 +73,7 @@ abstract class Piece
             'ruined_portal' => RuinedPortal::restoreWith($piece),
             'nether_fortress' => NetherFortressPiece::restoreWith($piece),
             'end_city' => EndCity::restoreWith($piece),
+            'ocean_monument' => OceanMonument::restoreWith($piece),
         };
     }
 
