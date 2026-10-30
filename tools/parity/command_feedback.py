@@ -368,14 +368,14 @@ SCRIPT = [
     ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('!quiet gamemode creative @s', False), ('spectate', False),
     ('spectate Witness', False), ('!witness spectate ParityProbe', False), ('!quiet gamemode spectator @s', False), ('spectate @s', False),
     ('spectate Witness', False), ('spectate Witness ParityProbe', False), ('spectate', False), ('spectate', False),
-    ('spectate @e[type=pig]', False), ('!quiet summon pig 1 200 1', False), ('spectate @e[type=pig,limit=1]', False),
+    ('spectate @e[type=pig]', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False), ('spectate @e[type=pig,limit=1]', False),
     ('spectate @e[type=pig]', False), ('spectate ParityProbe Witness', False), ('gamemode creative @s', False), ('spectate Witness', False),
     ('!quiet gamemode spectator @s', False), ('spectate Witness', False), ('tp @s 3 200 3', False), ('spectate Witness', False),
     ('!quiet kill @e[type=pig]', False), ('!quiet gamemode creative @s', False),
     # Swings on a platform both players stand on, with their swing_animation packets.
     ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('swing', False), ('swing @s offhand', False),
     ('swing Witness mainhand stab', False), ('swing @a offhand whack 20', False), ('swing @a mainhand none 1s', False),
-    ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1', False),
+    ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False),
     ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
     ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
     # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
@@ -393,6 +393,7 @@ SCRIPT = [
     ('transfer other.host 2 @a', False), ('transfer other.host 3 @a[name=nobody]', False), ('transfer other.host 0', False),
     ('transfer other.host 65536', False), ('transfer "spaced host" 4 Witness', False), ('!witness transfer example.com', False),
     # Random sequences, which both servers seed from world seed 42.
+    ('!quiet random reset *', False),
     ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random roll 1..100 dice', False),
     ('random value 1..6 minecraft:other', False), ('random value -5..5 dice', False), ('random value 5 dice', False),
     ('random value .. dice', False), ('random value ..10 dice', False), ('random value 1.. dice', False), ('random value 3..1 dice', False),

@@ -63,10 +63,11 @@ trait CloneCommand
             && $destination[1] <= $max[1] && $destinationMax[1] >= $min[1] && $destination[2] <= $max[2] && $destinationMax[2] >= $min[2]) {
             throw new CommandFailure(['translate' => 'commands.clone.overlap']);
         }
+        // The area is a long, as vanilla counts it.
         $volume = ($max[0] - $min[0] + 1) * ($max[1] - $min[1] + 1) * ($max[2] - $min[2] + 1);
         $limit = (int) $this->gameRule('max_block_modifications');
         if ($volume > $limit) {
-            throw new CommandFailure(['translate' => 'commands.clone.toobig', 'with' => [$limit, $volume]]);
+            throw new CommandFailure(['translate' => 'commands.clone.toobig', 'with' => [$limit, new \PhpMinecraftJavaServer\Protocol\NbtLong($volume)]]);
         }
         // Level.hasChunksAt: every chunk of both boxes is loaded.
         if (!$this->cloneChunksLoaded($from, $min, $max) || !$this->cloneChunksLoaded($to, $destination, $destinationMax)) {
