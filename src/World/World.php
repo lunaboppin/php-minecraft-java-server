@@ -12,6 +12,8 @@ class World
     private array $editCache=[];
     private array $generationCache=[];
     private array $lightCache=[];
+    /** @var array<string, array> decoded light of recent chunks, by "cx:cz" */
+    private array $lightLevels=[];
     private array $blockEntityMap=[];
     private array $containerPositions=[];
     private readonly TerrainGenerator|DimensionGenerator|null $terrain;
@@ -261,7 +263,7 @@ class World
         }
         $heightmaps="\2";
         foreach([1=>$surface,4=>$motion] as $type=>$values){$packed=Palette::pack($values,9);$heightmaps.=Binary::writeVarInt($type).Binary::writeVarInt(intdiv(strlen($packed),8)).$packed;}
-        $light=$this->terrain===null?self::light():Lighting::build($sections,$surface,$catalog,$this->dimension==='overworld',$this->version->directory);
+        $light=Lighting::build($sections,$surface,$catalog,$this->dimension==='overworld',$this->version->directory);
         $payload=pack('NN',$cx,$cz).$heightmaps.Binary::writeVarInt(strlen($bytes)).$bytes.Binary::writeVarInt(count($entities)).implode('',$entities).$light;
         if(count($this->cache)>=64){$first=array_key_first($this->cache);unset($this->cache[$first],$this->lightCache[$first]);}
         $this->lightCache[$key]=$light;return $this->cache[$key]=$payload;
@@ -271,6 +273,38 @@ class World
         return str_ends_with($name,'_sign')?Nbt::sign($this->container([$x,$y,$z])):"\x0a\0";
     }
     public function blockEntityType(int $state):?int {return $this->blockEntityMap[$state]??null;}
+    /** BlockAndLightGetter.getRawBrightness with no darkening: the larger of the chunk's sky and block light, or block light alone. */
+    public function rawBrightness(int $x,int $y,int $z,bool $blockOnly=false):int {
+        if($y<$this->minY || $y>=$this->minY+$this->height){return !$blockOnly && $y>=$this->minY+$this->height && $this->dimension==='overworld'?15:0;}
+        $key=($x>>4).':'.($z>>4);
+        if(!isset($this->lightLevels[$key]) || !isset($this->lightCache[$key])){
+            if(count($this->lightLevels)>=64){array_shift($this->lightLevels);}
+            $this->lightLevels[$key]=self::decodeLight($this->chunkLight($x>>4,$z>>4));
+        }
+        $section=(($y-$this->minY)>>4)+1;$index=(($y&15)<<8)|(($z&15)<<4)|($x&15);
+        $value=0;
+        foreach($blockOnly?[$this->lightLevels[$key][1]]:$this->lightLevels[$key] as $arrays){
+            if(isset($arrays[$section])){$value=max($value,ord($arrays[$section][$index>>1])>>(($index&1)*4)&15);}
+        }
+        return $value;
+    }
+    /** @return array{0: int, 1: int} a VarInt and the offset after it */
+    private static function varIntAt(string $data,int $offset):array {
+        $value=0;$shift=0;
+        do{$byte=ord($data[$offset++]);$value|=($byte&0x7f)<<$shift;$shift+=7;}while(($byte&0x80)!==0);
+        return [$value,$offset];
+    }
+    /** @return array{0: array<int, string>, 1: array<int, string>} sky and block nibble arrays by section index */
+    private static function decodeLight(string $light):array {
+        $offset=0;$masks=[];
+        for($i=0;$i<4;++$i){[$length,$offset]=self::varIntAt($light,$offset);$masks[]=unpack('P',str_pad(substr($light,$offset,$length),8,"\0"))[1];$offset+=$length;}
+        $out=[[],[]];
+        for($kind=0;$kind<2;++$kind){
+            [,$offset]=self::varIntAt($light,$offset);
+            for($i=0;$i<64;++$i){if(($masks[$kind]>>$i)&1){[$length,$offset]=self::varIntAt($light,$offset);$out[$kind][$i]=substr($light,$offset,$length);$offset+=$length;}}
+        }
+        return $out;
+    }
     public function chunkLight(int $cx,int $cz):string {$key=$cx.':'.$cz;if(!isset($this->lightCache[$key])){$this->chunk($cx,$cz);}return $this->lightCache[$key];}
     public static function light():string {
         $mask="\4\xff\xff\xff\x03";

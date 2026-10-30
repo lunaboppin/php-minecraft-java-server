@@ -14,7 +14,7 @@ trait Dimensions
     private array $worlds = [];
 
     private array $dimensionState = [];
-    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes'];
+    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes', 'randomTickIndex'];
 
     private function withDimension(string $dimension, callable $action): mixed
     {
@@ -53,6 +53,7 @@ trait Dimensions
                 // TickRateManager.isEntityFrozen: only players tick while the game is frozen.
                 if ($this->runGameElements) {
                     $this->tickBlocks();
+                    $this->tickRandomBlocks();
                     $this->tickItems();
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();
