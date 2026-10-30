@@ -10,6 +10,7 @@ use PhpMinecraftJavaServer\World\Vanilla\OverworldGenerator;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\BlockTransform;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Piece;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Template;
 
 // Structure starts the official 26.3 server generates for seed 42 (tools/parity/worldgen_regions.py
 // --structures), and the block transforms structure pieces apply.
@@ -128,6 +129,34 @@ foreach ([
     $expected = $name($blocks->state($expectedBlock, $expectedProperties));
     if ($actual !== $expected) {
         throw new RuntimeException("Transform of $block: $actual, expected $expected");
+    }
+    ++$checks;
+}
+// Template entities: StructureTemplate.transform(Vec3) and the yaw of Entity.rotate and mirror.
+// The positions and yaws are villagers the official server placed in the seed 42 plains village.
+foreach ([
+    [[0.5, 1.0, 0.5], BlockTransform::NONE, 1, [3, 0, 3], [6.5, 1.0, 0.5]],
+    [[0.25, 1.0, 0.75], BlockTransform::LEFT_RIGHT, 0, [0, 0, 0], [0.25, 1.0, 0.25]],
+    [[0.25, 1.0, 0.75], BlockTransform::NONE, 2, [2, 0, 2], [4.75, 1.0, 4.25]],
+    [[0.25, 1.0, 0.75], BlockTransform::NONE, 3, [1, 0, 0], [1.75, 1.0, 1.75]],
+] as [$pos, $mirror, $rotation, $pivot, $expected]) {
+    if (Template::transformVector($pos, $mirror, $rotation, $pivot) !== $expected) {
+        throw new RuntimeException('Template entity position ' . json_encode(Template::transformVector($pos, $mirror, $rotation, $pivot)) . ', expected ' . json_encode($expected));
+    }
+    ++$checks;
+}
+foreach ([
+    [-41.17838, BlockTransform::NONE, 2, -41.17838 + 180.0],
+    [318.82162, BlockTransform::NONE, 0, 318.82162],
+    [-41.17838, BlockTransform::NONE, 3, 228.82162],
+    [100.0, BlockTransform::LEFT_RIGHT, 0, 80.0],
+    [100.0, BlockTransform::FRONT_BACK, 1, -10.0],
+    [200.0, BlockTransform::NONE, 1, 290.0],
+] as [$yaw, $mirror, $rotation, $expected]) {
+    // Vanilla adds the turned angles to the unwrapped yaw, so only the direction is compared.
+    $actual = Template::entityYaw($yaw, $mirror, $rotation);
+    if (abs(fmod($actual - $expected + 3600.0, 360.0)) > 0.001 && abs(fmod($actual - $expected + 3600.0, 360.0) - 360.0) > 0.001) {
+        throw new RuntimeException("Template entity yaw $actual, expected $expected");
     }
     ++$checks;
 }

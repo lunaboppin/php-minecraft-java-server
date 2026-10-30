@@ -4,7 +4,10 @@ import java.util.Base64;
 import com.google.gson.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.material.Fluids;
@@ -35,6 +38,7 @@ public class ExportBlockBehaviour {
     private static void export(String output) throws Exception {
         int count = Block.BLOCK_STATE_REGISTRY.size();
         var flags = ByteBuffer.allocate(count * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        var spawning = new byte[count * 2];
         for (int id = 0; id < count; ++id) {
             var state = Block.BLOCK_STATE_REGISTRY.byId(id);
             int bits = 0;
@@ -62,6 +66,15 @@ public class ExportBlockBehaviour {
                 if (!Shapes.joinIsNotEmpty(WALL_SIDES.get(sides[i]), down, BooleanOp.ONLY_FIRST)) bits |= 1 << (23 + i);
             }
             flags.putInt(bits);
+            // Light and natural spawning: getLightDampening, propagatesSkylightDown and pathfinding on land, then the light
+            // emission and the spawn checks generation runs for creatures (a cow stands for those
+            // without their own BlockBehaviour.isValidSpawn rule), parrots and polar bears.
+            spawning[id * 2] = (byte) (state.getLightDampening() | (state.propagatesSkylightDown() ? 16 : 0) | (state.isPathfindable(PathComputationType.LAND) ? 32 : 0));
+            spawning[id * 2 + 1] = (byte) (state.getLightEmission()
+                | (state.isValidSpawn(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, EntityTypes.COW) ? 16 : 0)
+                | (state.isValidSpawn(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, EntityTypes.PARROT) ? 32 : 0)
+                | (state.isValidSpawn(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, EntityTypes.POLAR_BEAR) ? 64 : 0)
+                | (NaturalSpawner.isValidEmptySpawnBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, state, state.getFluidState(), EntityTypes.COW) ? 128 : 0));
         }
         var root = new JsonObject();
         root.addProperty("version", net.minecraft.SharedConstants.getCurrentVersion().id());
@@ -77,6 +90,8 @@ public class ExportBlockBehaviour {
             classes.add(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath(), chain);
         }
         root.add("classes", classes);
+        root.addProperty("spawning_bits", "two bytes per state: light dampening | 16 propagates skylight down | 32 pathfindable on land; light emission | 16 valid spawn for a creature | 32 for a parrot | 64 for a polar bear | 128 valid empty spawn block");
+        root.addProperty("spawning", Base64.getEncoder().encodeToString(spawning));
         Files.writeString(Path.of(output), new Gson().toJson(root) + "\n");
     }
 }

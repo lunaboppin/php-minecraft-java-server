@@ -50,6 +50,12 @@ abstract class TemplatePiece extends Piece
         return true;
     }
 
+    /** Whether the template's entities are placed (not StructurePlaceSettings.setIgnoreEntities). */
+    protected function placesEntities(): bool
+    {
+        return true;
+    }
+
     protected function handleDataMarker(StructureContext $context, Region $region, RandomSource $random, array $chunkBox, string $marker, int $x, int $y, int $z): void
     {
     }
@@ -60,7 +66,7 @@ abstract class TemplatePiece extends Piece
         $this->box = $template->boundingBox($this->position, $this->mirror, $this->rotation, $this->pivot);
         $process = fn (array $info, array $original): ?array => $this->process($context, $info, $original);
         $finalize = $this->wholePiece() ? fn (array $processed, array $originals): array => $this->finalize($context, $region, $processed, $originals) : null;
-        if (!$template->place($context, $region, $this->position, $this->mirror, $this->rotation, $this->pivot, $chunkBox, $random, $process, $this->waterlogging(), $finalize !== null, true, $finalize)) {
+        if (!$template->place($context, $region, $this->position, $this->mirror, $this->rotation, $this->pivot, $chunkBox, $random, $process, $this->waterlogging(), $finalize !== null, true, $finalize, $this->placesEntities())) {
             return;
         }
         foreach ($template->filter($context->blocks, $this->position, $this->mirror, $this->rotation, $this->pivot, 'structure_block') as [$x, $y, $z, , $nbt]) {

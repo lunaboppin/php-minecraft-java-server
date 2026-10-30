@@ -17,6 +17,7 @@ require __DIR__ . '/../../src/bootstrap.php';
 
 use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
+use PhpMinecraftJavaServer\World\Vanilla\GenerationSpawner;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Decorator;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\ProtoChunk;
@@ -82,6 +83,66 @@ if (getenv('NEIGHBOURS')) {
 }
 if ($decorator->skipped !== []) {
     echo 'Not ported: ' . json_encode($decorator->skipped) . "\n";
+}
+// ENTITIES=1 compares the entities generation added to the middle chunks instead of blocks:
+// type, position and yaw, then the tags official and PHP both saved.
+if (getenv('ENTITIES') === '1') {
+    // Shulkers take a random yaw from the entity's own unseeded random, so only their position counts.
+    $key = static fn (array $nbt): string => sprintf('%s %.3f %.3f %.3f', preg_replace('/^minecraft:/', '', $nbt['id']), $nbt['Pos'][0], $nbt['Pos'][1], $nbt['Pos'][2]) . ($nbt['id'] === 'minecraft:shulker' ? '' : sprintf(' %.2f', $nbt['Rotation'][0]));
+    $inMiddle = static fn (array $nbt): bool => abs(((int) floor($nbt['Pos'][0]) >> 4) - $centerX) <= 1 && abs(((int) floor($nbt['Pos'][2]) >> 4) - $centerZ) <= 1;
+    // NaturalSpawner.spawnMobsForChunkGeneration once each middle chunk's neighbours are decorated.
+    $spawner = new GenerationSpawner($blocks, $version->directory . '/worldgen');
+    $spawned = [];
+    for ($dz = -1; $dz <= 1; ++$dz) {
+        for ($dx = -1; $dx <= 1; ++$dx) {
+            $region = new Region($blocks, $centerX + $dx, $centerZ + $dz, $chunks, $settings->minY, $buildHeight, $settings->seaLevel, BiomeClimate::zoomSeed($seed), $seed, $settings->height);
+            array_push($spawned, ...$spawner->spawn($region, $dimension === 'the_nether'));
+        }
+    }
+    $mine = [];
+    foreach ([...$decorator->structureContext?->entities ?? [], ...$spawned] as $entity) {
+        if ($inMiddle($entity['nbt'])) {
+            $mine[$key($entity['nbt'])][] = $entity['nbt'];
+        }
+    }
+    $official = [];
+    foreach ($reference['chunks'] as $chunk) {
+        foreach ($chunk['entities'] ?? [] as $nbt) {
+            if ($inMiddle($nbt)) {
+                $official[$key($nbt)][] = $nbt;
+            }
+        }
+    }
+    $canonical = static function (mixed $value) use (&$canonical): string {
+        if (is_array($value) && !array_is_list($value)) {
+            ksort($value);
+        }
+        return is_array($value) ? '{' . implode(',', array_map(static fn ($k, $v) => $k . ':' . $canonical($v), array_keys($value), $value)) . '}' : json_encode($value);
+    };
+    $matched = 0;
+    foreach ($official as $k => $list) {
+        foreach ($list as $i => $nbt) {
+            if (!isset($mine[$k][$i])) {
+                echo "official only: $k\n";
+                continue;
+            }
+            ++$matched;
+            foreach ($mine[$k][$i] as $tag => $value) {
+                if (!in_array($tag, ['Pos', 'Rotation', 'UUID'], true) && array_key_exists($tag, $nbt) && $canonical($nbt[$tag]) !== $canonical($value)) {
+                    echo "  $k: $tag official " . json_encode($nbt[$tag]) . ' php ' . json_encode($value) . "\n";
+                }
+            }
+        }
+    }
+    foreach ($mine as $k => $list) {
+        foreach ($list as $i => $nbt) {
+            if (!isset($official[$k][$i])) {
+                echo "php only: $k\n";
+            }
+        }
+    }
+    printf("entities: %d matched, %d official, %d php\n", $matched, array_sum(array_map('count', $official)), array_sum(array_map('count', $mine)));
+    exit(0);
 }
 foreach ($reference['chunks'] as $official) {
     if (abs($official['x'] - $centerX) > 1 || abs($official['z'] - $centerZ) > 1) {
