@@ -181,6 +181,9 @@ final class ArgumentReader
             case 'minecraft:vec2':
                 $this->vec2($reader);
                 return;
+            case 'minecraft:column_pos':
+                $this->vec2($reader, true);
+                return;
             case 'minecraft:rotation':
                 $this->rotation($reader);
                 return;
@@ -353,20 +356,20 @@ final class ArgumentReader
         }
     }
 
-    /** Vec2Argument: two world coordinates, X and Z. */
-    private function vec2(StringReader $reader): void
+    /** Vec2Argument (or ColumnPosArgument, with integers): two world coordinates, X and Z. */
+    private function vec2(StringReader $reader, bool $integer = false): void
     {
         $start = $reader->cursor;
         if (!$reader->canRead()) {
             throw $reader->error('argument.pos2d.incomplete');
         }
-        $this->worldCoordinate($reader, false);
+        $this->worldCoordinate($reader, $integer);
         if (!$reader->canRead() || $reader->peek() !== ' ') {
             $reader->cursor = $start;
             throw $reader->error('argument.pos2d.incomplete');
         }
         $reader->skip();
-        $this->worldCoordinate($reader, false);
+        $this->worldCoordinate($reader, $integer);
     }
 
     /** RotationArgument: two world coordinates. */

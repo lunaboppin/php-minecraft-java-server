@@ -39,7 +39,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/fetchprofile` | — | Unimplemented | — |
 | `/fill` | [FillCommand.php](../src/Server/Commands/FillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fillbiome` | — | Unimplemented | — |
-| `/forceload` | — | Unimplemented | — |
+| `/forceload` | [ForceLoadCommand.php](../src/Server/Commands/ForceLoadCommand.php) | Partial handler; native behavior incomplete | — |
 | `/function` | — | Unimplemented | — |
 | `/gamemode` | [GameModeCommand.php](../src/Server/Commands/GameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/gamerule` | [GameRuleCommand.php](../src/Server/Commands/GameRuleCommand.php) | Partial handler; native behavior incomplete | — |

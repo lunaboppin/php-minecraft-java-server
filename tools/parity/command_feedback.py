@@ -331,6 +331,17 @@ SCRIPT = [
     ('clone from minecraft:nowhere 0 260 0 2 262 2 16 240 16', False), ('clone ~ ~ ~ ~1 ~1 ~1 ~ 280 ~ masked', False),
     ('clone 0 400 0 1 401 1 0 240 0', False), ('clone 0 260 0 2 262 2 0 261 0 masked move', False),
     ('!quiet fill 4 290 4 5 291 5 barrier', False), ('clone 4 290 4 5 291 5 8 290 8', False),
+    # Forced chunks, far from both scattered spawns; each keeps the chunks up to 2 away loaded.
+    ('forceload query', False), ('forceload add 1000 1000', False), ('forceload add 1000 1000', False), ('forceload query 1000 1000', False),
+    ('forceload query 1016 1000', False), ('setblock 1000 100 1000 stone', False), ('setblock 1020 100 1000 stone', False),
+    ('forceload add -40 -40 -1 20', False), ('forceload add -40 -40 -1 20', False), ('forceload query', False),
+    ('forceload add 0 0 300 0', False), ('forceload add 0 0 255 0', False), ('forceload add 0 0 256 0', False),
+    ('forceload remove 1000 1000', False), ('forceload remove 1000 1000', False), ('forceload query', False),
+    ('forceload remove -40 -40 40 40', False), ('forceload add 30000000 0', False), ('forceload add 5000 5000', False),
+    ('forceload remove all', False), ('forceload query', False), ('forceload remove all', False), ('forceload add 2000 2000', False),
+    ('setblock 2032 100 2032 stone', False), ('setblock 2048 100 2032 stone', False), ('setblock 1968 100 1968 stone', False),
+    ('setblock 1952 100 1968 stone', False), ('forceload query 1 2 3', False), ('forceload query 1.5 2', False), ('forceload add 1', False),
+    ('forceload remove all', False),
     ('list', False),
 ]
 

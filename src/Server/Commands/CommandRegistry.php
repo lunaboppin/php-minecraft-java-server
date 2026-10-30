@@ -68,6 +68,7 @@ final class CommandRegistry
             new CommandDefinition('setidletimeout', 'executeSetIdleTimeout', true),
             new CommandDefinition('say', 'executeSay', true),
             new CommandDefinition('clone', 'executeClone', true),
+            new CommandDefinition('forceload', 'executeForceLoad', true),
         ];
     }
 
