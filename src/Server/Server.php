@@ -12,6 +12,7 @@ use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\ProtocolException;
 use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Generation\Float32;
+use PhpMinecraftJavaServer\World\ShortOpenHashSet;
 use PhpMinecraftJavaServer\World\World;
 
 final class Server
@@ -71,6 +72,9 @@ final class Server
     use Riding;
 
     use ContainerOpeners;
+
+    /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
+    private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -1445,9 +1449,46 @@ final class Server
         if ($this->world->generator === 'terrain') {
             $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
         }
-        foreach ($this->localPlayers() as $player) {
-            if (isset($player->loadedChunks[($x >> 4) . ':' . ($z >> 4)])) {
-                $this->blockUpdate($player, $x, $y, $z);
+        // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
+        $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
+        $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
+    }
+
+    /**
+     * ChunkHolder.broadcastChanges: each section's changed blocks reach the players the chunk is
+     * sent to, one as a block update and more as a section update, each followed by any block
+     * entity data.
+     */
+    private function broadcastChangedBlocks(): void
+    {
+        $changes = $this->changedBlocks[$this->world->dimension] ?? [];
+        unset($this->changedBlocks[$this->world->dimension]);
+        foreach ($changes as $key => $set) {
+            [$cx, $cz, $sy] = array_map('intval', explode(':', $key));
+            $players = array_filter($this->localPlayers(), static fn (Client $player): bool => isset($player->loadedChunks[$cx . ':' . $cz]));
+            if ($players === []) {
+                continue;
+            }
+            $positions = array_map(static fn (int $packed): array => [($cx << 4) | (($packed >> 8) & 15), ($sy << 4) | ($packed & 15), ($cz << 4) | (($packed >> 4) & 15)], $set->values());
+            if (count($positions) === 1) {
+                foreach ($players as $player) {
+                    $this->blockUpdate($player, ...$positions[0]);
+                }
+                continue;
+            }
+            $section = pack('J', (($cx & 0x3fffff) << 42) | (($cz & 0x3fffff) << 20) | ($sy & 0xfffff));
+            $payload = $section . Binary::writeVarInt(count($positions));
+            foreach ($positions as [$x, $y, $z]) {
+                $payload .= Binary::writeVarLong(($this->world->get($x, $y, $z) << 12) | (($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
+            }
+            foreach ($players as $player) {
+                $player->send($this->version, 'section_blocks_update', $payload);
+                foreach ($positions as [$x, $y, $z]) {
+                    $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+                    if ($type !== null) {
+                        $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
+                    }
+                }
             }
         }
     }

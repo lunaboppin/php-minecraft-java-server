@@ -312,6 +312,7 @@ jobs:
           php tests/mob-physics-unit.php
           php tests/mob-motion-unit.php
           php tests/mob-tracking-unit.php
+          php tests/short-open-hash-set-unit.php
           python3 tests/parity/entity-motion.py
           python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
           python3 tests/mob-knockback.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/knockback-java
