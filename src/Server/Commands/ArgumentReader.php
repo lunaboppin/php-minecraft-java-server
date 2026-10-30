@@ -196,6 +196,13 @@ final class ArgumentReader
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
                 return;
+            case 'minecraft:swing_animation':
+                // SwingAnimationArgument: a SwingAnimationType name, reported after it.
+                $name = $reader->readUnquotedString();
+                if (!in_array($name, ['none', 'whack', 'stab'], true)) {
+                    throw $reader->error('argument.swing_animation.invalid', [$name]);
+                }
+                return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
                 if (Snbt::read($reader)['type'] !== 'compound') {

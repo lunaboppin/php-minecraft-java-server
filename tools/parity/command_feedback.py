@@ -296,6 +296,12 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Swings on a platform both players stand on, with their swing_animation packets.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('swing', False), ('swing @s offhand', False),
+    ('swing Witness mainhand stab', False), ('swing @a offhand whack 20', False), ('swing @a mainhand none 1s', False),
+    ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1', False),
+    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
+    ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
     ('list', False),
 ]
 
@@ -308,7 +314,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'swing': ('swing_animation',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -386,7 +392,7 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event', 'swing_animation')
 
 
 def normalize_entity_ids(items):

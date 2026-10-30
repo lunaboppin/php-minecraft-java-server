@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\SwingCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
