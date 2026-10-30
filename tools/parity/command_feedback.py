@@ -442,6 +442,10 @@ SCRIPT = [
     ('dialog show @s minecraft:server_links', False), ('dialog show @a quick_actions', False), ('dialog show Witness custom_options', False),
     ('dialog show @a nothing_here', False), ('dialog clear @s', False), ('dialog clear @a', False),
     ('dialog show @a[name=nobody] server_links', False), ('!witness dialog clear @s', False),
+    # /execute if stopwatch, with ranges that hold whatever the wall clock says.
+    ('execute if stopwatch nowhere 0..', False), ('!quiet stopwatch create lap', False), ('execute if stopwatch lap 0..', False),
+    ('execute if stopwatch lap ..-1', False), ('execute unless stopwatch lap 100000..', False),
+    ('execute if stopwatch lap 0.. run say timed', False), ('!quiet stopwatch remove lap', False),
     ('list', False),
 ]
 

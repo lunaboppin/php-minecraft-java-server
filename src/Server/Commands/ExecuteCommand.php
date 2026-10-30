@@ -223,6 +223,16 @@ trait ExecuteCommand
                         '<' => $a < $b, '<=' => $a <= $b, '=' => $a === $b, '>' => $a > $b, default => $a >= $b,
                     };
                 };
+            case 'stopwatch':
+                $text = $this->executeToken($reader);
+                $id = str_contains($text, ':') ? $text : 'minecraft:' . $text;
+                [$low, $high] = EntitySelector::readBounds(new StringReader($this->executeToken($reader)), false);
+                return function () use ($id, $low, $high): bool {
+                    // checkStopwatch: an unknown stopwatch fails the command.
+                    $stopwatch = $this->stopwatchList()[$id] ?? throw new CommandFailure(['translate' => 'commands.stopwatch.does_not_exist', 'with' => [['text' => $id]]]);
+                    $elapsed = ($stopwatch['accumulated'] + (int) (self::stopwatchMillis() - $stopwatch['created'])) / 1000.0;
+                    return ($low === null || $elapsed >= $low) && ($high === null || $elapsed <= $high);
+                };
             default:
                 throw new \InvalidArgumentException('The execute if ' . $kind . ' condition is not supported yet');
         }
