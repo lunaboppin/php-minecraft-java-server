@@ -110,7 +110,7 @@ final class JigsawPiece extends Piece
         };
         $finalize = $whole ? fn (array $processed, array $originals): array => $this->finalize($context, $region, $processors, $processed, $originals, $reference) : null;
         $liquid = $element['override_liquid_settings'] ?? $this->liquid;
-        return $template->place($context, $region, $this->position, BlockTransform::NONE, $this->rotation, [0, 0, 0], $chunkBox, $random, $process, $liquid === 'apply_waterlogging', $whole, false, $finalize);
+        return $template->place($context, $region, $this->position, BlockTransform::NONE, $this->rotation, [0, 0, 0], $chunkBox, $random, $process, $liquid === 'apply_waterlogging', $whole, false, $finalize, true, true);
     }
 
     /** @return list<array> */

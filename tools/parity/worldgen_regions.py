@@ -92,9 +92,9 @@ def decode_chunk(nbt, dimension='overworld'):
     return blocks, biomes, starts
 
 
-def read_regions(world, chunks, dimension='overworld'):
-    out = {}
-    for region in sorted((world / 'region').glob('r.*.mca')):
+def region_chunks(directory):
+    """Every chunk's root tag in the region files of a directory."""
+    for region in sorted(directory.glob('r.*.mca')):
         data = region.read_bytes()
         if len(data) < 8192:
             continue
@@ -106,10 +106,30 @@ def read_regions(world, chunks, dimension='overworld'):
             length, compression = struct.unpack('>IB', data[offset:offset + 5])
             payload = data[offset + 5:offset + 4 + length]
             raw = zlib.decompress(payload) if compression == 2 else gzip.decompress(payload) if compression == 1 else payload
-            nbt = Nbt(raw).root()
-            key = (nbt['xPos'], nbt['zPos'])
-            if key in chunks and nbt.get('Status') == 'minecraft:full':
-                out[key] = decode_chunk(nbt, dimension)
+            yield Nbt(raw).root()
+
+
+def read_regions(world, chunks, dimension='overworld'):
+    out = {}
+    for nbt in region_chunks(world / 'region'):
+        key = (nbt['xPos'], nbt['zPos'])
+        if key in chunks and nbt.get('Status') == 'minecraft:full':
+            out[key] = decode_chunk(nbt, dimension)
+    return out
+
+
+# Entity tags that differ between runs (UUIDs, brains) or only restate defaults.
+VOLATILE_ENTITY_TAGS = {'UUID', 'Brain', 'Motion', 'Air', 'fall_distance', 'Fire', 'OnGround', 'PortalCooldown', 'Invulnerable',
+                        'HurtTime', 'HurtByTimestamp', 'DeathTime', 'AbsorptionAmount', 'FallFlying', 'attributes', 'Leash'}
+
+
+def read_entities(world, chunks):
+    """The entities saved in each chunk, without the tags that vary between identical runs."""
+    out = {}
+    for nbt in region_chunks(world / 'entities'):
+        key = tuple(nbt['Position'])
+        if key in chunks and nbt.get('Entities'):
+            out[key] = [{k: v for k, v in entity.items() if k not in VOLATILE_ENTITY_TAGS} for entity in nbt['Entities']]
     return out
 
 
@@ -120,6 +140,7 @@ def main():
     parser.add_argument('--to', dest='end', required=True, help='chunk x:z of the other corner')
     parser.add_argument('--margin', type=int, default=0, help='extra force-loaded chunks around the rectangle')
     parser.add_argument('--structures', action='store_true')
+    parser.add_argument('--entities', action='store_true', help='also decode the entities saved in each chunk')
     parser.add_argument('--dimension', choices=sorted(SECTIONS), default='overworld')
     parser.add_argument('--threads', type=int, help='limit the official server to this many background (generation) threads')
     parser.add_argument('--output', type=Path, required=True)
@@ -173,6 +194,9 @@ def main():
     try:
         wait_for(r'Done \([\d.]+s\)!', 300)
         margin = args.margin
+        if args.entities:
+            # Keep generated mobs where generation put them; chunk loading still runs while frozen.
+            command('tick freeze')
         # forceload accepts at most 256 chunks per command.
         for bx in range(x1 - margin, x2 + margin + 1, 16):
             for bz in range(z1 - margin, z2 + margin + 1, 16):
@@ -192,12 +216,14 @@ def main():
         log.close()
     wanted = {(x, z) for x in range(x1, x2 + 1) for z in range(z1, z2 + 1)}
     chunks = read_regions(work / f'world/dimensions/minecraft/{args.dimension}', wanted, args.dimension)
+    entities = read_entities(work / f'world/dimensions/minecraft/{args.dimension}', wanted) if args.entities else {}
     out = {'version': '26.3', 'seed': args.seed, 'dimension': args.dimension, 'structures': args.structures, 'chunks': []}
     for (x, z), (blocks, biomes, starts) in sorted(chunks.items()):
         out['chunks'].append({'x': x, 'z': z, 'blocks': base64.b64encode(zlib.compress('\n'.join(blocks).encode(), 9)).decode(),
                               'biomes': base64.b64encode(zlib.compress('\n'.join(biomes).encode(), 9)).decode(),
-                              **({'starts': starts} if starts else {})})
-    args.output.write_text(json.dumps(out) + '\n')
+                              **({'starts': starts} if starts else {}),
+                              **({'entities': entities[x, z]} if (x, z) in entities else {})})
+    args.output.write_text(json.dumps(out, default=lambda value: list(value) if isinstance(value, (bytes, bytearray)) else str(value)) + '\n')
     print(f'{len(out["chunks"])} of {len(wanted)} chunks decoded to {args.output}')
 
 

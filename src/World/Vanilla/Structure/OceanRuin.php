@@ -185,7 +185,7 @@ final class OceanRuin extends TemplatePiece
                 $context->blockEntities["$x,$y,$z"] = ['id' => 'chest', 'loot_table' => 'minecraft:chests/underwater_ruin_' . ($this->large ? 'big' : 'small'), 'seed' => $random->nextLong()];
             }
         } elseif ($marker === 'drowned' && $inside) {
-            // The drowned itself is not spawned yet.
+            $context->addEntity('drowned', [$x + 0.5, (float) $y, $z + 0.5], ['PersistenceRequired' => 1], true);
             $region->set($x, $y, $z, $context->state($y > $region->seaLevel ? 'air' : 'water'));
         }
     }

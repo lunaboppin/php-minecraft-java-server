@@ -371,9 +371,13 @@ final class OceanMonument extends Piece
         return $b[3] >= min($wx0, $wx1) && $b[0] <= max($wx0, $wx1) && $b[5] >= min($wz0, $wz1) && $b[2] <= max($wz0, $wz1);
     }
 
-    /** OceanMonumentPiece.spawnElder: elder guardians are not spawned yet. */
+    /** OceanMonumentPiece.spawnElder: an elder guardian at full health. */
     private function spawnElder(StructureContext $c, array $b, int $x, int $y, int $z): void
     {
+        [$wx, $wy, $wz] = $this->worldPos($x, $y, $z);
+        if (self::inside($b, $wx, $wy, $wz)) {
+            $c->addEntity('elder_guardian', [$wx + 0.5, (float) $wy, $wz + 0.5], [], true);
+        }
     }
 
     private function building(StructureContext $c, Region $r, array $b, RandomSource $random): void

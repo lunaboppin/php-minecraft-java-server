@@ -201,6 +201,11 @@ final class EndCity extends TemplatePiece
         return true;
     }
 
+    protected function placesEntities(): bool
+    {
+        return false;
+    }
+
     protected function process(StructureContext $context, array $info, array $original): ?array
     {
         $name = $context->blocks->name($info[3]);
@@ -209,9 +214,18 @@ final class EndCity extends TemplatePiece
 
     protected function handleDataMarker(StructureContext $context, Region $region, RandomSource $random, array $chunkBox, string $marker, int $x, int $y, int $z): void
     {
-        // Shulker sentries and the ship's elytra item frame are not spawned yet.
-        if (str_starts_with($marker, 'Chest') && Piece::inside($chunkBox, $x, $y - 1, $z) && $context->blocks->name($region->get($x, $y - 1, $z)) === 'chest') {
-            $context->blockEntities[$x . ',' . ($y - 1) . ',' . $z] = ['id' => 'chest', 'loot_table' => 'minecraft:chests/end_city_treasure', 'seed' => $random->nextLong()];
+        if (str_starts_with($marker, 'Chest')) {
+            if (Piece::inside($chunkBox, $x, $y - 1, $z) && $context->blocks->name($region->get($x, $y - 1, $z)) === 'chest') {
+                $context->blockEntities[$x . ',' . ($y - 1) . ',' . $z] = ['id' => 'chest', 'loot_table' => 'minecraft:chests/end_city_treasure', 'seed' => $random->nextLong()];
+            }
+        } elseif (Piece::inside($chunkBox, $x, $y, $z) && abs($x) < 30000000 && abs($z) < 30000000 && $y >= -20000000 && $y < 20000000) {
+            if (str_starts_with($marker, 'Sentry')) {
+                $context->addEntity('shulker', [$x + 0.5, (float) $y, $z + 0.5]);
+            } elseif (str_starts_with($marker, 'Elytra')) {
+                // An item frame facing Rotation.rotate(SOUTH), half a pixel off the block behind it.
+                [$facing, $dx, $dz] = [[3, 0, 1], [4, -1, 0], [2, 0, -1], [5, 1, 0]][$this->rotation & 3];
+                $context->addEntity('item_frame', [$x + 0.5 - $dx * 0.46875, $y + 0.5, $z + 0.5 - $dz * 0.46875], ['Facing' => $facing, 'Item' => ['id' => 'minecraft:elytra', 'count' => 1], 'block_pos' => [$x, $y, $z]]);
+            }
         }
     }
 }

@@ -142,8 +142,8 @@ final class MineshaftCorridor extends MineshaftPiece
             return;
         }
         $this->placeBlock($c, $r, $c->state('rail', ['shape' => $random->nextBoolean() ? 'north_south' : 'east_west']), $x, $y, $z, $b);
-        // The minecart's loot seed; the minecart entity itself is not generated yet.
-        $random->nextLong();
+        // MinecartChest.setInitialPos at the rail's centre, with the chest's loot table and seed.
+        $c->addEntity('chest_minecart', [$wx + 0.5, $wy + 0.5, $wz + 0.5], ['LootTable' => 'minecraft:chests/abandoned_mineshaft', 'LootTableSeed' => $random->nextLong()]);
     }
 
     public function postProcess(StructureContext $c, Region $r, RandomSource $random, array $b): void
