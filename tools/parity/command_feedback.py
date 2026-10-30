@@ -409,6 +409,28 @@ SCRIPT = [
     ('posteffect remove Witness spider', False), ('posteffect clear @a', False), ('posteffect add @s invert', False),
     ('posteffect clear @a', False), ('posteffect add @a[name=nobody] creeper', False), ('!witness posteffect list', False),
     ('!quiet posteffect clear @a', False),
+    # /execute modifiers, conditions and forks on a platform both players stand on; forked failures stay silent.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('execute run say hi', False),
+    ('execute as Witness run say hi', False), ('execute as @a run say multi', False), ('execute at Witness run setblock ~ ~-1 ~ dirt', False),
+    ('execute positioned 2 200 2 run setblock ~ ~-1 ~ glass', False), ('execute positioned 2 200 2 run setblock ~ ~-1 ~ glass', False),
+    ('execute as @a run setblock 1 199 1 glass', False), ('execute if entity @a', False), ('execute if entity @e[type=pig]', False),
+    ('execute unless entity @e[type=pig]', False), ('execute unless entity @a', False), ('execute if block 0 199 0 dirt', False),
+    ('execute if block 0 199 0 stone', False), ('!quiet scoreboard objectives add sc dummy', False),
+    ('!quiet scoreboard players set Witness sc 5', False), ('execute if score Witness sc matches 1..10', False),
+    ('execute if score Witness sc matches 6..', False), ('execute if score Witness sc > ParityProbe sc', False),
+    ('!quiet scoreboard players set ParityProbe sc 3', False), ('execute if score Witness sc > ParityProbe sc', False),
+    ('execute unless score Witness sc <= ParityProbe sc', False), ('execute if dimension overworld', False),
+    ('execute if dimension the_nether', False), ('execute if loaded 0 199 0', False), ('execute if loaded 100000 0 100000', False),
+    ('execute rotated 90 0 run tp @s ^ ^ ^1', False), ('!quiet tp @a 0 200 0 0 0', False), ('execute facing 5 200 0 run tp @s ^ ^ ^1', False),
+    ('!quiet tp @a 0 200 0 0 0', False), ('execute anchored eyes run tp @s ^ ^ ^', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('execute as @a at @s run setblock ~ ~-1 ~ gold_block', False), ('execute if entity @s run say ok', False),
+    ('execute unless entity @s run say no', False), ('execute as @e[type=pig] run say none', False),
+    ('execute as @a if entity @s[name=Witness]', False), ('execute as @a unless entity @s[name=Witness]', False),
+    ('execute align xz positioned ~0.5 ~ ~0.5 run setblock ~2 ~-1 ~ emerald_block', False), ('execute as Witness at @s run tp ~ ~ ~1', False),
+    ('!quiet tp @a 0 200 0 0 0', False), ('execute positioned as Witness run setblock ~ ~-1 ~-1 diamond_block', False),
+    ('execute rotated as Witness run tp @s ~ ~ ~', False), ('execute in the_nether if dimension the_nether', False),
+    ('execute as Witness run gamemode survival', False), ('execute as Witness run gamemode survival @s', False),
+    ('!quiet gamemode creative @a', False), ('!quiet scoreboard objectives remove sc', False), ('!witness execute run say x', False),
     ('list', False),
 ]
 
@@ -421,7 +443,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

@@ -20,7 +20,7 @@ trait SummonCommand
             throw new \InvalidArgumentException('Unknown living entity type');
         }
         // Without a position the entity appears at the sender's position, as in vanilla.
-        $position = count($arguments) < 4 ? [$sender->x, $sender->y, $sender->z] : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
+        $position = count($arguments) < 4 ? [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]] : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
         $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
         $id = $this->spawnAnimal($kind, ...$position);
         if ($id === null) {

@@ -42,9 +42,9 @@ trait DamageCommand
         // Mobs take LivingEntity.hurtServer as players do; dropped items take ItemEntity.hurtServer and orbs ExperienceOrb.hurtServer.
         $hurt = match (true) {
             isset($target['client']) => $this->damage($target['client'], $amount, $type, $attacker),
-            isset($target['mob']) => $this->withDimension($sender->dimension, fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)),
-            isset($target['item']) => $this->withDimension($sender->dimension, fn () => $this->hurtItem($target['item'], $amount, $type)),
-            isset($target['orb']) => $this->withDimension($sender->dimension, fn () => $this->hurtOrb($target['orb'], $amount)),
+            isset($target['mob']) => $this->withDimension($this->sourceDimension($sender), fn () => $this->hurtMob($target['mob'], $amount, $type, $attacker)),
+            isset($target['item']) => $this->withDimension($this->sourceDimension($sender), fn () => $this->hurtItem($target['item'], $amount, $type)),
+            isset($target['orb']) => $this->withDimension($this->sourceDimension($sender), fn () => $this->hurtOrb($target['orb'], $amount)),
             default => false,
         };
         if (!$hurt) {

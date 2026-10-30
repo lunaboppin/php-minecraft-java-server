@@ -24,7 +24,7 @@ trait ParticleCommand
         $rest = CommandArguments::parse('particle ' . substr($reader->string, $reader->cursor))[1];
         $rest = $rest === [''] ? [] : $rest;
         $payload = $this->particleOptions(substr($id, 10), $options['value']);
-        $position = count($rest) >= 3 ? $this->particleVector(array_slice($rest, 0, 3), $sender, true) : [$sender->x, $sender->y, $sender->z];
+        $position = count($rest) >= 3 ? $this->particleVector(array_slice($rest, 0, 3), $sender, true) : [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]];
         $delta = count($rest) >= 6 ? $this->particleVector(array_slice($rest, 3, 3), $sender, false) : [0.0, 0.0, 0.0];
         $speed = (float) ($rest[6] ?? 0);
         $count = (int) ($rest[7] ?? 0);
@@ -37,7 +37,7 @@ trait ParticleCommand
         foreach ($viewers as $viewer) {
             // BlockPos.closerToCenterThan from the viewer's block.
             $distance = (floor($viewer->x) + 0.5 - $position[0]) ** 2 + (floor($viewer->y) + 0.5 - $position[1]) ** 2 + (floor($viewer->z) + 0.5 - $position[2]) ** 2;
-            if ($viewer->dimension === $sender->dimension && $distance < $range * $range) {
+            if ($viewer->dimension === $this->sourceDimension($sender) && $distance < $range * $range) {
                 $viewer->send($this->version, 'level_particles', $packet);
                 ++$sent;
             }
@@ -53,9 +53,9 @@ trait ParticleCommand
     {
         $offset = static fn (string $text): float => $center && !str_starts_with($text, '~') && !str_contains($text, '.') ? 0.5 : 0.0;
         return $this->localPosition($arguments, $sender) ?? [
-            $this->coordinate($arguments[0], $sender->x) + $offset($arguments[0]),
-            $this->coordinate($arguments[1], $sender->y),
-            $this->coordinate($arguments[2], $sender->z) + $offset($arguments[2]),
+            $this->coordinate($arguments[0], $this->sourcePosition($sender)[0]) + $offset($arguments[0]),
+            $this->coordinate($arguments[1], $this->sourcePosition($sender)[1]),
+            $this->coordinate($arguments[2], $this->sourcePosition($sender)[2]) + $offset($arguments[2]),
         ];
     }
 

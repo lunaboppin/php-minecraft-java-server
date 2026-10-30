@@ -68,6 +68,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\ExecuteCommand;
+
     use CommandModules\CloneCommand;
 
     use CommandModules\ForceLoadCommand;
@@ -156,6 +158,7 @@ trait Commands
 
     private function tell(Client $client, string $text): void
     {
+        $client = $this->commandContext['output'] ?? $client;
         $this->log('[Server -> ' . $client->name . '] ' . $text);
         $client->send($this->version, 'system_chat', Packets::chat($text));
     }
@@ -165,8 +168,11 @@ trait Commands
     {
         // ServerPlayer.acceptsSuccess and broadcastToAdmins follow send_command_feedback.
         $feedback = $this->gameRule('send_command_feedback') === 'true';
+        // CommandSourceStack.sendSuccess: the output is the player who ran the command, even when
+        // /execute as runs it as someone else, whose name the operators' echo shows.
+        $output = $this->commandContext['output'] ?? $sender;
         if ($feedback) {
-            $sender->send($this->version, 'system_chat', Packets::systemChat($message));
+            $output->send($this->version, 'system_chat', Packets::systemChat($message));
         }
         if (!$broadcastToOperators) {
             $this->log('[' . $sender->name . '] ' . json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
@@ -179,9 +185,9 @@ trait Commands
         if (!$feedback) {
             return;
         }
-        $admin = ['translate' => 'chat.type.admin', 'with' => [$this->displayName($sender), $message], 'color' => 'gray', 'italic' => true];
+        $admin = ['translate' => 'chat.type.admin', 'with' => [$this->sourceDisplayName($sender), $message], 'color' => 'gray', 'italic' => true];
         foreach ($this->players() as $player) {
-            if ($player !== $sender && $this->operator($player)) {
+            if ($player !== $output && $this->operator($player)) {
                 $player->send($this->version, 'system_chat', Packets::systemChat($admin));
             }
         }
@@ -190,7 +196,11 @@ trait Commands
     /** Vanilla sendFailure: the message in red, without a parse-context line. */
     private function sendFailure(Client $sender, array $message): void
     {
-        $sender->send($this->version, 'system_chat', Packets::systemChat(['text' => '', 'color' => 'red', 'extra' => [$message]]));
+        // CommandSourceStack.handleError: a forked /execute chain reports no failures.
+        if ($this->commandContext['forked'] ?? false) {
+            return;
+        }
+        ($this->commandContext['output'] ?? $sender)->send($this->version, 'system_chat', Packets::systemChat(['text' => '', 'color' => 'red', 'extra' => [$message]]));
     }
 
     /**
@@ -210,7 +220,7 @@ trait Commands
      *
      * @return list<array{client?: Client, mob?: int, x: float, y: float, z: float, yaw: float, pitch: float, type: string, width: float, height: float}>
      */
-    private function selectEntities(string $text, Client $sender, bool $playersOnly = false, bool $single = false): array
+    private function selectEntities(string $text, Client $sender, bool $playersOnly = false, bool $single = false, bool $optional = false): array
     {
         $selector = CommandModules\EntitySelector::parse($text);
         if ($selector->unsupported() !== null) {
@@ -226,7 +236,7 @@ trait Commands
         $players = array_map($player, array_values($this->players()));
         $mobs = [];
         $items = [];
-        if (!$playersOnly && $sender->dimension === $this->world->dimension) {
+        if (!$playersOnly && $this->sourceDimension($sender) === $this->world->dimension) {
             // Dropped item entities, which @e and UUIDs can select.
             foreach ($this->itemEntities as $id => $item) {
                 $items[] = ['item' => $id, 'x' => $item['x'], 'y' => $item['y'], 'z' => $item['z'], 'yaw' => 0.0, 'pitch' => 0.0, 'type' => 'minecraft:item', 'width' => 0.25, 'height' => 0.25, 'id' => $id, 'uuid' => $item['uuid']];
@@ -244,13 +254,14 @@ trait Commands
         $candidates = match ($selector->kind) {
             '' => array_values(array_filter($players, static fn (array $entity): bool => strcasecmp($entity['client']->name, (string) $selector->name) === 0)),
             'uuid' => array_values(array_filter([...$players, ...$mobs, ...$items], static fn (array $entity): bool => ($entity['uuid'] ?? $entity['client']->uuid) === $selector->uuid)),
-            's' => [$player($sender)],
+            // @s is the executing entity, which /execute as can change.
+            's' => $this->commandContext === null ? [$player($sender)] : (isset($this->commandContext['entity']['client']) ? [$player($this->commandContext['entity']['client'])] : array_filter([$this->commandContext['entity']])),
             'p', 'a', 'r' => $players,
             // @e and @n consider living entities only.
             default => [...array_values(array_filter($players, static fn (array $entity): bool => !$entity['client']->dead)), ...$mobs, ...$items],
         };
         $options = $selector->options;
-        $origin = [$options['x'][0][1] ?? $sender->x, $options['y'][0][1] ?? $sender->y, $options['z'][0][1] ?? $sender->z];
+        $origin = [$options['x'][0][1] ?? $this->sourcePosition($sender)[0], $options['y'][0][1] ?? $this->sourcePosition($sender)[1], $options['z'][0][1] ?? $this->sourcePosition($sender)[2]];
         $distanceSquared = static fn (array $entity): float => ($entity['x'] - $origin[0]) ** 2 + ($entity['y'] - $origin[1]) ** 2 + ($entity['z'] - $origin[2]) ** 2;
         $matches = array_values(array_filter($candidates, function (array $entity) use ($options, $origin, $distanceSquared): bool {
             $client = $entity['client'] ?? null;
@@ -334,7 +345,8 @@ trait Commands
         }
         $limit = $options['limit'][0][1] ?? (in_array($selector->kind, ['p', 'r', 'n', 's', '', 'uuid'], true) ? 1 : PHP_INT_MAX);
         $matches = array_slice($matches, 0, $limit);
-        if ($matches === []) {
+        // EntityArgument.getOptionalEntities accepts an empty selection.
+        if ($matches === [] && !$optional) {
             throw new CommandModules\CommandFailure(['translate' => $playersOnly ? 'argument.entity.notfound.player' : 'argument.entity.notfound.entity']);
         }
         return $matches;
@@ -471,7 +483,7 @@ trait Commands
             // Java stores the angles as floats.
             return unpack('G', pack('G', ($offset ? $relative : 0.0) + (float) $number))[1];
         };
-        return [$parse($yaw, $sender->yaw), $parse($pitch, $sender->pitch)];
+        return [$parse($yaw, $this->sourceRotation($sender)[0]), $parse($pitch, $this->sourceRotation($sender)[1])];
     }
 
     /** set_default_spawn_position for the stored world spawn and its rotation. */
@@ -604,9 +616,9 @@ trait Commands
         $sin = static fn (float $value): float => $f32(sin((((int) $f32($value * 10430.378)) & 65535) * M_PI * 2 / 65536));
         $cos = static fn (float $value): float => $f32(sin((((int) $f32($f32($value * 10430.378) + 16384.0)) & 65535) * M_PI * 2 / 65536));
         $radians = $f32(M_PI / 180.0);
-        $yaw = $f32($f32($sender->yaw + 90.0) * $radians);
-        $pitch = $f32(-$f32($sender->pitch) * $radians);
-        $upPitch = $f32($f32(-$f32($sender->pitch) + 90.0) * $radians);
+        $yaw = $f32($f32($this->sourceRotation($sender)[0] + 90.0) * $radians);
+        $pitch = $f32(-$f32($this->sourceRotation($sender)[1]) * $radians);
+        $upPitch = $f32($f32(-$f32($this->sourceRotation($sender)[1]) + 90.0) * $radians);
         $forward = [$f32($cos($yaw) * $cos($pitch)), $sin($pitch), $f32($sin($yaw) * $cos($pitch))];
         $upward = [$f32($cos($yaw) * $cos($upPitch)), $sin($upPitch), $f32($sin($yaw) * $cos($upPitch))];
         $leftward = [
@@ -614,7 +626,7 @@ trait Commands
             -($forward[2] * $upward[0] - $forward[0] * $upward[2]),
             -($forward[0] * $upward[1] - $forward[1] * $upward[0]),
         ];
-        $origin = [$sender->x, $sender->y, $sender->z];
+        $origin = $this->sourceAnchorPosition($sender);
         return array_map(static fn (int $axis): float => $origin[$axis] + ($forward[$axis] * $forwards + $upward[$axis] * $up + $leftward[$axis] * $left), [0, 1, 2]);
     }
 
@@ -643,8 +655,8 @@ trait Commands
         if (count($arguments) !== 3) {
             throw new \InvalidArgumentException('Expected x y z coordinates');
         }
-        $result = [$this->coordinate($arguments[0], $client->x), $this->coordinate($arguments[1], $client->y), $this->coordinate($arguments[2], $client->z)];
-        $world = $this->worlds[$client->dimension];
+        $result = [$this->coordinate($arguments[0], $this->sourcePosition($client)[0]), $this->coordinate($arguments[1], $this->sourcePosition($client)[1]), $this->coordinate($arguments[2], $this->sourcePosition($client)[2])];
+        $world = $this->worlds[$this->sourceDimension($client)];
         if ($result[1] < $world->minY || $result[1] >= $world->minY + $world->height) {
             throw new \InvalidArgumentException('Y outside dimension build height');
         }
@@ -662,11 +674,11 @@ trait Commands
         if (count($arguments) !== 3) {
             throw new \InvalidArgumentException('Expected x y z coordinates');
         }
-        $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $client->x), $this->coordinate($arguments[1], $client->y), $this->coordinate($arguments[2], $client->z)]);
+        $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $this->sourcePosition($client)[0]), $this->coordinate($arguments[1], $this->sourcePosition($client)[1]), $this->coordinate($arguments[2], $this->sourcePosition($client)[2])]);
         // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
         // player's view as soon as they are placed, before the chunks reach the client.
         [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
-        $dimension ??= $client->dimension;
+        $dimension ??= $this->sourceDimension($client);
         // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
         $forced = array_filter($this->forcedChunks($dimension), static fn (array $chunk): bool => abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2);
         if ($forced === []
@@ -694,9 +706,9 @@ trait Commands
         $local = $this->localPosition($arguments, $sender);
         $center = static fn (string $text): float => !str_starts_with($text, '~') && !str_contains($text, '.') ? 0.5 : 0.0;
         $position = $local ?? [
-            $this->coordinate($arguments[0], $sender->x) + $center($arguments[0]),
-            $this->coordinate($arguments[1], $sender->y),
-            $this->coordinate($arguments[2], $sender->z) + $center($arguments[2]),
+            $this->coordinate($arguments[0], $this->sourcePosition($sender)[0]) + $center($arguments[0]),
+            $this->coordinate($arguments[1], $this->sourcePosition($sender)[1]),
+            $this->coordinate($arguments[2], $this->sourcePosition($sender)[2]) + $center($arguments[2]),
         ];
         // Level.isInSpawnableBounds for the block containing the position.
         [$blockX, $blockY, $blockZ] = array_map(static fn (float $value): float => floor($value), $position);
@@ -778,8 +790,20 @@ trait Commands
                 }
                 return;
             }
+        } catch (CommandModules\CommandFailure $failure) {
+            $this->sendFailure($sender, $failure->component);
+            return;
+        }
+        $this->runCommandText($sender, $text);
+    }
+
+    /** Runs a parsed command's handler, reporting its failure; /execute runs its command through here. */
+    private function runCommandText(Client $sender, string $text): void
+    {
+        try {
             [$name, $arguments] = CommandModules\CommandArguments::parse($text);
-            $definition = CommandModules\CommandRegistry::resolve($name, $this->operator($sender));
+            // The permission is the one the command was run with, even as another entity.
+            $definition = CommandModules\CommandRegistry::resolve($name, $this->operator($this->commandContext['output'] ?? $sender));
             if ($definition === null) {
                 throw new \InvalidArgumentException('Unknown command or insufficient permission. Use /help.');
             }

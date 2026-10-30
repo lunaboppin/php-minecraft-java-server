@@ -62,6 +62,8 @@ final class Server
     use Swinging;
 
     use TickRates;
+
+    use CommandSources;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;

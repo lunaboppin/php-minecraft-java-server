@@ -16,12 +16,12 @@ trait CloneCommand
     private function executeClone(Client $sender, array $arguments): void
     {
         $usage = 'Usage: /clone [from <dimension>] begin end [to <dimension>] destination [strict] [replace|masked|filtered <filter>] [force|move|normal]';
-        $from = $sender->dimension;
+        $from = $this->sourceDimension($sender);
         if (($arguments[0] ?? null) === 'from') {
             $from = $this->cloneDimension($arguments[1] ?? throw new \InvalidArgumentException($usage));
             $arguments = array_slice($arguments, 2);
         }
-        $to = $sender->dimension;
+        $to = $this->sourceDimension($sender);
         $words = array_slice($arguments, 6);
         if (($words[0] ?? null) === 'to') {
             $to = $this->cloneDimension($words[1] ?? throw new \InvalidArgumentException($usage));

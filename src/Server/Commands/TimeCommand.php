@@ -24,8 +24,8 @@ trait TimeCommand
             $arguments = array_slice($arguments, 2);
         } else {
             // A dimension type's default clock; the Nether has none.
-            $clock = ['overworld' => 'minecraft:overworld', 'the_end' => 'minecraft:the_end'][$sender->dimension]
-                ?? throw new CommandFailure(['translate' => 'commands.time.no_default_clock', 'with' => [['text' => 'minecraft:' . $sender->dimension]]]);
+            $clock = ['overworld' => 'minecraft:overworld', 'the_end' => 'minecraft:the_end'][$this->sourceDimension($sender)]
+                ?? throw new CommandFailure(['translate' => 'commands.time.no_default_clock', 'with' => [['text' => 'minecraft:' . $this->sourceDimension($sender)]]]);
         }
         [$total, $paused, $rateField] = self::CLOCKS[$clock];
         $name = ['text' => $clock];

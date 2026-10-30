@@ -13,9 +13,9 @@ trait ForceLoadCommand
     {
         $usage = 'Usage: /forceload add|remove <from> [<to>] | remove all | query [<pos>]';
         $action = $arguments[0] ?? throw new \InvalidArgumentException($usage);
-        $world = $this->worlds[$sender->dimension];
-        $dimension = ['text' => 'minecraft:' . $sender->dimension];
-        $forced = $this->forcedChunks($sender->dimension);
+        $world = $this->worlds[$this->sourceDimension($sender)];
+        $dimension = ['text' => 'minecraft:' . $this->sourceDimension($sender)];
+        $forced = $this->forcedChunks($this->sourceDimension($sender));
         if ($action === 'query' && count($arguments) === 1) {
             if ($forced === []) {
                 $this->sendFailure($sender, ['translate' => 'commands.forceload.added.none', 'with' => [$dimension]]);
@@ -100,6 +100,6 @@ trait ForceLoadCommand
     /** ColumnPosArgument: block X and Z, either relative to the sender. */
     private function columnPosition(string $x, string $z, Client $sender): array
     {
-        return [(int) floor($this->coordinate($x, $sender->x)), (int) floor($this->coordinate($z, $sender->z))];
+        return [(int) floor($this->coordinate($x, $this->sourcePosition($sender)[0])), (int) floor($this->coordinate($z, $this->sourcePosition($sender)[2]))];
     }
 }
