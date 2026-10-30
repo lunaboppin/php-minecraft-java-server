@@ -63,6 +63,7 @@ abstract class Piece
             'igloo' => Igloo::restoreWith($piece),
             'shipwreck' => Shipwreck::restoreWith($piece),
             'buried_treasure' => BuriedTreasure::restoreWith($piece),
+            'jigsaw' => JigsawPiece::restoreWith($piece),
         };
     }
 

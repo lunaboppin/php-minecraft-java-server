@@ -8,6 +8,8 @@ use PhpMinecraftJavaServer\World\Generation\Int64;
 use PhpMinecraftJavaServer\World\Generation\LegacyRandom;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeSource;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Providers;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 use PhpMinecraftJavaServer\World\Vanilla\F32;
 use PhpMinecraftJavaServer\World\Vanilla\NoiseChunk;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldSettings;
@@ -44,6 +46,8 @@ final class Structures
     private array $heights = [];
 
     private readonly Blocks $blocks;
+
+    private ?Jigsaw $jigsaw = null;
 
     public function __construct(private readonly OverworldSettings $settings, private readonly BiomeSource $biomes, private readonly string $directory, private readonly ?\PDO $db = null, ?Blocks $blocks = null)
     {
@@ -268,6 +272,13 @@ final class Structures
                     return [];
                 }
                 return [new BuriedTreasure([$cx * 16 + 9, 90, $cz * 16 + 9, $cx * 16 + 9, 90, $cz * 16 + 9], null)];
+            case 'jigsaw':
+                // JigsawStructure.findGenerationPoint
+                $context = new Region($this->blocks, $cx, $cz, [], $this->settings->minY, $this->settings->height, $this->settings->seaLevel, 0, $this->settings->state->seed);
+                $height = Providers::height($structure['start_height'], $random, $context);
+                $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
+                $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
+                return $result === null ? [] : $result[0];
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }
@@ -341,7 +352,7 @@ final class Structures
      *
      * @return array<string, array{starts: list<array{structure: string, pieces: list<Piece>}>, reach: list<int>}>
      */
-    public function reaching(int $cx, int $cz): array
+    public function reaching(int $cx, int $cz, bool $all = false): array
     {
         $byOrigin = [];
         if ($this->db !== null) {
@@ -374,10 +385,79 @@ final class Structures
                         }
                     }
                 }
-                if ($reach !== []) {
+                if ($reach !== [] || $all && $byOrigin[$key] !== []) {
                     $out[$key] = ['starts' => $byOrigin[$key], 'reach' => $reach];
                 }
             }
+        }
+        return $out;
+    }
+
+    /**
+     * Beardifier.forStructuresInChunk: the starts that reference the chunk (their overall box
+     * reaches it) and adapt terrain, with their pieces within 12 blocks and junctions in range.
+     */
+    public function beardifier(int $cx, int $cz): ?Beardifier
+    {
+        $minX = $cx * 16;
+        $minZ = $cz * 16;
+        $near = [$minX - 12, PHP_INT_MIN, $minZ - 12, $minX + 15 + 12, PHP_INT_MAX, $minZ + 15 + 12];
+        $column = [$minX, PHP_INT_MIN, $minZ, $minX + 15, PHP_INT_MAX, $minZ + 15];
+        $rigids = [];
+        $junctions = [];
+        $affected = null;
+        $include = static function (?array $box, array $add): array {
+            return $box === null ? $add : [min($box[0], $add[0]), min($box[1], $add[1]), min($box[2], $add[2]), max($box[3], $add[3]), max($box[4], $add[4]), max($box[5], $add[5])];
+        };
+        foreach ($this->startsNear($cx, $cz) as $start) {
+            $adjustment = $this->structure($start['structure'])['terrain_adaptation'] ?? 'none';
+            if ($adjustment === 'none' || $start['pieces'] === []) {
+                continue;
+            }
+            $union = null;
+            foreach ($start['pieces'] as $piece) {
+                $union = $include($union, $piece->box);
+            }
+            if (!Piece::intersects($union, $column)) {
+                continue;
+            }
+            foreach ($start['pieces'] as $piece) {
+                if (!Piece::intersects($piece->box, $near)) {
+                    continue;
+                }
+                if ($piece instanceof JigsawPiece) {
+                    if (($piece->element['projection'] ?? 'rigid') === 'rigid') {
+                        $rigids[] = [$piece->box, $adjustment, $piece->groundLevelDelta];
+                        $affected = $include($affected, $piece->box);
+                    }
+                    foreach ($piece->junctions as [$jx, $jy, $jz]) {
+                        if ($jx > $minX - 12 && $jz > $minZ - 12 && $jx < $minX + 15 + 12 && $jz < $minZ + 15 + 12) {
+                            $junctions[] = [$jx, $jy, $jz];
+                            $affected = $include($affected, [$jx, $jy, $jz, $jx, $jy, $jz]);
+                        }
+                    }
+                } else {
+                    $rigids[] = [$piece->box, $adjustment, 0];
+                    $affected = $include($affected, $piece->box);
+                }
+            }
+        }
+        if ($affected === null) {
+            return null;
+        }
+        return new Beardifier($rigids, $junctions, [$affected[0] - 24, $affected[1] - 24, $affected[2] - 24, $affected[3] + 24, $affected[4] + 24, $affected[5] + 24]);
+    }
+
+    /**
+     * Every start within reference range of a chunk.
+     *
+     * @return list<array{structure: string, pieces: list<Piece>}>
+     */
+    private function startsNear(int $cx, int $cz): array
+    {
+        $out = [];
+        foreach ($this->reaching($cx, $cz, true) as $entry) {
+            array_push($out, ...$entry['starts']);
         }
         return $out;
     }

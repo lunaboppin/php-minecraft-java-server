@@ -6,6 +6,8 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Predicates;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 
 /** What structure pieces share while they are placed: block states, transforms and shape marks. */
 final class StructureContext
@@ -21,6 +23,7 @@ final class StructureContext
     public function __construct(public readonly Blocks $blocks, public readonly int $seed = 0, public readonly string $directory = '')
     {
         $this->transform = new BlockTransform($blocks);
+        $this->predicates = new Predicates($blocks);
     }
 
     /** @param array<string, string> $properties */
@@ -34,6 +37,14 @@ final class StructureContext
     {
         return $this->blocks->with($state, $property, $value);
     }
+
+    /** StructureStart.placeInChunk's reference position: the first piece's centre at its bottom. */
+    public array $referencePos = [0, 0, 0];
+
+    public readonly Predicates $predicates;
+
+    /** @var (\Closure(string, Region, RandomSource, array): bool)|null PlacedFeature.place for feature pool elements */
+    public ?\Closure $placeFeature = null;
 
     /** WorldGenRegion.getRandom: one stream per decorated chunk, from its origin. */
     public ?RandomSource $regionRandom = null;

@@ -131,7 +131,7 @@ final class Template
      * @param ?callable(array, array): ?array $process
      * @return bool whether the template has blocks to place
      */
-    public function place(StructureContext $context, Region $region, array $position, int $mirror, int $rotation, array $pivot, array $chunkBox, RandomSource $random, ?callable $process, bool $waterlog = true, bool $processWholePiece = false): bool
+    public function place(StructureContext $context, Region $region, array $position, int $mirror, int $rotation, array $pivot, array $chunkBox, RandomSource $random, ?callable $process, bool $waterlog = true, bool $processWholePiece = false, bool $updateShapes = true, ?callable $finalize = null): bool
     {
         $blocks = $context->blocks;
         $list = $this->palette($position);
@@ -140,6 +140,7 @@ final class Template
         }
         // StructureTemplate.processBlockInfos
         $processed = [];
+        $originals = [];
         foreach ($list as $block) {
             [$x, $y, $z] = self::transform($block[0], $block[1], $block[2], $mirror, $rotation, $pivot);
             $info = [$x + $position[0], $y + $position[1], $z + $position[2], $block[3], $block[4]];
@@ -151,7 +152,11 @@ final class Template
             }
             if ($info !== null) {
                 $processed[] = $info;
+                $originals[] = $block;
             }
+        }
+        if ($finalize !== null) {
+            $processed = $finalize($processed, $originals);
         }
         $placed = [];
         $fill = [];
@@ -204,8 +209,11 @@ final class Template
                 }
             }
         }
-        foreach ($placed as [$x, $y, $z]) {
-            $context->markForPostProcessing($x, $y, $z);
+        // StructurePlaceSettings.setKnownShape(true) skips the shape updates.
+        if ($updateShapes) {
+            foreach ($placed as [$x, $y, $z]) {
+                $context->markForPostProcessing($x, $y, $z);
+            }
         }
         return true;
     }
