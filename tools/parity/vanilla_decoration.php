@@ -88,7 +88,7 @@ if ($decorator->skipped !== []) {
 // type, position and yaw, then the tags official and PHP both saved.
 if (getenv('ENTITIES') === '1') {
     // Shulkers take a random yaw from the entity's own unseeded random, so only their position counts.
-    $key = static fn (array $nbt): string => sprintf('%s %.3f %.3f %.3f', preg_replace('/^minecraft:/', '', $nbt['id']), $nbt['Pos'][0], $nbt['Pos'][1], $nbt['Pos'][2]) . ($nbt['id'] === 'minecraft:shulker' ? '' : sprintf(' %.2f', fmod($nbt['Rotation'][0] + 720.0, 360.0)));
+    $key = static fn (array $nbt): string => sprintf('%s %.3f %.3f %.3f', preg_replace('/^minecraft:/', '', $nbt['id']), $nbt['Pos'][0], $nbt['Pos'][1], $nbt['Pos'][2]) . ($nbt['id'] === 'minecraft:shulker' ? '' : sprintf(' %.2f', $nbt['Rotation'][0]));
     $inMiddle = static fn (array $nbt): bool => abs(((int) floor($nbt['Pos'][0]) >> 4) - $centerX) <= 1 && abs(((int) floor($nbt['Pos'][2]) >> 4) - $centerZ) <= 1;
     // NaturalSpawner.spawnMobsForChunkGeneration once each middle chunk's neighbours are decorated.
     $spawner = new GenerationSpawner($blocks, $version->directory . '/worldgen');
