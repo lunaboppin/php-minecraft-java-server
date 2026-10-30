@@ -103,6 +103,8 @@ final class Client
     public bool $ground = true;
     /** The highest block change sequence to acknowledge in the next tick, or -1. */
     public int $ackUpTo = -1;
+    /** Player.takeXpDelay: ticks until the player can take another experience orb. */
+    public int $takeXpDelay = 0;
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
     /** Whether a position arrived since the client's last client_tick_end. */

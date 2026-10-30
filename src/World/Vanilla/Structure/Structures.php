@@ -221,6 +221,47 @@ final class Structures
         return $this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z);
     }
 
+    /** MineshaftStructure.findGenerationPoint and generatePiecesAndAdjust. */
+    private function mineshaft(array $structure, int $cx, int $cz, LegacyRandom $random): array
+    {
+        $random->nextDouble();
+        $kind = $structure['mineshaft_type'] ?? 'normal';
+        $room = MineshaftRoom::create($random, $cx * 16 + 2, $cz * 16 + 2, $kind);
+        $pieces = [$room];
+        $room->addChildren($room, $pieces, $random);
+        $box = $pieces[0]->box;
+        foreach ($pieces as $piece) {
+            $box = [min($box[0], $piece->box[0]), min($box[1], $piece->box[1]), min($box[2], $piece->box[2]), max($box[3], $piece->box[3]), max($box[4], $piece->box[4]), max($box[5], $piece->box[5])];
+        }
+        $seaLevel = $this->settings->seaLevel;
+        if ($kind === 'mesa') {
+            // BoundingBox.getCenter
+            $centerX = $box[0] + intdiv($box[3] - $box[0] + 1, 2);
+            $centerZ = $box[2] + intdiv($box[5] - $box[2] + 1, 2);
+            $surface = $this->firstOccupiedHeight($centerX, $centerZ) + 1;
+            $target = $surface <= $seaLevel ? $seaLevel : $random->nextInt($surface - $seaLevel + 1) + $seaLevel;
+            $dy = $target - ($box[1] + intdiv($box[4] - $box[1] + 1, 2));
+        } else {
+            // StructurePiecesBuilder.moveBelowSeaLevel
+            $maxY = $seaLevel - 10;
+            $y = $box[4] - $box[1] + 1 + $this->settings->minY + 1;
+            if ($y < $maxY) {
+                $y += $random->nextInt($maxY - $y);
+            }
+            $dy = $y - $box[4];
+        }
+        foreach ($pieces as $piece) {
+            $piece->move(0, $dy, 0);
+        }
+        return $this->validBiome($structure, $cx * 16 + 8, 50 + $dy, $cz * 16) ? $pieces : [];
+    }
+
+    /** Whether a biome is in a biome tag. */
+    public function biomeInTag(string $biome, string $tag): bool
+    {
+        return isset($this->tag($tag)[$biome]);
+    }
+
     /**
      * Structure.generate for the structure types that are ported: the start's pieces, an empty
      * list when the structure cannot start here, or null for types not ported yet.
@@ -279,6 +320,8 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'mineshaft':
+                return $this->mineshaft($structure, $cx, $cz, $random);
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }
