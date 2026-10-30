@@ -87,6 +87,51 @@ final class Fluids
         return true;
     }
 
+    /** BubbleColumnBlock.canOccupy: a bubble column, or a full water source block. */
+    public function canHoldColumn(int $state): bool
+    {
+        $name = $this->blocks->name($state);
+        return $name === 'bubble_column' || $name === 'water' && $this->blocks->properties($state)['level'] === '0';
+    }
+
+    /** Whether the block below a water source raises a bubble column (soul sand pushes up, magma drags down). */
+    public function raisesColumn(int $below): bool
+    {
+        return $this->blocks->inTag($below, 'enables_bubble_column_push_up') || $this->blocks->inTag($below, 'enables_bubble_column_drag_down');
+    }
+
+    /** BubbleColumnBlock.canSurvive */
+    public function columnSurvives(int $below): bool
+    {
+        return $this->blocks->name($below) === 'bubble_column' || $this->raisesColumn($below);
+    }
+
+    /**
+     * BubbleColumnBlock.updateColumn: the block and the water above it become the column the block
+     * below asks for, or plain water where nothing below raises one.
+     */
+    public function updateColumn(FluidLevel $level, int $x, int $y, int $z): void
+    {
+        $occupy = $level->block($x, $y, $z);
+        if (!$this->canHoldColumn($occupy)) {
+            return;
+        }
+        $below = $level->block($x, $y - 1, $z);
+        if ($this->blocks->name($below) === 'bubble_column') {
+            $column = $below;
+        } elseif ($this->blocks->inTag($below, 'enables_bubble_column_push_up')) {
+            $column = $this->blocks->state('bubble_column', ['drag' => 'false']);
+        } elseif ($this->blocks->inTag($below, 'enables_bubble_column_drag_down')) {
+            $column = $this->blocks->state('bubble_column', ['drag' => 'true']);
+        } else {
+            $column = $this->blocks->name($occupy) === 'bubble_column' ? $this->blocks->state('water') : $occupy;
+        }
+        $level->setBlockAndUpdate($x, $y, $z, $column);
+        for (++$y; $this->canHoldColumn($level->block($x, $y, $z)); ++$y) {
+            $level->setBlockAndUpdate($x, $y, $z, $column);
+        }
+    }
+
     /** FlowingFluid.tick */
     public function tick(FluidLevel $level, int $x, int $y, int $z): void
     {

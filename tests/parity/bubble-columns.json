@@ -1,0 +1,114 @@
+{
+  "name": "bubble-columns",
+  "normalizations": [
+    "Compare bubble column and water block states after simulation-clock barriers and settling intervals.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers columns over magma and soul sand and their clearing; not entity motion in columns."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill 5 63 5 7 68 7 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 64 6 6 67 6 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 6 minecraft:magma_block"
+    },
+    {
+      "action": "command",
+      "text": "fill -7 63 5 -5 68 7 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 64 6 -6 67 6 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -6 63 6 minecraft:soul_sand"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "columns",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          6,
+          65,
+          6
+        ],
+        [
+          6,
+          67,
+          6
+        ],
+        [
+          -6,
+          64,
+          6
+        ],
+        [
+          -6,
+          66,
+          6
+        ],
+        [
+          -6,
+          67,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -6 63 6 minecraft:stone"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "cleared",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -6,
+          64,
+          6
+        ],
+        [
+          -6,
+          65,
+          6
+        ],
+        [
+          -6,
+          67,
+          6
+        ],
+        [
+          6,
+          64,
+          6
+        ]
+      ]
+    }
+  ]
+}
