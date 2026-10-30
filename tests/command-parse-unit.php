@@ -63,6 +63,9 @@ foreach ([
     ["summon", 'command.unknown.command', 6],
     ["damage Witness -1", 'argument.float.low', 15],
     ["damage Witness 5 nope", 'argument.resource.not_found', 21],
+    // ResourceOrTagArgument: an unknown biome or biome tag.
+    ['locate biome minecraft:nope', 'argument.resource.not_found', 27],
+    ['locate biome #minecraft:nope', 'argument.resource_tag.not_found', 28],
     ["damage Witness abc", 'parsing.float.expected', 15],
     ["weather rain -5", 'argument.time.tick_count_too_low', 15],
     ["weather rain 5x", 'argument.time.invalid_unit', 15],
@@ -86,7 +89,7 @@ foreach ([
 ] as [$input, $key, $cursor]) {
     $check($parse($operator, $input) === [$key, $cursor], $input . ' fails with ' . $key . ' at ' . $cursor . ', got ' . json_encode($parse($operator, $input)));
 }
-foreach (['time set 1000', 'time set noon', 'gamemode creative @a[gamemode=survival]', 'give @s diamond_sword[damage=5] 2', 'tp @s ~ ~1 ~', 'tp 1 2', 'setblock ~ ~ ~ oak_stairs[facing=north]', 'kill @e[type=pig,limit=1,sort=nearest]', 'msg @a hi @x', 'weather rain 3d', 'help time', 'spawn', 'gamerule keep_inventory true'] as $input) {
+foreach (['time set 1000', 'time set noon', 'gamemode creative @a[gamemode=survival]', 'give @s diamond_sword[damage=5] 2', 'tp @s ~ ~1 ~', 'tp 1 2', 'setblock ~ ~ ~ oak_stairs[facing=north]', 'kill @e[type=pig,limit=1,sort=nearest]', 'msg @a hi @x', 'weather rain 3d', 'help time', 'spawn', 'gamerule keep_inventory true', 'locate biome plains', 'locate biome #minecraft:is_forest', 'locate structure #village', 'locate structure minecraft:nope', 'locate poi minecraft:home'] as $input) {
     $check($parse($operator, $input) === null, $input . ' parses');
 }
 $player = $tree(false);

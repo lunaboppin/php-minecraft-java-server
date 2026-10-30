@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **53** have an existing PHP handler; **39** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **54** have an existing PHP handler; **38** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -50,7 +50,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/kick` | [KickCommand.php](../src/Server/Commands/KickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kill` | [KillCommand.php](../src/Server/Commands/KillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/list` | [ListCommand.php](../src/Server/Commands/ListCommand.php) | Partial handler; native behavior incomplete | — |
-| `/locate` | — | Unimplemented | — |
+| `/locate` | [LocateCommand.php](../src/Server/Commands/LocateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/loot` | — | Unimplemented | — |
 | `/me` | [MeCommand.php](../src/Server/Commands/MeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/msg` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | — |

@@ -49,6 +49,8 @@ final class ArgumentReader
             // Items with a default maximum damage.
             'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),
             'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
+            'minecraft:worldgen/biome' => $ids(array_map(static fn (string $path): string => basename($path, '.json'), glob($version->directory . '/worldgen/biome/*.json') ?: [])),
+            'tags:minecraft:worldgen/biome' => array_fill_keys(array_keys($version->registryTags('minecraft:worldgen/biome')), true),
             'item_tag' => array_fill_keys(array_keys($version->registryTags('minecraft:item')), true),
         ];
     }
@@ -124,6 +126,29 @@ final class ArgumentReader
                 if (isset($this->registries[$registry]) && !isset($this->registries[$registry][$id])) {
                     throw $reader->error('argument.resource.not_found', [$id, $registry]);
                 }
+                return;
+            case 'minecraft:resource_or_tag':
+                // ResourceOrTagArgument.parse: a tag after "#", or an element, that must exist.
+                $registry = $properties['registry'];
+                if ($reader->canRead() && $reader->peek() === '#') {
+                    $reader->skip();
+                    $id = $reader->readIdentifier();
+                    if (isset($this->registries['tags:' . $registry]) && !isset($this->registries['tags:' . $registry][$id])) {
+                        throw $reader->error('argument.resource_tag.not_found', [$id, $registry]);
+                    }
+                    return;
+                }
+                $id = $reader->readIdentifier();
+                if (isset($this->registries[$registry]) && !isset($this->registries[$registry][$id])) {
+                    throw $reader->error('argument.resource.not_found', [$id, $registry]);
+                }
+                return;
+            case 'minecraft:resource_or_tag_key':
+                // ResourceOrTagKeyArgument: any key or tag key; the command checks it exists.
+                if ($reader->canRead() && $reader->peek() === '#') {
+                    $reader->skip();
+                }
+                $reader->readIdentifier();
                 return;
             case 'minecraft:block_pos':
                 $this->coordinates($reader, 3, true);
