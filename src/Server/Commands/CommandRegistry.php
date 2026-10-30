@@ -17,6 +17,8 @@ final class CommandRegistry
             new CommandDefinition('me', 'executeMe', false),
             new CommandDefinition('teammsg', 'executeTeamMsg', false, ['tm']),
             new CommandDefinition('trigger', 'executeTrigger', false),
+            // Anyone may draw; sequences and resets need game-master permission in the command tree.
+            new CommandDefinition('random', 'executeRandom', false),
             // A dedicated server requires game-master permission for /version.
             new CommandDefinition('version', 'executeVersion', true),
             new CommandDefinition('gamemode', 'executeGameMode', true),
@@ -52,6 +54,8 @@ final class CommandRegistry
             new CommandDefinition('ban', 'executeBan', true),
             new CommandDefinition('pardon', 'executePardon', true),
             new CommandDefinition('banlist', 'executeBanList', true),
+            new CommandDefinition('ban-ip', 'executeBanIp', true),
+            new CommandDefinition('pardon-ip', 'executePardonIp', true),
             new CommandDefinition('whitelist', 'executeWhitelist', true),
             new CommandDefinition('tellraw', 'executeTellraw', true),
             new CommandDefinition('title', 'executeTitle', true),
@@ -62,7 +66,21 @@ final class CommandRegistry
             new CommandDefinition('stopsound', 'executeStopSound', true),
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
+            new CommandDefinition('bossbar', 'executeBossBar', true),
+            new CommandDefinition('tag', 'executeTag', true),
+            new CommandDefinition('setidletimeout', 'executeSetIdleTimeout', true),
             new CommandDefinition('say', 'executeSay', true),
+            new CommandDefinition('execute', 'executeExecute', true),
+            new CommandDefinition('dialog', 'executeDialog', true),
+            new CommandDefinition('clone', 'executeClone', true),
+            new CommandDefinition('forceload', 'executeForceLoad', true),
+            new CommandDefinition('particle', 'executeParticle', true),
+            new CommandDefinition('spectate', 'executeSpectate', true),
+            new CommandDefinition('swing', 'executeSwing', true),
+            new CommandDefinition('stopwatch', 'executeStopwatch', true),
+            new CommandDefinition('tick', 'executeTick', true),
+            new CommandDefinition('transfer', 'executeTransfer', true),
+            new CommandDefinition('posteffect', 'executePostEffect', true),
         ];
     }
 

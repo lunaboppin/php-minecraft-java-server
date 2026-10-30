@@ -38,6 +38,8 @@ final class Version
     public function name(string $state, int $id): string {
         return $this->reverse[$state][$id] ?? throw new ProtocolException('Unknown packet ID in ' . $state);
     }
+    /** @return list<string> a synchronized registry's entries in network ID order */
+    public function registryEntries(string $registry): array { return $this->dynamic[$registry] ?? []; }
     public function registryId(string $registry, string $name): int {
         $id = array_search('minecraft:' . $name, $this->dynamic['minecraft:' . $registry] ?? [], true);
         if ($id === false) { throw new \LogicException('Unknown registry entry'); }

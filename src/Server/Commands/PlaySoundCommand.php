@@ -21,7 +21,7 @@ trait PlaySoundCommand
         $sound = str_contains($arguments[0], ':') ? $arguments[0] : 'minecraft:' . $arguments[0];
         $source = $arguments[1] ?? 'master';
         $targets = $this->selectPlayers($arguments[2] ?? '@s', $sender);
-        $position = isset($arguments[5]) ? $this->positionArguments(array_slice($arguments, 3, 3), $sender) : [$sender->x, $sender->y, $sender->z];
+        $position = isset($arguments[5]) ? $this->positionArguments(array_slice($arguments, 3, 3), $sender) : [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]];
         $f32 = static fn (float $value): float => unpack('G', pack('G', $value))[1];
         $volume = $f32((float) ($arguments[6] ?? 1.0));
         $pitch = $f32((float) ($arguments[7] ?? 1.0));

@@ -40,6 +40,8 @@ final class ArgumentReader
             'block' => array_combine(array_map(static fn (string $name): string => 'minecraft:' . $name, array_keys($version->catalog->blocks)), array_map(static fn (array $block): array => array_map(static fn (array $property): array => array_map('strval', $property['values']), $block['properties']), $version->catalog->blocks)),
             'minecraft:data_component_type' => array_flip(array_keys(json_decode((string) file_get_contents($version->directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR)['component_ids'])),
             'minecraft:entity_type' => $ids(array_keys($version->blocks['entity_types'])),
+            'minecraft:dialog' => array_fill_keys($version->registryEntries('minecraft:dialog'), true),
+            'minecraft:particle_type' => $ids(array_keys($version->blocks['particle_types'])),
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
             'minecraft:world_clock' => $ids($clocks),
@@ -206,6 +208,9 @@ final class ArgumentReader
             case 'minecraft:vec2':
                 $this->vec2($reader);
                 return;
+            case 'minecraft:column_pos':
+                $this->vec2($reader, true);
+                return;
             case 'minecraft:rotation':
                 $this->rotation($reader);
                 return;
@@ -220,6 +225,44 @@ final class ArgumentReader
                 return;
             case 'minecraft:block_predicate':
                 $this->block($reader, true);
+                return;
+            case 'minecraft:particle':
+                // ParticleArgument: a particle type, then its options as an optional compound.
+                $id = $reader->readIdentifier();
+                if (!isset($this->registries['minecraft:particle_type'][$id])) {
+                    throw $reader->error('particle.notFound', [$id]);
+                }
+                if ($reader->canRead() && $reader->peek() === '{') {
+                    Snbt::read($reader);
+                }
+                return;
+            case 'minecraft:swing_animation':
+                // SwingAnimationArgument: a SwingAnimationType name, reported after it.
+                $name = $reader->readUnquotedString();
+                if (!in_array($name, ['none', 'whack', 'stab'], true)) {
+                    throw $reader->error('argument.swing_animation.invalid', [$name]);
+                }
+                return;
+            case 'minecraft:int_range':
+                EntitySelector::readBounds($reader, true);
+                return;
+            case 'minecraft:dialog':
+                // ResourceOrIdArgument: a registered dialog's ID, or an inline dialog.
+                if ($reader->canRead() && in_array($reader->peek(), ['{', '"', "'", '['], true)) {
+                    Snbt::read($reader);
+                    return;
+                }
+                $id = $reader->readIdentifier();
+                if (isset($this->registries['minecraft:dialog']) && !isset($this->registries['minecraft:dialog'][$id])) {
+                    throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:dialog']);
+                }
+                return;
+            case 'minecraft:heightmap':
+                // HeightmapTypeArgument: the heightmaps kept after world generation.
+                $name = $reader->readUnquotedString();
+                if (!in_array($name, ['world_surface', 'ocean_floor', 'motion_blocking', 'motion_blocking_no_leaves'], true)) {
+                    throw $reader->error('argument.enum.invalid', [$name]);
+                }
                 return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
@@ -378,20 +421,20 @@ final class ArgumentReader
         }
     }
 
-    /** Vec2Argument: two world coordinates, X and Z. */
-    private function vec2(StringReader $reader): void
+    /** Vec2Argument (or ColumnPosArgument, with integers): two world coordinates, X and Z. */
+    private function vec2(StringReader $reader, bool $integer = false): void
     {
         $start = $reader->cursor;
         if (!$reader->canRead()) {
             throw $reader->error('argument.pos2d.incomplete');
         }
-        $this->worldCoordinate($reader, false);
+        $this->worldCoordinate($reader, $integer);
         if (!$reader->canRead() || $reader->peek() !== ' ') {
             $reader->cursor = $start;
             throw $reader->error('argument.pos2d.incomplete');
         }
         $reader->skip();
-        $this->worldCoordinate($reader, false);
+        $this->worldCoordinate($reader, $integer);
     }
 
     /** RotationArgument: two world coordinates. */

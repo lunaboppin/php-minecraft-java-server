@@ -162,9 +162,11 @@ jobs:
           python3 tests/spawn-scatter.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/ip-bans.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-chat.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/experience-orbs.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/player-swings.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -177,6 +179,7 @@ jobs:
             tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
+            tools/.cache/ip-bans/
             tools/.cache/player-chat/
             tools/.cache/experience-orbs/
             tools/.cache/item-entities/
@@ -186,9 +189,9 @@ jobs:
   command-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    # Each command script runs once on PHP and once on the official server; with several
-    # hundred commands and reconnects this takes about an hour and a half on a hosted runner.
-    timeout-minutes: 120
+    # Each command script runs once on PHP and once on the official server; with nearly two
+    # thousand checks and reconnects this takes over two hours on a hosted runner.
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

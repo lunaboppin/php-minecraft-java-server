@@ -74,6 +74,8 @@ trait Survival
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
         $c->personalSpawn = $data['personalSpawn'] ?? null;
+        $c->tags = array_values(array_filter($data['tags'] ?? [], 'is_string'));
+        $c->postEffects = $data['postEffects'] ?? [];
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
         foreach ($data['inventory'] ?? [] as $slot => $stack) {
@@ -94,7 +96,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -105,6 +107,7 @@ trait Survival
         foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $this->worlds['overworld']->setting($key, $this->$key);
         }
+        $this->saveStopwatches();
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();
@@ -155,6 +158,10 @@ trait Survival
         $c->mining = null;
         $this->abilities($c);
         $c->send($this->version, 'game_event', "\3" . pack('G', $mode));
+        // ServerPlayer.setGameMode: leaving spectator mode ends any camera view.
+        if ($mode !== 3) {
+            $this->setCamera($c, null);
+        }
         // Creative mode adds the interaction range modifiers, which are then sent as changed.
         if (($previous === 1) !== ($mode === 1)) {
             $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $c->entityId, $this->interactionRanges($c)));
@@ -235,6 +242,16 @@ trait Survival
             $this->setAbsorption($c, $c->absorption - $absorbed);
             $amount -= $absorbed;
         }
+        // CombatTracker.recordDamage, before the health falls: damage from a living attacker starts combat.
+        if ($amount != 0.0) {
+            $this->recheckCombat($c);
+            $c->combat['last'] = $c->livingTicks;
+            $c->combat['taking'] = true;
+            if (!$c->combat['in'] && $attacker !== null) {
+                $c->combat = ['in' => true, 'start' => $c->livingTicks, 'end' => $c->livingTicks] + $c->combat;
+                $c->send($this->version, 'player_combat_enter', '');
+            }
+        }
         $c->health = max(0, $c->health - $amount);
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
@@ -301,6 +318,8 @@ trait Survival
                 $this->incrementCriteria('totalKillCount', $killer->name);
                 $this->incrementCriteria('playerKillCount', $killer->name);
             }
+            // Then it rechecks combat, which a dead player always leaves.
+            $this->recheckCombat($c);
             $this->savePlayer($c);
         }
         return true;
@@ -325,6 +344,20 @@ trait Survival
         return $credit === null
             ? ['translate' => $key, 'with' => [$victim]]
             : ['translate' => $key . '.player', 'with' => [$victim, $this->displayName($credit)]];
+    }
+
+    /** CombatTracker.recheckStatus: combat ends 300 ticks after the last damage (100 when only hurt), or at death. */
+    private function recheckCombat(Client $c): void
+    {
+        $reset = $c->combat['in'] ? 300 : 100;
+        if ($c->combat['taking'] && ($c->dead || $c->livingTicks - $c->combat['last'] > $reset)) {
+            $wasInCombat = $c->combat['in'];
+            $c->combat = ['in' => false, 'taking' => false, 'end' => $c->livingTicks] + $c->combat;
+            if ($wasInCombat) {
+                // ServerPlayer.onLeaveCombat: the combat's duration in ticks.
+                $c->send($this->version, 'player_combat_end', \PhpMinecraftJavaServer\Protocol\Binary::writeVarInt($c->combat['end'] - $c->combat['start']));
+            }
+        }
     }
 
     private function respawnPlayer(Client $c): void
@@ -595,6 +628,9 @@ trait Survival
             return;
         }
         ++$c->livingTicks;
+        if ($c->livingTicks % 20 === 0) {
+            $this->recheckCombat($c);
+        }
         $peaceful = $this->config->difficulty === 0;
         if ($peaceful && $this->naturalRegeneration) {
             if ($c->livingTicks % 20 === 0) {

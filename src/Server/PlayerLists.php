@@ -104,13 +104,59 @@ trait PlayerLists
         return $reason === null || $reason === self::DEFAULT_BAN_REASON ? ['translate' => 'multiplayer.disconnect.banned.reason.default'] : ['text' => $reason];
     }
 
-    /** PlayerList.canPlayerLogin: bans, then the whitelist (operators pass), then capacity. */
+    /** @var array<string, array{ip: string, created: string, source: string, expires: string, reason: ?string}>|null keyed by address */
+    private ?array $ipBans = null;
+
+    /** IpBanList: banned-ips.json beside server.json. */
+    private function &ipBanList(): array
+    {
+        if ($this->ipBans === null) {
+            $this->ipBans = [];
+            $path = $this->playerListPath('banned-ips.json');
+            foreach ($path !== null && is_file($path) ? json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR) : [] as $entry) {
+                $this->ipBans[$entry['ip']] = $entry;
+            }
+        }
+        return $this->ipBans;
+    }
+
+    private function saveIpBans(): void
+    {
+        $path = $this->playerListPath('banned-ips.json');
+        if ($path === null) {
+            return;
+        }
+        $json = json_encode(array_values($this->ipBanList()), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
+        if (file_put_contents($path . '.tmp', $json) === false || !rename($path . '.tmp', $path)) {
+            throw new \RuntimeException('Cannot save ' . $path);
+        }
+    }
+
+    /** IP bans in vanilla's HashMap order, keyed by address. */
+    private function orderedIpBans(): array
+    {
+        $bans = $this->ipBanList();
+        return array_map(static fn (string $ip): array => $bans[$ip], Nbt::hashMapOrder(array_map('strval', array_keys($bans))));
+    }
+
+    /** ServerPlayer.getIpAddress: the connection's address without its port. */
+    private static function clientAddress(Client $c): string
+    {
+        $address = preg_replace('/:\d+$/', '', $c->peer) ?? $c->peer;
+        return trim($address, '[]');
+    }
+
+    /** PlayerList.canPlayerLogin: name bans, IP bans, then the whitelist (operators pass), then capacity. */
     private function loginRejection(Client $c): ?array
     {
         $profile = [$c->name, $c->uuid];
         if ($this->listed('banned-players.json', $profile)) {
             $entry = $this->playerList('banned-players.json')[strtolower($c->name)] ?? array_values(array_filter($this->playerList('banned-players.json'), static fn (array $entry): bool => $entry['uuid'] === Binary::formatUuid($c->uuid)))[0];
             return ['translate' => 'multiplayer.disconnect.banned.reason', 'with' => [self::banReason($entry)]];
+        }
+        $ipBan = $this->ipBanList()[self::clientAddress($c)] ?? null;
+        if ($ipBan !== null) {
+            return ['translate' => 'multiplayer.disconnect.banned_ip.reason', 'with' => [self::banReason($ipBan)]];
         }
         if ($this->config->whiteList && !$this->operatorName($c->name) && !$this->listed('whitelist.json', $profile)) {
             return ['translate' => 'multiplayer.disconnect.not_whitelisted'];

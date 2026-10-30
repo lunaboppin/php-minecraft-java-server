@@ -8,13 +8,13 @@ use PhpMinecraftJavaServer\Server\Commands\CommandArguments;
 use PhpMinecraftJavaServer\Server\Commands\CommandRegistry;
 use PhpMinecraftJavaServer\Server\Server;
 
-$publicCommands = ['help', 'spawn', 'list', 'msg', 'tell', 'w', 'me', 'teammsg', 'tm', 'trigger'];
+$publicCommands = ['help', 'spawn', 'list', 'msg', 'tell', 'w', 'me', 'teammsg', 'tm', 'trigger', 'random'];
 $operatorCommands = [
     ...$publicCommands,
-    'version', 'gamemode', 'give', 'tp', 'teleport', 'time', 'weather', 'seed', 'locate', 'setworldspawn',
-    'spawnpoint', 'kill', 'heal', 'setblock', 'fill', 'gamerule', 'save-all', 'summon', 'dimension',
-    'difficulty', 'defaultgamemode', 'op', 'deop', 'kick', 'save-on', 'save-off', 'stop', 'damage',
-    'experience', 'xp', 'clear', 'worldborder', 'enchant', 'ban', 'pardon', 'banlist', 'whitelist', 'tellraw', 'title', 'scoreboard', 'team', 'effect', 'playsound', 'stopsound', 'rotate', 'attribute', 'say',
+    'version', 'gamemode', 'give', 'tp', 'teleport', 'time', 'weather', 'seed', 'locate', 'setworldspawn', 'spawnpoint', 'kill', 'heal', 'setblock', 'fill', 'gamerule', 'save-all', 'summon', 'dimension', 'difficulty',
+    'defaultgamemode', 'op', 'deop', 'kick', 'save-on', 'save-off', 'stop', 'damage', 'experience', 'xp', 'clear', 'worldborder', 'enchant', 'ban', 'pardon', 'banlist', 'ban-ip', 'pardon-ip', 'whitelist', 'tellraw',
+    'title', 'scoreboard', 'team', 'effect', 'playsound', 'stopsound', 'rotate', 'attribute', 'bossbar', 'tag', 'setidletimeout', 'say', 'execute', 'dialog', 'clone', 'forceload', 'particle', 'spectate', 'swing',
+    'stopwatch', 'tick', 'transfer', 'posteffect',
 ];
 
 if (CommandRegistry::names(false) !== $publicCommands || CommandRegistry::names(true) !== $operatorCommands) {

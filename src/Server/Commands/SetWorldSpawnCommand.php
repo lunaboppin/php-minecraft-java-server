@@ -13,11 +13,11 @@ trait SetWorldSpawnCommand
         if (!in_array(count($arguments), [0, 3, 5], true)) {
             throw new \InvalidArgumentException('Usage: /setworldspawn [x y z [yaw pitch]]');
         }
-        if ($sender->dimension !== 'overworld') {
+        if ($this->sourceDimension($sender) !== 'overworld') {
             // Vanilla records the dimension with the spawn; spawns here are Overworld-only.
             throw new \InvalidArgumentException('World spawn requires the Overworld');
         }
-        $position = array_map(static fn (float $value): int => (int) floor($value), $arguments === [] ? [$sender->x, $sender->y, $sender->z] : $this->coordinates(array_slice($arguments, 0, 3), $sender));
+        $position = array_map(static fn (float $value): int => (int) floor($value), $arguments === [] ? [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]] : $this->coordinates(array_slice($arguments, 0, 3), $sender));
         [$yaw, $pitch] = count($arguments) === 5 ? $this->rotationArguments($arguments[3], $arguments[4], $sender) : [0.0, 0.0];
         // Players are placed at the spawn block's centre; the spawn packet sends the block itself.
         $this->world->setting('spawn', [$position[0] + 0.5, (float) $position[1], $position[2] + 0.5]);

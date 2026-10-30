@@ -28,8 +28,8 @@ trait RotateCommand
             $f32 = static fn (float $value): float => unpack('G', pack('G', $value))[1];
             // "~" is relative to the source's rotation; the packet carries the change from the target's.
             $angle = static fn (string $text, float $source, float $current): array => str_starts_with($text, '~') ? [$f32($f32($source + (float) substr($text, 1)) - $current), true] : [$f32((float) $text), false];
-            [$yaw, $relativeYaw] = $angle($arguments[1], $sender->yaw, $target['yaw']);
-            [$pitch, $relativePitch] = $angle($arguments[2], $sender->pitch, $target['pitch']);
+            [$yaw, $relativeYaw] = $angle($arguments[1], $this->sourceRotation($sender)[0], $target['yaw']);
+            [$pitch, $relativePitch] = $angle($arguments[2], $this->sourceRotation($sender)[1], $target['pitch']);
             if (isset($target['client'])) {
                 // ClientboundPlayerRotationPacket; the client applies relative values to its own rotation.
                 $target['client']->send($this->version, 'player_rotation', pack('G', $yaw) . chr((int) $relativeYaw) . pack('G', $pitch) . chr((int) $relativePitch));

@@ -44,7 +44,8 @@ with tempfile.TemporaryDirectory(prefix='php-minecraft-player-lists-') as tmp:
             client.tick_barrier()
         assert any(b'commands.ban.success' in payload for payload in run(op, 'ban Guest Griefing'))
         assert 'multiplayer.disconnect.banned' in disconnect_reason(guest), 'an online player is kicked'
-        assert rejection('Guest') == {'translate': 'multiplayer.disconnect.banned.reason', 'with': [{'text': 'Griefing'}]}, 'a banned player cannot join'
+        # ComponentSerialization writes a plain-text reason as a bare string, as the official server does.
+        assert rejection('Guest') == {'translate': 'multiplayer.disconnect.banned.reason', 'with': ['Griefing']}, 'a banned player cannot join'
         assert any(b'commands.banlist.entry' in payload for payload in run(op, 'banlist'))
         assert any(b'commands.pardon.success' in payload for payload in run(op, 'pardon Guest'))
         Probe(port, 'guest').login('Guest').close()

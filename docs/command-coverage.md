@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **54** have an existing PHP handler; **38** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **71** have an existing PHP handler; **21** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -18,11 +18,11 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/advancement` | — | Unimplemented | — |
 | `/attribute` | [AttributeCommand.php](../src/Server/Commands/AttributeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban` | [BanCommand.php](../src/Server/Commands/BanCommand.php) | Partial handler; native behavior incomplete | — |
-| `/ban-ip` | — | Unimplemented | — |
+| `/ban-ip` | [BanIpCommand.php](../src/Server/Commands/BanIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/banlist` | [BanListCommand.php](../src/Server/Commands/BanListCommand.php) | Partial handler; native behavior incomplete | — |
-| `/bossbar` | — | Unimplemented | — |
+| `/bossbar` | [BossBarCommand.php](../src/Server/Commands/BossBarCommand.php) | Partial handler; native behavior incomplete | — |
 | `/clear` | [ClearCommand.php](../src/Server/Commands/ClearCommand.php) | Partial handler; native behavior incomplete | — |
-| `/clone` | — | Unimplemented | — |
+| `/clone` | [CloneCommand.php](../src/Server/Commands/CloneCommand.php) | Partial handler; native behavior incomplete | — |
 | `/compute` | — | Unimplemented | — |
 | `/damage` | [DamageCommand.php](../src/Server/Commands/DamageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/data` | — | Unimplemented | — |
@@ -30,16 +30,16 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/debug` | — | Unimplemented | — |
 | `/defaultgamemode` | [DefaultGameModeCommand.php](../src/Server/Commands/DefaultGameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/deop` | [DeOpCommand.php](../src/Server/Commands/DeOpCommand.php) | Partial handler; native behavior incomplete | — |
-| `/dialog` | — | Unimplemented | — |
+| `/dialog` | [DialogCommand.php](../src/Server/Commands/DialogCommand.php) | Partial handler; native behavior incomplete | — |
 | `/difficulty` | [DifficultyCommand.php](../src/Server/Commands/DifficultyCommand.php) | Partial handler; native behavior incomplete | — |
 | `/effect` | [EffectCommand.php](../src/Server/Commands/EffectCommand.php) | Partial handler; native behavior incomplete | — |
 | `/enchant` | [EnchantCommand.php](../src/Server/Commands/EnchantCommand.php) | Partial handler; native behavior incomplete | — |
-| `/execute` | — | Unimplemented | — |
+| `/execute` | [ExecuteCommand.php](../src/Server/Commands/ExecuteCommand.php) | Partial handler; native behavior incomplete | — |
 | `/experience` | [ExperienceCommand.php](../src/Server/Commands/ExperienceCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fetchprofile` | — | Unimplemented | — |
 | `/fill` | [FillCommand.php](../src/Server/Commands/FillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fillbiome` | — | Unimplemented | — |
-| `/forceload` | — | Unimplemented | — |
+| `/forceload` | [ForceLoadCommand.php](../src/Server/Commands/ForceLoadCommand.php) | Partial handler; native behavior incomplete | — |
 | `/function` | — | Unimplemented | — |
 | `/gamemode` | [GameModeCommand.php](../src/Server/Commands/GameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/gamerule` | [GameRuleCommand.php](../src/Server/Commands/GameRuleCommand.php) | Partial handler; native behavior incomplete | — |
@@ -56,13 +56,13 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/msg` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/op` | [OpCommand.php](../src/Server/Commands/OpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/pardon` | [PardonCommand.php](../src/Server/Commands/PardonCommand.php) | Partial handler; native behavior incomplete | — |
-| `/pardon-ip` | — | Unimplemented | — |
-| `/particle` | — | Unimplemented | — |
+| `/pardon-ip` | [PardonIpCommand.php](../src/Server/Commands/PardonIpCommand.php) | Partial handler; native behavior incomplete | — |
+| `/particle` | [ParticleCommand.php](../src/Server/Commands/ParticleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/perf` | — | Unimplemented | — |
 | `/place` | — | Unimplemented | — |
 | `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
-| `/posteffect` | — | Unimplemented | — |
-| `/random` | — | Unimplemented | — |
+| `/posteffect` | [PostEffectCommand.php](../src/Server/Commands/PostEffectCommand.php) | Partial handler; native behavior incomplete | — |
+| `/random` | [RandomCommand.php](../src/Server/Commands/RandomCommand.php) | Partial handler; native behavior incomplete | — |
 | `/recipe` | — | Unimplemented | — |
 | `/reload` | — | Unimplemented | — |
 | `/return` | — | Unimplemented | — |
@@ -76,29 +76,29 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/scoreboard` | [ScoreboardCommand.php](../src/Server/Commands/ScoreboardCommand.php) | Partial handler; native behavior incomplete | — |
 | `/seed` | [SeedCommand.php](../src/Server/Commands/SeedCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setblock` | [SetBlockCommand.php](../src/Server/Commands/SetBlockCommand.php) | Partial handler; native behavior incomplete | — |
-| `/setidletimeout` | — | Unimplemented | — |
+| `/setidletimeout` | [SetIdleTimeoutCommand.php](../src/Server/Commands/SetIdleTimeoutCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setworldspawn` | [SetWorldSpawnCommand.php](../src/Server/Commands/SetWorldSpawnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spawnpoint` | [SpawnPointCommand.php](../src/Server/Commands/SpawnPointCommand.php) | Partial handler; native behavior incomplete | — |
-| `/spectate` | — | Unimplemented | — |
+| `/spectate` | [SpectateCommand.php](../src/Server/Commands/SpectateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spreadplayers` | — | Unimplemented | — |
 | `/stop` | [StopCommand.php](../src/Server/Commands/StopCommand.php) | Partial handler; native behavior incomplete | — |
 | `/stopsound` | [StopSoundCommand.php](../src/Server/Commands/StopSoundCommand.php) | Partial handler; native behavior incomplete | — |
-| `/stopwatch` | — | Unimplemented | — |
+| `/stopwatch` | [StopwatchCommand.php](../src/Server/Commands/StopwatchCommand.php) | Partial handler; native behavior incomplete | — |
 | `/summon` | [SummonCommand.php](../src/Server/Commands/SummonCommand.php) | Partial handler; native behavior incomplete | — |
-| `/swing` | — | Unimplemented | — |
-| `/tag` | — | Unimplemented | — |
+| `/swing` | [SwingCommand.php](../src/Server/Commands/SwingCommand.php) | Partial handler; native behavior incomplete | — |
+| `/tag` | [TagCommand.php](../src/Server/Commands/TagCommand.php) | Partial handler; native behavior incomplete | — |
 | `/team` | [TeamCommand.php](../src/Server/Commands/TeamCommand.php) | Partial handler; native behavior incomplete | — |
 | `/teammsg` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | — |
 | `/teleport` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tell` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
 | `/tellraw` | [TellrawCommand.php](../src/Server/Commands/TellrawCommand.php) | Partial handler; native behavior incomplete | — |
 | `/test` | — | Unimplemented | — |
-| `/tick` | — | Unimplemented | — |
+| `/tick` | [TickCommand.php](../src/Server/Commands/TickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/time` | [TimeCommand.php](../src/Server/Commands/TimeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/title` | [TitleCommand.php](../src/Server/Commands/TitleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tm` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | `/teammsg` |
 | `/tp` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | `/teleport` |
-| `/transfer` | — | Unimplemented | — |
+| `/transfer` | [TransferCommand.php](../src/Server/Commands/TransferCommand.php) | Partial handler; native behavior incomplete | — |
 | `/trigger` | [TriggerCommand.php](../src/Server/Commands/TriggerCommand.php) | Partial handler; native behavior incomplete | — |
 | `/version` | [VersionCommand.php](../src/Server/Commands/VersionCommand.php) | Partial handler; native behavior incomplete | — |
 | `/w` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |

@@ -18,6 +18,8 @@ final class Client
     /** FoodData.tickTimer, and the ticks since the player was created (Entity.tickCount). */
     public int $foodTimer = 0;
     public int $livingTicks = 0;
+    /** @var array{in: bool, taking: bool, last: int, start: int, end: int} CombatTracker, timed in livingTicks */
+    public array $combat = ['in' => false, 'taking' => false, 'last' => 0, 'start' => 0, 'end' => 0];
     /** Health, food and whether saturation was empty, as last sent. */
     public array $lastSentVitals = [];
     public float $fallDistance = 0;
@@ -26,6 +28,8 @@ final class Client
     public bool $dead = false;
     public bool $flying = false;
     public bool $sneaking = false;
+    /** @var array|null the selected entity a spectator views through (ServerPlayer.camera), or null */
+    public ?array $camera = null;
     public int $lastAttackTick = -20;
     public ?int $lastAttackItem = null;
     public bool $sprinting = false;
@@ -71,6 +75,9 @@ final class Client
     public array $entities = [];
     public bool $trackingDirty = true;
     public ?array $personalSpawn = null;
+    /** @var list<string> ServerPlayer.postEffects, with whether the client still needs them */
+    public array $postEffects = [];
+    public bool $postEffectsDirty = true;
     public string $state = 'handshake';
     public bool $bufferedWork = false;
     public string $input = '';
@@ -101,6 +108,10 @@ final class Client
     public float $yaw = 0;
     public float $pitch = 0;
     public bool $ground = true;
+    /** Entity.tags: the player's command tags. */
+    public array $tags = [];
+    /** ServerPlayer.lastActionTime, in seconds. */
+    public float $lastActionTime = 0.0;
     /** The highest block change sequence to acknowledge in the next tick, or -1. */
     public int $ackUpTo = -1;
     /** Player.takeXpDelay: ticks until the player can take another experience orb. */

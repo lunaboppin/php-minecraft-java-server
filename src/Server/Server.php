@@ -15,6 +15,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use BossBars;
+
     use Mining;
 
     use ExperienceOrbs;
@@ -60,6 +62,14 @@ final class Server
     use MobMovement;
 
     use Authentication;
+
+    use Cameras;
+
+    use Swinging;
+
+    use TickRates;
+
+    use CommandSources;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -76,6 +86,9 @@ final class Server
     private string|array|null $stopReason = null;
 
     private int $nextEntity = 1;
+
+    /** server.properties player-idle-timeout, in minutes; 0 never kicks. */
+    private int $playerIdleTimeout = 0;
 
     private int $ticks = 0;
 
@@ -303,9 +316,19 @@ final class Server
                 $this->pollAuthentication();
                 $now = self::now();
                 if ($now >= $nextTick) {
+                    // MinecraftServer.runServer: a sprint runs the next tick at once.
+                    $sprint = $this->sprinting() && $this->checkShouldSprintThisTick();
+                    $started = hrtime(true);
                     $this->tick($now);
+                    $this->tickTimes[] = hrtime(true) - $started;
+                    if (count($this->tickTimes) > 100) {
+                        array_shift($this->tickTimes);
+                    }
+                    if ($sprint) {
+                        $this->sprintTimeSpent += hrtime(true) - $this->sprintTickStart;
+                    }
                     ++$this->ticks;
-                    $nextTick = max($nextTick + 0.05, $now);
+                    $nextTick = $sprint ? $now : max($nextTick + $this->nanosecondsPerTick / 1e9, $now);
                 }
             }
         } finally {
@@ -398,7 +421,14 @@ final class Server
                 'status' => $this->status($c, $name, $r),
                 'login' => $this->login($c, $name, $r),
                 'configuration' => $this->configuration($c, $name, $r),
-                'play' => $this->withDimension($c->dimension, fn () => $this->play($c, $name, $r)),
+                'play' => $this->withDimension($c->dimension, function () use ($c, $name, $r): void {
+                    // ServerPlayer.resetLastActionTime: the packets that show a player is not idle.
+                    if (in_array($name, ['player_input', 'player_action', 'use_item_on', 'use_item', 'set_carried_item', 'chat_command', 'player_command', 'attack',
+                        'interact', 'teleport_to_entity', 'client_command', 'container_click', 'place_recipe', 'container_button_click', 'sign_update'], true)) {
+                        $c->lastActionTime = self::now();
+                    }
+                    $this->play($c, $name, $r);
+                }),
                 default => throw new ProtocolException('Invalid connection state'),
             };
         } catch (ProtocolException $e) {
@@ -524,6 +554,7 @@ final class Server
         } elseif ($name === 'finish_configuration' && $c->registriesSent) {
             $r->end();
             $c->state = 'play';
+            $c->lastActionTime = self::now();
             $this->join($c);
         } elseif (!in_array($name, ['custom_payload', 'resource_pack'], true)) {
             throw new ProtocolException('Unexpected configuration packet');
@@ -627,9 +658,9 @@ final class Server
         $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
         $this->sendJoinWeather($c);
         $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
-        // The server ticks at 20 per second, unfrozen and without pending steps.
-        $c->send($this->version, 'ticking_state', pack('G', 20.0) . "\0");
-        $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
+        $this->sendTickingState($c);
+        // CustomBossEvents.onPlayerConnect.
+        $this->bossBarsConnect($c);
         $this->scheduleChunks($c);
         // The player's ServerEntity starts with them, counting ticks from here.
         $this->playerMotionTracker($c);
@@ -638,7 +669,8 @@ final class Server
             $this->spawnPlayer($c, $other);
             $this->spawnPlayer($other, $c);
         }
-        $c->send($this->version, 'post_effects', Binary::writeVarInt(0));
+        // ServerPlayer's first tick sends its saved post effects.
+        $this->sendPostEffects($c);
         $this->syncInventory($c);
         // PlayerList.sendActivePlayerEffects: saved effects, without blending in.
         foreach (array_keys($c->effects) as $effect) {
@@ -875,6 +907,7 @@ final class Server
                 if ($c->chatSpam >= 200 && !$this->operator($c)) {
                     $this->disconnect($c, ['translate' => 'disconnect.spam']);
                 }
+                $c->lastActionTime = self::now();
                 return;
             case 'command_suggestion':
                 $id = $r->varInt();
@@ -953,6 +986,14 @@ final class Server
                 }return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
+                return;
+            case 'punch':
+                $r->end();
+                // ServerGamePacketListenerImpl.handlePunch: the main hand's attack swing, for trackers only.
+                if (!$c->dead) {
+                    [$type, $duration] = $this->attackAnimation($c->inventory[36 + $c->heldSlot] ?? null);
+                    $this->swing($c->entityId, 0, $type, $duration, $c);
+                }
                 return;
             case 'player_input': $flags = $r->byte();
                 $r->end();
@@ -1043,6 +1084,10 @@ final class Server
         $oldYaw = $c->yaw;
         $oldY = $c->y;
         $distance = sqrt(($x - $c->x) ** 2 + ($z - $c->z) ** 2);
+        // handlePlayerKnownMovement: real movement shows the player is not idle.
+        if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 1.0E-5) {
+            $c->lastActionTime = self::now();
+        }
         $c->x = $x;
         $c->y = $y;
         $c->z = $z;
@@ -1163,10 +1208,12 @@ final class Server
             return;
         }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && !$c->sneaking && $this->useSpecialBlock($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }
@@ -1176,6 +1223,7 @@ final class Server
             };
             if ($type !== null) {
                 $this->openWindow($c, $type, [$x, $y, $z]);
+                $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
                 return;
             }
@@ -1191,11 +1239,14 @@ final class Server
                         $this->setBlock($x, $otherY, $z, $this->version->catalog->state($name, $other));
                     }
                 }
+                $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
                 return;
             }
             if (str_ends_with($name, '_bed') && $c->dimension === 'overworld') {
                 $c->personalSpawn = [$x + 0.5, (float) $y + 1, $z + 0.5];
+                // BedBlock answers SUCCESS_SERVER, which the sleeper sees too.
+                $this->useSwing($c, $hand, true);
                 $this->savePlayer($c);
                 $this->tell($c, 'Respawn point set');
                 $this->acknowledge($c, $sequence);
@@ -1206,11 +1257,13 @@ final class Server
         $replace = $this->version->catalog->blocks[$name]['replaceable'];
         [$tx, $ty, $tz] = $replace ? [$x, $y, $z] : [$x + $dx, $y + $dy, $z + $dz];
         if ($this->useSpawnEggOn($c, $slot, $x, $y, $z, $face)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
         if ($itemName === 'flint_and_steel' && $this->ignitePortal($c, $tx, $ty, $tz, $slot)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }
@@ -1295,6 +1348,7 @@ final class Server
                         $this->giveStack($c, ['item' => $this->version->blocks['items']['bucket'], 'count' => 1]);
                     }$this->syncInventory($c);
                 }
+                $this->useSwing($c, $hand);
             }
         }
         $this->blockUpdate($c, $tx, $ty, $tz);
@@ -1360,6 +1414,13 @@ final class Server
         }
     }
 
+    /** ServerPlayer.sendPostEffects. */
+    private function sendPostEffects(Client $c): void
+    {
+        $c->postEffectsDirty = false;
+        $c->send($this->version, 'post_effects', Binary::writeVarInt(count($c->postEffects)) . implode('', array_map(Binary::writeString(...), $c->postEffects)));
+    }
+
     private function blockUpdate(Client $c, int $x, int $y, int $z): void
     {
         $c->send($this->version, 'block_update', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($this->world->get($x, $y, $z)));
@@ -1393,6 +1454,21 @@ final class Server
         if (($announcement = $this->announcements->poll($this->players() !== [])) !== null) {
             $this->broadcast($announcement);
         }
+        $this->tickRateManagerTick();
+        // ServerLevel.tick: game time and clocks stand still while the game is frozen.
+        if ($this->runGameElements) {
+            $this->tickTime();
+        }
+        $this->tickSwings();
+        $this->tickDimensions();
+        if ($this->locating !== []) {
+            $this->pollLocates();
+        }
+        $this->tickClients($now);
+    }
+
+    private function tickTime(): void
+    {
         ++$this->worldAge;
         // ServerClockManager.tick: while advance_time is on, each unpaused clock adds its rate to a
         // float partial tick and moves on by the whole ticks.
@@ -1407,10 +1483,11 @@ final class Server
                 $this->$total += $whole;
             }
         }
-        $this->tickDimensions();
-        if ($this->locating !== []) {
-            $this->pollLocates();
-        }
+    }
+
+    /** Generation workers, then each connection and its player. */
+    private function tickClients(float $now): void
+    {
         if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
             $this->generationWorkersCheckedAt = $now;
             $this->checkGenerationWorkers();
@@ -1431,6 +1508,11 @@ final class Server
                 continue;
             }
             try {
+                // ServerGamePacketListenerImpl.tick: idle longer than the timeout is kicked.
+                if ($this->playerIdleTimeout > 0 && $c->lastActionTime > 0 && $now - $c->lastActionTime > $this->playerIdleTimeout * 60) {
+                    $this->disconnect($c, ['translate' => 'multiplayer.disconnect.idling']);
+                    continue;
+                }
                 // ServerGamePacketListenerImpl.tick: the chat spam count falls by one a tick.
                 if ($c->chatSpam > 0) {
                     --$c->chatSpam;
@@ -1455,7 +1537,12 @@ final class Server
                         return;
                     }
                     $this->tickSurvival($c);
+                    $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
+                    // ServerPlayer.tick ends by sending changed post effects, the empty list included.
+                    if ($c->postEffectsDirty) {
+                        $this->sendPostEffects($c);
+                    }
                     $this->syncEquipment($c);
                     $this->syncPlayerMetadata($c);
                     if ($this->ticks % 20 === 0) {
@@ -1490,6 +1577,23 @@ final class Server
         $c->closingAt = self::now();
     }
 
+    /** ComponentSerialization's JSON: a component with only text is written as a bare string, at any depth. */
+    private static function compactComponent(mixed $component): mixed
+    {
+        if (!is_array($component)) {
+            return $component;
+        }
+        if (array_keys($component) === ['text'] && is_string($component['text'])) {
+            return $component['text'];
+        }
+        foreach (['with', 'extra'] as $list) {
+            if (isset($component[$list]) && is_array($component[$list])) {
+                $component[$list] = array_map(self::compactComponent(...), $component[$list]);
+            }
+        }
+        return $component;
+    }
+
     /** @param string|array $reason plain text, or a text component */
     private function disconnect(Client $c, string|array $reason): void
     {
@@ -1498,7 +1602,7 @@ final class Server
         }
         if (in_array($c->state, ['login', 'configuration', 'play'], true)) {
             $component = is_array($reason) ? $reason : ['text' => $reason];
-            $payload = $c->state === 'login' ? Binary::writeString(json_encode($component, JSON_THROW_ON_ERROR)) : Nbt::component($component);
+            $payload = $c->state === 'login' ? Binary::writeString(json_encode(self::compactComponent($component), JSON_THROW_ON_ERROR)) : Nbt::component($component);
             try {
                 $c->send($this->version, $c->state === 'login' ? 'login_disconnect' : 'disconnect', $payload);
             } catch (ProtocolException) {

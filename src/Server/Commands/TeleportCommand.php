@@ -22,7 +22,7 @@ trait TeleportCommand
         };
         if (count($destination) === 1) {
             $to = $this->selectEntities($destination[0], $sender, false, true)[0];
-            $dimension = isset($to['client']) ? $to['client']->dimension : $sender->dimension;
+            $dimension = isset($to['client']) ? $to['client']->dimension : $this->sourceDimension($sender);
             foreach ($targets as $target) {
                 $this->moveEntity($target, $dimension, [$to['x'], $to['y'], $to['z']]);
             }
@@ -55,7 +55,7 @@ trait TeleportCommand
                 $yaw -= 360.0 * floor(($yaw + 180.0) / 360.0);
                 $this->rotateEntity($target, $yaw, max(-90.0, min(90.0, $angle($rotation[1], $target['pitch']))));
             }
-            $this->moveEntity($target, $sender->dimension, $position);
+            $this->moveEntity($target, $this->sourceDimension($sender), $position);
             if ($facing !== null) {
                 $this->faceEntity($target, $facing);
             }
@@ -143,6 +143,8 @@ trait TeleportCommand
             return;
         }
         $player = $target['client'];
+        // ServerPlayer.teleportTo with resetCamera: a teleported spectator stops viewing.
+        $this->setCamera($player, null);
         if ($player->dimension === $dimension) {
             $this->teleport($player, $position);
         } else {

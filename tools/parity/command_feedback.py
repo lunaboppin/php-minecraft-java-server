@@ -296,6 +296,170 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Command boss bars, their boss_event packets (random UUIDs aside) and a rejoining listed player.
+    ('bossbar list', False), ('bossbar add raid "Raid"', False), ('bossbar add raid "Again"', False), ('bossbar add minecraft:alpha {"text":"Alpha","color":"red"}', False),
+    ('bossbar add zeta:omega "Omega"', False), ('bossbar list', False), ('bossbar get raid value', False), ('bossbar get raid max', False),
+    ('bossbar get raid visible', False), ('bossbar get raid players', False), ('bossbar set raid players @s', False), ('bossbar set raid players @s', False),
+    ('bossbar get raid players', False), ('bossbar set raid value 40', False), ('bossbar set raid value 40', False), ('bossbar set raid max 80', False),
+    ('bossbar set raid max 80', False), ('bossbar set raid value 200', False), ('bossbar set raid color red', False), ('bossbar set raid color red', False),
+    ('bossbar set raid style notched_10', False), ('bossbar set raid style notched_10', False), ('bossbar set raid name {"text":"Big raid","bold":true}', False),
+    ('bossbar set raid name {"text":"Big raid","bold":true}', False), ('bossbar set raid visible false', False), ('bossbar set raid visible false', False),
+    ('bossbar get raid visible', False), ('bossbar set raid value 10', False), ('bossbar set raid visible true', False), ('bossbar set raid players Witness', False),
+    ('bossbar set raid players @a', False), ('bossbar set raid players', False), ('bossbar set raid players', False), ('bossbar set alpha players @s', False),
+    ('!reconnect', False), ('bossbar get nothing value', False), ('bossbar remove nothing', False), ('bossbar remove raid', False), ('bossbar remove minecraft:alpha', False),
+    ('bossbar remove zeta:omega', False), ('bossbar list', False), ('!witness bossbar list', False),
+    # Entity tags: the one entity changed is named, several are counted, and lists are sorted.
+    ('!quiet kill @e[type=!player]', False), ('tag @s list', False), ('tag @s add red', False), ('tag @s add red', False), ('tag @a add blue', False),
+    ('tag @s list', False), ('tag Witness list', False), ('tag @a list', False), ('tag @a add green', False), ('tag @s add k5', False),
+    ('tag @a list', False), ('tag @e[tag=red] list', False), ('tag @e[tag=!red] list', False), ('tag @e[tag=] list', False),
+    ('tag @s remove red', False), ('tag @s remove red', False), ('tag @a remove blue', False), ('!witness tag @s add nope', False),
+    ('!quiet tag @a remove green', False), ('!quiet tag @s remove k5', False),
+    ('setidletimeout 5', False), ('setidletimeout 0', False), ('!witness setidletimeout 3', False),
+    # IP bans on addresses no test client uses; banning a connected player would disconnect them all.
+    ('banlist ips', False), ('ban-ip 10.0.0.5', False), ('ban-ip 10.0.0.5', False), ('ban-ip 10.0.0.6 Griefing  the spawn', False),
+    ('ban-ip 192.168.1.20 @a', False), ('ban-ip nobody', False), ('ban-ip 999.1.1.1', False), ('banlist ips', False), ('banlist', False),
+    ('pardon-ip 10.0.0.5', False), ('pardon-ip 10.0.0.5', False), ('pardon-ip notanip', False), ('!quiet pardon-ip 10.0.0.6', False),
+    ('!quiet pardon-ip 192.168.1.20', False), ('!witness ban-ip 10.0.0.9', False),
+    # Clone modes, overlap, size, loading and dimension checks, inside every scattered spawn's view.
+    ('!quiet fill 0 240 0 2 242 2 stone', False), ('!quiet setblock 1 241 1 oak_sign', False), ('!quiet setblock 0 240 0 air', False),
+    ('clone 0 240 0 2 242 2 10 240 10', False), ('clone 0 240 0 2 242 2 10 240 10', False), ('clone 0 240 0 2 242 2 1 240 1', False),
+    ('clone 0 240 0 2 242 2 1 240 1 replace force', False), ('clone 0 240 0 2 242 2 20 240 0 masked', False),
+    ('clone 0 240 0 2 242 2 0 250 0 filtered stone', False), ('clone 0 240 0 2 242 2 0 250 0 filtered #minecraft:logs', False),
+    ('clone 0 240 0 2 242 2 0 260 0 strict replace move', False), ('clone 0 240 0 2 242 2 0 260 0 masked', False),
+    ('clone 0 240 0 31 300 31 0 240 0 replace force', False), ('clone 0 240 0 100 242 100 0 270 0', False), ('clone 0 240 0 2 242 2 5000 240 5000', False),
+    ('clone from overworld 0 260 0 2 262 2 to minecraft:overworld 16 240 16 replace normal', False),
+    ('clone from minecraft:nowhere 0 260 0 2 262 2 16 240 16', False), ('clone ~ ~ ~ ~1 ~1 ~1 ~ 280 ~ masked', False),
+    ('clone 0 400 0 1 401 1 0 240 0', False), ('clone 0 260 0 2 262 2 0 261 0 masked move', False),
+    ('!quiet fill 4 290 4 5 291 5 barrier', False), ('clone 4 290 4 5 291 5 8 290 8', False),
+    # Forced chunks, far from both scattered spawns; each keeps the chunks up to 2 away loaded.
+    ('forceload query', False), ('forceload add 1000 1000', False), ('forceload add 1000 1000', False), ('forceload query 1000 1000', False),
+    ('forceload query 1016 1000', False), ('setblock 1000 100 1000 stone', False), ('setblock 1020 100 1000 stone', False),
+    ('forceload add -40 -40 -1 20', False), ('forceload add -40 -40 -1 20', False), ('forceload query', False),
+    ('forceload add 0 0 300 0', False), ('forceload add 0 0 255 0', False), ('forceload add 0 0 256 0', False),
+    ('forceload remove 1000 1000', False), ('forceload remove 1000 1000', False), ('forceload query', False),
+    ('forceload remove -40 -40 40 40', False), ('forceload add 30000000 0', False), ('forceload add 5000 5000', False),
+    ('forceload remove all', False), ('forceload query', False), ('forceload remove all', False), ('forceload add 2000 2000', False),
+    ('setblock 2032 100 2032 stone', False), ('setblock 2048 100 2032 stone', False), ('setblock 1968 100 1968 stone', False),
+    ('setblock 1952 100 1968 stone', False), ('forceload query 1 2 3', False), ('forceload query 1.5 2', False), ('forceload add 1', False),
+    ('forceload remove all', False),
+    # Particles on a platform both players stand on, with their level_particles packets.
+    ('!quiet fill -2 199 -2 2 199 2 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('particle flame 0 201 0', False),
+    ('particle minecraft:heart 0.25 201 -1 1 2 3 0.5 10', False), ('particle crit 0 201 0 0 0 0 0 5 force', False),
+    ('particle crit 0 201 0 0 0 0 0 5 normal Witness', False), ('particle crit 0 201 0 0 0 0 0 5 force @a[name=nobody]', False),
+    ('particle crit 0 250 0 0 0 0 0 5 normal', False), ('particle crit 0 250 0 0 0 0 0 5 force', False),
+    ('particle nothing_here 0 201 0', False), ('particle dust{color:[1.0,0.5,0.0],scale:2} 0 201 0', False),
+    ('particle dust{color:16711680,scale:1.5f} 0 201 0', False), ('particle dust{color:[1.0, 0.0, 0.0], scale:1} 0 201 0', False),
+    ('particle dust{color:[1,0,0],scale:5} 0 201 0', False), ('particle dust 0 201 0', False), ('particle dust{scale:1} 0 201 0', False),
+    ('particle dust_color_transition{from_color:[1,0,0],to_color:[0,0,1],scale:1} 0 201 0', False),
+    ('particle block{block_state:"stone"} 0 201 0', False),
+    ('particle block{block_state:{Name:"minecraft:oak_log",Properties:{axis:"x"}}} 0 201 0', False),
+    ('particle falling_dust{block_state:"minecraft:sand"} 0 201 0', False), ('particle entity_effect{color:[1,0,0,0.5]} 0 201 0', False),
+    ('particle entity_effect{color:-1} 0 201 0', False), ('particle effect 0 201 0', False),
+    ('particle effect{color:[0,1,0],power:2} 0 201 0', False), ('particle dragon_breath 0 201 0', False),
+    ('particle dragon_breath{power:3} 0 201 0', False), ('particle sculk_charge{roll:1.5} 0 201 0', False),
+    ('particle shriek{delay:7} 0 201 0', False), ('particle geyser{water_blocks:3} 0 201 0', False),
+    ('particle geyser_base{water_blocks:3,burst_impulse_base:0.5} 0 201 0', False), ('particle flash{color:[1,1,1,1]} 0 201 0', False),
+    ('particle tinted_leaves{color:255} 0 201 0', False), ('particle flame{ignored:1} 0 201 0 ^ ^ ^1 0 1', False),
+    ('particle flame ~ ~ ~', False), ('particle block{block_state:{id:"minecraft:oak_log",properties:{axis:"x"}}} 0 201 0', False),
+    ('particle block{block_state:{id:"oak_log",properties:{axis:"q"}}} 0 201 0', False), ('particle block{} 0 201 0', False),
+    ('particle dust_color_transition{} 0 201 0', False), ('particle geyser_base{water_blocks:1} 0 201 0', False),
+    ('particle dust{color:[1,0,0],scale:0.001} 0 201 0', False), ('particle dust{color:[1,0,0],scale:4.5} 0 201 0', False),
+    # Spectator cameras on a platform both players stand on, with their set_camera packets.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('!quiet gamemode creative @s', False), ('spectate', False),
+    ('spectate Witness', False), ('!witness spectate ParityProbe', False), ('!quiet gamemode spectator @s', False), ('spectate @s', False),
+    ('spectate Witness', False), ('spectate Witness ParityProbe', False), ('spectate', False), ('spectate', False),
+    ('spectate @e[type=pig]', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False), ('spectate @e[type=pig,limit=1]', False),
+    ('spectate @e[type=pig]', False), ('spectate ParityProbe Witness', False), ('gamemode creative @s', False), ('spectate Witness', False),
+    ('!quiet gamemode spectator @s', False), ('spectate Witness', False), ('tp @s 3 200 3', False), ('spectate Witness', False),
+    ('!quiet kill @e[type=pig]', False), ('!quiet gamemode creative @s', False),
+    # Swings on a platform both players stand on, with their swing_animation packets.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('swing', False), ('swing @s offhand', False),
+    ('swing Witness mainhand stab', False), ('swing @a offhand whack 20', False), ('swing @a mainhand none 1s', False),
+    ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False),
+    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
+    ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
+    # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
+    ('stopwatch query lap', False), ('stopwatch create lap', False), ('stopwatch create minecraft:lap', False),
+    ('stopwatch create custom:timer', False), ('stopwatch restart lap', False), ('stopwatch restart nothing', False),
+    ('stopwatch remove lap', False), ('stopwatch remove lap', False), ('stopwatch remove custom:timer', False), ('stopwatch create Bad', False),
+    ('!witness stopwatch create lap', False),
+    # Tick rate, freezing and stepping with their ticking packets; sprints report wall-clock timings.
+    ('tick rate 40', False), ('tick rate 20.55', False), ('tick rate 0.5', False), ('tick rate 10001', False), ('tick step', False),
+    ('tick step stop', False), ('tick freeze', False), ('tick freeze', False), ('tick step', False), ('tick step 5', False),
+    ('tick step 2s', False), ('tick step stop', False), ('tick step stop', False), ('tick step 0', False), ('tick unfreeze', False),
+    ('tick sprint stop', False), ('tick rate 20', False), ('!witness tick freeze', False),
+    # Transfers, with their transfer packets, which the test clients ignore.
+    ('transfer example.com', False), ('transfer "play.example.net" 25570', False), ('transfer other.host 1 Witness', False),
+    ('transfer other.host 2 @a', False), ('transfer other.host 3 @a[name=nobody]', False), ('transfer other.host 0', False),
+    ('transfer other.host 65536', False), ('transfer "spaced host" 4 Witness', False), ('!witness transfer example.com', False),
+    # Random sequences, which both servers seed from world seed 42.
+    ('!quiet random reset *', False),
+    ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random value 1..6 dice', False), ('random roll 1..100 dice', False),
+    ('random value 1..6 minecraft:other', False), ('random value -5..5 dice', False), ('random value 5 dice', False),
+    ('random value .. dice', False), ('random value ..10 dice', False), ('random value 1.. dice', False), ('random value 3..1 dice', False),
+    ('random value 0..2147483646 dice', False), ('random value -2147483648..-2 dice', False), ('random reset dice', False),
+    ('random value 1..6 dice', False), ('random reset dice 7', False), ('random value 1..6 dice', False), ('random reset dice 7 false', False),
+    ('random value 1..6 dice', False), ('random reset dice 7 false false', False), ('random value 1..6 dice', False),
+    ('random value 1..6 other', False), ('random reset *', False), ('random value 1..6 dice', False), ('random reset * 3 true false', False),
+    ('random value 1..6 dice', False), ('random value 1..6 other', False), ('random reset * 0', False),
+    ('!witness random value 1..6 dice', False), ('!witness random reset *', False),
+    # Post effects, with the post_effects packets each change sends on the player's next tick.
+    ('posteffect list', False), ('posteffect list Witness', False), ('posteffect add @a minecraft:creeper', False),
+    ('posteffect add @a creeper', False), ('posteffect add Witness spider', False), ('posteffect list', False),
+    ('posteffect list Witness', False), ('posteffect remove @a creeper', False), ('posteffect remove @a creeper', False),
+    ('posteffect remove Witness spider', False), ('posteffect clear @a', False), ('posteffect add @s invert', False),
+    ('posteffect clear @a', False), ('posteffect add @a[name=nobody] creeper', False), ('!witness posteffect list', False),
+    ('!quiet posteffect clear @a', False),
+    # /execute modifiers, conditions and forks on a platform both players stand on; forked failures stay silent.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('execute run say hi', False),
+    ('execute as Witness run say hi', False), ('execute as @a run say multi', False), ('execute at Witness run setblock ~ ~-1 ~ dirt', False),
+    ('execute positioned 2 200 2 run setblock ~ ~-1 ~ glass', False), ('execute positioned 2 200 2 run setblock ~ ~-1 ~ glass', False),
+    ('execute as @a run setblock 1 199 1 glass', False), ('execute if entity @a', False), ('execute if entity @e[type=pig]', False),
+    ('execute unless entity @e[type=pig]', False), ('execute unless entity @a', False), ('execute if block 0 199 0 dirt', False),
+    ('execute if block 0 199 0 stone', False), ('!quiet scoreboard objectives add sc dummy', False),
+    ('!quiet scoreboard players set Witness sc 5', False), ('execute if score Witness sc matches 1..10', False),
+    ('execute if score Witness sc matches 6..', False), ('execute if score Witness sc > ParityProbe sc', False),
+    ('!quiet scoreboard players set ParityProbe sc 3', False), ('execute if score Witness sc > ParityProbe sc', False),
+    ('execute unless score Witness sc <= ParityProbe sc', False), ('execute if dimension overworld', False),
+    ('execute if dimension the_nether', False), ('execute if loaded 0 199 0', False), ('execute if loaded 100000 0 100000', False),
+    ('execute rotated 90 0 run tp @s ^ ^ ^1', False), ('!quiet tp @a 0 200 0 0 0', False), ('execute facing 5 200 0 run tp @s ^ ^ ^1', False),
+    ('!quiet tp @a 0 200 0 0 0', False), ('execute anchored eyes run tp @s ^ ^ ^', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('execute as @a at @s run setblock ~ ~-1 ~ gold_block', False), ('execute if entity @s run say ok', False),
+    ('execute unless entity @s run say no', False), ('execute as @e[type=pig] run say none', False),
+    ('execute as @a if entity @s[name=Witness]', False), ('execute as @a unless entity @s[name=Witness]', False),
+    ('execute align xz positioned ~0.5 ~ ~0.5 run setblock ~2 ~-1 ~ emerald_block', False), ('execute as Witness at @s run tp ~ ~ ~1', False),
+    ('!quiet tp @a 0 200 0 0 0', False), ('execute positioned as Witness run setblock ~ ~-1 ~-1 diamond_block', False),
+    ('execute rotated as Witness run tp @s ~ ~ ~', False), ('execute in the_nether if dimension the_nether', False),
+    ('execute as Witness run gamemode survival', False), ('execute as Witness run gamemode survival @s', False),
+    ('!quiet gamemode creative @a', False), ('!quiet scoreboard objectives remove sc', False), ('!witness execute run say x', False),
+    # /execute as and at tagged mobs that do not move.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["xp1"]}', False), ('!quiet summon cow 2 200 1 {NoAI:1b,Tags:["xc1"]}', False),
+    ('execute as @e[tag=xp1] run say oink', False), ('execute as @e[tag=xc1] run me moos', False),
+    ('execute as @e[tag=xp1] run tp @s ~ ~ ~2', False), ('execute at @e[tag=xc1] run setblock ~ ~-1 ~ dirt', False),
+    ('execute as @e[tag=xc1] at @s run setblock ~1 ~-1 ~ glass', False), ('execute as @e[tag=xc1] run kill @s', False),
+    ('execute as @e[tag=xp1] if entity @s[type=pig] run say still', False), ('!quiet kill @e[tag=xp1]', False),
+    # Registered dialogs, with their show_dialog and clear_dialog packets.
+    ('dialog show @s minecraft:server_links', False), ('dialog show @a quick_actions', False), ('dialog show Witness custom_options', False),
+    ('dialog show @a nothing_here', False), ('dialog clear @s', False), ('dialog clear @a', False),
+    ('dialog show @a[name=nobody] server_links', False), ('!witness dialog clear @s', False),
+    # /execute if stopwatch, with ranges that hold whatever the wall clock says.
+    ('execute if stopwatch nowhere 0..', False), ('!quiet stopwatch create lap', False), ('execute if stopwatch lap 0..', False),
+    ('execute if stopwatch lap ..-1', False), ('execute unless stopwatch lap 100000..', False),
+    ('execute if stopwatch lap 0.. run say timed', False), ('!quiet stopwatch remove lap', False),
+    # /execute positioned over heightmaps, and summon, which makes the new mob the executor.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('!quiet setblock 1 200 1 oak_leaves', False),
+    ('!quiet setblock 2 200 2 water', False), ('execute positioned over world_surface run setblock ~ ~ ~ glass', False),
+    ('execute positioned 1 0 1 positioned over motion_blocking run setblock ~ ~ ~ glass', False),
+    ('execute positioned 1 0 1 positioned over motion_blocking_no_leaves run setblock ~ ~ ~ dirt', False),
+    ('execute positioned 2 0 2 positioned over ocean_floor run setblock ~ ~-1 ~ gold_block', False),
+    ('execute positioned 2 0 2 positioned over motion_blocking run setblock ~ ~ ~ glass', False),
+    ('execute positioned 100000 0 100000 positioned over world_surface run say far', False),
+    ('execute positioned over nonsense run say x', False), ('execute summon pig run tag @s add xs1', False),
+    ('execute summon pig run say oink', False), ('execute summon minecraft:cow at @s run setblock ~ ~-1 ~ diamond_block', False),
+    ('execute summon player run say no', False), ('!quiet kill @e[type=!player]', False),
+    # CombatTracker: a living attacker's hit starts combat; death ends it with its duration.
+    ('!quiet gamemode survival Witness', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 40 minecraft:mob_attack by ParityProbe', False), ('!respawn', False), ('!quiet gamemode creative Witness', False),
     ('list', False),
 ]
 
@@ -308,7 +472,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',)}
+EXTRA = {'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -386,7 +550,7 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event', 'set_camera', 'swing_animation')
 
 
 def normalize_entity_ids(items):
@@ -433,16 +597,21 @@ def normalize_attribute_order(items):
     return [{**item, 'hex': sort(item['hex'])} if item['packet'] == 'update_attributes' else item for item in items]
 
 
+def normalize_boss_bars(items):
+    # Each server gives a boss bar a random UUID; the operation and its data must match.
+    return [{**item, 'hex': '00' * 16 + item['hex'][32:]} if item['packet'] == 'boss_event' else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
         # A summoned entity has a random UUID on each server.
-        random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
+        random_ids = expected['command'].startswith('summon ') or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))) != key(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))):
+            if key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))) != key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
