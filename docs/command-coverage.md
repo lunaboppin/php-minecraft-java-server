@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **53** have an existing PHP handler; **39** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **54** have an existing PHP handler; **38** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -93,7 +93,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/tell` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
 | `/tellraw` | [TellrawCommand.php](../src/Server/Commands/TellrawCommand.php) | Partial handler; native behavior incomplete | — |
 | `/test` | — | Unimplemented | — |
-| `/tick` | — | Unimplemented | — |
+| `/tick` | [TickCommand.php](../src/Server/Commands/TickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/time` | [TimeCommand.php](../src/Server/Commands/TimeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/title` | [TitleCommand.php](../src/Server/Commands/TitleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tm` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | `/teammsg` |
