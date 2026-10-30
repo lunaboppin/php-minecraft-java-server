@@ -296,6 +296,11 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
+    ('stopwatch query lap', False), ('stopwatch create lap', False), ('stopwatch create minecraft:lap', False),
+    ('stopwatch create custom:timer', False), ('stopwatch restart lap', False), ('stopwatch restart nothing', False),
+    ('stopwatch remove lap', False), ('stopwatch remove lap', False), ('stopwatch remove custom:timer', False), ('stopwatch create Bad', False),
+    ('!witness stopwatch create lap', False),
     ('list', False),
 ]
 
