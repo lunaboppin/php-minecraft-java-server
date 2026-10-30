@@ -431,6 +431,13 @@ SCRIPT = [
     ('execute rotated as Witness run tp @s ~ ~ ~', False), ('execute in the_nether if dimension the_nether', False),
     ('execute as Witness run gamemode survival', False), ('execute as Witness run gamemode survival @s', False),
     ('!quiet gamemode creative @a', False), ('!quiet scoreboard objectives remove sc', False), ('!witness execute run say x', False),
+    # /execute as and at tagged mobs that do not move.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["xp1"]}', False), ('!quiet summon cow 2 200 1 {NoAI:1b,Tags:["xc1"]}', False),
+    ('execute as @e[tag=xp1] run say oink', False), ('execute as @e[tag=xc1] run me moos', False),
+    ('execute as @e[tag=xp1] run tp @s ~ ~ ~2', False), ('execute at @e[tag=xc1] run setblock ~ ~-1 ~ dirt', False),
+    ('execute as @e[tag=xc1] at @s run setblock ~1 ~-1 ~ glass', False), ('execute as @e[tag=xc1] run kill @s', False),
+    ('execute as @e[tag=xp1] if entity @s[type=pig] run say still', False), ('!quiet kill @e[tag=xp1]', False),
     ('list', False),
 ]
 

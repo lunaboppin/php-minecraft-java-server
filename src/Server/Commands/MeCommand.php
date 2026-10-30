@@ -14,7 +14,7 @@ trait MeCommand
         $content = $this->messageComponent($sender, CommandArguments::rest($text, 0));
         $this->log('* ' . $sender->name . ' ' . CommandArguments::rest($text, 0));
         foreach ($this->players() as $player) {
-            $this->sendDisguisedChat($player, $content, 'emote_command', $this->displayName($sender));
+            $this->sendDisguisedChat($player, $content, 'emote_command', $this->sourceDisplayName($sender));
         }
     }
 }
