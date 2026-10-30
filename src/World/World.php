@@ -30,7 +30,7 @@ class World
         $exists=is_file($path);$directory=dirname($path);
         if(!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory)){throw new \RuntimeException('Cannot create world directory');}
         $this->db=new \PDO('sqlite:'.$path,null,null,[\PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION]);
-        $this->db->exec('CREATE TABLE IF NOT EXISTS generation(cx INTEGER NOT NULL,cz INTEGER NOT NULL,legacy INTEGER NOT NULL,PRIMARY KEY(cx,cz)); PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=3000; CREATE TABLE IF NOT EXISTS blocks(x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,state INTEGER NOT NULL,PRIMARY KEY(x,y,z)); CREATE INDEX IF NOT EXISTS chunk_blocks ON blocks(x,z); CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS players(uuid TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS containers(position TEXT PRIMARY KEY,data TEXT NOT NULL)');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS generation(cx INTEGER NOT NULL,cz INTEGER NOT NULL,legacy INTEGER NOT NULL,PRIMARY KEY(cx,cz)); PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=3000; CREATE TABLE IF NOT EXISTS blocks(x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,state INTEGER NOT NULL,PRIMARY KEY(x,y,z)); CREATE INDEX IF NOT EXISTS chunk_blocks ON blocks(x,z); CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS players(uuid TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS containers(position TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS chunk_mobs(cx INTEGER NOT NULL,cz INTEGER NOT NULL,data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS chunk_mobs_chunk ON chunk_mobs(cx,cz)');
         foreach($this->db->query('SELECT position FROM containers')->fetchAll(\PDO::FETCH_COLUMN) as $position){$this->containerPositions[$position]=true;}
         $stored=$this->setting('generator');
         if($stored===null){
@@ -98,6 +98,18 @@ class World
         $kept=$this->keptChunks();$q=$this->db->prepare('INSERT OR IGNORE INTO generation(cx,cz,legacy) VALUES(?,?,0)');
         foreach(array_keys($kept) as $key){[$cx,$cz]=explode(':',$key);$q->execute([(int)$cx,(int)$cz]);}
         $this->setting('vanilla','26.3');$this->setting('vanillaMigration',['kept'=>count($kept),'regenerated'=>0]);
+    }
+    /** Save mobs with their unloaded chunk (vanilla's per-chunk entity storage). */
+    public function storeChunkMobs(int $cx,int $cz,array $mobs): void {
+        $q=$this->db->prepare('INSERT INTO chunk_mobs(cx,cz,data) VALUES(?,?,?)');
+        foreach($mobs as $mob){$q->execute([$cx,$cz,json_encode($mob,JSON_THROW_ON_ERROR|JSON_PRESERVE_ZERO_FRACTION)]);}
+    }
+    /** The mobs saved with a chunk, removed from storage as its loading takes them back. */
+    public function takeChunkMobs(int $cx,int $cz): array {
+        $q=$this->db->prepare('SELECT data FROM chunk_mobs WHERE cx=? AND cz=?');$q->execute([$cx,$cz]);
+        $mobs=array_map(static fn(string $data):array=>json_decode($data,true,512,JSON_THROW_ON_ERROR),$q->fetchAll(\PDO::FETCH_COLUMN));
+        if($mobs!==[]){$this->db->prepare('DELETE FROM chunk_mobs WHERE cx=? AND cz=?')->execute([$cx,$cz]);}
+        return $mobs;
     }
     public function setting(string $key,mixed $value=null): mixed {
         if($value!==null){$q=$this->db->prepare('INSERT INTO metadata(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');$q->execute([$key,json_encode($value,JSON_THROW_ON_ERROR)]);return $value;}

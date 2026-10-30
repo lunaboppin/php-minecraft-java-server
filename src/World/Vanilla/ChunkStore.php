@@ -185,6 +185,30 @@ final class ChunkStore
         return array_map(static fn (string $data): array => json_decode($data, true, 512, JSON_THROW_ON_ERROR), $q->fetchAll(\PDO::FETCH_COLUMN));
     }
 
+    /**
+     * The entities generation added to a chunk that have not been spawned yet, by row.
+     *
+     * @return array<int, array{nbt: array, finalize: bool}>
+     */
+    public function pendingEntities(int $cx, int $cz): array
+    {
+        $q = $this->db->prepare('SELECT id,data FROM vanilla_entities WHERE cx=? AND cz=? ORDER BY id');
+        $q->execute([$cx, $cz]);
+        $out = [];
+        foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$id, $data]) {
+            $out[(int) $id] = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        }
+        return $out;
+    }
+
+    /** @param list<int> $rows entities that are now in the world */
+    public function consumeEntities(array $rows): void
+    {
+        if ($rows !== []) {
+            $this->db->prepare('DELETE FROM vanilla_entities WHERE id IN (' . implode(',', array_fill(0, count($rows), '?')) . ')')->execute($rows);
+        }
+    }
+
     /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
     private function postProcess(int $cx, int $cz, array $blocks): array
     {
@@ -210,12 +234,25 @@ final class ChunkStore
         $this->shapes->updateAll($marks, $get, static function (int $x, int $y, int $z, int $state) use (&$blocks, $minY): void {
             $blocks[(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
         });
-        $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=? WHERE cx=? AND cz=?');
-        $update->bindValue(1, self::encode($blocks), \PDO::PARAM_LOB);
-        $update->bindValue(2, $cx, \PDO::PARAM_INT);
-        $update->bindValue(3, $cz, \PDO::PARAM_INT);
-        $update->execute();
-        $this->db->prepare('DELETE FROM vanilla_post_processing WHERE cx=? AND cz=?')->execute([$cx, $cz]);
+        // Storing the result only saves redoing it: while a worker holds the database for a long
+        // decoration, the marks stay and the same updates run again next time.
+        try {
+            $this->db->exec('BEGIN IMMEDIATE');
+        } catch (\PDOException) {
+            return $blocks;
+        }
+        try {
+            $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=? WHERE cx=? AND cz=?');
+            $update->bindValue(1, self::encode($blocks), \PDO::PARAM_LOB);
+            $update->bindValue(2, $cx, \PDO::PARAM_INT);
+            $update->bindValue(3, $cz, \PDO::PARAM_INT);
+            $update->execute();
+            $this->db->prepare('DELETE FROM vanilla_post_processing WHERE cx=? AND cz=?')->execute([$cx, $cz]);
+            $this->db->exec('COMMIT');
+        } catch (\Throwable $e) {
+            $this->db->exec('ROLLBACK');
+            throw $e;
+        }
         return $blocks;
     }
 
@@ -277,15 +314,36 @@ final class ChunkStore
         if (($this->recheck[$key] ?? 0.0) > microtime(true)) {
             return false;
         }
-        $q = $this->db->prepare('SELECT COUNT(*) FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ? AND status=2');
-        $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
-        if ((int) $q->fetchColumn() === 9) {
+        // A chunk is final once it and its neighbours are decorated and its generation spawns are stored.
+        if ($this->decorated($cx, $cz) && ($this->dimension === 'the_end' || $this->spawned($cx, $cz))) {
             $this->readyChunks[$key] = true;
             unset($this->recheck[$key]);
             return true;
         }
         $this->recheck[$key] = microtime(true) + 0.25;
         return false;
+    }
+
+    /** Whether a chunk and its eight neighbours are decorated. */
+    private function decorated(int $cx, int $cz): bool
+    {
+        $q = $this->db->prepare('SELECT COUNT(*) FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ? AND status=2');
+        $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
+        return (int) $q->fetchColumn() === 9;
+    }
+
+    private function spawned(int $cx, int $cz): bool
+    {
+        if (isset($this->spawnedChunks["$cx,$cz"])) {
+            return true;
+        }
+        $q = $this->db->prepare('SELECT 1 FROM vanilla_spawned WHERE cx=? AND cz=?');
+        $q->execute([$cx, $cz]);
+        if ($q->fetchColumn() === false) {
+            return false;
+        }
+        $this->spawnedChunks["$cx,$cz"] = true;
+        return true;
     }
 
     /**
@@ -505,8 +563,11 @@ final class ChunkStore
     private function advance(int $cx, int $cz): int
     {
         if ($this->ready($cx, $cz)) {
-            $this->spawnOriginalMobs($cx, $cz);
             return self::STEP_READY;
+        }
+        if ($this->decorated($cx, $cz)) {
+            $this->spawnOriginalMobs($cx, $cz);
+            return self::STEP_DECORATED;
         }
         $statuses = $this->statuses($cx, $cz, 2);
         for ($radius = 0; $radius <= 2; ++$radius) {
@@ -541,7 +602,7 @@ final class ChunkStore
         // Decorating may have made this chunk or its neighbours final.
         for ($dz = -1; $dz <= 1; ++$dz) {
             for ($dx = -1; $dx <= 1; ++$dx) {
-                if ($this->ready($cx + $dx, $cz + $dz)) {
+                if ($this->decorated($cx + $dx, $cz + $dz)) {
                     $this->spawnOriginalMobs($cx + $dx, $cz + $dz);
                 }
             }
@@ -556,26 +617,28 @@ final class ChunkStore
      */
     private function spawnOriginalMobs(int $cx, int $cz): void
     {
-        $key = "$cx,$cz";
-        if (isset($this->spawnedChunks[$key]) || $this->dimension === 'the_end') {
+        if ($this->dimension === 'the_end' || $this->spawned($cx, $cz)) {
             return;
         }
+        // The decorated blocks no longer change, so the spawns are found before taking the write
+        // lock; the first worker to store them wins.
+        $q = $this->db->prepare('SELECT cx,cz,blocks,biomes FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ?');
+        $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
+        $chunks = [];
+        foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $blocks, $biomes]) {
+            $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, array_pad(self::decode($blocks), $this->worldHeight * 256, 0), explode("\n", $biomes), []);
+        }
+        $settings = $this->generator()->settings;
+        $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $this->worldHeight, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed, $settings->height);
+        $this->spawner ??= new GenerationSpawner($this->blocks(), $this->version->directory . '/worldgen');
+        $entities = $this->spawner->spawn($region, $this->dimension === 'the_nether');
         $this->db->exec('BEGIN IMMEDIATE');
         try {
             $mark = $this->db->prepare('INSERT OR IGNORE INTO vanilla_spawned(cx,cz) VALUES(?,?)');
             $mark->execute([$cx, $cz]);
             if ($mark->rowCount() === 1) {
-                $q = $this->db->prepare('SELECT cx,cz,blocks,biomes FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ?');
-                $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
-                $chunks = [];
-                foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $blocks, $biomes]) {
-                    $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, array_pad(self::decode($blocks), $this->worldHeight * 256, 0), explode("\n", $biomes), []);
-                }
-                $settings = $this->generator()->settings;
-                $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $this->worldHeight, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed, $settings->height);
-                $this->spawner ??= new GenerationSpawner($this->blocks(), $this->version->directory . '/worldgen');
                 $added = $this->db->prepare('INSERT INTO vanilla_entities(cx,cz,data) VALUES(?,?,?)');
-                foreach ($this->spawner->spawn($region, $this->dimension === 'the_nether') as $entity) {
+                foreach ($entities as $entity) {
                     $added->execute([$cx, $cz, json_encode($entity, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)]);
                 }
             }
@@ -584,6 +647,6 @@ final class ChunkStore
             $this->db->exec('ROLLBACK');
             throw $e;
         }
-        $this->spawnedChunks[$key] = true;
+        $this->spawnedChunks["$cx,$cz"] = true;
     }
 }
