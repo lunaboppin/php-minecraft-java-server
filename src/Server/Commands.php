@@ -20,6 +20,12 @@ trait Commands
 
     use CommandModules\MeCommand;
 
+    use CommandModules\SayCommand;
+
+    use CommandModules\TeamMsgCommand;
+
+    use ChatMessages;
+
     use CommandModules\MessageCommand;
 
     use CommandModules\DimensionCommand;

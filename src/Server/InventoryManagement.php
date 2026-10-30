@@ -155,7 +155,7 @@ trait InventoryManagement
             foreach ($c->craftGrid as $stack) {
                 $left = $this->giveStack($c, $stack);
                 if ($left > 0) {
-                    $this->dropStack($c->x, $c->y + 0.5, $c->z, array_replace($stack, ['count' => $left]));
+                    $this->playerDrop($c, array_replace($stack, ['count' => $left]), false);
                 }
             }
             $c->craftGrid = [];
@@ -163,7 +163,7 @@ trait InventoryManagement
         if ($c->cursor !== null) {
             $left = $this->giveStack($c, $c->cursor);
             if ($left > 0) {
-                $this->dropStack($c->x, $c->y + 0.5, $c->z, array_replace($c->cursor, ['count' => $left]));
+                $this->playerDrop($c, array_replace($c->cursor, ['count' => $left]), false);
             }$c->cursor = null;
         }
         if ($notify) {
@@ -280,7 +280,7 @@ trait InventoryManagement
         if ($slot === -999) {
             if ($c->cursor !== null) {
                 $n = $button === 1 ? 1 : $c->cursor['count'];
-                $this->dropStack($c->x, $c->y + 0.5, $c->z, array_replace($c->cursor, ['count' => $n]));
+                $this->playerDrop($c, array_replace($c->cursor, ['count' => $n]), false);
                 $c->cursor['count'] -= $n;
                 if ($c->cursor['count'] === 0) {
                     $c->cursor = null;
@@ -338,7 +338,7 @@ trait InventoryManagement
             $c->cursor = array_replace($items[$slot], ['count' => $this->version->catalog->item($items[$slot]['item'])['max_stack']]);
         } elseif ($mode === 4 && $items[$slot] !== null) {
             $n = $button === 0 ? 1 : $items[$slot]['count'];
-            $this->dropStack($c->x, $c->y + 0.5, $c->z, array_replace($items[$slot], ['count' => $n]));
+            $this->playerDrop($c, array_replace($items[$slot], ['count' => $n]), false);
             Inventory::consume($items, $slot, $n);
         } elseif ($mode === 6 && $c->cursor !== null) {
             $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];

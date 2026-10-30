@@ -78,29 +78,29 @@ def worldgen_resources(inner, out):
                 destination.write_bytes(archive.read(name))
 
 
-# Structure templates the generator places, converted from NBT to JSON.
-TEMPLATE_FOLDERS = ('fossil',)
-
-
+# Structure templates the generator places, converted from NBT to gzipped JSON.
 def structure_templates(inner, out):
-    """Templates as JSON: size, block state palette and blocks (x, y, z, palette index, block entity NBT)."""
+    """Templates as gzipped JSON: size, block state palettes, blocks (x, y, z, palette index and any
+    block entity NBT) and entities."""
     target = out / 'worldgen' / 'template'
     shutil.rmtree(target, ignore_errors=True)
+    state = lambda entry: {'id': entry.get('id', entry.get('Name')), 'properties': entry.get('properties', entry.get('Properties', {}))}
     with zipfile.ZipFile(inner) as archive:
         for name in sorted(archive.namelist()):
             prefix = 'data/minecraft/structure/'
-            if not name.startswith(prefix) or not name.endswith('.nbt') or name[len(prefix):].split('/')[0] not in TEMPLATE_FOLDERS:
+            if not name.startswith(prefix) or not name.endswith('.nbt'):
                 continue
             nbt = Nbt(gzip.decompress(archive.read(name))).root()
-            palette = nbt['palette'] if 'palette' in nbt else nbt['palettes'][0]
+            palettes = nbt['palettes'] if 'palettes' in nbt else [nbt.get('palette', [])]
             template = {
                 'size': nbt['size'],
-                'palette': [{'id': entry.get('id', entry.get('Name')), 'properties': entry.get('properties', entry.get('Properties', {}))} for entry in palette],
-                'blocks': [block['pos'] + [block['state']] + ([block['nbt']] if 'nbt' in block else []) for block in nbt['blocks']],
+                'palettes': [[state(entry) for entry in palette] for palette in palettes],
+                'blocks': [block['pos'] + [block['state']] + ([block['nbt']] if 'nbt' in block else []) for block in nbt.get('blocks', [])],
+                'entities': nbt.get('entities', []),
             }
-            destination = target / (name[len(prefix):-4] + '.json')
+            destination = target / (name[len(prefix):-4] + '.json.gz')
             destination.parent.mkdir(parents=True, exist_ok=True)
-            write_json(destination, template)
+            destination.write_bytes(gzip.compress(json.dumps(template, separators=(',', ':'), sort_keys=True).encode(), 9, mtime=0))
 
 
 def damage_types(inner):

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\{Binary,Packets};
+use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Inventory;
 
 /** Scheduled water and basic circuits. Advanced piston/observer and shape behavior remain tracked. */
@@ -59,7 +60,7 @@ trait BlockSimulation
     }
     private function ejectJukebox(array $position,bool $update=true):void {
         $key=implode(':',$position);$record=$this->jukeboxes[$key]??$this->world->container($position);
-        if(isset($record['slots'][0])){$stack=$record['slots'][0];$this->levelEvent(1011,$position,0);$this->dropStack($position[0]+.5,$position[1]+1.01,$position[2]+.5,$stack);}
+        if(isset($record['slots'][0])){$stack=$record['slots'][0];$this->levelEvent(1011,$position,0);$this->dropStack($position[0]+.5+(self::randomUnit()-.5)*Float32::round(.7),$position[1]+1.01,$position[2]+.5+(self::randomUnit()-.5)*Float32::round(.7),$stack,0,null,10);}
         unset($this->jukeboxes[$key]);$this->world->deleteContainer($position);
         if($update){$this->setBlock(...array_merge($position,[$this->version->catalog->state('jukebox',['has_record'=>'false'])]));}
     }

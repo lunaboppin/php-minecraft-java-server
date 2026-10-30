@@ -63,7 +63,7 @@ trait SetBlockCommand
         foreach ($this->loot()->drops('minecraft:blocks/' . substr($name, 10), ['block' => $name, 'state' => $properties, 'blockAt' => $blockAt]) as [$drop, $count]) {
             $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
             if ($item !== null) {
-                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+                $this->popResource($x, $y, $z, ['item' => $item, 'count' => $count]);
             }
         }
     }

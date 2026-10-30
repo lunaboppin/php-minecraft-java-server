@@ -94,6 +94,7 @@ final class Server
             $this->withDimension($dimension, function (): void {
                 $this->restoreAnimals();
                 $this->restoreExperienceOrbs();
+                $this->restoreItems();
                 $this->restoreBlockSimulation();
             });
         }
@@ -1065,7 +1066,7 @@ final class Server
             if (isset($c->inventory[$slot]) && $c->gameMode !== 3) {
                 $stack = $c->inventory[$slot];
                 $count = $action === 4 ? $stack['count'] : 1;
-                $this->dropStack($c->x, $c->y + 0.5, $c->z, array_replace($stack, ['count' => $count]));
+                $this->playerDrop($c, array_replace($stack, ['count' => $count]), false);
                 \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot, $count);
                 $this->syncInventory($c);
             }

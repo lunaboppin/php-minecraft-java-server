@@ -140,16 +140,24 @@ final class Decorator
         foreach ($reaching as $origin => $entry) {
             $this->structures->save($origin, $entry['starts']);
         }
+        if ($this->structureContext !== null) {
+            $this->structureContext->regionRandom = null;
+        }
     }
 
     /** StructureStart.placeInChunk: the pieces that overlap the chunk being decorated. */
     private function placeStart(array $pieces, Region $region, RandomSource $random, array $chunkBox): void
     {
-        $this->structureContext ??= new StructureContext($this->blocks);
+        $context = $this->structureContext ??= new StructureContext($this->blocks, $region->seed, $this->directory);
+        // WorldGenRegion.getRandom
+        $context->regionRandom ??= $this->structures->regionRandom($region->centerX, $region->centerZ);
         foreach ($pieces as $piece) {
             if (Piece::intersects($piece->box, $chunkBox)) {
-                $piece->postProcess($this->structureContext, $region, $random, $chunkBox);
+                $piece->postProcess($context, $region, $random, $chunkBox);
             }
+        }
+        foreach ($pieces as $piece) {
+            $piece->afterPlace($context, $region, $chunkBox);
         }
     }
 

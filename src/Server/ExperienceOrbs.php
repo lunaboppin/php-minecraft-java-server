@@ -226,12 +226,6 @@ trait ExperienceOrbs
         return $this->version->catalog->blockName($state) === 'water' || ($this->version->catalog->properties($state)['waterlogged'] ?? 'false') === 'true';
     }
 
-    private function blockFriction(int $state): float
-    {
-        $movement = $this->version->catalog->movement;
-        return (float) ($movement['block_friction'][$this->version->catalog->blockName($state)] ?? $movement['default_block_friction']);
-    }
-
     /** ExperienceOrb.scanForMerges: orbs of the same value and group within half a block join this one. */
     private function scanForOrbMerges(array &$orb): void
     {

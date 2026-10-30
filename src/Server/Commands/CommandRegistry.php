@@ -13,8 +13,9 @@ final class CommandRegistry
             new CommandDefinition('help', 'executeHelp', false),
             new CommandDefinition('spawn', 'executeSpawn', false),
             new CommandDefinition('list', 'executeList', false),
-            new CommandDefinition('msg', 'executeMessage', false, ['tell']),
+            new CommandDefinition('msg', 'executeMessage', false, ['tell', 'w']),
             new CommandDefinition('me', 'executeMe', false),
+            new CommandDefinition('teammsg', 'executeTeamMsg', false, ['tm']),
             new CommandDefinition('trigger', 'executeTrigger', false),
             // A dedicated server requires game-master permission for /version.
             new CommandDefinition('version', 'executeVersion', true),
@@ -60,6 +61,7 @@ final class CommandRegistry
             new CommandDefinition('stopsound', 'executeStopSound', true),
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
+            new CommandDefinition('say', 'executeSay', true),
         ];
     }
 

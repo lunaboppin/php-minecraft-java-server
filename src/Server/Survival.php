@@ -111,6 +111,7 @@ trait Survival
                 // ExperienceOrb.addAdditionalSaveData: value, count, age and health keep; the network ID does not.
                 $this->world->setting('experienceOrbs', array_values(array_map(static fn (array $orb): array => ['uuid' => bin2hex($orb['uuid'])]
                     + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
+                $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -271,7 +272,8 @@ trait Survival
             $this->closeWindow($c, true);
             if (!$this->keepInventory) {
                 foreach ($c->inventory as $slot => $stack) {
-                    $this->dropStack($c->x, $c->y + 0.5, $c->z, $stack);
+                    // Inventory.dropAll scatters the stacks at random.
+                    $this->playerDrop($c, $stack, true);
                 }$c->inventory = [];
                 // Player.getBaseExperienceReward: players always drop seven points a level, at most 100.
                 if ($c->gameMode !== 3) {
@@ -458,7 +460,7 @@ trait Survival
             }
             $data = $containerData;
             foreach ($data['slots'] as $stack) {
-                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, $stack);
+                $this->dropContainerStack($x, $y, $z, $stack);
             }$this->world->deleteContainer([$x, $y, $z]);
         }
         if ($c->gameMode !== 0) {
@@ -478,7 +480,7 @@ trait Survival
             foreach ($this->loot()->drops('minecraft:blocks/' . $name, $context) as [$drop, $count]) {
                 $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
                 if ($item !== null) {
-                    $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+                    $this->popResource($x, $y, $z, ['item' => $item, 'count' => $count]);
                 }
             }
             // DropExperienceBlock and RedStoneOreBlock experience as orbs at the block's centre, which
