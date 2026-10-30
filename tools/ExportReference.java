@@ -97,6 +97,9 @@ public class ExportReference {
             info.addProperty("id",BuiltInRegistries.ITEM.getId(item));info.addProperty("max_stack",stack.getMaxStackSize());info.addProperty("durability",stack.getMaxDamage());
             var food=stack.get(net.minecraft.core.component.DataComponents.FOOD);
             if(food!=null) {info.addProperty("nutrition",food.nutrition());info.addProperty("saturation",food.saturation());}
+            // LivingEntity.getEquipmentSlotForItem: the equippable slot, which armor slots require.
+            var equippable=stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+            if(equippable!=null)info.addProperty("equip_slot",equippable.slot().getSerializedName());
             items.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);
         }
         var simulation=new JsonObject();var pickItems=new JsonObject();for(var block:BuiltInRegistries.BLOCK){pickItems.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),BuiltInRegistries.ITEM.getId(block.asItem()));}simulation.add("pick_items",pickItems);var instruments=new JsonObject();var blockInstruments=new JsonObject();var songs=new JsonObject();

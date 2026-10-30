@@ -476,6 +476,25 @@ SCRIPT = [
     ('ride @e[type=player] mount @e[tag=ridea,limit=1]', False), ('ride Witness mount @e[tag=rideb,limit=1]', False),
     ('ride ParityProbe mount @e[tag=rideb,limit=1]', False), ('!quiet kill @e[tag=rideb]', False), ('ride Witness dismount', False),
     ('!quiet kill @e[type=!player]', False),
+    # /item replace, fill and override with slot names, between players, a mob and a chest.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('!quiet clear @a', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["itempig"]}', False),
+    ('item replace entity @s weapon.mainhand with diamond_sword', False), ('item replace entity @s hotbar.1 with stone 32', False),
+    ('item replace entity @s hotbar.1 with stone 65', False), ('item replace entity @s armor.chest with stone', False),
+    ('item replace entity @s armor.chest with golden_chestplate', False), ('item replace entity @s armor.head with dirt', False),
+    ('item replace entity @s armor.body with stone', False), ('item override entity @s armor.body from entity @s hotbar.8', False),
+    ('item replace entity @s container.40 with stone', False), ('item fill entity @s hotbar.* with apple 3', False),
+    ('item replace entity @s inventory.* from entity @s hotbar.*', False), ('item override entity @s inventory.* from entity @s hotbar.0', False),
+    ('item replace entity @a weapon.offhand with shield', False), ('item replace entity @e[tag=itempig] saddle with saddle', False),
+    ('item replace entity @e[tag=itempig] armor.head with carved_pumpkin', False), ('item replace entity @e[tag=itempig] armor.chest with diamond_chestplate', False),
+    ('item replace entity @e[tag=itempig] mob.inventory.0 with stone', False), ('item replace entity @e[tag=itempig] weapon from entity @s weapon', False),
+    ('item replace entity @e[tag=itempig] weapon from entity @e[tag=itempig] mob.inventory.0', False),
+    ('item replace block 0 199 0 container.0 with stone', False), ('!quiet setblock 1 200 -1 chest', False),
+    ('item replace block 1 200 -1 container.0 with stone 5', False), ('item replace block 1 200 -1 container.27 with stone', False),
+    ('item replace entity @s weapon from block 1 200 -1 container.0', False), ('item replace block 1 200 -1 container.1 from block 0 199 0 container.0', False),
+    ('item replace entity @s foo with stone', False), ('item modify entity @s weapon foo:bar', False), ('!witness item replace entity @s weapon with stone', False),
+    ('item replace entity @s player.cursor with stone', False), ('item replace entity @s player.crafting.0 with stone', False),
+    ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
     ('list', False),
 ]
 
@@ -488,7 +507,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+EXTRA = {'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

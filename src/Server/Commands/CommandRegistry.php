@@ -82,6 +82,7 @@ final class CommandRegistry
             new CommandDefinition('transfer', 'executeTransfer', true),
             new CommandDefinition('posteffect', 'executePostEffect', true),
             new CommandDefinition('ride', 'executeRide', true),
+            new CommandDefinition('item', 'executeItem', true),
         ];
     }
 

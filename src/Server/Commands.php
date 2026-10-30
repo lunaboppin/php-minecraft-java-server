@@ -84,6 +84,8 @@ trait Commands
 
     use CommandModules\RideCommand;
 
+    use CommandModules\ItemCommand;
+
     use CommandModules\SwingCommand;
 
     use CommandModules\StopwatchCommand;
@@ -728,7 +730,7 @@ trait Commands
      * ItemStack.getDisplayName: the bracketed hover name in the rarity colour (raised for enchanted
      * items, as ItemStack.getRarity does), hovering the item with its component patch.
      */
-    private function itemComponent(string $item, array $components = [], array $removed = []): array
+    private function itemComponent(string $item, array $components = [], array $removed = [], int $count = 1): array
     {
         $display = $this->version->catalog->displayNames['items']['minecraft:' . $item];
         $color = ($components['minecraft:enchantments'] ?? []) === [] ? $display['color'] : match ($display['color']) {
@@ -737,6 +739,9 @@ trait Commands
             default => $display['color'],
         };
         $hover = ['action' => 'show_item', 'id' => 'minecraft:' . $item];
+        if ($count !== 1) {
+            $hover['count'] = $count;
+        }
         $patch = $components + array_fill_keys(array_map(static fn (string $name): string => '!' . $name, $removed), new \stdClass());
         if ($patch !== []) {
             $hover['components'] = $patch;

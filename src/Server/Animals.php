@@ -184,6 +184,25 @@ trait Animals
         $this->pairPassengers($c, $animal);
     }
 
+    /** LivingEntity.detectEquipmentUpdates: trackers see the slots changed since the last tick. */
+    private function synchronizeEquipment(array &$mob): void
+    {
+        if (!isset($mob['equipmentChanged'])) {
+            return;
+        }
+        $changed = [];
+        foreach (array_keys($mob['equipmentChanged']) as $slot) {
+            $changed[$slot] = $mob['equipment'][$slot] ?? null;
+        }
+        unset($mob['equipmentChanged']);
+        ksort($changed);
+        foreach ($this->localPlayers() as $viewer) {
+            if (isset($viewer->entities[$mob['id']])) {
+                $viewer->send($this->version, 'set_equipment', Packets::equipment($mob['id'], $changed, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+            }
+        }
+    }
+
     private function removeAnimal(int $id): void
     {
         unset($this->mobRandomSources[$id], $this->mobMovementTrackers[$id]);
@@ -537,6 +556,7 @@ trait Animals
         foreach ($this->animals as &$tracked) {
             if (!isset($tracked['deadAt'])) {
                 $this->synchronizePassengers($tracked);
+                $this->synchronizeEquipment($tracked);
             }
             if (!isset($tracked['deadAt']) && $this->mobIsTicking($tracked) && $this->ordinaryMobTravel($tracked)) {
                 $this->synchronizeMobMotion($tracked);
