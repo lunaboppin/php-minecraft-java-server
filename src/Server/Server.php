@@ -1243,13 +1243,14 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace' => 'furnace','chest','barrel' => 'chest','ender_chest' => 'ender',default => null
+                'crafting_table' => 'crafting','furnace' => 'furnace','chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
             $blockedAbove = fn (int $bx, int $bz): bool => $this->version->catalog->collision['shapes'][$this->version->catalog->collision['states'][$this->world->get($bx, $y + 1, $bz)]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]];
-            $partner = $name === 'chest' ? $this->chestPartner([$x, $y, $z]) : null;
-            if (($type === 'ender' || $name === 'chest') && ($blockedAbove($x, $z) || ($partner !== null && $blockedAbove($partner[0], $partner[2])))) {
+            $chest = $name === 'chest' || $name === 'trapped_chest';
+            $partner = $chest ? $this->chestPartner([$x, $y, $z]) : null;
+            if (($type === 'ender' || $chest) && ($blockedAbove($x, $z) || ($partner !== null && $blockedAbove($partner[0], $partner[2])))) {
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
                 $this->resendUsedBlocks($c, $x, $y, $z, $face);

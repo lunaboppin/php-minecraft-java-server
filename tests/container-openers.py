@@ -85,6 +85,10 @@ def record(kind, output, java, jar, eula):
             # Chests placed side by side facing the placer join, which nearby players hear.
             lambda: use(operator, (-2, 199, -2), 6), lambda: use(operator, (-1, 199, -2), 7),
             lambda: operator.send('chat_command', wire.string('setblock -1 200 -2 air')),
+            # A trapped chest powers a lamp beside it while it is open.
+            lambda: operator.send('chat_command', wire.string('setblock -2 200 2 trapped_chest[facing=north]')),
+            lambda: operator.send('chat_command', wire.string('setblock -3 200 2 redstone_lamp')),
+            lambda: use(operator, (-2, 200, 2), 8), lambda: operator.send('container_close', wire.vi(6)),
         ]
         for action in actions:
             action()
@@ -112,7 +116,7 @@ def main():
     if args.eula_file is not None:
         java = record('java', args.output, args.java, args.jar.resolve(), args.eula_file.resolve())
         assert php == java, json.dumps({'php': php, 'java': java}, indent=1)
-        print('PASS: chest, barrel and ender chest openers identical to the official server')
+        print('PASS: chest, trapped chest, barrel and ender chest openers identical to the official server')
     else:
         print('PASS: containers open and close with their lid events, sounds and states')
 

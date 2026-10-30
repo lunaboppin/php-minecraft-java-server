@@ -124,6 +124,12 @@ trait ContainerOpeners
         return $this->version->catalog->blockName($this->world->get(...$partner)) === $this->version->catalog->blockName($state) && ($other['type'] ?? 'single') !== 'single' ? $partner : null;
     }
 
+    /** TrappedChestBlock.getSignal: its viewers, at most 15. */
+    private function trappedChestSignal(array $position): int
+    {
+        return min(15, $this->containerOpeners[$this->containerKey($this->world->dimension, $position)] ?? 0);
+    }
+
     private function containerKey(string $dimension, array $position): string
     {
         return $dimension . ':' . implode(':', $position);
@@ -143,7 +149,7 @@ trait ContainerOpeners
             $this->containerSound($position, $name, true);
             $this->openerRechecks[$key] = [$this->ticks + 5, $player->dimension, $position];
         }
-        $this->openerCountChanged($position, $name, $previous + 1);
+        $this->openerCountChanged($position, $name, $previous + 1, $previous);
     }
 
     /** ContainerOpenersCounter.decrementOpeners as the menu closes. */
@@ -154,6 +160,7 @@ trait ContainerOpeners
             return;
         }
         $name = $this->version->catalog->blockName($this->world->get(...$position));
+        $previous = $this->containerOpeners[$key];
         $count = --$this->containerOpeners[$key];
         if ($count <= 0) {
             unset($this->containerOpeners[$key]);
@@ -164,7 +171,7 @@ trait ContainerOpeners
         if ($count === 0) {
             $this->containerSound($position, $name, false);
         }
-        $this->openerCountChanged($position, $name, $count);
+        $this->openerCountChanged($position, $name, $count, $previous);
     }
 
     /** ContainerOpenersCounter.recheckOpeners: count the players still viewing, and tell the lid again. */
@@ -188,15 +195,20 @@ trait ContainerOpeners
                 unset($this->containerOpeners[$key]);
             }
         }
-        $this->openerCountChanged($position, $name, $count);
+        $this->openerCountChanged($position, $name, $count, $previous);
         if ($count > 0) {
             $this->openerRechecks[$key] = [$this->ticks + 5, $this->world->dimension, $position];
         }
     }
 
     /** ChestBlockEntity.signalOpenCount queues the lid's event; a barrel shows its open state. */
-    private function openerCountChanged(array $position, string $name, int $count): void
+    private function openerCountChanged(array $position, string $name, int $count, int $previous): void
     {
+        // TrappedChestBlockEntity.signalOpenCount: its redstone signal follows the viewer count.
+        if ($name === 'trapped_chest' && $previous !== $count) {
+            $this->changedSimulation(...$position);
+            $this->changedSimulation($position[0], $position[1] - 1, $position[2]);
+        }
         if ($name === 'barrel') {
             // BarrelBlockEntity.updateBlockState: the state changes now; clients see it with the tick's block changes.
             $properties = $this->version->catalog->properties($this->world->get(...$position));

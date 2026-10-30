@@ -264,7 +264,7 @@ trait InventoryManagement
             return false;
         }
         return match ($c->windowType) {
-            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
+            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
         };
     }
 

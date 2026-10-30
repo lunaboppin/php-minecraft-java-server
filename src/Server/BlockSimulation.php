@@ -106,6 +106,7 @@ trait BlockSimulation
     private function directSignal(int $x,int $y,int $z,array $target,bool $wires=true):int {
         $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);
         if($name==='redstone_block'){return 15;}
+        if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button')) && ($p['powered']??'false')==='true'){return 15;}
         if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
         if(in_array($name,['redstone_torch','redstone_wall_torch'],true) && $p['lit']==='true'){
