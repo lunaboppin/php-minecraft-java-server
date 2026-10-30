@@ -146,7 +146,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 63 | `pong_response` | Emission reference |
 | 64 | `place_ghost_recipe` | Unsupported |
 | 65 | `player_abilities` | Emission reference |
-| 66 | `player_chat` | Unsupported |
+| 66 | `player_chat` | Emission reference |
 | 67 | `player_combat_end` | Unsupported |
 | 68 | `player_combat_enter` | Unsupported |
 | 69 | `player_combat_kill` | Emission reference |
