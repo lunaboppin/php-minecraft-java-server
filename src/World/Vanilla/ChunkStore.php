@@ -39,6 +39,11 @@ final class ChunkStore
     /** @var array<string, true> chunks known to be final */
     private array $readyChunks = [];
 
+    private ?GenerationSpawner $spawner = null;
+
+    /** @var array<string, true> chunks known to have had their generation spawns */
+    private array $spawnedChunks = [];
+
     /** @var array<string, float> when a not-ready chunk may be checked or requested again */
     private array $recheck = [];
 
@@ -88,6 +93,21 @@ final class ChunkStore
         $columns = array_column($db->query('PRAGMA table_info(vanilla_requests)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('expires', $columns, true)) {
             $db->exec('ALTER TABLE vanilla_requests ADD COLUMN expires REAL NOT NULL DEFAULT 0');
+        }
+        // Chunks whose generation spawns are done. Chunks that were final before spawns were
+        // generated keep the creatures they have instead of gaining a chunk's worth now.
+        if ($db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='vanilla_spawned'")->fetchColumn() === false) {
+            $db->exec('BEGIN IMMEDIATE');
+            try {
+                if ($db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='vanilla_spawned'")->fetchColumn() === false) {
+                    $db->exec('CREATE TABLE vanilla_spawned(cx INTEGER NOT NULL,cz INTEGER NOT NULL,PRIMARY KEY(cx,cz))');
+                    $db->exec('INSERT INTO vanilla_spawned(cx,cz) SELECT c.cx,c.cz FROM vanilla_chunks c WHERE c.status=2 AND (SELECT COUNT(*) FROM vanilla_chunks n WHERE n.cx BETWEEN c.cx-1 AND c.cx+1 AND n.cz BETWEEN c.cz-1 AND c.cz+1 AND n.status=2)=9');
+                }
+                $db->exec('COMMIT');
+            } catch (\Throwable $e) {
+                $db->exec('ROLLBACK');
+                throw $e;
+            }
         }
     }
 
@@ -485,6 +505,7 @@ final class ChunkStore
     private function advance(int $cx, int $cz): int
     {
         if ($this->ready($cx, $cz)) {
+            $this->spawnOriginalMobs($cx, $cz);
             return self::STEP_READY;
         }
         $statuses = $this->statuses($cx, $cz, 2);
@@ -517,6 +538,52 @@ final class ChunkStore
                 $this->decorate($cx + $dx, $cz + $dz);
             }
         }
+        // Decorating may have made this chunk or its neighbours final.
+        for ($dz = -1; $dz <= 1; ++$dz) {
+            for ($dx = -1; $dx <= 1; ++$dx) {
+                if ($this->ready($cx + $dx, $cz + $dz)) {
+                    $this->spawnOriginalMobs($cx + $dx, $cz + $dz);
+                }
+            }
+        }
         return self::STEP_DECORATED;
+    }
+
+    /**
+     * ChunkStatus.SPAWN: once a chunk and its neighbours are decorated, the creatures the chunk
+     * starts with (NoiseBasedChunkGenerator.spawnOriginalMobs), stored with its other entities.
+     * The End's noise settings disable mob generation.
+     */
+    private function spawnOriginalMobs(int $cx, int $cz): void
+    {
+        $key = "$cx,$cz";
+        if (isset($this->spawnedChunks[$key]) || $this->dimension === 'the_end') {
+            return;
+        }
+        $this->db->exec('BEGIN IMMEDIATE');
+        try {
+            $mark = $this->db->prepare('INSERT OR IGNORE INTO vanilla_spawned(cx,cz) VALUES(?,?)');
+            $mark->execute([$cx, $cz]);
+            if ($mark->rowCount() === 1) {
+                $q = $this->db->prepare('SELECT cx,cz,blocks,biomes FROM vanilla_chunks WHERE cx BETWEEN ? AND ? AND cz BETWEEN ? AND ?');
+                $q->execute([$cx - 1, $cx + 1, $cz - 1, $cz + 1]);
+                $chunks = [];
+                foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $z, $blocks, $biomes]) {
+                    $chunks["$x,$z"] = new ProtoChunk((int) $x, (int) $z, array_pad(self::decode($blocks), $this->worldHeight * 256, 0), explode("\n", $biomes), []);
+                }
+                $settings = $this->generator()->settings;
+                $region = new Region($this->blocks(), $cx, $cz, $chunks, $settings->minY, $this->worldHeight, $settings->seaLevel, BiomeClimate::zoomSeed($this->seed), $this->seed, $settings->height);
+                $this->spawner ??= new GenerationSpawner($this->blocks(), $this->version->directory . '/worldgen');
+                $added = $this->db->prepare('INSERT INTO vanilla_entities(cx,cz,data) VALUES(?,?,?)');
+                foreach ($this->spawner->spawn($region, $this->dimension === 'the_nether') as $entity) {
+                    $added->execute([$cx, $cz, json_encode($entity, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)]);
+                }
+            }
+            $this->db->exec('COMMIT');
+        } catch (\Throwable $e) {
+            $this->db->exec('ROLLBACK');
+            throw $e;
+        }
+        $this->spawnedChunks[$key] = true;
     }
 }
