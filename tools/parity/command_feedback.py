@@ -447,6 +447,17 @@ SCRIPT = [
     ('execute if stopwatch nowhere 0..', False), ('!quiet stopwatch create lap', False), ('execute if stopwatch lap 0..', False),
     ('execute if stopwatch lap ..-1', False), ('execute unless stopwatch lap 100000..', False),
     ('execute if stopwatch lap 0.. run say timed', False), ('!quiet stopwatch remove lap', False),
+    # /execute positioned over heightmaps, and summon, which makes the new mob the executor.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('!quiet setblock 1 200 1 oak_leaves', False),
+    ('!quiet setblock 2 200 2 water', False), ('execute positioned over world_surface run setblock ~ ~ ~ glass', False),
+    ('execute positioned 1 0 1 positioned over motion_blocking run setblock ~ ~ ~ glass', False),
+    ('execute positioned 1 0 1 positioned over motion_blocking_no_leaves run setblock ~ ~ ~ dirt', False),
+    ('execute positioned 2 0 2 positioned over ocean_floor run setblock ~ ~-1 ~ gold_block', False),
+    ('execute positioned 2 0 2 positioned over motion_blocking run setblock ~ ~ ~ glass', False),
+    ('execute positioned 100000 0 100000 positioned over world_surface run say far', False),
+    ('execute positioned over nonsense run say x', False), ('execute summon pig run tag @s add xs1', False),
+    ('execute summon pig run say oink', False), ('execute summon minecraft:cow at @s run setblock ~ ~-1 ~ diamond_block', False),
+    ('execute summon player run say no', False), ('!quiet kill @e[type=!player]', False),
     ('list', False),
 ]
 
@@ -595,7 +606,7 @@ def compare(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
         # A summoned entity has a random UUID on each server.
-        random_ids = expected['command'].startswith('summon ') or '@e' in expected['command'] or '@n' in expected['command']
+        random_ids = expected['command'].startswith('summon ') or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
             if key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))) != key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))):

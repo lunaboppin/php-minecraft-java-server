@@ -257,6 +257,13 @@ final class ArgumentReader
                     throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:dialog']);
                 }
                 return;
+            case 'minecraft:heightmap':
+                // HeightmapTypeArgument: the heightmaps kept after world generation.
+                $name = $reader->readUnquotedString();
+                if (!in_array($name, ['world_surface', 'ocean_floor', 'motion_blocking', 'motion_blocking_no_leaves'], true)) {
+                    throw $reader->error('argument.enum.invalid', [$name]);
+                }
+                return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
                 if (Snbt::read($reader)['type'] !== 'compound') {

@@ -108,6 +108,12 @@ trait ExecuteCommand
                         }
                         break;
                     }
+                    if ($word === 'positioned' && substr($reader->string, $reader->cursor, 5) === 'over ') {
+                        $reader->cursor += 5;
+                        $heightmap = $this->executeToken($reader);
+                        $result[] = ['y' => (float) $this->withCommandContext($context, fn (): int => $this->executeHeight($heightmap, $context, $sender))] + $context;
+                        break;
+                    }
                     if ($word === 'positioned') {
                         $position = $this->withCommandContext($context, fn (): array => $this->executeVector($reader, $sender, true));
                         $result[] = ['x' => $position[0], 'y' => $position[1], 'z' => $position[2], 'anchor' => 'feet'] + $context;
@@ -144,6 +150,10 @@ trait ExecuteCommand
                 case 'anchored':
                     $result[] = ['anchor' => $reader->readUnquotedString()] + $context;
                     break;
+                case 'summon':
+                    $kind = substr($reader->readIdentifier(), 10);
+                    $result[] = ['entity' => $this->withCommandContext($context, fn (): array => $this->executeSummonEntity($kind, $context, $sender))] + $context;
+                    break;
                 case 'in':
                     $id = $reader->readIdentifier();
                     $result[] = ['dimension' => substr($id, 10)] + $context;
@@ -165,7 +175,8 @@ trait ExecuteCommand
         $count = match ($word) {
             'as', 'at', 'align', 'anchored', 'in' => 1,
             'rotated' => substr($reader->string, $reader->cursor, 3) === 'as ' ? 2 : 2,
-            'positioned' => substr($reader->string, $reader->cursor, 3) === 'as ' ? 2 : 3,
+            'positioned' => in_array(substr($reader->string, $reader->cursor, 3), ['as ', 'ove'], true) ? 2 : 3,
+            'summon' => 1,
             'facing' => substr($reader->string, $reader->cursor, 7) === 'entity ' ? 3 : 3,
             default => 0,
         };
@@ -236,6 +247,46 @@ trait ExecuteCommand
             default:
                 throw new \InvalidArgumentException('The execute if ' . $kind . ' condition is not supported yet');
         }
+    }
+
+    /** Level.getHeight for a heightmap at the source's column, which must be loaded: one above its top block. */
+    private function executeHeight(string $heightmap, array $context, Client $sender): int
+    {
+        [$x, $z] = [(int) floor($context['x']), (int) floor($context['z'])];
+        $this->loadedBlockPosition([(string) $x, (string) $this->world->minY, (string) $z], $sender);
+        $flags = $this->version->catalog->flags;
+        for ($y = $this->world->minY + $this->world->height - 1; $y >= $this->world->minY; --$y) {
+            $state = $this->world->get($x, $y, $z);
+            $flag = $flags[$state] ?? 0;
+            // Heightmap.Types: any non-air block, motion-blocking blocks or fluids (optionally not
+            // leaves), or motion-blocking blocks only.
+            $counts = match ($heightmap) {
+                'world_surface' => ($flag & 1) === 0,
+                'motion_blocking' => ($flag & 6) !== 0,
+                'motion_blocking_no_leaves' => ($flag & 6) !== 0 && !str_ends_with($this->version->catalog->blockName($state), '_leaves'),
+                default => ($flag & 2) !== 0,
+            };
+            if ($counts) {
+                return $y + 1;
+            }
+        }
+        return $this->world->minY;
+    }
+
+    /** ExecuteCommand.spawnEntityAndRedirect: a new entity at the source's position, which becomes the executor. */
+    private function executeSummonEntity(string $kind, array $context, Client $sender): array
+    {
+        $info = $this->version->catalog->mobs['entities'][$kind] ?? null;
+        if ($info !== null && (!$info['summonable'] || $kind === 'player')) {
+            throw new CommandFailure(['translate' => 'entity.not_summonable', 'with' => [['text' => 'minecraft:' . $kind]]]);
+        }
+        if (!isset($info['attributes']['max_health'])) {
+            throw new \InvalidArgumentException('Unknown living entity type');
+        }
+        $id = $this->spawnAnimal($kind, $context['x'], $context['y'], $context['z']) ?? throw new CommandFailure(['translate' => 'commands.summon.failed']);
+        $animal = $this->animals[$id];
+        return ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0,
+            'type' => 'minecraft:' . $kind, 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
     }
 
     /** Scoreboard.getPlayerScoreInfo for one score holder, or null when unset. */
