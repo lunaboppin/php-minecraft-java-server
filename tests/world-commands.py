@@ -74,9 +74,9 @@ def main():
 
                 assert named(run(op, 'setblock 5 64 5 minecraft:stone'), 'system_chat') == [chat(translate('commands.setblock.success', 5, 64, 5))]
                 assert named(run(op, 'setblock 5 64 5 minecraft:stone'), 'system_chat') == [failure('commands.setblock.failed')]
-                assert named(run(op, 'fill 6 64 6 7 64 7 minecraft:dirt'), 'system_chat') == [chat(translate('commands.fill.success', 4))]
-                assert named(run(op, 'fill 6 64 6 7 64 7 minecraft:dirt'), 'system_chat') == [failure('commands.fill.failed')]
-                assert named(run(op, 'fill 6 64 6 7 65 7 minecraft:dirt'), 'system_chat') == [chat(translate('commands.fill.success', 4))], 'only changed blocks are counted'
+                assert named(run(op, 'fill 6 64 6 7 64 7 minecraft:cobblestone'), 'system_chat') == [chat(translate('commands.fill.success', 4))]
+                assert named(run(op, 'fill 6 64 6 7 64 7 minecraft:cobblestone'), 'system_chat') == [failure('commands.fill.failed')]
+                assert named(run(op, 'fill 6 64 6 7 65 7 minecraft:cobblestone'), 'system_chat') == [chat(translate('commands.fill.success', 4))], 'only changed blocks are counted'
                 assert named(run(op, 'fill 0 0 0 40 40 40 minecraft:dirt'), 'system_chat') == [failure('commands.fill.toobig', 32768, 68921)]
                 # Placement modes, counted as the official server counts them. The idle witness answers
                 # its keep-alives first.
