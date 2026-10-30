@@ -56,6 +56,15 @@ if ($actual !== ['fortress', 90, [2, 69, 2, 20, 78, 20]]) {
 }
 ++$checks;
 
+// An End city: the official start's 104 pieces.
+$end = new OverworldGenerator(42, $version->directory, 'end');
+$city = (new Structures($end->settings, $end->biomes, $version->directory . '/worldgen'))->create(66, -38);
+$actual = [$city[0]['structure'] ?? null, count($city[0]['pieces'] ?? [])];
+if ($actual !== ['end_city', 104]) {
+    throw new RuntimeException('End city start at 66,-38: ' . json_encode($actual));
+}
+++$checks;
+
 $blocks = new Blocks($version, $version->directory . '/worldgen/block-behaviour.json');
 $transform = new BlockTransform($blocks);
 $name = static function (int $state) use ($blocks): string {

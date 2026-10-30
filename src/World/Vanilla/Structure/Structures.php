@@ -500,6 +500,17 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'end_city':
+                // EndCityStructure.findGenerationPoint: the lowest corner of a 5 by 5 box, at least y 60.
+                $x = $cx * 16 + 7;
+                $z = $cz * 16 + 7;
+                $rotation = $random->nextInt(4);
+                [$offsetX, $offsetZ] = [[5, 5], [-5, 5], [-5, -5], [5, -5]][$rotation];
+                $y = $this->lowestY($x, $z, $offsetX, $offsetZ);
+                if ($y < 60 || !$this->validBiome($structure, $x, $y, $z)) {
+                    return [];
+                }
+                return EndCity::start($this->blocks, $this->directory, [$x, $y, $z], $rotation, $random);
             case 'fortress':
                 if (!$this->validBiome($structure, $cx * 16, 64, $cz * 16)) {
                     return [];

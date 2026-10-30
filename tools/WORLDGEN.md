@@ -84,12 +84,19 @@ Starts and their pieces' state live in the world database (`vanilla_structure_st
 
 Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: Nether fortresses, ruined portals, ocean ruins, strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+Ported so far: End cities, Nether fortresses, ruined portals, ocean ruins, strongholds, mineshafts, swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
 - the hut at chunk -17, 22, including its stair shapes and fence connections;
 - the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
 - the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
 - the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
 - the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
+
+End cities (`EndCity`) port `EndCityPieces`:
+- Houses, towers, fat towers and bridges, each section tagged and kept only when it collides with nothing outside its parent's section.
+- One ship per city.
+- End treasure chests.
+
+Decoration regions in the Nether and the End now reach the dimension's 256-block build height (`Region::$genHeight` keeps the generator's 128 for height anchors), so towers above y 128 are placed. For seed 42, the city at chunk 66, -38 has the official 104 pieces, and its 3 by 3 chunks match block for block, apart from two chunk-edge banners. Shulkers and the ship's elytra are not spawned yet.
 
 Nether fortresses (`NetherFortressPiece`) port `NetherFortressPieces`:
 - Bridge and castle pieces grown from the start crossing by their two weight lists, with vanilla's fall-through, pieces allowed twice in a row, and bridge ends past depth 30 or 112 blocks.
