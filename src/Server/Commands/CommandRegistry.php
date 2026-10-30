@@ -70,6 +70,7 @@ final class CommandRegistry
             new CommandDefinition('setidletimeout', 'executeSetIdleTimeout', true),
             new CommandDefinition('say', 'executeSay', true),
             new CommandDefinition('execute', 'executeExecute', true),
+            new CommandDefinition('dialog', 'executeDialog', true),
             new CommandDefinition('clone', 'executeClone', true),
             new CommandDefinition('forceload', 'executeForceLoad', true),
             new CommandDefinition('particle', 'executeParticle', true),

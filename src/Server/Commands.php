@@ -68,6 +68,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\DialogCommand;
+
     use CommandModules\ExecuteCommand;
 
     use CommandModules\CloneCommand;

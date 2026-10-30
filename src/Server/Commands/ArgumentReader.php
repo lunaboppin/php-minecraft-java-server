@@ -40,6 +40,7 @@ final class ArgumentReader
             'block' => array_combine(array_map(static fn (string $name): string => 'minecraft:' . $name, array_keys($version->catalog->blocks)), array_map(static fn (array $block): array => array_map(static fn (array $property): array => array_map('strval', $property['values']), $block['properties']), $version->catalog->blocks)),
             'minecraft:data_component_type' => array_flip(array_keys(json_decode((string) file_get_contents($version->directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR)['component_ids'])),
             'minecraft:entity_type' => $ids(array_keys($version->blocks['entity_types'])),
+            'minecraft:dialog' => array_fill_keys($version->registryEntries('minecraft:dialog'), true),
             'minecraft:particle_type' => $ids(array_keys($version->blocks['particle_types'])),
             'minecraft:damage_type' => $ids(array_keys($version->catalog->damageTypes['types'])),
             'minecraft:timeline' => $ids(array_keys($version->catalog->timelines)),
@@ -219,6 +220,17 @@ final class ArgumentReader
                 return;
             case 'minecraft:int_range':
                 EntitySelector::readBounds($reader, true);
+                return;
+            case 'minecraft:dialog':
+                // ResourceOrIdArgument: a registered dialog's ID, or an inline dialog.
+                if ($reader->canRead() && in_array($reader->peek(), ['{', '"', "'", '['], true)) {
+                    Snbt::read($reader);
+                    return;
+                }
+                $id = $reader->readIdentifier();
+                if (isset($this->registries['minecraft:dialog']) && !isset($this->registries['minecraft:dialog'][$id])) {
+                    throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:dialog']);
+                }
                 return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
