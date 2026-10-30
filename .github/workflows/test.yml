@@ -1,5 +1,14 @@
 name: Server checks
-on: [push, pull_request, workflow_dispatch]
+# Branch pushes are tested through their pull requests; main is tested on push.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+# A newer push to a pull request supersedes its running checks.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
