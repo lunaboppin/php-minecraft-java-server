@@ -14,7 +14,7 @@ trait AttributeCommand
     {
         $entity = $this->selectEntities($arguments[0], $sender, false, true)[0];
         $name = $this->entityName($entity);
-        if (isset($entity['item'])) {
+        if (isset($entity['item']) || isset($entity['orb'])) {
             throw new CommandFailure(['translate' => 'commands.attribute.failed.entity', 'with' => [$name]]);
         }
         $attribute = preg_replace('/^minecraft:/', '', $arguments[1]);

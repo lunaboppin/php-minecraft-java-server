@@ -199,7 +199,9 @@ final class Decorator
         }
         $placedAny = false;
         if (preg_replace('/^minecraft:/', '', $placement[$index]['type']) === 'count_on_every_layer') {
-            // CountOnEveryLayerPlacement: its outputs interleave with the random draws of what follows.
+            // CountOnEveryLayerPlacement.modify: every layer's positions are found before any is
+            // placed, as FeaturePlacer runs each modifier to completion.
+            $positions = [];
             $layer = 0;
             do {
                 $foundAny = false;
@@ -208,12 +210,15 @@ final class Decorator
                     $z = $random->nextInt(16) + $position[2];
                     $y = $this->onGroundY($region, $x, $region->height(Region::MOTION_BLOCKING, $x, $z), $z, $layer);
                     if ($y !== PHP_INT_MAX) {
-                        $placedAny = $this->placeFrom($feature, $placement, $index + 1, $region, $random, [$x, $y, $z], $top) || $placedAny;
+                        $positions[] = [$x, $y, $z];
                         $foundAny = true;
                     }
                 }
                 ++$layer;
             } while ($foundAny);
+            foreach ($positions as $next) {
+                $placedAny = $this->placeFrom($feature, $placement, $index + 1, $region, $random, $next, $top) || $placedAny;
+            }
             return $placedAny;
         }
         foreach ($this->modify($placement[$index], $region, $random, $position, $top) as $next) {
