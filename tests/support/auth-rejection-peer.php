@@ -15,6 +15,8 @@ try {
         512,
         JSON_THROW_ON_ERROR
     );
+    // A text-only reason is sent as a bare JSON string.
+    $message = is_string($message) ? ['text' => $message] : $message;
     $unavailable = ($message['text'] ?? null) === 'Authentication servers are unavailable. Please try again later.'
         || ($message['translate'] ?? null) === 'multiplayer.disconnect.authservers_down';
     if ($unavailable) {
