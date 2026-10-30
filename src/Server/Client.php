@@ -118,6 +118,8 @@ final class Client
     public int $takeXpDelay = 0;
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
+    /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
+    public ?string $knockbackMotion = null;
     /** Whether a position arrived since the client's last client_tick_end. */
     public bool $positionThisTick = false;
     /** Where the player's last tick left them, and the movement packets since. */

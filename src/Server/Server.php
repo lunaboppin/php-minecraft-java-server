@@ -1528,6 +1528,7 @@ final class Server
                         return;
                     }
                     $this->tickSurvival($c);
+                    $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
                     // ServerPlayer.tick ends by sending changed post effects, the empty list included.
