@@ -1,5 +1,14 @@
 name: Server checks
-on: [push, pull_request, workflow_dispatch]
+# Branch pushes are tested through their pull requests; main is tested on push.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+# A newer push to a pull request supersedes its running checks.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
@@ -150,6 +159,7 @@ jobs:
           python3 tests/spawn-scatter.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/experience-orbs.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-swings.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
@@ -163,6 +173,7 @@ jobs:
             tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
+            tools/.cache/experience-orbs/
             tools/.cache/item-entities/
             tools/.cache/equipment-stack-verification/
           retention-days: 7
