@@ -22,7 +22,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/banlist` | [BanListCommand.php](../src/Server/Commands/BanListCommand.php) | Partial handler; native behavior incomplete | — |
 | `/bossbar` | [BossBarCommand.php](../src/Server/Commands/BossBarCommand.php) | Partial handler; native behavior incomplete | — |
 | `/clear` | [ClearCommand.php](../src/Server/Commands/ClearCommand.php) | Partial handler; native behavior incomplete | — |
-| `/clone` | — | Unimplemented | — |
+| `/clone` | [CloneCommand.php](../src/Server/Commands/CloneCommand.php) | Partial handler; native behavior incomplete | — |
 | `/compute` | — | Unimplemented | — |
 | `/damage` | [DamageCommand.php](../src/Server/Commands/DamageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/data` | — | Unimplemented | — |

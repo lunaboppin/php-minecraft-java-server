@@ -320,6 +320,17 @@ SCRIPT = [
     ('ban-ip 192.168.1.20 @a', False), ('ban-ip nobody', False), ('ban-ip 999.1.1.1', False), ('banlist ips', False), ('banlist', False),
     ('pardon-ip 10.0.0.5', False), ('pardon-ip 10.0.0.5', False), ('pardon-ip notanip', False), ('!quiet pardon-ip 10.0.0.6', False),
     ('!quiet pardon-ip 192.168.1.20', False), ('!witness ban-ip 10.0.0.9', False),
+    # Clone modes, overlap, size, loading and dimension checks, inside every scattered spawn's view.
+    ('!quiet fill 0 240 0 2 242 2 stone', False), ('!quiet setblock 1 241 1 oak_sign', False), ('!quiet setblock 0 240 0 air', False),
+    ('clone 0 240 0 2 242 2 10 240 10', False), ('clone 0 240 0 2 242 2 10 240 10', False), ('clone 0 240 0 2 242 2 1 240 1', False),
+    ('clone 0 240 0 2 242 2 1 240 1 replace force', False), ('clone 0 240 0 2 242 2 20 240 0 masked', False),
+    ('clone 0 240 0 2 242 2 0 250 0 filtered stone', False), ('clone 0 240 0 2 242 2 0 250 0 filtered #minecraft:logs', False),
+    ('clone 0 240 0 2 242 2 0 260 0 strict replace move', False), ('clone 0 240 0 2 242 2 0 260 0 masked', False),
+    ('clone 0 240 0 31 300 31 0 240 0 replace force', False), ('clone 0 240 0 100 242 100 0 270 0', False), ('clone 0 240 0 2 242 2 5000 240 5000', False),
+    ('clone from overworld 0 260 0 2 262 2 to minecraft:overworld 16 240 16 replace normal', False),
+    ('clone from minecraft:nowhere 0 260 0 2 262 2 16 240 16', False), ('clone ~ ~ ~ ~1 ~1 ~1 ~ 280 ~ masked', False),
+    ('clone 0 400 0 1 401 1 0 240 0', False), ('clone 0 260 0 2 262 2 0 261 0 masked move', False),
+    ('!quiet fill 4 290 4 5 291 5 barrier', False), ('clone 4 290 4 5 291 5 8 290 8', False),
     ('list', False),
 ]
 

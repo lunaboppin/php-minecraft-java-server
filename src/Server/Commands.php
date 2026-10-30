@@ -68,6 +68,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\CloneCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
@@ -637,7 +639,7 @@ trait Commands
      *
      * @return array{int, int, int}
      */
-    private function loadedBlockPosition(array $arguments, Client $client): array
+    private function loadedBlockPosition(array $arguments, Client $client, ?string $dimension = null): array
     {
         if (count($arguments) !== 3) {
             throw new \InvalidArgumentException('Expected x y z coordinates');
@@ -646,10 +648,11 @@ trait Commands
         // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
         // player's view as soon as they are placed, before the chunks reach the client.
         [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
-        if (array_filter($this->players(), fn (Client $player): bool => $player->dimension === $client->dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
+        $dimension ??= $client->dimension;
+        if (array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
-        $world = $this->worlds[$client->dimension];
+        $world = $this->worlds[$dimension];
         if ($position[1] < $world->minY || $position[1] >= $world->minY + $world->height || abs($position[0] + 0.5) > 30000000 || abs($position[2] + 0.5) > 30000000) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.outofworld']);
         }
