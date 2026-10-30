@@ -5,7 +5,7 @@ use PhpMinecraftJavaServer\Protocol\{Binary,Packets};
 use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Inventory;
 
-/** Scheduled water and basic circuits. Advanced piston/observer and shape behavior remain tracked. */
+/** Scheduled ticks and basic circuits; fluids are in FluidSimulation. Advanced piston/observer and shape behavior remain tracked. */
 trait BlockSimulation
 {
     private array $blockTicks=[];
@@ -29,10 +29,10 @@ trait BlockSimulation
             || str_ends_with($name,'_door') || str_ends_with($name,'_trapdoor');
     }
     private function changedSimulation(int $x,int $y,int $z):void {
+        $this->fluidsChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
-            if($name==='water'){$this->scheduleBlock('water',$a,$b,$c,5);}
             if($this->circuit($name)){$this->scheduleBlock('circuit',$a,$b,$c);}
             // Power can pass through one opaque block to a device on its far side.
             if(!$catalog->blocks[$name]['full_cube']){continue;}
@@ -40,10 +40,14 @@ trait BlockSimulation
         }
     }
     private function tickBlocks():void {
-        uasort($this->blockTicks,static fn(array $a,array $b):int=>$a[0]<=>$b[0]);$work=0;
-        foreach($this->blockTicks as $key=>[$due,$kind,$position]){
-            if($due>$this->worldAge || ++$work>256){break;}unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
-            if($kind==='water'){$this->tickWater($x,$y,$z);}
+        // ServerLevel.tick: the due block ticks run, then the due fluid ticks, each in the order
+        // they were scheduled, up to 65536 of each per game tick.
+        uasort($this->blockTicks,static fn(array $a,array $b):int=>$a[0]<=>$b[0]);
+        $due=array_filter($this->blockTicks,fn(array $t):bool=>$t[0]<=$this->worldAge);
+        $fluid=array_filter($due,static fn(array $t):bool=>in_array($t[1],self::FLUID_TICKS,true));
+        foreach([array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)] as $batch)foreach($batch as $key=>[,$kind,$position]){
+            unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
+            if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
@@ -180,45 +184,5 @@ trait BlockSimulation
             $p['powered']=$power>0?'true':'false';if($p['powered']!==$old['powered']){$p['open']=$p['powered'];}
         }
         if($p!==$old){$this->setBlock($x,$y,$z,$c->state($name,$p));}
-    }
-    private function waterLevel(int $x,int $y,int $z):?int {
-        $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);return $c->blockName($state)==='water'?(int)$c->properties($state)['level']:null;
-    }
-    private function waterPassable(int $x,int $y,int $z):bool {
-        if($y<$this->world->minY || $y>=$this->world->minY+$this->world->height){return false;}
-        $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);
-        return $name==='water' || ($c->blocks[$name]['replaceable'] && !in_array($name,['lava','fire','soul_fire'],true));
-    }
-    private function waterSlope(int $x,int $y,int $z,int $depth,array $visited):int {
-        if($this->waterPassable($x,$y-1,$z) && $this->waterLevel($x,$y-1,$z)!==0){return 0;}if($depth===0){return 100;}
-        $visited[$x.':'.$z]=true;$best=100;
-        foreach(self::SIDES as [$dx,$dy,$dz]){if(!isset($visited[($x+$dx).':'.($z+$dz)]) && $this->waterPassable($x+$dx,$y,$z+$dz) && $this->waterLevel($x+$dx,$y,$z+$dz)!==0){$best=min($best,1+$this->waterSlope($x+$dx,$y,$z+$dz,$depth-1,$visited));}}
-        return $best;
-    }
-    private function spreadWater(int $x,int $y,int $z,int $level):void {
-        if(!$this->waterPassable($x,$y,$z)){return;}$old=$this->waterLevel($x,$y,$z);
-        if($old===0){return;}
-        if($level===8){if($old===8){return;}}
-        elseif($old!==null && (($old<8 && $old<=$level) || ($old>=8 && $this->waterLevel($x,$y+1,$z)!==null))){return;}
-        $this->setBlock($x,$y,$z,$this->version->catalog->state('water',['level'=>(string)$level]));
-    }
-    private function tickWater(int $x,int $y,int $z):void {
-        $level=$this->waterLevel($x,$y,$z);if($level===null){return;}
-        if($level!==0){
-            $next=8;$sources=0;
-            if($this->waterLevel($x,$y+1,$z)!==null){$next=8;}
-            else{
-                foreach(self::SIDES as [$dx,$dy,$dz]){$adj=$this->waterLevel($x+$dx,$y,$z+$dz);if($adj===0){++$sources;}if($adj!==null){$next=min($next,($adj>=8?0:$adj)+1);}}
-                if($sources>=2 && (!$this->waterPassable($x,$y-1,$z) || $this->waterLevel($x,$y-1,$z)===0)){$next=0;}
-                elseif($next>7){$this->setBlock($x,$y,$z,0);return;}
-            }
-            if($next!==$level){$level=$next;$this->setBlock($x,$y,$z,$this->version->catalog->state('water',['level'=>(string)$level]));}
-        }
-        $below=$this->waterLevel($x,$y-1,$z);
-        if($this->waterPassable($x,$y-1,$z) && $below===null){$this->spreadWater($x,$y-1,$z,8);return;}
-        if($below!==null && $level!==0){return;}
-        $side=$level>=8?1:$level+1;if($side>7){return;}$paths=[];$best=100;
-        foreach(self::SIDES as [$dx,$dy,$dz]){if($this->waterPassable($x+$dx,$y,$z+$dz) && $this->waterLevel($x+$dx,$y,$z+$dz)!==0){$d=$this->waterSlope($x+$dx,$y,$z+$dz,3,[$x.':'.$z=>true]);$best=min($best,$d);$paths[]=[$d,$x+$dx,$z+$dz];}}
-        foreach($paths as [$distance,$a,$b]){if($distance===$best){$this->spreadWater($a,$y,$b,$side);}}
     }
 }
