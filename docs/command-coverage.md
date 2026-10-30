@@ -93,7 +93,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/tell` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
 | `/tellraw` | [TellrawCommand.php](../src/Server/Commands/TellrawCommand.php) | Partial handler; native behavior incomplete | — |
 | `/test` | — | Unimplemented | — |
-| `/tick` | — | Unimplemented | — |
+| `/tick` | [TickCommand.php](../src/Server/Commands/TickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/time` | [TimeCommand.php](../src/Server/Commands/TimeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/title` | [TitleCommand.php](../src/Server/Commands/TitleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tm` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | `/teammsg` |

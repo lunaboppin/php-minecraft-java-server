@@ -60,6 +60,8 @@ final class Server
     use Cameras;
 
     use Swinging;
+
+    use TickRates;
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -303,9 +305,19 @@ final class Server
                 $this->pollAuthentication();
                 $now = self::now();
                 if ($now >= $nextTick) {
+                    // MinecraftServer.runServer: a sprint runs the next tick at once.
+                    $sprint = $this->sprinting() && $this->checkShouldSprintThisTick();
+                    $started = hrtime(true);
                     $this->tick($now);
+                    $this->tickTimes[] = hrtime(true) - $started;
+                    if (count($this->tickTimes) > 100) {
+                        array_shift($this->tickTimes);
+                    }
+                    if ($sprint) {
+                        $this->sprintTimeSpent += hrtime(true) - $this->sprintTickStart;
+                    }
                     ++$this->ticks;
-                    $nextTick = max($nextTick + 0.05, $now);
+                    $nextTick = $sprint ? $now : max($nextTick + $this->nanosecondsPerTick / 1e9, $now);
                 }
             }
         } finally {
@@ -635,6 +647,8 @@ final class Server
         $c->send($this->version, 'ticking_step', Binary::writeVarInt(0));
         // CustomBossEvents.onPlayerConnect.
         $this->bossBarsConnect($c);
+
+        $this->sendTickingState($c);
         $this->scheduleChunks($c);
         // The player's ServerEntity starts with them, counting ticks from here.
         $this->playerMotionTracker($c);
@@ -1423,6 +1437,17 @@ final class Server
         if (($announcement = $this->announcements->poll($this->players() !== [])) !== null) {
             $this->broadcast($announcement);
         }
+        $this->tickRateManagerTick();
+        // ServerLevel.tick: game time and clocks stand still while the game is frozen.
+        if ($this->runGameElements) {
+            $this->tickTime();
+        }
+        $this->tickDimensions();
+        $this->tickClients($now);
+    }
+
+    private function tickTime(): void
+    {
         ++$this->worldAge;
         // ServerClockManager.tick: while advance_time is on, each unpaused clock adds its rate to a
         // float partial tick and moves on by the whole ticks.
@@ -1439,6 +1464,12 @@ final class Server
         }
         $this->tickSwings();
         $this->tickDimensions();
+
+    }
+
+    /** Generation workers, then each connection and its player. */
+    private function tickClients(float $now): void
+    {
         if ($this->generationWorkers !== [] && $now - $this->generationWorkersCheckedAt >= 5) {
             $this->generationWorkersCheckedAt = $now;
             $this->checkGenerationWorkers();

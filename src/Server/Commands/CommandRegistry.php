@@ -73,6 +73,7 @@ final class CommandRegistry
             new CommandDefinition('spectate', 'executeSpectate', true),
             new CommandDefinition('swing', 'executeSwing', true),
             new CommandDefinition('stopwatch', 'executeStopwatch', true),
+            new CommandDefinition('tick', 'executeTick', true),
         ];
     }
 

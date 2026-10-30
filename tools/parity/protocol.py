@@ -199,9 +199,11 @@ class Probe(wire.Client):
     def tick_barrier(self):
         # Wait for the main simulation thread; a ping alone does not fence command execution.
         self.barrier()
+        # Time syncs come every 20 ticks, even while /tick freeze stops the game time, so the
+        # second one from here follows at least 20 ticks of command execution.
         if self.game_time is None:self.until('set_time')
-        previous=self.game_time
-        self.until('set_time',lambda p:struct.unpack_from('>q',p)[0]>previous+20)
+        seen=[]
+        self.until('set_time',lambda p:seen.append(p) or len(seen)>=2)
         self.barrier()
 
     def refresh_inventory(self):

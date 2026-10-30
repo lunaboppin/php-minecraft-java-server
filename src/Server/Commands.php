@@ -80,6 +80,8 @@ trait Commands
 
     use CommandModules\StopwatchCommand;
 
+    use CommandModules\TickCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;
