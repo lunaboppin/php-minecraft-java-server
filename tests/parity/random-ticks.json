@@ -1,0 +1,184 @@
+{
+  "name": "random-ticks",
+  "normalizations": [
+    "Compare block states after random ticks at a raised random_tick_speed, once outcomes have settled.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers crop growth, farmland drying, leaf distance and decay, grass spread, sugar cane growth and ice melting; not the random tick order or timing."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 300"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 6 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "fill 7 63 6 8 63 6 minecraft:farmland[moisture=7]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 64 6 minecraft:wheat"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 64 6 minecraft:carrots"
+    },
+    {
+      "action": "command",
+      "text": "setblock -20 63 -20 minecraft:farmland"
+    },
+    {
+      "action": "command",
+      "text": "setblock -6 70 6 minecraft:oak_leaves[distance=7,persistent=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock -9 70 6 minecraft:oak_log"
+    },
+    {
+      "action": "command",
+      "text": "setblock -8 70 6 minecraft:oak_leaves[distance=1,persistent=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock -7 70 6 minecraft:oak_leaves[distance=2,persistent=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 63 0 minecraft:dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 14 63 0 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 13 63 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 14 64 0 minecraft:sugar_cane"
+    },
+    {
+      "action": "command",
+      "text": "setblock -12 64 0 minecraft:ice"
+    },
+    {
+      "action": "command",
+      "text": "setblock -13 64 0 minecraft:glowstone"
+    },
+    {
+      "action": "wait",
+      "seconds": 6
+    },
+    {
+      "action": "snapshot",
+      "name": "leaves-kept",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -8,
+          70,
+          6
+        ],
+        [
+          -7,
+          70,
+          6
+        ],
+        [
+          -6,
+          70,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -9 70 6 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 40
+    },
+    {
+      "action": "snapshot",
+      "name": "grown",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          7,
+          64,
+          6
+        ],
+        [
+          8,
+          64,
+          6
+        ],
+        [
+          7,
+          63,
+          6
+        ],
+        [
+          -20,
+          63,
+          -20
+        ],
+        [
+          -8,
+          70,
+          6
+        ],
+        [
+          -7,
+          70,
+          6
+        ],
+        [
+          -6,
+          70,
+          6
+        ],
+        [
+          12,
+          63,
+          0
+        ],
+        [
+          14,
+          64,
+          0
+        ],
+        [
+          14,
+          65,
+          0
+        ],
+        [
+          14,
+          66,
+          0
+        ],
+        [
+          14,
+          67,
+          0
+        ],
+        [
+          -12,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

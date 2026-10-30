@@ -55,6 +55,8 @@ final class Server
 
     use FluidSimulation;
 
+    use RandomTicks;
+
     use SignAndPick;
 
     use EntityTracking;
