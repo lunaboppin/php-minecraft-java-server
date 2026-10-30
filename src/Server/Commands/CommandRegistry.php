@@ -61,6 +61,8 @@ final class CommandRegistry
             new CommandDefinition('stopsound', 'executeStopSound', true),
             new CommandDefinition('rotate', 'executeRotate', true),
             new CommandDefinition('attribute', 'executeAttribute', true),
+            new CommandDefinition('tag', 'executeTag', true),
+            new CommandDefinition('setidletimeout', 'executeSetIdleTimeout', true),
             new CommandDefinition('say', 'executeSay', true),
         ];
     }

@@ -67,6 +67,9 @@ final class Server
 
     private int $nextEntity = 1;
 
+    /** server.properties player-idle-timeout, in minutes; 0 never kicks. */
+    private int $playerIdleTimeout = 0;
+
     private int $ticks = 0;
 
     private array $pendingLight = [];
@@ -380,7 +383,14 @@ final class Server
                 'status' => $this->status($c, $name, $r),
                 'login' => $this->login($c, $name, $r),
                 'configuration' => $this->configuration($c, $name, $r),
-                'play' => $this->withDimension($c->dimension, fn () => $this->play($c, $name, $r)),
+                'play' => $this->withDimension($c->dimension, function () use ($c, $name, $r): void {
+                    // ServerPlayer.resetLastActionTime: the packets that show a player is not idle.
+                    if (in_array($name, ['player_input', 'player_action', 'use_item_on', 'use_item', 'set_carried_item', 'chat_command', 'player_command', 'attack',
+                        'interact', 'teleport_to_entity', 'client_command', 'container_click', 'place_recipe', 'container_button_click', 'sign_update'], true)) {
+                        $c->lastActionTime = self::now();
+                    }
+                    $this->play($c, $name, $r);
+                }),
                 default => throw new ProtocolException('Invalid connection state'),
             };
         } catch (ProtocolException $e) {
@@ -506,6 +516,7 @@ final class Server
         } elseif ($name === 'finish_configuration' && $c->registriesSent) {
             $r->end();
             $c->state = 'play';
+            $c->lastActionTime = self::now();
             $this->join($c);
         } elseif (!in_array($name, ['custom_payload', 'resource_pack'], true)) {
             throw new ProtocolException('Unexpected configuration packet');
@@ -827,6 +838,7 @@ final class Server
                 if (preg_match('/[\x00-\x1f\x7f\x{00a7}]/u', $message)) {
                     throw new ProtocolException('Invalid chat characters');
                 }
+                $c->lastActionTime = self::now();
                 $this->broadcast('<' . $c->name . '> ' . $message);
                 return;
             case 'command_suggestion':
@@ -996,6 +1008,10 @@ final class Server
         $oldYaw = $c->yaw;
         $oldY = $c->y;
         $distance = sqrt(($x - $c->x) ** 2 + ($z - $c->z) ** 2);
+        // handlePlayerKnownMovement: real movement shows the player is not idle.
+        if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 1.0E-5) {
+            $c->lastActionTime = self::now();
+        }
         $c->x = $x;
         $c->y = $y;
         $c->z = $z;
@@ -1401,6 +1417,11 @@ final class Server
                 continue;
             }
             try {
+                // ServerGamePacketListenerImpl.tick: idle longer than the timeout is kicked.
+                if ($this->playerIdleTimeout > 0 && $c->lastActionTime > 0 && $now - $c->lastActionTime > $this->playerIdleTimeout * 60) {
+                    $this->disconnect($c, ['translate' => 'multiplayer.disconnect.idling']);
+                    continue;
+                }
                 if ($c->keepAlive === null && $now - $c->lastKeepAlive >= 15) {
                     $c->keepAlive = random_int(1, PHP_INT_MAX);
                     $c->lastKeepAlive = $now;

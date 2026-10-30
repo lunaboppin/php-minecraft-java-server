@@ -296,6 +296,13 @@ SCRIPT = [
     ('!witness teammsg nobody', False), ('!quiet team add chatters', False), ('!quiet team join chatters ParityProbe', False),
     ('teammsg hi team', False), ('!quiet team join chatters Witness', False), ('tm short', False), ('!witness teammsg from witness', False),
     ('!quiet team remove chatters', False),
+    # Entity tags: the one entity changed is named, several are counted, and lists are sorted.
+    ('!quiet kill @e[type=!player]', False), ('tag @s list', False), ('tag @s add red', False), ('tag @s add red', False), ('tag @a add blue', False),
+    ('tag @s list', False), ('tag Witness list', False), ('tag @a list', False), ('tag @a add green', False), ('tag @s add k5', False),
+    ('tag @a list', False), ('tag @e[tag=red] list', False), ('tag @e[tag=!red] list', False), ('tag @e[tag=] list', False),
+    ('tag @s remove red', False), ('tag @s remove red', False), ('tag @a remove blue', False), ('!witness tag @s add nope', False),
+    ('!quiet tag @a remove green', False), ('!quiet tag @s remove k5', False),
+    ('setidletimeout 5', False), ('setidletimeout 0', False), ('!witness setidletimeout 3', False),
     ('list', False),
 ]
 
