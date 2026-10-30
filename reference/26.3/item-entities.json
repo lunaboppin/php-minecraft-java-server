@@ -1,5 +1,11 @@
 {
   "version": "26.3",
+  "item": {
+    "update_interval": 20,
+    "track_deltas": true,
+    "width": 0.25,
+    "height": 0.25
+  },
   "damage_resistant": {
     "ancient_debris": [
       "minecraft:campfire",

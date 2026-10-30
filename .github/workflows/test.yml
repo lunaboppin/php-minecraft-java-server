@@ -149,6 +149,7 @@ jobs:
           python3 tests/spawn-protection.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-spawn-protection
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
+          python3 tests/item-entities.py --eula-file tools/.cache/parity-consent/eula.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -159,6 +160,7 @@ jobs:
             tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
+            tools/.cache/item-entities/
             tools/.cache/equipment-stack-verification/
           retention-days: 7
 

@@ -434,7 +434,7 @@ trait Animals
         foreach ($this->loot()->drops('minecraft:entities/' . $animal['kind'], $context) as [$drop, $count]) {
             $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
             if ($item !== null) {
-                $this->dropStack($animal['x'], $animal['y'] + 0.4, $animal['z'], ['item' => $item, 'count' => $count]);
+                $this->spawnAtLocation($animal['x'], $animal['y'], $animal['z'], ['item' => $item, 'count' => $count]);
             }
         }
     }
