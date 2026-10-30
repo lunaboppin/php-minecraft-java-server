@@ -209,10 +209,45 @@ final class Template
                 }
             }
         }
-        // StructurePlaceSettings.setKnownShape(true) skips the shape updates.
+        // StructurePlaceSettings.setKnownShape(true) skips the shape updates. Otherwise the placed
+        // blocks on the edge of the placed shape and the blocks beside them follow each other
+        // (StructureTemplate.updateShapeAtEdge), then each placed block follows its neighbours
+        // (Block.updateFromNeighbourShapes). Blocks on the chunk's edge update again once the
+        // chunk is complete, as the neighbouring chunk's pieces would update them.
         if ($updateShapes) {
+            if ($context->shapes !== null) {
+                $shapes = $context->shapes;
+                $get = static fn (int $x, int $y, int $z): int => $region->get($x, $y, $z);
+                $update = static function (int $x, int $y, int $z) use ($shapes, $region, $get): void {
+                    if (($updated = $shapes->update($region->get($x, $y, $z), $x, $y, $z, $get, true)) !== null) {
+                        $region->set($x, $y, $z, $updated);
+                    }
+                };
+                foreach ($placed as [$x, $y, $z]) {
+                    $outside = [];
+                    foreach ([[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]] as [$dx, $dy, $dz]) {
+                        if (!isset($placed[($x + $dx) . ',' . ($y + $dy) . ',' . ($z + $dz)])) {
+                            $outside[] = [$x + $dx, $y + $dy, $z + $dz];
+                        }
+                    }
+                    if ($outside === []) {
+                        continue;
+                    }
+                    $update($x, $y, $z);
+                    foreach ($outside as [$nx, $ny, $nz]) {
+                        if (Piece::inside($chunkBox, $nx, $ny, $nz)) {
+                            $update($nx, $ny, $nz);
+                        }
+                    }
+                }
+                foreach ($placed as [$x, $y, $z]) {
+                    $update($x, $y, $z);
+                }
+            }
             foreach ($placed as [$x, $y, $z]) {
-                $context->markForPostProcessing($x, $y, $z);
+                if ($context->shapes === null || $x === $chunkBox[0] || $x === $chunkBox[3] || $z === $chunkBox[2] || $z === $chunkBox[5]) {
+                    $context->markForPostProcessing($x, $y, $z);
+                }
             }
         }
         return true;

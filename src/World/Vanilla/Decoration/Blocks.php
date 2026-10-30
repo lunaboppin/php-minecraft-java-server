@@ -152,6 +152,16 @@ final class Blocks
         return ($this->flags[$state] & (16 << $direction)) !== 0;
     }
 
+    /**
+     * WallBlock.isCovered: whether the bottom face of the state's collision shape covers a wall's
+     * post (side null) or its side towards north, east, south or west.
+     */
+    public function coversWall(int $state, ?string $side): bool
+    {
+        $bit = $side === null ? 1 << 22 : 1 << (23 + ['north' => 0, 'east' => 1, 'south' => 2, 'west' => 3][$side]);
+        return ($this->flags[$state] & $bit) !== 0;
+    }
+
     /** BlockState.isFaceSturdy with center support. */
     public function sturdyCenter(int $state, int $direction): bool
     {

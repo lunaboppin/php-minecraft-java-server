@@ -259,6 +259,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-protection.py') . ' --out
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/block-breaking.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/spawn-scatter.py'), $code);
 if ($code !== 0) {
     exit($code);

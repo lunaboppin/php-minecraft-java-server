@@ -361,50 +361,6 @@ trait Survival
         $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->sharedSpawn(), true);
     }
 
-    private function miningTicks(Client $c, int $state): int
-    {
-        $name = $this->version->catalog->blockName($state);
-        $info = $this->version->catalog->blocks[$name];
-        if ($info['hardness'] < 0) {
-            return PHP_INT_MAX;
-        }
-        $held = $c->inventory[36 + $c->heldSlot]['item'] ?? -1;
-        $tool = $this->version->catalog->itemName($held) ?? '';
-        $correct = $this->correctTool($tool, $name);
-        $speed = 1;
-        if ($correct && str_contains($tool, '_')) {
-            $material = explode('_', $tool)[0];
-            $speed = match ($material) {
-                'wooden' => 2,'stone' => 4,'iron' => 6,'golden' => 12,'diamond' => 8,'netherite' => 9,default => 1
-            };
-        }
-        return max(1, (int) ceil($info['hardness'] * ($info['requires_tool'] && !$correct ? 100 : 30) / $speed));
-    }
-
-    private function correctTool(string $tool, string $block): bool
-    {
-        if (str_contains($block, 'obsidian') || $block === 'ancient_debris') {
-            return in_array($tool, ['diamond_pickaxe', 'netherite_pickaxe'], true);
-        }
-        if (str_contains($block, 'diamond_ore') || str_contains($block, 'gold_ore') || str_contains($block, 'redstone_ore') || str_contains($block, 'emerald_ore')) {
-            return in_array($tool, ['iron_pickaxe', 'diamond_pickaxe', 'netherite_pickaxe'], true);
-        }
-        if (str_contains($block, 'iron_ore') || str_contains($block, 'copper_ore') || str_contains($block, 'lapis_ore')) {
-            return str_ends_with($tool, '_pickaxe') && !str_starts_with($tool, 'wooden_') && !str_starts_with($tool, 'golden_');
-        }
-        $required = $this->version->catalog->blocks[$block]['requires_tool'];
-        if ($required) {
-            return str_ends_with($tool, '_pickaxe');
-        }
-        if (str_ends_with($block, '_log') || str_ends_with($block, '_planks') || str_contains($block, 'wood') || in_array($block, ['chest', 'crafting_table'], true)) {
-            return str_ends_with($tool, '_axe');
-        }
-        if (in_array($block, ['dirt', 'grass_block', 'sand', 'gravel', 'snow'], true)) {
-            return str_ends_with($tool, '_shovel');
-        }
-        return false;
-    }
-
     private function loot(): \PhpMinecraftJavaServer\World\Loot
     {
         static $loot = null;
@@ -475,8 +431,7 @@ trait Survival
             return;
         }
         $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
-        $required = $this->version->catalog->blocks[$name]['requires_tool'];
-        if ((!$required || $this->correctTool($tool, $name)) && $this->gameRule('block_drops') === 'true') {
+        if ($this->correctToolForDrops($c, $name) && $this->gameRule('block_drops') === 'true') {
             // The block's official loot table, for the held tool.
             $held = $c->inventory[36 + $c->heldSlot] ?? null;
             $toolStack = $held === null ? null : ['item' => 'minecraft:' . $tool, 'enchantments' => $held['enchantments'] ?? []];
@@ -501,10 +456,12 @@ trait Survival
                 }
             }
         }
+        // Item.mineBlock: tools wear by their damage per block on blocks that take time to break.
         $slot = 36 + $c->heldSlot;
         $held = $c->inventory[$slot] ?? null;
-        if ($held !== null && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
-            $held['damage'] = ($held['damage'] ?? 0) + 1;
+        $wear = ($this->miningReference()['blocks'][$name]['destroy_time'] ?? 0.0) != 0.0 ? ($this->heldTool($c)['damage_per_block'] ?? 0) : 0;
+        if ($held !== null && $wear > 0 && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
+            $held['damage'] = ($held['damage'] ?? 0) + $wear;
             if ($held['damage'] >= $max) {
                 unset($c->inventory[$slot]);
             } else {
@@ -566,6 +523,8 @@ trait Survival
             $c->lastAttackItem = $selected;
             $c->lastAttackTick = $this->ticks;
         }
+        // ServerPlayer.tick runs the game mode's block breaking before living entity ticking.
+        $this->tickMining($c);
         if ($c->dead) {
             return;
         }
@@ -576,16 +535,6 @@ trait Survival
         if (!$this->validWindow($c)) {
             $this->closeWindow($c, true);
             $this->syncInventory($c);
-        }
-        if ($c->mining !== null) {
-            $mine = $c->mining;
-            [$x, $y, $z] = $mine['position'];
-            if (!$this->editable($c, $x, $y, $z) || $this->world->get($x, $y, $z) !== $mine['state']) {
-                $c->mining = null;
-            } elseif ($this->ticks - $mine['started'] >= $mine['duration']) {
-                $this->breakBlock($c, $x, $y, $z);
-                $c->mining = null;
-            }
         }
         if ($c->eating !== null && $this->ticks >= $c->eating['complete']) {
             $slot = $c->eating['slot'];

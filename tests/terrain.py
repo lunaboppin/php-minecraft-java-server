@@ -151,6 +151,9 @@ def main():
                 with sqlite3.connect(world) as db:
                     net.check(db.execute('SELECT state FROM blocks WHERE x=1 AND y=65 AND z=1').fetchone() == (net.BLOCKS['states']['stone'],),
                               'survival mining does not break stone instantly')
+                # Like a client, stop digging once the wooden pickaxe's 23 ticks have passed.
+                time.sleep(1.5)
+                a.send('player_action', net.vi(3) + net.block_position(1, 65, 1) + b'\1' + net.vi(92))
                 a.until('block_update', lambda p: p[:8] == net.block_position(1, 65, 1) and net.read_vi(p, 8)[0] == 0)
                 # The drop pops out at random near the block's centre; standing on it picks it up.
                 command(a, 'tp @s 1.5 65 1.5', 'commands.teleport.success.location.single')

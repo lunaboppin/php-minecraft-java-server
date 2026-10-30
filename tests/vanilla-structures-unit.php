@@ -8,6 +8,7 @@ use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\OverworldGenerator;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\BlockTransform;
+use PhpMinecraftJavaServer\World\Vanilla\Structure\Piece;
 use PhpMinecraftJavaServer\World\Vanilla\Structure\Structures;
 
 // Structure starts the official 26.3 server generates for seed 42 (tools/parity/worldgen_regions.py
@@ -47,12 +48,40 @@ foreach ([
     ++$checks;
 }
 
+// The ocean monument at 49,-11: the official building facing east, and its rooms after saving.
+$monument = $structures->create(49, -11);
+$building = $monument[0]['pieces'][0] ?? null;
+$restored = $building === null ? null : Piece::restore(json_decode(json_encode(['type' => $building->type(), 'box' => $building->box, 'orientation' => $building->orientation] + $building->data()), true));
+$actual = [$monument[0]['structure'] ?? null, $building?->box, $building?->orientation, count($building->children ?? []), $restored?->data() === $building?->data()];
+if ($actual !== ['monument', [755, 39, -205, 812, 61, -148], 'east', 26, true]) {
+    throw new RuntimeException('Ocean monument start at 49,-11: ' . json_encode($actual));
+}
+++$checks;
+
+// The woodland mansion at 531,-274: the official start's 598 pieces, from its entrance.
+$mansion = $structures->create(531, -274);
+$entrance = $mansion[0]['pieces'][0] ?? null;
+$actual = [$mansion[0]['structure'] ?? null, count($mansion[0]['pieces'] ?? []), $entrance?->template, $entrance?->position, $entrance?->rotation];
+if ($actual !== ['mansion', 598, 'woodland_mansion/entrance', [8503, 63, -4368], 3]) {
+    throw new RuntimeException('Woodland mansion start at 531,-274: ' . json_encode($actual));
+}
+++$checks;
+
 // The Nether fortress at the origin: the official start's 90 pieces.
 $nether = new OverworldGenerator(42, $version->directory, 'nether');
 $fortress = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(0, 0);
 $actual = [$fortress[0]['structure'] ?? null, count($fortress[0]['pieces'] ?? []), $fortress[0]['pieces'][0]->box ?? null];
 if ($actual !== ['fortress', 90, [2, 69, 2, 20, 78, 20]]) {
     throw new RuntimeException('Nether fortress start at 0,0: ' . json_encode($actual));
+}
+++$checks;
+
+// A Nether fossil at -12,0: the official template, rotation and position.
+$fossil = (new Structures($nether->settings, $nether->biomes, $version->directory . '/worldgen'))->create(-12, 0);
+$piece = $fossil[0]['pieces'][0] ?? null;
+$actual = [$fossil[0]['structure'] ?? null, $piece?->template, $piece?->rotation, $piece?->position, $piece?->box];
+if ($actual !== ['nether_fossil', 'nether_fossils/fossil_3', 3, [-192, 55, 1], [-192, 55, -1, -191, 58, 1]]) {
+    throw new RuntimeException('Nether fossil start at -12,0: ' . json_encode($actual));
 }
 ++$checks;
 
@@ -82,6 +111,10 @@ foreach ([
     [['oak_door', ['facing' => 'north', 'hinge' => 'left']], BlockTransform::LEFT_RIGHT, 0, ['oak_door', ['facing' => 'south', 'hinge' => 'right']]],
     [['oak_fence', ['north' => 'true']], BlockTransform::NONE, 1, ['oak_fence', ['east' => 'true']]],
     [['oak_sign', ['rotation' => '3']], BlockTransform::LEFT_RIGHT, 0, ['oak_sign', ['rotation' => '13']]],
+    // RailBlock.rotate and mirror turn each side of the shape.
+    [['rail', ['shape' => 'north_south']], BlockTransform::NONE, 1, ['rail', ['shape' => 'east_west']]],
+    [['rail', ['shape' => 'north_east']], BlockTransform::LEFT_RIGHT, 1, ['rail', ['shape' => 'south_west']]],
+    [['powered_rail', ['shape' => 'ascending_north']], BlockTransform::NONE, 3, ['powered_rail', ['shape' => 'ascending_west']]],
 ] as [[$block, $properties], $mirror, $rotation, [$expectedBlock, $expectedProperties]]) {
     $actual = $name($transform->apply($blocks->state($block, $properties), $mirror, $rotation));
     $expected = $name($blocks->state($expectedBlock, $expectedProperties));
