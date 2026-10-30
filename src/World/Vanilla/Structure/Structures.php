@@ -68,7 +68,8 @@ final class Structures
                 }
             }
         }
-        $db?->exec('CREATE TABLE IF NOT EXISTS vanilla_structure_starts(cx INTEGER NOT NULL,cz INTEGER NOT NULL,starts TEXT NOT NULL,PRIMARY KEY(cx,cz))');
+        $db?->exec('CREATE TABLE IF NOT EXISTS vanilla_structure_starts(cx INTEGER NOT NULL,cz INTEGER NOT NULL,starts TEXT NOT NULL,PRIMARY KEY(cx,cz));'
+            . 'CREATE TABLE IF NOT EXISTS vanilla_structure_rings(id INTEGER PRIMARY KEY,chunk TEXT NOT NULL)');
     }
 
     private function load(string $kind, string $name): array
@@ -145,8 +146,9 @@ final class Structures
                     return false;
                 }
                 break;
+            case 'concentric_rings':
+                return $this->isRingChunk($placement, $cx, $cz);
             default:
-                // Concentric rings (strongholds) are not placed yet.
                 return false;
         }
         $frequency = F32::r((float) ($placement['frequency'] ?? 1.0));
@@ -166,6 +168,102 @@ final class Structures
             default:
                 return self::saltedRandom($seed, $salt, $cx, $cz)->nextFloat() < $frequency;
         }
+    }
+
+    /** @var list<array{0: int, 1: int, 2: int}>|null ring starting chunks and the seeds of their biome searches */
+    private ?array $ringStarts = null;
+
+    /** @var array<int, string> resolved ring chunks by ring index */
+    private array $rings = [];
+
+    /**
+     * ChunkGeneratorStructureState.generateRingPositions without the biome searches, which use
+     * their own forked random and are run only for rings near a chunk.
+     *
+     * @return list<array{0: int, 1: int, 2: int}>
+     */
+    private function ringStarts(array $placement): array
+    {
+        if ($this->ringStarts !== null) {
+            return $this->ringStarts;
+        }
+        $distance = $placement['distance'];
+        $count = $placement['count'];
+        $spread = $placement['spread'];
+        $random = new LegacyRandom($this->settings->state->seed);
+        $angle = $random->nextDouble() * M_PI * 2.0;
+        $positionInCircle = 0;
+        $circle = 0;
+        $starts = [];
+        for ($i = 0; $i < $count; ++$i) {
+            $dist = 4 * $distance + $distance * $circle * 6 + ($random->nextDouble() - 0.5) * ($distance * 2.5);
+            // RandomSource.fork: the biome search's own random.
+            $starts[] = [(int) round(cos($angle) * $dist), (int) round(sin($angle) * $dist), $random->nextLong()];
+            $angle += M_PI * 2 / $spread;
+            if (++$positionInCircle === $spread) {
+                ++$circle;
+                $positionInCircle = 0;
+                $spread += intdiv(2 * $spread, $circle + 1);
+                $spread = min($spread, $count - $i);
+                $angle += $random->nextDouble() * M_PI * 2.0;
+            }
+        }
+        return $this->ringStarts = $starts;
+    }
+
+    /** One ring's chunk: BiomeSource.findBiomeHorizontal over the square of radius 112 at y 0. */
+    private function ring(array $placement, int $index): string
+    {
+        if (isset($this->rings[$index])) {
+            return $this->rings[$index];
+        }
+        $q = $this->db?->prepare('SELECT chunk FROM vanilla_structure_rings WHERE id=?');
+        $q?->execute([$index]);
+        $stored = $q?->fetchColumn();
+        if (is_string($stored)) {
+            return $this->rings[$index] = $stored;
+        }
+        [$initialX, $initialZ, $seed] = $this->ringStarts($placement)[$index];
+        $preferred = $this->biomeSet($placement['preferred_biomes']);
+        $search = new LegacyRandom($seed);
+        $centerX = ($initialX * 16 + 8) >> 2;
+        $centerZ = ($initialZ * 16 + 8) >> 2;
+        $result = null;
+        $found = 0;
+        for ($z = -28; $z <= 28; ++$z) {
+            for ($x = -28; $x <= 28; ++$x) {
+                if (isset($preferred[$this->biomes->uncached($centerX + $x, 0, $centerZ + $z)])) {
+                    if ($result === null || $search->nextInt($found + 1) === 0) {
+                        $result = [($centerX + $x) << 2, ($centerZ + $z) << 2];
+                    }
+                    ++$found;
+                }
+            }
+        }
+        $chunk = $result === null ? "$initialX,$initialZ" : ($result[0] >> 4) . ',' . ($result[1] >> 4);
+        $this->db?->prepare('INSERT OR IGNORE INTO vanilla_structure_rings(id,chunk) VALUES(?,?)')->execute([$index, $chunk]);
+        return $this->rings[$index] = $chunk;
+    }
+
+    /** Whether a chunk is a ring chunk: only rings starting within 8 chunks can move to it. */
+    private function isRingChunk(array $placement, int $cx, int $cz): bool
+    {
+        foreach ($this->ringStarts($placement) as $index => [$x, $z]) {
+            if (abs($x - $cx) <= 8 && abs($z - $cz) <= 8 && $this->ring($placement, $index) === "$cx,$cz") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Every ring chunk, in ring order.
+     *
+     * @return list<string>
+     */
+    public function ringPositions(array $placement): array
+    {
+        return array_map(fn (int $i): string => $this->ring($placement, $i), array_keys($this->ringStarts($placement)));
     }
 
     /** ChunkGenerator.getFirstOccupiedHeight from the noise alone. */
@@ -219,6 +317,129 @@ final class Structures
         $x = $minX + 8;
         $z = $minZ + 8;
         return $this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z), $z);
+    }
+
+    /** RuinedPortalStructure.findGenerationPoint */
+    private function ruinedPortal(array $structure, int $cx, int $cz, LegacyRandom $random): array
+    {
+        $setups = $structure['setups'];
+        $setup = $setups[0];
+        if (count($setups) > 1) {
+            $total = 0.0;
+            foreach ($setups as $candidate) {
+                $total = F32::r($total + F32::r((float) $candidate['weight']));
+            }
+            $pick = $random->nextFloat();
+            foreach ($setups as $candidate) {
+                $pick = F32::r($pick - F32::r(F32::r((float) $candidate['weight']) / $total));
+                if ($pick < 0.0) {
+                    $setup = $candidate;
+                    break;
+                }
+            }
+        }
+        $airProbability = F32::r((float) $setup['air_pocket_probability']);
+        $airPocket = $airProbability === 0.0 ? false : ($airProbability === 1.0 ? true : $random->nextFloat() < $airProbability);
+        $template = $random->nextFloat() < F32::r(0.05) ? 'ruined_portal/giant_portal_' . ($random->nextInt(3) + 1) : 'ruined_portal/portal_' . ($random->nextInt(10) + 1);
+        $loaded = Template::load($this->blocks, $this->directory, $template);
+        $rotation = $random->nextInt(4);
+        $mirror = $random->nextFloat() < 0.5 ? BlockTransform::NONE : BlockTransform::FRONT_BACK;
+        $pivot = [intdiv($loaded->size[0], 2), 0, intdiv($loaded->size[2], 2)];
+        $box = $loaded->boundingBox([$cx * 16, 0, $cz * 16], $mirror, $rotation, $pivot);
+        $center = [$box[0] + intdiv($box[3] - $box[0] + 1, 2), $box[2] + intdiv($box[5] - $box[2] + 1, 2)];
+        $placement = $setup['placement'];
+        $oceanFloor = $placement === 'on_ocean_floor';
+        $surfaceY = $this->firstOccupiedHeight($center[0], $center[1], $oceanFloor);
+        $y = $this->portalY($random, $placement, $airPocket, $surfaceY, $box[4] - $box[1] + 1, $box, $oceanFloor);
+        $origin = [$cx * 16, $y, $cz * 16];
+        if (!$this->validBiome($structure, ...$origin)) {
+            return [];
+        }
+        $biome = $this->biomes->uncached($origin[0] >> 2, $origin[1] >> 2, $origin[2] >> 2);
+        $this->climate ??= new \PhpMinecraftJavaServer\World\Vanilla\BiomeClimate($this->directory);
+        $portal = new RuinedPortal($loaded->boundingBox($origin, $mirror, $rotation, $pivot), $template, $origin, $rotation, $pivot, $mirror);
+        $portal->properties = [
+            'placement' => $placement,
+            'cold' => ($setup['can_be_cold'] ?? false) && $this->climate->coldEnoughToSnow($biome, ...[...$origin, $this->settings->seaLevel]),
+            'mossiness' => (float) $setup['mossiness'],
+            'air_pocket' => $airPocket,
+            'overgrown' => (bool) ($setup['overgrown'] ?? false),
+            'vines' => (bool) ($setup['vines'] ?? false),
+            'blackstone' => (bool) ($setup['replace_with_blackstone'] ?? false),
+        ];
+        return [$portal];
+    }
+
+    /** RuinedPortalStructure.findSuitableY: a placement height, lowered until three corners stand on ground. */
+    private function portalY(LegacyRandom $random, string $placement, bool $airPocket, int $surfaceY, int $ySpan, array $box, bool $oceanFloor): int
+    {
+        $minY = $this->settings->minY + 15;
+        $between = static fn (int $min, int $max): int => $random->nextInt($max - $min + 1) + $min;
+        $within = static fn (int $min, int $max): int => $min < $max ? $between($min, $max) : $max;
+        $newY = match ($placement) {
+            'in_nether' => $airPocket ? $between(32, 100) : ($random->nextFloat() < 0.5 ? $between(27, 29) : $between(29, 100)),
+            'in_mountain' => $within(70, $surfaceY - $ySpan),
+            'underground' => $within($minY, $surfaceY - $ySpan),
+            'partly_buried' => $surfaceY - $ySpan + $between(2, 8),
+            default => $surfaceY,
+        };
+        $columns = [];
+        foreach ([[$box[0], $box[2]], [$box[3], $box[2]], [$box[0], $box[5]], [$box[3], $box[5]]] as [$x, $z]) {
+            $columns[] = NoiseChunk::baseColumn($this->settings, $x, $z);
+        }
+        for ($y = $newY; $y > $minY; --$y) {
+            $solid = 0;
+            foreach ($columns as $column) {
+                $block = $column[$y - $this->settings->minY] ?? 'air';
+                if ($block !== 'air' && (!$oceanFloor || $block === $this->settings->defaultBlock) && ++$solid === 3) {
+                    return $y;
+                }
+            }
+        }
+        return $y;
+    }
+
+    private ?\PhpMinecraftJavaServer\World\Vanilla\BiomeClimate $climate = null;
+
+    /** MineshaftStructure.findGenerationPoint and generatePiecesAndAdjust. */
+    private function mineshaft(array $structure, int $cx, int $cz, LegacyRandom $random): array
+    {
+        $random->nextDouble();
+        $kind = $structure['mineshaft_type'] ?? 'normal';
+        $room = MineshaftRoom::create($random, $cx * 16 + 2, $cz * 16 + 2, $kind);
+        $pieces = [$room];
+        $room->addChildren($room, $pieces, $random);
+        $box = $pieces[0]->box;
+        foreach ($pieces as $piece) {
+            $box = [min($box[0], $piece->box[0]), min($box[1], $piece->box[1]), min($box[2], $piece->box[2]), max($box[3], $piece->box[3]), max($box[4], $piece->box[4]), max($box[5], $piece->box[5])];
+        }
+        $seaLevel = $this->settings->seaLevel;
+        if ($kind === 'mesa') {
+            // BoundingBox.getCenter
+            $centerX = $box[0] + intdiv($box[3] - $box[0] + 1, 2);
+            $centerZ = $box[2] + intdiv($box[5] - $box[2] + 1, 2);
+            $surface = $this->firstOccupiedHeight($centerX, $centerZ) + 1;
+            $target = $surface <= $seaLevel ? $seaLevel : $random->nextInt($surface - $seaLevel + 1) + $seaLevel;
+            $dy = $target - ($box[1] + intdiv($box[4] - $box[1] + 1, 2));
+        } else {
+            // StructurePiecesBuilder.moveBelowSeaLevel
+            $maxY = $seaLevel - 10;
+            $y = $box[4] - $box[1] + 1 + $this->settings->minY + 1;
+            if ($y < $maxY) {
+                $y += $random->nextInt($maxY - $y);
+            }
+            $dy = $y - $box[4];
+        }
+        foreach ($pieces as $piece) {
+            $piece->move(0, $dy, 0);
+        }
+        return $this->validBiome($structure, $cx * 16 + 8, 50 + $dy, $cz * 16) ? $pieces : [];
+    }
+
+    /** Whether a biome is in a biome tag. */
+    public function biomeInTag(string $biome, string $tag): bool
+    {
+        return isset($this->tag($tag)[$biome]);
     }
 
     /**
@@ -279,6 +500,39 @@ final class Structures
                 $this->jigsaw ??= new Jigsaw($this->blocks, $this->directory, fn (int $x, int $z): int => $this->firstOccupiedHeight($x, $z) + 1);
                 $result = $this->jigsaw->generate($structure, $random, [$cx * 16, $height, $cz * 16], $this->settings->minY, $this->settings->minY + $this->settings->height - 1, fn (int $x, int $y, int $z): bool => $this->validBiome($structure, $x, $y, $z), $this->settings->state->seed);
                 return $result === null ? [] : $result[0];
+            case 'end_city':
+                // EndCityStructure.findGenerationPoint: the lowest corner of a 5 by 5 box, at least y 60.
+                $x = $cx * 16 + 7;
+                $z = $cz * 16 + 7;
+                $rotation = $random->nextInt(4);
+                [$offsetX, $offsetZ] = [[5, 5], [-5, 5], [-5, -5], [5, -5]][$rotation];
+                $y = $this->lowestY($x, $z, $offsetX, $offsetZ);
+                if ($y < 60 || !$this->validBiome($structure, $x, $y, $z)) {
+                    return [];
+                }
+                return EndCity::start($this->blocks, $this->directory, [$x, $y, $z], $rotation, $random);
+            case 'fortress':
+                if (!$this->validBiome($structure, $cx * 16, 64, $cz * 16)) {
+                    return [];
+                }
+                return NetherFortressPiece::generate($random, $cx, $cz);
+            case 'ruined_portal':
+                return $this->ruinedPortal($structure, $cx, $cz, $random);
+            case 'ocean_ruin':
+                $x = $cx * 16 + 8;
+                $z = $cz * 16 + 8;
+                if (!$this->validBiome($structure, $x, $this->firstOccupiedHeight($x, $z, true), $z)) {
+                    return [];
+                }
+                return OceanRuin::pieces($this->blocks, $this->directory, $structure, [$cx * 16, 90, $cz * 16], $random->nextInt(4), $random);
+            case 'stronghold':
+                // The start is checked at the chunk's corner, y 0.
+                if (!$this->validBiome($structure, $cx * 16, 0, $cz * 16)) {
+                    return [];
+                }
+                return StrongholdPiece::generate($this->settings->state->seed, $cx, $cz, $this->settings->seaLevel, $this->settings->minY);
+            case 'mineshaft':
+                return $this->mineshaft($structure, $cx, $cz, $random);
             case 'desert_pyramid':
                 return $this->singlePiece($structure, $cx, $cz, 21, 21) ? [DesertPyramid::create($random, $cx * 16, $cz * 16)] : [];
         }

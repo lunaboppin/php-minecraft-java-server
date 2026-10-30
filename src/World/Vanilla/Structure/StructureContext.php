@@ -8,6 +8,7 @@ use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Predicates;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival;
 
 /** What structure pieces share while they are placed: block states, transforms and shape marks. */
 final class StructureContext
@@ -45,6 +46,12 @@ final class StructureContext
 
     /** @var (\Closure(string, Region, RandomSource, array): bool)|null PlacedFeature.place for feature pool elements */
     public ?\Closure $placeFeature = null;
+
+    /** Block class chains, for checks such as FallingBlock. */
+    public ?Survival $survival = null;
+
+    /** @var (\Closure(string, string): bool)|null whether a biome is in a biome tag */
+    public ?\Closure $biomeInTag = null;
 
     /** WorldGenRegion.getRandom: one stream per decorated chunk, from its origin. */
     public ?RandomSource $regionRandom = null;
