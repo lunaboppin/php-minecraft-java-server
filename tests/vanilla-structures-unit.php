@@ -102,6 +102,10 @@ foreach ([
     [['oak_door', ['facing' => 'north', 'hinge' => 'left']], BlockTransform::LEFT_RIGHT, 0, ['oak_door', ['facing' => 'south', 'hinge' => 'right']]],
     [['oak_fence', ['north' => 'true']], BlockTransform::NONE, 1, ['oak_fence', ['east' => 'true']]],
     [['oak_sign', ['rotation' => '3']], BlockTransform::LEFT_RIGHT, 0, ['oak_sign', ['rotation' => '13']]],
+    // RailBlock.rotate and mirror turn each side of the shape.
+    [['rail', ['shape' => 'north_south']], BlockTransform::NONE, 1, ['rail', ['shape' => 'east_west']]],
+    [['rail', ['shape' => 'north_east']], BlockTransform::LEFT_RIGHT, 1, ['rail', ['shape' => 'south_west']]],
+    [['powered_rail', ['shape' => 'ascending_north']], BlockTransform::NONE, 3, ['powered_rail', ['shape' => 'ascending_west']]],
 ] as [[$block, $properties], $mirror, $rotation, [$expectedBlock, $expectedProperties]]) {
     $actual = $name($transform->apply($blocks->state($block, $properties), $mirror, $rotation));
     $expected = $name($blocks->state($expectedBlock, $expectedProperties));
