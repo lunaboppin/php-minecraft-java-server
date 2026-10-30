@@ -657,7 +657,8 @@ final class Server
             $this->spawnPlayer($c, $other);
             $this->spawnPlayer($other, $c);
         }
-        $c->send($this->version, 'post_effects', Binary::writeVarInt(0));
+        // ServerPlayer's first tick sends its saved post effects.
+        $this->sendPostEffects($c);
         $this->syncInventory($c);
         // PlayerList.sendActivePlayerEffects: saved effects, without blending in.
         foreach (array_keys($c->effects) as $effect) {
@@ -1404,6 +1405,13 @@ final class Server
         }
     }
 
+    /** ServerPlayer.sendPostEffects. */
+    private function sendPostEffects(Client $c): void
+    {
+        $c->postEffectsDirty = false;
+        $c->send($this->version, 'post_effects', Binary::writeVarInt(count($c->postEffects)) . implode('', array_map(Binary::writeString(...), $c->postEffects)));
+    }
+
     private function blockUpdate(Client $c, int $x, int $y, int $z): void
     {
         $c->send($this->version, 'block_update', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($this->world->get($x, $y, $z)));
@@ -1511,6 +1519,10 @@ final class Server
                     $this->tickSurvival($c);
                     $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
+                    // ServerPlayer.tick ends by sending changed post effects, the empty list included.
+                    if ($c->postEffectsDirty) {
+                        $this->sendPostEffects($c);
+                    }
                     $this->syncEquipment($c);
                     $this->syncPlayerMetadata($c);
                     if ($this->ticks % 20 === 0) {

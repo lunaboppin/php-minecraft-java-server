@@ -86,6 +86,8 @@ trait Commands
 
     use CommandModules\RandomCommand;
 
+    use CommandModules\PostEffectCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

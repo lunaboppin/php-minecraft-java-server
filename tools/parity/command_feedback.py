@@ -402,6 +402,13 @@ SCRIPT = [
     ('random value 1..6 other', False), ('random reset *', False), ('random value 1..6 dice', False), ('random reset * 3 true false', False),
     ('random value 1..6 dice', False), ('random value 1..6 other', False), ('random reset * 0', False),
     ('!witness random value 1..6 dice', False), ('!witness random reset *', False),
+    # Post effects, with the post_effects packets each change sends on the player's next tick.
+    ('posteffect list', False), ('posteffect list Witness', False), ('posteffect add @a minecraft:creeper', False),
+    ('posteffect add @a creeper', False), ('posteffect add Witness spider', False), ('posteffect list', False),
+    ('posteffect list Witness', False), ('posteffect remove @a creeper', False), ('posteffect remove @a creeper', False),
+    ('posteffect remove Witness spider', False), ('posteffect clear @a', False), ('posteffect add @s invert', False),
+    ('posteffect clear @a', False), ('posteffect add @a[name=nobody] creeper', False), ('!witness posteffect list', False),
+    ('!quiet posteffect clear @a', False),
     ('list', False),
 ]
 
@@ -414,7 +421,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',)}
+EXTRA = {'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

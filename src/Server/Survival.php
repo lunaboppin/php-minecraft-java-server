@@ -75,6 +75,7 @@ trait Survival
         $c->dead = (bool) ($data['dead'] ?? false);
         $c->personalSpawn = $data['personalSpawn'] ?? null;
         $c->tags = array_values(array_filter($data['tags'] ?? [], 'is_string'));
+        $c->postEffects = $data['postEffects'] ?? [];
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
         foreach ($data['inventory'] ?? [] as $slot => $stack) {
@@ -96,6 +97,7 @@ trait Survival
             return;
         }
         $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'tags' => $c->tags, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void

@@ -67,6 +67,9 @@ final class Client
     public array $entities = [];
     public bool $trackingDirty = true;
     public ?array $personalSpawn = null;
+    /** @var list<string> ServerPlayer.postEffects, with whether the client still needs them */
+    public array $postEffects = [];
+    public bool $postEffectsDirty = true;
     public string $state = 'handshake';
     public bool $bufferedWork = false;
     public string $input = '';
