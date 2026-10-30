@@ -73,7 +73,9 @@ final class ChunkStore
             . 'CREATE TABLE IF NOT EXISTS vanilla_requests(cx INTEGER NOT NULL,cz INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(cx,cz));'
             . 'CREATE TABLE IF NOT EXISTS vanilla_claims(cx INTEGER NOT NULL,cz INTEGER NOT NULL,claimed REAL NOT NULL,PRIMARY KEY(cx,cz));'
             // Structure blocks whose shapes are updated once the chunk and its neighbours are decorated.
-            . 'CREATE TABLE IF NOT EXISTS vanilla_post_processing(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,PRIMARY KEY(x,y,z))');
+            . 'CREATE TABLE IF NOT EXISTS vanilla_post_processing(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,PRIMARY KEY(x,y,z));'
+            // Block entities generation placed: containers' loot tables and seeds.
+            . 'CREATE TABLE IF NOT EXISTS vanilla_block_entities(cx INTEGER NOT NULL,cz INTEGER NOT NULL,x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(x,y,z))');
         // Worldgen heightmaps of the carved chunk, kept while neighbours decorate into it.
         $columns = array_column($db->query('PRAGMA table_info(vanilla_chunks)')->fetchAll(\PDO::FETCH_ASSOC), 'name');
         if (!in_array('heights', $columns, true)) {
@@ -106,10 +108,26 @@ final class ChunkStore
         return $this->decorator;
     }
 
+    /**
+     * The block entities generation placed in a chunk, by "x,y,z".
+     *
+     * @return array<string, array>
+     */
+    public function blockEntities(int $cx, int $cz): array
+    {
+        $q = $this->db->prepare('SELECT x,y,z,data FROM vanilla_block_entities WHERE cx=? AND cz=?');
+        $q->execute([$cx, $cz]);
+        $out = [];
+        foreach ($q->fetchAll(\PDO::FETCH_NUM) as [$x, $y, $z, $data]) {
+            $out["$x,$y,$z"] = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        }
+        return $out;
+    }
+
     /** LevelChunk.postProcessGeneration: update the shapes structure pieces marked in a chunk. */
     private function postProcess(int $cx, int $cz, array $blocks): array
     {
-        $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=?');
+        $q = $this->db->prepare('SELECT x,y,z FROM vanilla_post_processing WHERE cx=? AND cz=? ORDER BY rowid');
         $q->execute([$cx, $cz]);
         $marks = $q->fetchAll(\PDO::FETCH_NUM);
         if ($marks === []) {
@@ -128,13 +146,9 @@ final class ChunkStore
             return $neighbours[$key][(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] ?? 0;
         };
         $this->shapes ??= new ShapeUpdater($this->blocks(), new Survival($this->blocks(), $this->version->directory . '/worldgen/block-behaviour.json'));
-        foreach ($marks as [$x, $y, $z]) {
-            $index = (($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15);
-            $updated = $this->shapes->update($blocks[$index], $x, $y, $z, $get);
-            if ($updated !== null) {
-                $blocks[$index] = $updated;
-            }
-        }
+        $this->shapes->updateAll($marks, $get, static function (int $x, int $y, int $z, int $state) use (&$blocks, $minY): void {
+            $blocks[(($y - $minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
+        });
         $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=? WHERE cx=? AND cz=?');
         $update->bindValue(1, self::encode($blocks), \PDO::PARAM_LOB);
         $update->bindValue(2, $cx, \PDO::PARAM_INT);
@@ -272,7 +286,7 @@ final class ChunkStore
         if ($q->fetchColumn() !== false) {
             return;
         }
-        $chunk = $this->generator()->chunk($cx, $cz);
+        $chunk = $this->generator()->chunk($cx, $cz, false, $this->decorator()->structures?->beardifier($cx, $cz));
         $blocks = $this->blocks();
         $ids = array_map(static fn (string $name): int => $blocks->state($name), $chunk['blocks']);
         $settings = $this->generator()->settings;
@@ -327,8 +341,14 @@ final class ChunkStore
             foreach ($decorator->structureContext?->postProcessing ?? [] as [$x, $y, $z]) {
                 $marks->execute([$x >> 4, $z >> 4, $x, $y, $z]);
             }
+            $entities = $this->db->prepare('INSERT OR REPLACE INTO vanilla_block_entities(cx,cz,x,y,z,data) VALUES(?,?,?,?,?,?)');
+            foreach ($decorator->structureContext?->blockEntities ?? [] as $position => $data) {
+                [$x, $y, $z] = array_map('intval', explode(',', $position));
+                $entities->execute([$x >> 4, $z >> 4, $x, $y, $z, json_encode($data, JSON_THROW_ON_ERROR)]);
+            }
             if ($decorator->structureContext !== null) {
                 $decorator->structureContext->postProcessing = [];
+                $decorator->structureContext->blockEntities = [];
             }
             $update = $this->db->prepare('UPDATE vanilla_chunks SET blocks=?,status=MAX(status,?) WHERE cx=? AND cz=?');
             foreach ($chunks as $chunk) {

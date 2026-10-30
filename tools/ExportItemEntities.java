@@ -5,7 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.Bootstrap;
 
-/** ItemEntity.hurtServer's input: the damage types each item's damage_resistant component resists. */
+/** ItemEntity's tracking profile and size, and the damage types each item's damage_resistant component resists. */
 public class ExportItemEntities {
     public static void main(String[] args) throws Exception {
         if (args.length != 1) throw new IllegalArgumentException("Expected output path");
@@ -13,6 +13,13 @@ public class ExportItemEntities {
         Bootstrap.bootStrap();
         var root = new JsonObject();
         root.addProperty("version", SharedConstants.getCurrentVersion().id());
+        var type = net.minecraft.world.entity.EntityTypes.ITEM;
+        var tracking = new JsonObject();
+        tracking.addProperty("update_interval", type.updateInterval());
+        tracking.addProperty("track_deltas", type.trackDeltas());
+        tracking.addProperty("width", type.getWidth());
+        tracking.addProperty("height", type.getHeight());
+        root.add("item", tracking);
         // Loading the reference world data binds the items' default components.
         try (var data = ReferenceWorldData.load()) {
             var resistant = new JsonObject();

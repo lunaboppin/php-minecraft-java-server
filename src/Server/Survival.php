@@ -47,8 +47,9 @@ trait Survival
     private function restorePlayer(Client $c): void
     {
         $c->gameMode = $this->config->defaultGameMode;
-        [$c->x, $c->y, $c->z] = $this->world->spawn();
         $data = $this->worlds['overworld']->loadPlayer($c->uuid, $c->authenticated);
+        // A new player starts where PlayerSpawnFinder puts them around the world spawn.
+        [$c->x, $c->y, $c->z] = $data === null ? $this->sharedSpawn() : $this->world->spawn();
         if ($data === null) {
             return;
         }
@@ -108,6 +109,7 @@ trait Survival
             $this->withDimension($dimension, function (): void {
                 $this->saveBlockSimulation();
                 $this->world->setting('animals', $this->animals);
+                $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -268,7 +270,8 @@ trait Survival
             $this->closeWindow($c, true);
             if (!$this->keepInventory) {
                 foreach ($c->inventory as $slot => $stack) {
-                    $this->dropStack($c->x, $c->y + 0.5, $c->z, $stack);
+                    // Inventory.dropAll scatters the stacks at random.
+                    $this->playerDrop($c, $stack, true);
                 }$c->inventory = [];
                 [$c->experience, $c->experienceLevel, $c->experienceProgress] = [0, 0, 0.0];
             }
@@ -341,7 +344,7 @@ trait Survival
         // The respawned player applies its equipment's attribute modifiers afresh.
         $c->equipmentModifierStacks = [];
         $this->applyEquipmentAttributes($c, $this->playerEquipment($c));
-        $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->worlds['overworld']->spawn(), true);
+        $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->sharedSpawn(), true);
     }
 
     private function miningTicks(Client $c, int $state): int
@@ -451,7 +454,7 @@ trait Survival
             }
             $data = $containerData;
             foreach ($data['slots'] as $stack) {
-                $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, $stack);
+                $this->dropContainerStack($x, $y, $z, $stack);
             }$this->world->deleteContainer([$x, $y, $z]);
         }
         if ($c->gameMode !== 0) {
@@ -471,7 +474,7 @@ trait Survival
             foreach ($this->loot()->drops('minecraft:blocks/' . $name, $context) as [$drop, $count]) {
                 $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
                 if ($item !== null) {
-                    $this->dropStack($x + 0.5, $y + 0.5, $z + 0.5, ['item' => $item, 'count' => $count]);
+                    $this->popResource($x, $y, $z, ['item' => $item, 'count' => $count]);
                 }
             }
             // DropExperienceBlock and RedStoneOreBlock experience, which silk touch prevents.

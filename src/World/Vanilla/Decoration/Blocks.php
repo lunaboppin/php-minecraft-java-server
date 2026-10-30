@@ -67,6 +67,15 @@ final class Blocks
     public function parse(mixed $json): int
     {
         if (is_string($json)) {
+            // BlockStateParser: name[key=value,...]
+            if (preg_match('/^([^\[]+)\[(.*)\]$/', $json, $match) === 1) {
+                $properties = [];
+                foreach ($match[2] === '' ? [] : explode(',', $match[2]) as $pair) {
+                    [$key, $value] = explode('=', $pair, 2);
+                    $properties[trim($key)] = trim($value);
+                }
+                return $this->state(preg_replace('/^minecraft:/', '', $match[1]), $properties);
+            }
             return $this->state($json);
         }
         return $this->state($json['Name'] ?? $json['id'], array_map('strval', $json['Properties'] ?? $json['properties'] ?? []));

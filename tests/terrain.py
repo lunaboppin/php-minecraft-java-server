@@ -152,6 +152,8 @@ def main():
                     net.check(db.execute('SELECT state FROM blocks WHERE x=1 AND y=65 AND z=1').fetchone() == (net.BLOCKS['states']['stone'],),
                               'survival mining does not break stone instantly')
                 a.until('block_update', lambda p: p[:8] == net.block_position(1, 65, 1) and net.read_vi(p, 8)[0] == 0)
+                # The drop pops out at random near the block's centre; standing on it picks it up.
+                command(a, 'tp @s 1.5 65 1.5', 'commands.teleport.success.location.single')
                 inventory(a, lambda: total(a, 'cobblestone') > 0)
                 net.check(a.inventory[44].get('damage') == 1, 'tool wear and dropped-block pickup')
                 # Player combat follows the server's health state.

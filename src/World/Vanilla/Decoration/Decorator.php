@@ -140,16 +140,35 @@ final class Decorator
         foreach ($reaching as $origin => $entry) {
             $this->structures->save($origin, $entry['starts']);
         }
+        if ($this->structureContext !== null) {
+            $this->structureContext->regionRandom = null;
+        }
+    }
+
+    /** PlacedFeature.place without a biome check, for feature pool elements. */
+    public function placeFeature(string $name, Region $region, RandomSource $random, array $position): bool
+    {
+        $name = preg_replace('/^minecraft:/', '', $name);
+        return $this->placePlaced($name, $region, $random, $position, null);
     }
 
     /** StructureStart.placeInChunk: the pieces that overlap the chunk being decorated. */
     private function placeStart(array $pieces, Region $region, RandomSource $random, array $chunkBox): void
     {
-        $this->structureContext ??= new StructureContext($this->blocks);
+        $context = $this->structureContext ??= new StructureContext($this->blocks, $region->seed, $this->directory);
+        // WorldGenRegion.getRandom
+        $context->regionRandom ??= $this->structures->regionRandom($region->centerX, $region->centerZ);
+        $context->placeFeature ??= fn (string $feature, Region $region, RandomSource $random, array $position): bool => $this->placeFeature($feature, $region, $random, $position);
+        // BoundingBox.getCenter of the first piece, at its bottom.
+        $first = $pieces[0]->box;
+        $context->referencePos = [$first[0] + intdiv($first[3] - $first[0] + 1, 2), $first[1], $first[2] + intdiv($first[5] - $first[2] + 1, 2)];
         foreach ($pieces as $piece) {
             if (Piece::intersects($piece->box, $chunkBox)) {
-                $piece->postProcess($this->structureContext, $region, $random, $chunkBox);
+                $piece->postProcess($context, $region, $random, $chunkBox);
             }
+        }
+        foreach ($pieces as $piece) {
+            $piece->afterPlace($context, $region, $chunkBox);
         }
     }
 
@@ -337,6 +356,8 @@ final class Decorator
                 return Ores::ore($this, $feature, $region, $random, $x, $y, $z);
             case 'scattered_ore':
                 return Ores::scattered($this, $feature, $region, $random, $x, $y, $z);
+            case 'block_pile':
+                return ($this->patches ??= new Patches($this))->blockPile($feature, $region, $random, $x, $y, $z);
             case 'simple_block':
                 return $this->simpleBlock($feature, $region, $random, $x, $y, $z);
             case 'block_column':

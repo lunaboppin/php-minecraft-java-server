@@ -61,11 +61,9 @@ def observe(server, case, output):
         if server.kind == 'java':
             execute('kill @e[type=!minecraft:player]')
             actor.tick_barrier()
-            execute('gamerule minecraft:respawn_radius 0')
-            execute('setworldspawn 8 64 8')
-        else:
-            # PHP has no respawn radius; the spawn is the block centre, as vanilla's with radius 0.
-            execute('setworldspawn 8 64 8')
+        # Both servers spread joining players within respawn_radius; the late observer must join at the spawn.
+        execute('gamerule minecraft:respawn_radius 0')
+        execute('setworldspawn 8 64 8')
         positions = [[2.5, 64, .5]]
         if case == 'two-giants':
             execute('fill -2 64 -12 -2 82 12 minecraft:stone')
