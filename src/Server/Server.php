@@ -739,13 +739,13 @@ final class Server
         }
     }
 
-    private function teleport(Client $c, ?array $position = null): void
+    private function teleport(Client $c, ?array $position = null, int $relative = 0, ?array $from = null): void
     {
         if ($c->dimension !== $this->world->dimension) {
-            $this->withDimension($c->dimension, fn () => $this->teleport($c, $position));
+            $this->withDimension($c->dimension, fn () => $this->teleport($c, $position, $relative, $from));
             return;
         }
-        $this->sendPosition($c, $position ?? $this->world->spawn());
+        $this->sendPosition($c, $position ?? $this->world->spawn(), $relative, $from);
         $this->scheduleChunks($c);
         // Trackers follow in the player's tick, as ChunkMap.tick does, after a command's reply.
         $c->teleportBroadcastPending = true;
@@ -773,9 +773,13 @@ final class Server
         return $wrapped;
     }
 
-    /** A relative rotation leaves the player's own and sends zero degrees, as ServerPlayer's mounts and dismounts do. */
-    private function sendPosition(Client $c, array $position, int $relative = 0): void
+    /**
+     * Relative flags (Relative.pack) send each flagged coordinate or angle as its change from the
+     * pose before, which defaults to the player's current one; the client adds it to its own.
+     */
+    private function sendPosition(Client $c, array $position, int $relative = 0, ?array $from = null): void
     {
+        $from ??= [$c->x, $c->y, $c->z, $c->yaw, $c->pitch];
         [$c->x, $c->y, $c->z] = $position;
         // ServerPlayer.teleport resets the connection's movement check to the destination.
         $c->tickPosition = [$c->x, $c->y, $c->z];
@@ -784,8 +788,13 @@ final class Server
         $c->velocityY = 0.0;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
-        $rotation = ($relative & 0x18) === 0x18 ? [0.0, 0.0] : [$c->yaw, $c->pitch];
-        $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, ...$rotation, relative: $relative));
+        $pose = [$c->x, $c->y, $c->z, $c->yaw, $c->pitch];
+        foreach ($pose as $i => $value) {
+            if (($relative >> $i & 1) === 1) {
+                $pose[$i] = $value - $from[$i];
+            }
+        }
+        $c->send($this->version, 'player_position', Packets::position($c->teleport, ...$pose, relative: $relative));
     }
 
     /** ChunkTrackingView.isWithinDistance: the cylinder of chunks a player's view keeps, with its border. */
@@ -852,8 +861,10 @@ final class Server
                     return;
                 }
                 $c->teleport = null;
-                // handleAcceptTeleportPacket moves the player as a packet that is not on the ground.
+                // handleAcceptTeleportPacket then moves the player to the confirmed pose, rotation
+                // included, as a packet that is not on the ground.
                 $c->ground = false;
+                $this->playerPositionChange($c, $confirmation['x'], $confirmation['y'], $confirmation['z'], $confirmation['yaw'], $confirmation['pitch'], 0);
                 return;
             case 'client_tick_end':
                 $r->end();
@@ -1069,6 +1080,12 @@ final class Server
             }
             $c->positionThisTick = true;
         }
+        $this->playerPositionChange($c, $x, $y, $z, $yaw, $pitch, $flags);
+    }
+
+    /** ServerGamePacketListenerImpl.handlePlayerPositionChange, for movement packets and confirmed teleports. */
+    private function playerPositionChange(Client $c, float $x, float $y, float $z, float $yaw, float $pitch, int $flags): void
+    {
         $x = max(-3.0E7, min(3.0E7, $x));
         $y = max(-2.0E7, min(2.0E7, $y));
         $z = max(-3.0E7, min(3.0E7, $z));
