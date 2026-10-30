@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **53** have an existing PHP handler; **39** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **54** have an existing PHP handler; **38** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -79,7 +79,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/setidletimeout` | — | Unimplemented | — |
 | `/setworldspawn` | [SetWorldSpawnCommand.php](../src/Server/Commands/SetWorldSpawnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spawnpoint` | [SpawnPointCommand.php](../src/Server/Commands/SpawnPointCommand.php) | Partial handler; native behavior incomplete | — |
-| `/spectate` | — | Unimplemented | — |
+| `/spectate` | [SpectateCommand.php](../src/Server/Commands/SpectateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/spreadplayers` | — | Unimplemented | — |
 | `/stop` | [StopCommand.php](../src/Server/Commands/StopCommand.php) | Partial handler; native behavior incomplete | — |
 | `/stopsound` | [StopSoundCommand.php](../src/Server/Commands/StopSoundCommand.php) | Partial handler; native behavior incomplete | — |

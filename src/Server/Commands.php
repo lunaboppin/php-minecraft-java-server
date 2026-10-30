@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\FillCommand;
 
+    use CommandModules\SpectateCommand;
+
     use CommandModules\SaveAllCommand;
 
     use CommandModules\DifficultyCommand;

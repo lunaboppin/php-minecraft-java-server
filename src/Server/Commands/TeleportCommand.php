@@ -132,6 +132,8 @@ trait TeleportCommand
             return;
         }
         $player = $target['client'];
+        // ServerPlayer.teleportTo with resetCamera: a teleported spectator stops viewing.
+        $this->setCamera($player, null);
         if ($player->dimension === $dimension) {
             $this->teleport($player, $position);
         } else {
