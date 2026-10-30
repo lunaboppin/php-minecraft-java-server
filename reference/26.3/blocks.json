@@ -3306,6 +3306,8 @@
   "sounds": {
     "block.chest.open": 349,
     "block.chest.close": 347,
+    "block.ender_chest.open": 588,
+    "block.ender_chest.close": 587,
     "block.barrel.open": 141,
     "block.barrel.close": 140,
     "entity.player.levelup": 1321,

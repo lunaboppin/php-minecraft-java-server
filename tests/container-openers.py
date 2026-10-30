@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opening and closing chests and barrels: titles, window IDs, lid events, sounds and states.
+"""Opening and closing chests, barrels and ender chests: titles, window IDs, contents, lid events, sounds and states.
 
 The first viewer opens a container with its sound and the last one closes it; a chest's lid
 follows each change in viewers through a block event, and a barrel shows its open state.
@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 from run import Server
 
-WATCHED = ('open_screen', 'container_close', 'block_event', 'sound', 'block_update')
+WATCHED = ('open_screen', 'container_close', 'block_event', 'sound', 'block_update', 'container_set_content')
 
 
 def collect(client, who):
@@ -31,7 +31,10 @@ def collect(client, who):
         name, payload = client.receive()
         if name in WATCHED:
             # The pitch is random, and so is the seed after it.
-            seen.append([who, name, (payload[:-12].hex() + '00' * 12) if name == 'sound' else payload.hex()])
+            entry = [who, name, (payload[:-12].hex() + '00' * 12) if name == 'sound' else payload.hex()]
+            # A lid's five-tick recheck repeats its last event, merged only when it lands in the same tick.
+            if not (name == 'block_event' and seen and seen[-1] == entry):
+                seen.append(entry)
         if name == 'pong_response' and payload == token:
             return seen
 
@@ -50,7 +53,8 @@ def record(kind, output, java, jar, eula):
         for client in (operator, witness):
             client.tick_barrier()
         for command in ('fill -3 199 -3 3 199 3 stone', 'fill -3 200 -3 3 203 3 air', 'tp ParityProbe 0 200 0 0 0', 'tp Witness 0 200 -1 0 0',
-                        'setblock 1 200 1 chest[facing=north]', 'setblock -1 200 1 barrel[facing=up]', 'gamemode survival @a'):
+                        'setblock 1 200 1 chest[facing=north]', 'setblock -1 200 1 barrel[facing=up]', 'setblock 1 200 -1 ender_chest[facing=south]',
+                        'item replace entity ParityProbe enderchest.4 with diamond 3', 'gamemode survival @a'):
             operator.send('chat_command', wire.string(command))
         for client in (operator, witness):
             client.tick_barrier()
@@ -61,7 +65,8 @@ def record(kind, output, java, jar, eula):
             lambda: use(operator, (1, 200, 1), 1), lambda: use(witness, (1, 200, 1), 1),
             lambda: operator.send('container_close', wire.vi(1)), lambda: witness.send('container_close', wire.vi(1)),
             lambda: use(operator, (-1, 200, 1), 2), lambda: operator.send('container_close', wire.vi(2)),
-            lambda: use(operator, (1, 200, 1), 3),
+            lambda: use(operator, (1, 200, 1), 3), lambda: use(operator, (1, 200, -1), 4), lambda: use(witness, (1, 200, -1), 2),
+            lambda: operator.send('container_close', wire.vi(4)), lambda: witness.send('container_close', wire.vi(2)),
         ]
         for action in actions:
             action()
@@ -89,7 +94,7 @@ def main():
     if args.eula_file is not None:
         java = record('java', args.output, args.java, args.jar.resolve(), args.eula_file.resolve())
         assert php == java, json.dumps({'php': php, 'java': java}, indent=1)
-        print('PASS: chest and barrel openers identical to the official server')
+        print('PASS: chest, barrel and ender chest openers identical to the official server')
     else:
         print('PASS: containers open and close with their lid events, sounds and states')
 

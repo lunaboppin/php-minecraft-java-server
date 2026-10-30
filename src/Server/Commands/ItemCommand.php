@@ -130,7 +130,7 @@ trait ItemCommand
             return $slot < $holder['size'];
         }
         if (isset($holder['client'])) {
-            return $slot === 499 || ($slot >= 500 && $slot < 504) || ($slot >= 0 && $slot < 36) || isset(self::ITEM_EQUIPMENT_SLOTS[$slot]);
+            return $slot === 499 || ($slot >= 500 && $slot < 504) || ($slot >= 0 && $slot < 36) || ($slot >= 200 && $slot < 227) || isset(self::ITEM_EQUIPMENT_SLOTS[$slot]);
         }
         return isset($holder['mob']) && isset(self::ITEM_EQUIPMENT_SLOTS[$slot]);
     }
@@ -155,6 +155,9 @@ trait ItemCommand
         if (isset($holder['client'])) {
             if ($slot === 105 || $slot === 106) {
                 return null;
+            }
+            if ($slot >= 200 && $slot < 227) {
+                return $holder['client']->enderItems[$slot - 200] ?? null;
             }
             return $slot === 499 ? $holder['client']->cursor : ($holder['client']->inventory[$this->playerWindowSlot($holder['client'], $slot)] ?? null);
         }
@@ -185,7 +188,12 @@ trait ItemCommand
             if ($slot === 105 || $slot === 106) {
                 return $stack === null;
             }
-            if ($slot === 499) {
+            if ($slot >= 200 && $slot < 227) {
+                $player->enderItems[$slot - 200] = $stack;
+                if ($stack === null) {
+                    unset($player->enderItems[$slot - 200]);
+                }
+            } elseif ($slot === 499) {
                 $player->cursor = $stack;
             } elseif ($stack === null) {
                 unset($player->inventory[$this->playerWindowSlot($player, $slot)]);

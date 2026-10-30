@@ -979,8 +979,12 @@ final class Server
             case 'container_close': $window = $r->varInt();
                 $r->end();
                 if ($window === $c->windowId) {
+                    // handleContainerClose sends nothing back unless the cursor or crafting grid returned items.
+                    $before = [$c->inventory, $c->cursor];
                     $this->closeWindow($c);
-                    $this->syncInventory($c);
+                    if ([$c->inventory, $c->cursor] !== $before) {
+                        $this->syncInventory($c);
+                    }
                 }return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
@@ -1235,17 +1239,20 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace' => 'furnace','chest','barrel' => 'chest',default => null
+                'crafting_table' => 'crafting','furnace' => 'furnace','chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
+            // EnderChestBlock.useWithoutItem: a redstone conductor above keeps it shut.
+            if ($type === 'ender' && $this->version->catalog->collision['shapes'][$this->version->catalog->collision['states'][$this->world->get($x, $y + 1, $z)]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]]) {
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
+                return;
+            }
             if ($type !== null) {
                 $this->openWindow($c, $type, [$x, $y, $z]);
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
-                // handleUseItemOn resends the used block and the one on its clicked face.
-                [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
-                foreach ([[$x, $y, $z], [$x + $dx, $y + $dy, $z + $dz]] as [$bx, $by, $bz]) {
-                    $c->send($this->version, 'block_update', Binary::writePosition($bx, $by, $bz) . Binary::writeVarInt($this->world->get($bx, $by, $bz)));
-                }
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
                 return;
             }
             $properties = $this->version->catalog->properties($clicked);
@@ -1432,6 +1439,15 @@ final class Server
             if (isset($player->loadedChunks[($x >> 4) . ':' . ($z >> 4)])) {
                 $this->blockUpdate($player, $x, $y, $z);
             }
+        }
+    }
+
+    /** handleUseItemOn resends the used block and the one on its clicked face. */
+    private function resendUsedBlocks(Client $c, int $x, int $y, int $z, int $face): void
+    {
+        [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
+        foreach ([[$x, $y, $z], [$x + $dx, $y + $dy, $z + $dz]] as [$bx, $by, $bz]) {
+            $c->send($this->version, 'block_update', Binary::writePosition($bx, $by, $bz) . Binary::writeVarInt($this->world->get($bx, $by, $bz)));
         }
     }
 

@@ -69,7 +69,9 @@ trait InventoryManagement
                 'crafting' => 10,'furnace' => 3,default => 27
             };
             $items = array_fill(0, $count + 36, null);
-            $slots = $c->windowType === 'crafting' ? $c->craftGrid : $this->world->container($c->windowPosition)['slots'];
+            $slots = match ($c->windowType) {
+                'crafting' => $c->craftGrid, 'ender' => $c->enderItems, default => $this->world->container($c->windowPosition)['slots']
+            };
             foreach ($slots as $slot => $stack) {
                 if ($slot >= 0 && $slot < $count) {
                     $items[$slot] = $stack;
@@ -112,6 +114,8 @@ trait InventoryManagement
             }
             if ($c->windowType === 'crafting') {
                 $c->craftGrid = $slots;
+            } elseif ($c->windowType === 'ender') {
+                $c->enderItems = $slots;
             } else {
                 $data = $this->world->container($c->windowPosition);
                 $data['slots'] = $slots;
@@ -133,7 +137,8 @@ trait InventoryManagement
             $this->withDimension($c->dimension, fn () => $this->syncInventory($c));
             return;
         }
-        $c->send($this->version, 'container_set_content', Packets::inventory($c->windowId, ++$c->inventoryRevision, $this->menuItems($c), $c->cursor, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+        $revision = $c->windowType === 'player' ? ++$c->inventoryRevision : ++$c->menuRevision;
+        $c->send($this->version, 'container_set_content', Packets::inventory($c->windowId, $revision, $this->menuItems($c), $c->cursor, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
     }
 
     private function syncContainer(array $position): void
@@ -169,7 +174,7 @@ trait InventoryManagement
         if ($notify) {
             $c->send($this->version, 'container_close', Binary::writeVarInt($c->windowId));
         }
-        if ($c->windowPosition !== null && $c->windowType === 'chest') {
+        if ($c->windowPosition !== null && ($c->windowType === 'chest' || $c->windowType === 'ender')) {
             $this->containerClosed($c, $c->windowPosition);
         }
         $c->dragSlots = [];
@@ -187,16 +192,17 @@ trait InventoryManagement
         $c->windowId = $c->containerCounter = $c->containerCounter % 100 + 1;
         $c->windowType = $type;
         $c->windowPosition = $position;
+        $c->menuRevision = 0;
         $menu = match ($type) {
             'crafting' => 'crafting','furnace' => 'furnace',default => 'generic_9x3'
         };
         // The block entity's default name, or the crafting table's.
         $title = match ($type) {
-            'crafting' => 'container.crafting','furnace' => 'container.furnace',
+            'crafting' => 'container.crafting','furnace' => 'container.furnace','ender' => 'container.enderchest',
             default => $this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest'
         };
         // The menu's constructor opens the container before the screen is sent.
-        if ($type === 'chest') {
+        if ($type === 'chest' || $type === 'ender') {
             $this->containerOpened($c, $position);
         }
         $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
@@ -216,7 +222,7 @@ trait InventoryManagement
         }
         $name = $this->version->catalog->blockName($this->world->get($x, $y, $z));
         return match ($c->windowType) {
-            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'barrel'], true),default => true
+            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
         };
     }
 

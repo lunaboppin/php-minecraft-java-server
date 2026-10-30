@@ -33,7 +33,7 @@ trait ContainerOpeners
     private function containerOpened(Client $player, array $position): void
     {
         $name = $this->version->catalog->blockName($this->world->get(...$position));
-        if (!in_array($name, ['chest', 'trapped_chest', 'barrel'], true)) {
+        if (!in_array($name, ['chest', 'trapped_chest', 'barrel', 'ender_chest'], true)) {
             return;
         }
         $key = $this->containerKey($player->dimension, $position);
@@ -58,7 +58,7 @@ trait ContainerOpeners
         if ($count <= 0) {
             unset($this->containerOpeners[$key]);
         }
-        if (!in_array($name, ['chest', 'trapped_chest', 'barrel'], true)) {
+        if (!in_array($name, ['chest', 'trapped_chest', 'barrel', 'ender_chest'], true)) {
             return;
         }
         if ($count === 0) {
@@ -71,11 +71,11 @@ trait ContainerOpeners
     private function recheckOpeners(string $key, array $position): void
     {
         $name = $this->version->catalog->blockName($this->world->get(...$position));
-        if (!in_array($name, ['chest', 'trapped_chest', 'barrel'], true)) {
+        if (!in_array($name, ['chest', 'trapped_chest', 'barrel', 'ender_chest'], true)) {
             unset($this->containerOpeners[$key]);
             return;
         }
-        $count = count(array_filter($this->localPlayers(), static fn (Client $player): bool => $player->windowType === 'chest' && $player->windowPosition === $position));
+        $count = count(array_filter($this->localPlayers(), static fn (Client $player): bool => in_array($player->windowType, ['chest', 'ender'], true) && $player->windowPosition === $position));
         $previous = $this->containerOpeners[$key] ?? 0;
         if ($previous !== $count) {
             if ($count !== 0 && $previous === 0) {
@@ -124,6 +124,8 @@ trait ContainerOpeners
             $vertical = ['up' => 1, 'down' => -1][$properties['facing']] ?? 0;
             [$x, $y, $z] = [$x + $steps[$properties['facing']][0] / 2.0, $y + $vertical / 2.0, $z + $steps[$properties['facing']][1] / 2.0];
             $sound = $open ? 'block.barrel.open' : 'block.barrel.close';
+        } elseif ($name === 'ender_chest') {
+            $sound = $open ? 'block.ender_chest.open' : 'block.ender_chest.close';
         } else {
             // A double chest sounds once, from its right half, at the middle of both.
             if ($properties['type'] === 'left') {

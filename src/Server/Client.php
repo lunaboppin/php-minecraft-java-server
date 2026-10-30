@@ -68,11 +68,15 @@ final class Client
     public array $dragSlots = [];
     public int $dragType = -1;
     public int $inventoryRevision = 0;
+    /** AbstractContainerMenu.stateId of the open container, from 1 on each opening. */
+    public int $menuRevision = 0;
     public int $windowId = 0;
     public int $containerCounter = 0;
     public string $windowType = 'player';
     public ?array $windowPosition = null;
     public array $craftGrid = [];
+    /** PlayerEnderChestContainer: 27 slots, kept through death. */
+    public array $enderItems = [];
     public array $entities = [];
     public bool $trackingDirty = true;
     public ?array $personalSpawn = null;

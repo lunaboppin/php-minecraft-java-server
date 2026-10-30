@@ -493,6 +493,7 @@ SCRIPT = [
     ('item replace block 1 200 -1 container.0 with stone 5', False), ('item replace block 1 200 -1 container.27 with stone', False),
     ('item replace entity @s weapon from block 1 200 -1 container.0', False), ('item replace block 1 200 -1 container.1 from block 0 199 0 container.0', False),
     ('item replace entity @s foo with stone', False), ('item modify entity @s weapon foo:bar', False), ('!witness item replace entity @s weapon with stone', False),
+    ('item replace entity @s enderchest.3 with stone 7', False), ('item replace entity @s weapon from entity @s enderchest.3', False),
     ('item replace entity @s player.cursor with stone', False), ('item replace entity @s player.crafting.0 with stone', False),
     ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
     ('list', False),
