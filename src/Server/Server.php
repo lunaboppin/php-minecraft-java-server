@@ -15,6 +15,8 @@ use PhpMinecraftJavaServer\World\World;
 
 final class Server
 {
+    use Mining;
+
     use ExperienceOrbs;
 
     use PlayerSpawning;
@@ -706,6 +708,15 @@ final class Server
     }
 
     /** ServerGamePacketListenerImpl.teleport: move the player and await their confirmation. */
+    /** ServerGamePacketListenerImpl.ackBlockChangesUpTo: acknowledged together in the player's next tick. */
+    private function acknowledge(Client $c, int $sequence): void
+    {
+        if ($sequence < 0) {
+            throw new ProtocolException('Expected packet sequence nr >= 0');
+        }
+        $c->ackUpTo = max($c->ackUpTo, $sequence);
+    }
+
     private static function wrapDegrees(float $degrees): float
     {
         $wrapped = Float32::round(fmod(Float32::round($degrees), 360.0));
@@ -726,7 +737,6 @@ final class Server
         $this->trackPushingPlayer($c);
         $c->fallDistance = 0;
         $c->velocityY = 0.0;
-        $c->mining = null;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
         $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
@@ -870,11 +880,11 @@ final class Server
                     throw new ProtocolException('Invalid use item');
                 }
                 if (!isset($c->inventory[$hand === 0 ? 36 + $c->heldSlot : 45])) {
-                    $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                    $this->acknowledge($c, $sequence);
                     return;
                 }
                 if (!is_finite($yaw) || !is_finite($pitch)) {
-                    $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                    $this->acknowledge($c, $sequence);
                     return;
                 }
                 $oldYaw = $c->yaw;
@@ -885,7 +895,7 @@ final class Server
                     $this->broadcastPlayerPosition($c);
                 }
                 $this->useHeldItem($c, $hand);
-                $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                $this->acknowledge($c, $sequence);
                 return;
             case 'set_carried_item':
                 $slot = $r->short();
@@ -1069,8 +1079,10 @@ final class Server
         if ($action < 0 || $action > 8 || $face > 5 || $sequence < 0) {
             throw new ProtocolException('Invalid digging action');
         }
-        if ($action === 2) {
-            $c->mining = null;
+        if ($action <= 3) {
+            // ServerGamePacketListenerImpl.handlePlayerAction: block actions, acknowledged next tick.
+            $this->blockBreakAction($c, $action, $x, $y, $z, $face);
+            $this->acknowledge($c, $sequence);
         } elseif ($action === 6) {
             $c->eating = null;
         } elseif ($action === 4 || $action === 5) {
@@ -1093,29 +1105,7 @@ final class Server
             } else {
                 $c->inventory[45] = $main;
             }$this->syncInventory($c);
-        } elseif ($action === 0 && $this->editable($c, $x, $y, $z) && $this->underSpawnProtection($c, $x, $z)) {
-            // ServerPlayerGameMode.handleBlockBreakAction: the notice alone, without a block update.
-            $this->spawnProtectionMessage($c, $x, $y, $z);
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
-            return;
-        } elseif ($action === 0 && $this->editable($c, $x, $y, $z)) {
-            $state = $this->world->get($x, $y, $z);
-            if ($this->version->catalog->blockName($state) === 'note_block') {
-                $this->playNote($x, $y, $z);
-            }
-            if ($c->gameMode === 1) {
-                $this->breakBlock($c, $x, $y, $z);
-            } elseif (!$this->version->catalog->air($state)) {
-                $c->mining = ['position' => [$x, $y, $z], 'state' => $state, 'started' => $this->ticks, 'duration' => $this->miningTicks($c, $state)];
-            }
-        } elseif ($action === 3 && $c->mining !== null && $c->mining['position'] === [$x, $y, $z] && $this->ticks - $c->mining['started'] >= $c->mining['duration'] - 1) {
-            $this->breakBlock($c, $x, $y, $z);
-            $c->mining = null;
         }
-        if ($action <= 3) {
-            $this->blockUpdate($c, $x, $y, $z);
-        }
-        $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
     }
 
     private function place(Client $c, Binary $r): void
@@ -1136,7 +1126,7 @@ final class Server
         foreach ($cursor as $axis => $value) {
             $block = [$x, $y, $z][$axis];
             if (!is_finite($value) || !(abs(($block + $value) - ($block + 0.5)) < 1.0000001)) {
-                $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                $this->acknowledge($c, $sequence);
                 return;
             }
         }
@@ -1148,15 +1138,15 @@ final class Server
         // ServerGamePacketListenerImpl.handleUseItemOn: spawn protection stops any use on the block.
         if ($within && $y >= $this->world->minY && $y < $this->world->minY + $this->world->height && $this->underSpawnProtection($c, $x, $z)) {
             $this->spawnProtectionMessage($c, $x, $y, $z);
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && !$c->sneaking && $this->useSpecialBlock($c, $x, $y, $z, $slot)) {
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
@@ -1165,7 +1155,7 @@ final class Server
             };
             if ($type !== null) {
                 $this->openWindow($c, $type, [$x, $y, $z]);
-                $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                $this->acknowledge($c, $sequence);
                 return;
             }
             $properties = $this->version->catalog->properties($clicked);
@@ -1180,14 +1170,14 @@ final class Server
                         $this->setBlock($x, $otherY, $z, $this->version->catalog->state($name, $other));
                     }
                 }
-                $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                $this->acknowledge($c, $sequence);
                 return;
             }
             if (str_ends_with($name, '_bed') && $c->dimension === 'overworld') {
                 $c->personalSpawn = [$x + 0.5, (float) $y + 1, $z + 0.5];
                 $this->savePlayer($c);
                 $this->tell($c, 'Respawn point set');
-                $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+                $this->acknowledge($c, $sequence);
                 return;
             }
         }
@@ -1195,17 +1185,17 @@ final class Server
         $replace = $this->version->catalog->blocks[$name]['replaceable'];
         [$tx, $ty, $tz] = $replace ? [$x, $y, $z] : [$x + $dx, $y + $dy, $z + $dz];
         if ($this->useSpawnEggOn($c, $slot, $x, $y, $z, $face)) {
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
         if ($itemName === 'flint_and_steel' && $this->ignitePortal($c, $tx, $ty, $tz, $slot)) {
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         if ($itemName === 'water_bucket' && $c->dimension === 'the_nether') {
             $this->tell($c, 'Water evaporates in the Nether.');
-            $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+            $this->acknowledge($c, $sequence);
             return;
         }
         $blockName = match ($itemName) {
@@ -1287,7 +1277,7 @@ final class Server
             }
         }
         $this->blockUpdate($c, $tx, $ty, $tz);
-        $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($sequence));
+        $this->acknowledge($c, $sequence);
     }
 
     private function creativeSlot(Client $c, Binary $r): void
@@ -1421,6 +1411,12 @@ final class Server
                     $c->keepAlive = random_int(1, PHP_INT_MAX);
                     $c->lastKeepAlive = $now;
                     $c->send($this->version, 'keep_alive', pack('J', $c->keepAlive));
+                }
+                // ServerGamePacketListenerImpl.tick: one acknowledgement of the highest block change sequence,
+                // before this tick's block changes, which vanilla broadcasts at the start of the next.
+                if ($c->ackUpTo >= 0) {
+                    $c->send($this->version, 'block_changed_ack', Binary::writeVarInt($c->ackUpTo));
+                    $c->ackUpTo = -1;
                 }
                 // ServerGamePacketListenerImpl.tickPlayer: movement checks start again from here.
                 $c->tickPosition = [$c->x, $c->y, $c->z];
