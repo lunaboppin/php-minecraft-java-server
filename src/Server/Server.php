@@ -57,6 +57,8 @@ final class Server
 
     use TreeGrowth;
 
+    use FireSimulation;
+
     use SignAndPick;
 
     use EntityTracking;
