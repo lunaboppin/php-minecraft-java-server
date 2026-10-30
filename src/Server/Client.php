@@ -72,6 +72,8 @@ final class Client
     public int $menuRevision = 0;
     public int $windowId = 0;
     public int $containerCounter = 0;
+    /** The left half of an open double chest; windowPosition is its right half. */
+    public ?array $windowPartner = null;
     public string $windowType = 'player';
     public ?array $windowPosition = null;
     public array $craftGrid = [];

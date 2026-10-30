@@ -23,6 +23,9 @@ from run import Server
 WATCHED = ('open_screen', 'container_close', 'block_event', 'sound', 'block_update', 'container_set_content')
 
 
+LAST_EVENTS = {}
+
+
 def collect(client, who):
     token = os.urandom(8)
     client.send('ping_request', token)
@@ -32,9 +35,12 @@ def collect(client, who):
         if name in WATCHED:
             # The pitch is random, and so is the seed after it.
             entry = [who, name, (payload[:-12].hex() + '00' * 12) if name == 'sound' else payload.hex()]
-            # A lid's five-tick recheck repeats its last event, merged only when it lands in the same tick.
-            if not (name == 'block_event' and seen and seen[-1] == entry):
-                seen.append(entry)
+            # A lid's five-tick recheck repeats its last event whenever it lands relative to the steps.
+            if name == 'block_event':
+                if LAST_EVENTS.get((id(client), payload[:8])) == payload:
+                    continue
+                LAST_EVENTS[(id(client), payload[:8])] = payload
+            seen.append(entry)
         if name == 'pong_response' and payload == token:
             return seen
 
@@ -67,6 +73,11 @@ def record(kind, output, java, jar, eula):
             lambda: use(operator, (-1, 200, 1), 2), lambda: operator.send('container_close', wire.vi(2)),
             lambda: use(operator, (1, 200, 1), 3), lambda: use(operator, (1, 200, -1), 4), lambda: use(witness, (1, 200, -1), 2),
             lambda: operator.send('container_close', wire.vi(4)), lambda: witness.send('container_close', wire.vi(2)),
+            # A double chest opens as one 54-slot window, right half first, and both lids follow.
+            lambda: operator.send('chat_command', wire.string('setblock 3 200 0 chest[facing=north,type=right]')),
+            lambda: operator.send('chat_command', wire.string('setblock 2 200 0 chest[facing=north,type=left]')),
+            lambda: use(operator, (2, 200, 0), 5), lambda: use(witness, (3, 200, 0), 3),
+            lambda: operator.send('container_close', wire.vi(5)), lambda: witness.send('container_close', wire.vi(3)),
         ]
         for action in actions:
             action()

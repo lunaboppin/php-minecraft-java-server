@@ -24,6 +24,106 @@ trait ContainerOpeners
     /** @var array<string, array{int, string, array}> ContainerOpenersCounter.scheduleRecheck: due tick, dimension, position */
     private array $openerRechecks = [];
 
+    private const HORIZONTAL_STEPS = ['north' => [0, -1], 'south' => [0, 1], 'west' => [-1, 0], 'east' => [1, 0]];
+
+    private const CLOCKWISE = ['north' => 'east', 'east' => 'south', 'south' => 'west', 'west' => 'north'];
+
+    /** ChestBlock.getConnectedDirection: a left half joins on its clockwise side, a right half on the other. */
+    private static function chestConnection(array $properties): string
+    {
+        return $properties['type'] === 'left' ? self::CLOCKWISE[$properties['facing']] : array_search($properties['facing'], self::CLOCKWISE, true);
+    }
+
+    /** ChestBlock.candidatePartnerFacing: the facing of a single chest of the same kind beside the position. */
+    private function chestPartnerFacing(string $name, array $position, string $direction): ?string
+    {
+        [$dx, $dz] = self::HORIZONTAL_STEPS[$direction];
+        $state = $this->world->get($position[0] + $dx, $position[1], $position[2] + $dz);
+        if ($this->version->catalog->blockName($state) !== $name) {
+            return null;
+        }
+        $properties = $this->version->catalog->properties($state);
+        return $properties['type'] === 'single' ? $properties['facing'] : null;
+    }
+
+    /**
+     * ChestBlock.getStateForPlacement: facing the placer, and joining a single chest beside it that
+     * faces the same way; sneaking against a chest's side joins that chest whichever way it faces.
+     *
+     * @return array{string, string} facing and type
+     */
+    private function chestPlacement(string $name, array $position, string $looking, int $face, bool $sneaking): array
+    {
+        $opposite = ['north' => 'south', 'south' => 'north', 'west' => 'east', 'east' => 'west'];
+        $facing = $opposite[$looking];
+        $type = 'single';
+        if ($face >= 2 && $sneaking) {
+            $clicked = [2 => 'north', 3 => 'south', 4 => 'west', 5 => 'east'][$face];
+            $partner = $this->chestPartnerFacing($name, $position, $opposite[$clicked]);
+            if ($partner !== null && in_array($partner, ['north', 'south'], true) !== in_array($clicked, ['north', 'south'], true)) {
+                $facing = $partner;
+                $type = array_search($facing, self::CLOCKWISE, true) === $opposite[$clicked] ? 'right' : 'left';
+            }
+        }
+        if ($type === 'single' && !$sneaking) {
+            if ($this->chestPartnerFacing($name, $position, self::CLOCKWISE[$facing]) === $facing) {
+                $type = 'left';
+            } elseif ($this->chestPartnerFacing($name, $position, array_search($facing, self::CLOCKWISE, true)) === $facing) {
+                $type = 'right';
+            }
+        }
+        return [$facing, $type];
+    }
+
+    /** ChestBlock.updateShape on the partner of a newly placed half: it becomes the other half. */
+    private function joinChest(array $position): void
+    {
+        $state = $this->world->get(...$position);
+        $name = $this->version->catalog->blockName($state);
+        $properties = $this->version->catalog->properties($state);
+        [$dx, $dz] = self::HORIZONTAL_STEPS[self::chestConnection($properties)];
+        $partner = $this->world->get($position[0] + $dx, $position[1], $position[2] + $dz);
+        $partnerProperties = $this->version->catalog->properties($partner);
+        if ($this->version->catalog->blockName($partner) === $name && $partnerProperties['type'] === 'single' && $partnerProperties['facing'] === $properties['facing']) {
+            $partnerProperties['type'] = $properties['type'] === 'left' ? 'right' : 'left';
+            $this->setBlock($position[0] + $dx, $position[1], $position[2] + $dz, $this->version->catalog->state($name, $partnerProperties));
+        }
+    }
+
+    /** ChestBlock.updateShape: a half whose partner has gone becomes a single chest again. */
+    private function unjoinChest(array $position, int $previous, int $state): void
+    {
+        $name = $this->version->catalog->blockName($previous);
+        if (($name !== 'chest' && $name !== 'trapped_chest') || $this->version->catalog->blockName($state) === $name) {
+            return;
+        }
+        $properties = $this->version->catalog->properties($previous);
+        if ($properties['type'] === 'single') {
+            return;
+        }
+        [$dx, $dz] = self::HORIZONTAL_STEPS[self::chestConnection($properties)];
+        $partner = $this->world->get($position[0] + $dx, $position[1], $position[2] + $dz);
+        $partnerProperties = $this->version->catalog->properties($partner);
+        if ($this->version->catalog->blockName($partner) === $name && $partnerProperties['type'] !== 'single') {
+            $partnerProperties['type'] = 'single';
+            $this->setBlock($position[0] + $dx, $position[1], $position[2] + $dz, $this->version->catalog->state($name, $partnerProperties));
+        }
+    }
+
+    /** The other half of a double chest, or null for a single chest. */
+    private function chestPartner(array $position): ?array
+    {
+        $state = $this->world->get(...$position);
+        $properties = $this->version->catalog->properties($state);
+        if (($properties['type'] ?? 'single') === 'single') {
+            return null;
+        }
+        [$dx, $dz] = self::HORIZONTAL_STEPS[self::chestConnection($properties)];
+        $partner = [$position[0] + $dx, $position[1], $position[2] + $dz];
+        $other = $this->version->catalog->properties($this->world->get(...$partner));
+        return $this->version->catalog->blockName($this->world->get(...$partner)) === $this->version->catalog->blockName($state) && ($other['type'] ?? 'single') !== 'single' ? $partner : null;
+    }
+
     private function containerKey(string $dimension, array $position): string
     {
         return $dimension . ':' . implode(':', $position);
@@ -75,7 +175,7 @@ trait ContainerOpeners
             unset($this->containerOpeners[$key]);
             return;
         }
-        $count = count(array_filter($this->localPlayers(), static fn (Client $player): bool => in_array($player->windowType, ['chest', 'ender'], true) && $player->windowPosition === $position));
+        $count = count(array_filter($this->localPlayers(), static fn (Client $player): bool => in_array($player->windowType, ['chest', 'ender'], true) && ($player->windowPosition === $position || $player->windowPartner === $position)));
         $previous = $this->containerOpeners[$key] ?? 0;
         if ($previous !== $count) {
             if ($count !== 0 && $previous === 0) {

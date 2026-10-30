@@ -1241,15 +1241,18 @@ final class Server
             $type = match ($name) {
                 'crafting_table' => 'crafting','furnace' => 'furnace','chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
-            // EnderChestBlock.useWithoutItem: a redstone conductor above keeps it shut.
-            if ($type === 'ender' && $this->version->catalog->collision['shapes'][$this->version->catalog->collision['states'][$this->world->get($x, $y + 1, $z)]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]]) {
+            // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
+            // above either half of a double chest.
+            $blockedAbove = fn (int $bx, int $bz): bool => $this->version->catalog->collision['shapes'][$this->version->catalog->collision['states'][$this->world->get($bx, $y + 1, $bz)]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]];
+            $partner = $name === 'chest' ? $this->chestPartner([$x, $y, $z]) : null;
+            if (($type === 'ender' || $name === 'chest') && ($blockedAbove($x, $z) || ($partner !== null && $blockedAbove($partner[0], $partner[2])))) {
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
                 $this->resendUsedBlocks($c, $x, $y, $z, $face);
                 return;
             }
             if ($type !== null) {
-                $this->openWindow($c, $type, [$x, $y, $z]);
+                $this->openWindow($c, $type, [$x, $y, $z], $partner);
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
                 $this->resendUsedBlocks($c, $x, $y, $z, $face);
@@ -1334,6 +1337,9 @@ final class Server
             if (isset($block['properties']['waterlogged'])) {
                 $properties['waterlogged'] = $this->version->catalog->blockName($this->world->get($tx, $ty, $tz)) === 'water' ? 'true' : 'false';
             }
+            if ($blockName === 'chest' || $blockName === 'trapped_chest') {
+                [$properties['facing'], $properties['type']] = $this->chestPlacement($blockName, [$tx, $ty, $tz], $facing, $face, $c->sneaking);
+            }
             $blocked = false;
             if ($block['full_cube']) {
                 foreach ($this->localPlayers() as $player) {
@@ -1358,6 +1364,9 @@ final class Server
             }
             if (!$blocked) {
                 $this->setBlock($tx, $ty, $tz, $this->version->catalog->state($blockName, $properties));
+                if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
+                    $this->joinChest([$tx, $ty, $tz]);
+                }
                 if (str_ends_with($blockName, '_sign')) {
                     $this->openSign($c, $tx, $ty, $tz, 1);
                 }
@@ -1431,6 +1440,7 @@ final class Server
             $this->ejectJukebox([$x, $y, $z], false);
         }
         $this->world->set($x, $y, $z, $state);
+        $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         if ($this->world->generator === 'terrain') {
             $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
