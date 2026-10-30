@@ -54,6 +54,7 @@ final class Server
     use FluidSimulation;
 
     use RandomTicks;
+
     use TreeGrowth;
 
     use SignAndPick;
