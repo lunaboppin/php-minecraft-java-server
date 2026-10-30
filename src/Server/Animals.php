@@ -60,7 +60,8 @@ trait Animals
         }
     }
 
-    private function spawnAnimal(string $kind, float $x, float $y, float $z): ?int
+    /** @param array<string, mixed> $state saved mob fields set before the mob is first shown, such as yaw */
+    private function spawnAnimal(string $kind, float $x, float $y, float $z, array $state = []): ?int
     {
         $info = $this->version->catalog->mobs['entities'][$kind] ?? null;
         if ($info === null || in_array($kind, ['player', 'armor_stand', 'mannequin'], true) || !isset($info['attributes']['max_health']) || !$info['summonable'] || !$info['enabled'] || ($this->config->difficulty === 0 && !$info['peaceful']) || count($this->animals) >= 256) {
@@ -72,6 +73,7 @@ trait Animals
         }
         $this->animals[$id] = ['id' => $id, 'uuid' => bin2hex(random_bytes(16)), 'kind' => $kind, 'health' => $info['attributes']['max_health'], 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => 0.0, 'targetX' => $x, 'targetY' => $y, 'targetZ' => $z, 'nextWander' => 0, 'velocity' => [0.0, 0.0, 0.0]];
         $this->animals[$id]['equipment'] = $this->mobEquipment($kind);
+        $this->animals[$id] = $state + $this->animals[$id];
         $this->trackPushingMob($this->animals[$id]);
         $variant = $this->chooseMobSoundVariant($kind);
         if ($variant !== null) {
@@ -81,6 +83,32 @@ trait Animals
             $this->showAnimal($p, $this->animals[$id]);
         }
         return $id;
+    }
+
+    /**
+     * The mobs vanilla generation added to a chunk (structure mobs and the creatures it starts
+     * with), spawned when the chunk is first sent. Entities the server cannot spawn yet, or that
+     * the mob limit holds back, stay pending for a later send.
+     */
+    private function generatedEntities(int $cx, int $cz): void
+    {
+        $store = $this->world->vanilla;
+        if ($store === null || !$this->spawnMobs) {
+            return;
+        }
+        $spawned = [];
+        foreach ($store->pendingEntities($cx, $cz) as $row => $entity) {
+            $nbt = $entity['nbt'];
+            $kind = preg_replace('/^minecraft:/', '', $nbt['id']);
+            $state = ['yaw' => (float) ($nbt['Rotation'][0] ?? 0.0)];
+            if (($nbt['Age'] ?? 0) < 0 && in_array($kind, self::BABY_INDEX_TYPES, true)) {
+                $state['baby'] = true;
+            }
+            if ($this->spawnAnimal($kind, (float) $nbt['Pos'][0], (float) $nbt['Pos'][1], (float) $nbt['Pos'][2], $state) !== null) {
+                $spawned[] = $row;
+            }
+        }
+        $store->consumeEntities($spawned);
     }
 
     private function naturalAnimals(int $cx, int $cz): void
