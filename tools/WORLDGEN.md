@@ -82,9 +82,37 @@ The server generates the Nether with vanilla when `vanillaTerrain` is on. Enabli
 
 Starts and their pieces' state live in the world database (`vanilla_structure_starts`). Each decorated chunk places the pieces of starts within 8 chunks that overlap it. Structures run before the features of each decoration step, in registry order, and each is seeded with its index in the step, as `applyBiomeDecoration` does.
 
-Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars and drops unsupported torches and ladders.
+Pieces mirror and rotate their blocks by orientation (`BlockTransform`). After the chunk and its neighbours are decorated, the fences, iron bars, torches and ladders they place are post-processed: `ShapeUpdater` connects fences and bars, reshapes stairs (`StairBlock.getStairsShape`), and drops unsupported torches and ladders. It repeats until shapes are stable, which is the state vanilla reaches when a neighbouring chunk was decorated first.
 
-Ported so far: swamp huts. For seed 42, the hut at chunk -17, 22 matches the official server block for block, including stair shapes and fence connections. Its witch and cat are not spawned yet. Other structure types are skipped: a set whose chosen structure is not ported places nothing.
+Ported so far: swamp huts, desert pyramids, jungle temples, igloos, shipwrecks, buried treasure and jigsaw structures (villages, pillager outposts, ancient cities, trail ruins, abandoned camps and bastions). Trial chambers resolve their pool aliases too: seed 42's chambers at chunk 17, 7 have the official 313 pieces. For seed 42, each was compared against the official server block for block, with full block states, and each matches:
+- the hut at chunk -17, 22, including its stair shapes and fence connections;
+- the pyramid at -86, -110, with its 4 chests, TNT trap and 6 suspicious sand;
+- the jungle temple at -85, 180, with its tripwires, redstone, dispensers and 2 chests.
+- the igloo at 208, -305, with its 11-segment ladder shaft and laboratory;
+- the shipwreck at 12, 28 across its three chunks, including every stair shape and fence connection.
+
+Jigsaw structures (`Jigsaw`, `JigsawPiece`) port these:
+- `JigsawStructure`.
+- `JigsawPlacement`: the start pool and start jigsaw, projection to the heightmap, then children breadth first by placement priority, attached jigsaw to jigsaw.
+- The attachment details: shuffled pools with fallbacks, shuffled rotations, the expansion hack, and the free space a parent leaves, which is its box minus what was placed (`FreeSpace`).
+- Rigid and terrain-matching projections, and junctions.
+- Pool elements: single, legacy, list, feature and empty, with their processors (rule, block_rot, protected_blocks, capped, gravity, jigsaw replacement).
+
+For seed 42, the plains village at chunk 41, -19 has the official server's 186 pieces, identical in template, rotation, box and position.
+
+`Beardifier` ports the density that structures with terrain adaptation add to the final density, including beards, burying and encapsulation. With it, the village's chunks match block for block. The remaining differences are doors its villagers opened and water that flowed while the official server ran. The `block_pile` feature (hay piles) is ported too.
+
+Templates (`Template`, `TemplatePiece`) port `StructureTemplate` and `TemplateStructurePiece`:
+- palettes in vanilla's placement order, with the positional palette choice;
+- the mirror, rotation and pivot transform, and bounding boxes;
+- block processors;
+- loot seeds for randomizable containers;
+- waterlogging (`LiquidSettings`);
+- data markers and jigsaw final states.
+
+The 1,511 official templates are exported as gzipped JSON (`reference/26.3/worldgen/template`).
+
+The pyramid's suspicious sand uses the legacy positional random at the structure's centre, and its collapsed cellar roof uses the decorated chunk's `WorldGenRegion` random, as vanilla does. Chests, dispensers and suspicious sand record their loot table and seed (`vanilla_block_entities`). Their loot is not rolled yet. The hut's witch and cat are not spawned yet. Other structure types are skipped: a set whose chosen structure is not ported places nothing.
 
 ## Vanilla End terrain
 

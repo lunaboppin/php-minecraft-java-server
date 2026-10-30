@@ -65,7 +65,7 @@ final class OverworldGenerator
      *     names in y, z, x order and quart biomes in y, z, x order; stages holds copies after
      *     the noise and surface stages when requested
      */
-    public function chunk(int $chunkX, int $chunkZ, bool $keepStages = false): array
+    public function chunk(int $chunkX, int $chunkZ, bool $keepStages = false, ?Structure\Beardifier $beardifier = null): array
     {
         $possible = [];
         for ($dz = -1; $dz <= 1; ++$dz) {
@@ -74,6 +74,7 @@ final class OverworldGenerator
             }
         }
         $noise = new NoiseChunk($this->settings, $chunkX, $chunkZ);
+        $noise->beardifier = $beardifier;
         $blocks = $noise->fill();
         $stages = $keepStages ? ['noise' => $blocks] : [];
         $this->materials->buildSurface($blocks, $noise, $this->biomeAt(...), array_values(array_unique($possible)));

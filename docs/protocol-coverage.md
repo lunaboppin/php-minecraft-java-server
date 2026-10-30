@@ -113,7 +113,7 @@ Supported item-stack additions now include damage, ordinary/stored enchantments 
 | 30 | `debug_sample` | Unsupported |
 | 31 | `delete_chat` | Unsupported |
 | 32 | `disconnect` | Unsupported |
-| 33 | `disguised_chat` | Unsupported |
+| 33 | `disguised_chat` | Emission reference |
 | 34 | `entity_event` | Emission reference |
 | 35 | `entity_position_sync` | Emission reference |
 | 36 | `explode` | Unsupported |

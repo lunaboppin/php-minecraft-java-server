@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 
 use PhpMinecraftJavaServer\World\Generation\RandomSource;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Patches;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 
 /**
@@ -46,6 +47,25 @@ abstract class Piece
     }
 
     abstract public function postProcess(StructureContext $context, Region $region, RandomSource $random, array $chunkBox): void;
+
+    /** Structure.afterPlace, after the start's pieces are placed in a chunk. */
+    public function afterPlace(StructureContext $context, Region $region, array $chunkBox): void
+    {
+    }
+
+    /** A piece from its saved form. */
+    public static function restore(array $piece): self
+    {
+        return match ($piece['type']) {
+            'swamp_hut' => new SwampHut($piece['box'], $piece['orientation'], $piece['width'], $piece['height'], $piece['depth'], $piece['hpos']),
+            'desert_pyramid' => DesertPyramid::restoreWith($piece),
+            'jungle_temple' => JungleTemple::restoreWith($piece),
+            'igloo' => Igloo::restoreWith($piece),
+            'shipwreck' => Shipwreck::restoreWith($piece),
+            'buried_treasure' => BuriedTreasure::restoreWith($piece),
+            'jigsaw' => JigsawPiece::restoreWith($piece),
+        };
+    }
 
     /** StructurePiece.makeBoundingBox */
     public static function makeBox(int $x, int $y, int $z, string $direction, int $width, int $height, int $depth): array
@@ -108,6 +128,25 @@ abstract class Piece
         }
     }
 
+    /** @return array{0: int, 1: int, 2: int} */
+    protected function worldPos(int $x, int $y, int $z): array
+    {
+        return [$this->worldX($x, $z), $this->worldY($y), $this->worldZ($x, $z)];
+    }
+
+    /** StructurePiece.createChest: a chest facing away from its walls, with a loot table and seed. */
+    protected function createChest(StructureContext $context, Region $region, array $chunkBox, RandomSource $random, int $x, int $y, int $z, string $lootTable, ?int $state = null): bool
+    {
+        [$wx, $wy, $wz] = $this->worldPos($x, $y, $z);
+        if (!self::inside($chunkBox, $wx, $wy, $wz) || $context->blocks->name($region->get($wx, $wy, $wz)) === 'chest') {
+            return false;
+        }
+        $state ??= Patches::reorient($context->blocks, $region, $wx, $wy, $wz, $context->state('chest'));
+        $region->set($wx, $wy, $wz, $state);
+        $context->blockEntities["$wx,$wy,$wz"] = ['id' => 'chest', 'loot_table' => 'minecraft:chests/' . $lootTable, 'seed' => $random->nextLong()];
+        return true;
+    }
+
     protected function getBlock(Region $region, int $x, int $y, int $z, array $chunkBox): int
     {
         [$wx, $wy, $wz] = [$this->worldX($x, $z), $this->worldY($y), $this->worldZ($x, $z)];
@@ -128,6 +167,52 @@ abstract class Piece
                 }
             }
         }
+    }
+
+    /**
+     * StructurePiece.generateBox with a BlockSelector, which picks each block from the random
+     * source and whether it is on the box's edge.
+     *
+     * @param callable(RandomSource, bool): int $selector
+     */
+    protected function generateSelectedBox(StructureContext $context, Region $region, array $chunkBox, int $x0, int $y0, int $z0, int $x1, int $y1, int $z1, bool $skipAir, RandomSource $random, callable $selector): void
+    {
+        for ($y = $y0; $y <= $y1; ++$y) {
+            for ($x = $x0; $x <= $x1; ++$x) {
+                for ($z = $z0; $z <= $z1; ++$z) {
+                    if ($skipAir && $context->blocks->isAir($this->getBlock($region, $x, $y, $z, $chunkBox))) {
+                        continue;
+                    }
+                    $edge = $y === $y0 || $y === $y1 || $x === $x0 || $x === $x1 || $z === $z0 || $z === $z1;
+                    $this->placeBlock($context, $region, $selector($random, $edge), $x, $y, $z, $chunkBox);
+                }
+            }
+        }
+    }
+
+    /** StructurePiece.generateAirBox */
+    protected function generateAirBox(StructureContext $context, Region $region, array $chunkBox, int $x0, int $y0, int $z0, int $x1, int $y1, int $z1): void
+    {
+        $air = $context->state('air');
+        for ($y = $y0; $y <= $y1; ++$y) {
+            for ($x = $x0; $x <= $x1; ++$x) {
+                for ($z = $z0; $z <= $z1; ++$z) {
+                    $this->placeBlock($context, $region, $air, $x, $y, $z, $chunkBox);
+                }
+            }
+        }
+    }
+
+    /** StructurePiece.createDispenser: a dispenser with a loot table and seed. */
+    protected function createDispenser(StructureContext $context, Region $region, array $chunkBox, RandomSource $random, int $x, int $y, int $z, string $facing, string $lootTable): bool
+    {
+        [$wx, $wy, $wz] = $this->worldPos($x, $y, $z);
+        if (!self::inside($chunkBox, $wx, $wy, $wz) || $context->blocks->name($region->get($wx, $wy, $wz)) === 'dispenser') {
+            return false;
+        }
+        $this->placeBlock($context, $region, $context->state('dispenser', ['facing' => $facing]), $x, $y, $z, $chunkBox);
+        $context->blockEntities["$wx,$wy,$wz"] = ['id' => 'dispenser', 'loot_table' => 'minecraft:dispensers/' . $lootTable, 'seed' => $random->nextLong()];
+        return true;
     }
 
     /** StructurePiece.isReplaceableByStructures */

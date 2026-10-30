@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **49** have an existing PHP handler; **43** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **53** have an existing PHP handler; **39** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -71,7 +71,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/save-all` | [SaveAllCommand.php](../src/Server/Commands/SaveAllCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-off` | [SaveOffCommand.php](../src/Server/Commands/SaveOffCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-on` | [SaveOnCommand.php](../src/Server/Commands/SaveOnCommand.php) | Partial handler; native behavior incomplete | — |
-| `/say` | — | Unimplemented | — |
+| `/say` | [SayCommand.php](../src/Server/Commands/SayCommand.php) | Partial handler; native behavior incomplete | — |
 | `/schedule` | — | Unimplemented | — |
 | `/scoreboard` | [ScoreboardCommand.php](../src/Server/Commands/ScoreboardCommand.php) | Partial handler; native behavior incomplete | — |
 | `/seed` | [SeedCommand.php](../src/Server/Commands/SeedCommand.php) | Partial handler; native behavior incomplete | — |
@@ -88,7 +88,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/swing` | — | Unimplemented | — |
 | `/tag` | — | Unimplemented | — |
 | `/team` | [TeamCommand.php](../src/Server/Commands/TeamCommand.php) | Partial handler; native behavior incomplete | — |
-| `/teammsg` | — | Unimplemented | — |
+| `/teammsg` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | — |
 | `/teleport` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | — |
 | `/tell` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
 | `/tellraw` | [TellrawCommand.php](../src/Server/Commands/TellrawCommand.php) | Partial handler; native behavior incomplete | — |
@@ -96,12 +96,12 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/tick` | — | Unimplemented | — |
 | `/time` | [TimeCommand.php](../src/Server/Commands/TimeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/title` | [TitleCommand.php](../src/Server/Commands/TitleCommand.php) | Partial handler; native behavior incomplete | — |
-| `/tm` | — | Unimplemented | `/teammsg` |
+| `/tm` | [TeamMsgCommand.php](../src/Server/Commands/TeamMsgCommand.php) | Partial handler; native behavior incomplete | `/teammsg` |
 | `/tp` | [TeleportCommand.php](../src/Server/Commands/TeleportCommand.php) | Partial handler; native behavior incomplete | `/teleport` |
 | `/transfer` | — | Unimplemented | — |
 | `/trigger` | [TriggerCommand.php](../src/Server/Commands/TriggerCommand.php) | Partial handler; native behavior incomplete | — |
 | `/version` | [VersionCommand.php](../src/Server/Commands/VersionCommand.php) | Partial handler; native behavior incomplete | — |
-| `/w` | — | Unimplemented | `/msg` |
+| `/w` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
 | `/waypoint` | — | Unimplemented | — |
 | `/weather` | [WeatherCommand.php](../src/Server/Commands/WeatherCommand.php) | Partial handler; native behavior incomplete | — |
 | `/whitelist` | [WhitelistCommand.php](../src/Server/Commands/WhitelistCommand.php) | Partial handler; native behavior incomplete | — |

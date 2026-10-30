@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\World\Vanilla\Structure;
 
+use PhpMinecraftJavaServer\World\Generation\RandomSource;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Predicates;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Region;
 
 /** What structure pieces share while they are placed: block states, transforms and shape marks. */
 final class StructureContext
@@ -17,9 +20,10 @@ final class StructureContext
     /** @var array<string, array{0: int, 1: int, 2: int}> ProtoChunk.markPosForPostProcessing, by "x,y,z" */
     public array $postProcessing = [];
 
-    public function __construct(public readonly Blocks $blocks)
+    public function __construct(public readonly Blocks $blocks, public readonly int $seed = 0, public readonly string $directory = '')
     {
         $this->transform = new BlockTransform($blocks);
+        $this->predicates = new Predicates($blocks);
     }
 
     /** @param array<string, string> $properties */
@@ -27,6 +31,35 @@ final class StructureContext
     {
         $key = $name . json_encode($properties);
         return $this->states[$key] ??= $this->blocks->state($name, $properties);
+    }
+
+    public function with(int $state, string $property, string $value): int
+    {
+        return $this->blocks->with($state, $property, $value);
+    }
+
+    /** StructureStart.placeInChunk's reference position: the first piece's centre at its bottom. */
+    public array $referencePos = [0, 0, 0];
+
+    public readonly Predicates $predicates;
+
+    /** @var (\Closure(string, Region, RandomSource, array): bool)|null PlacedFeature.place for feature pool elements */
+    public ?\Closure $placeFeature = null;
+
+    /** WorldGenRegion.getRandom: one stream per decorated chunk, from its origin. */
+    public ?RandomSource $regionRandom = null;
+
+    /**
+     * Block entities placed by structures, by "x,y,z": a container's loot table and seed.
+     *
+     * @var array<string, array>
+     */
+    public array $blockEntities = [];
+
+    /** BlockPos.asLong */
+    public function blockPosLong(int $x, int $y, int $z): int
+    {
+        return (($x & 0x3FFFFFF) << 38) | (($z & 0x3FFFFFF) << 12) | ($y & 0xFFF);
     }
 
     public function markForPostProcessing(int $x, int $y, int $z): void
