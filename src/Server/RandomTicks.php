@@ -55,8 +55,9 @@ trait RandomTicks
         $this->randomlyTicking(0);
         $index = [];
         foreach ($this->world->sections($cx, $cz) as $section => $states) {
-            foreach ($states as $cell => $state) {
-                if (isset($this->randomTicking[$state])) {
+            // Count the section's states first; only the cells of ticking states are looked up.
+            foreach (array_keys(array_intersect_key(array_count_values($states), $this->randomTicking)) as $state) {
+                foreach (array_keys($states, $state, true) as $cell) {
                     $index[$section][$cell] = true;
                 }
             }
@@ -98,8 +99,13 @@ trait RandomTicks
         }
         // Chunks that left every player's range stop ticking and are indexed again when they return.
         $this->randomTickIndex = array_intersect_key($this->randomTickIndex, $chunks);
+        // New chunks are indexed a few per tick, so a player arriving does not stall the server.
+        $indexed = 0;
         foreach ($chunks as $key => [$cx, $cz]) {
             if (!isset($this->randomTickIndex[$key])) {
+                if (++$indexed > 16) {
+                    continue;
+                }
                 $this->indexRandomTicks($cx, $cz);
             }
             foreach ($this->randomTickIndex[$key] as $section => $cells) {

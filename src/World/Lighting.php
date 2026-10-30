@@ -61,24 +61,30 @@ final class Lighting
             // Each column is lit at 15 down to its first block with any dampening; the lit cells
             // beside a lower-lit column, and each column's lowest lit cell, start the spread.
             $levels=str_repeat("\0",$count*4096);$floor=[];
+            // Sections whose blocks all pass light freely are skipped whole on the way down.
+            $clear=[];
+            foreach($sections as $section=>$states){$clear[$section]=true;foreach(array_keys(array_count_values($states)) as $state){if($damp($state)!==0){$clear[$section]=false;break;}}}
+            $top=$count;while($top>0 && $clear[$top-1]){--$top;}
             for($column=0;$column<256;++$column){
-                $y=$height;
+                $y=$top*16;
                 while($y>0 && $cellDamp((($y-1)<<8)|$column)===0){--$y;}
                 $floor[$column]=$y;
-                for($lit=$y;$lit<$height;++$lit){$levels[($lit<<8)|$column]="\x0f";}
             }
+            // Sections from the highest floor up are fully lit; only those below need the spread.
+            $full=min($count,intdiv(max($floor),16)+1);
+            for($column=0;$column<256;++$column){for($lit=$floor[$column];$lit<$full*16;++$lit){$levels[($lit<<8)|$column]="\x0f";}}
             $queue=new \SplQueue();
             for($column=0;$column<256;++$column){
                 $x=$column&15;$z=$column>>4;
-                if($floor[$column]<$height && $floor[$column]>0){$queue->enqueue(($floor[$column]<<8)|$column);}
+                if($floor[$column]<$full*16 && $floor[$column]>0){$queue->enqueue(($floor[$column]<<8)|$column);}
                 foreach([[$x>0,-1],[$x<15,1],[$z>0,-16],[$z<15,16]] as [$inside,$delta]){
                     if(!$inside){continue;}
-                    for($y=$floor[$column];$y<$floor[$column+$delta];++$y){$queue->enqueue(($y<<8)|$column);}
+                    for($y=$floor[$column];$y<min($floor[$column+$delta],$full*16);++$y){$queue->enqueue(($y<<8)|$column);}
                 }
             }
             $spread($levels,$queue);
-            for($section=0;$section<$count;++$section){$sky[$section+1]=str_repeat("\0",2048);}
-            self::store($sky,$levels,$count);
+            for($section=0;$section<$full;++$section){$sky[$section+1]=str_repeat("\0",2048);}
+            self::store($sky,$levels,$full);
         }
         return self::encode($sky,$block);
     }
