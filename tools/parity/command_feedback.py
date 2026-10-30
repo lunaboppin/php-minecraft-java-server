@@ -343,7 +343,7 @@ SCRIPT = [
     ('setblock 1952 100 1968 stone', False), ('forceload query 1 2 3', False), ('forceload query 1.5 2', False), ('forceload add 1', False),
     ('forceload remove all', False),
     # Particles on a platform both players stand on, with their level_particles packets.
-    ('!quiet fill -2 199 -2 2 199 2 stone', False), ('!quiet tp @a 0 200 0', False), ('particle flame 0 201 0', False),
+    ('!quiet fill -2 199 -2 2 199 2 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('particle flame 0 201 0', False),
     ('particle minecraft:heart 0.25 201 -1 1 2 3 0.5 10', False), ('particle crit 0 201 0 0 0 0 0 5 force', False),
     ('particle crit 0 201 0 0 0 0 0 5 normal Witness', False), ('particle crit 0 201 0 0 0 0 0 5 force @a[name=nobody]', False),
     ('particle crit 0 250 0 0 0 0 0 5 normal', False), ('particle crit 0 250 0 0 0 0 0 5 force', False),
