@@ -611,9 +611,10 @@ trait Commands
             throw new \InvalidArgumentException('Expected x y z coordinates');
         }
         $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $client->x), $this->coordinate($arguments[1], $client->y), $this->coordinate($arguments[2], $client->z)]);
-        // A chunk is loaded while a player in the dimension has it loaded.
-        $key = ($position[0] >> 4) . ':' . ($position[2] >> 4);
-        if (array_filter($this->players(), static fn (Client $player): bool => $player->dimension === $client->dimension && isset($player->loadedChunks[$key])) === []) {
+        // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
+        // player's view as soon as they are placed, before the chunks reach the client.
+        [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
+        if (array_filter($this->players(), fn (Client $player): bool => $player->dimension === $client->dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
         $world = $this->worlds[$client->dimension];

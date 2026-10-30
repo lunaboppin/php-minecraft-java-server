@@ -87,7 +87,9 @@ def decode_chunk(nbt, dimension='overworld'):
         indices, palette = container(section['biomes'], 64, 1)
         names = [re.sub(r'^minecraft:', '', entry) for entry in palette]
         biomes.extend(names[i] for i in indices)
-    return blocks, biomes
+    # Structure starts saved in their start chunk: each piece's type, bounding box and placement.
+    starts = {name: start for name, start in nbt.get('structures', {}).get('starts', {}).items() if start.get('id') != 'INVALID'}
+    return blocks, biomes, starts
 
 
 def read_regions(world, chunks, dimension='overworld'):
@@ -191,9 +193,10 @@ def main():
     wanted = {(x, z) for x in range(x1, x2 + 1) for z in range(z1, z2 + 1)}
     chunks = read_regions(work / f'world/dimensions/minecraft/{args.dimension}', wanted, args.dimension)
     out = {'version': '26.3', 'seed': args.seed, 'dimension': args.dimension, 'structures': args.structures, 'chunks': []}
-    for (x, z), (blocks, biomes) in sorted(chunks.items()):
+    for (x, z), (blocks, biomes, starts) in sorted(chunks.items()):
         out['chunks'].append({'x': x, 'z': z, 'blocks': base64.b64encode(zlib.compress('\n'.join(blocks).encode(), 9)).decode(),
-                              'biomes': base64.b64encode(zlib.compress('\n'.join(biomes).encode(), 9)).decode()})
+                              'biomes': base64.b64encode(zlib.compress('\n'.join(biomes).encode(), 9)).decode(),
+                              **({'starts': starts} if starts else {})})
     args.output.write_text(json.dumps(out) + '\n')
     print(f'{len(out["chunks"])} of {len(wanted)} chunks decoded to {args.output}')
 

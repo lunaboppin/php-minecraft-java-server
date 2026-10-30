@@ -106,7 +106,8 @@ def record(kind, output, java, jar, eula):
             mover.sock = mover.sock.release()
             settle()
 
-        for text in ('gamerule spawn_mobs false', 'fill -8 99 -2 48 99 2 minecraft:stone', 'tp @s 0.5 100 0.5'):
+        # Joining players are spread around the spawn; the observer moves first so the floor's chunks are loaded.
+        for text in ('gamerule spawn_mobs false', 'tp @s 0.5 100 0.5', 'fill -8 99 -2 48 99 2 minecraft:stone'):
             command(text)
         teleport('tp Mover 2.5 100 0.5', [2.5, 100.0, 0.5])
 

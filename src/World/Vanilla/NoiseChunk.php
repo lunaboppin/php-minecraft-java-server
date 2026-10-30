@@ -17,6 +17,8 @@ final class NoiseChunk
 
     public readonly ?Aquifer $aquifer;
 
+    public ?Structure\Beardifier $beardifier = null;
+
     public function __construct(public readonly OverworldSettings $settings, int $chunkX, int $chunkZ, ?Volume $volume = null)
     {
         $this->context = new SamplerContext();
@@ -97,6 +99,20 @@ final class NoiseChunk
     {
         $density = $this->settings->state->sampler($this->settings->json['noise_router']['final_density'])->volume($this->context, $this->volume);
         $volume = $this->volume;
+        // The final density's outermost term is the beardifier, which structures supply per chunk.
+        if ($this->beardifier !== null && $this->beardifier->affects($volume->minX, $volume->minY, $volume->minZ, $volume->minX + 15, $volume->minY + $volume->sizeY - 1, $volume->minZ + 15)) {
+            for ($z = 0; $z < 16; ++$z) {
+                for ($x = 0; $x < 16; ++$x) {
+                    for ($y = 0; $y < $volume->sizeY; ++$y) {
+                        [$bx, $by, $bz] = [$volume->minX + $x, $volume->minY + $y, $volume->minZ + $z];
+                        if ($this->beardifier->inside($bx, $by, $bz)) {
+                            $index = $volume->index($x, $y, $z);
+                            $density[$index] = F32::r($density[$index] + $this->beardifier->sample($bx, $by, $bz));
+                        }
+                    }
+                }
+            }
+        }
         $blocks = array_fill(0, $volume->size, 'air');
         for ($z = 0; $z < 16; ++$z) {
             $bz = $volume->minZ + $z;

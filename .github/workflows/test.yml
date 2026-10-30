@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     # The full suite, including the command feedback network tests, takes about 16 minutes.
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install latest stable PHP security release
@@ -119,7 +119,7 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -147,6 +147,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/tracking.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tracking
           python3 tools/parity/verify.py tools/.cache/parity-equipment/php-packets.json tools/.cache/parity-equipment/reference-packets.json tools/.cache/parity-tracking/php-packets.json tools/.cache/parity-tracking/reference-packets.json
           python3 tests/spawn-protection.py --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-spawn-protection
+          python3 tests/spawn-scatter.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/player-motion.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/movement-checks.py --eula-file tools/.cache/parity-consent/eula.txt
           python3 tests/experience-orbs.py --eula-file tools/.cache/parity-consent/eula.txt
@@ -158,6 +159,7 @@ jobs:
           path: |
             tools/.cache/parity-equipment/
             tools/.cache/parity-tracking/
+            tools/.cache/spawn-scatter/
             tools/.cache/player-motion/
             tools/.cache/parity-spawn-protection/
             tools/.cache/movement-checks/
