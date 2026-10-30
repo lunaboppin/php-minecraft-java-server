@@ -1,0 +1,286 @@
+{
+  "name": "fluid-lava-mixing-holes-waterlogging",
+  "normalizations": [
+    "Compare explicit fluid and resulting block states after simulation-clock barriers and settling intervals.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers lava spread, lava and water mixing, lava falling on water, hole seeking and waterlogging from two sources; not exact tick ordering."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "setblock 8 64 8 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock -8 64 8 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock -7 64 8 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -8 64 -8 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -8 66 -8 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock 16 63 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 14 64 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -14 64 0 minecraft:oak_stairs[facing=north]"
+    },
+    {
+      "action": "command",
+      "text": "setblock -15 64 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -13 64 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -14 64 4 minecraft:oak_stairs[facing=north]"
+    },
+    {
+      "action": "command",
+      "text": "setblock -15 64 4 minecraft:water"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "early",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -8,
+          64,
+          8
+        ],
+        [
+          -7,
+          64,
+          8
+        ],
+        [
+          -8,
+          65,
+          -8
+        ],
+        [
+          -8,
+          64,
+          -8
+        ],
+        [
+          15,
+          64,
+          0
+        ],
+        [
+          16,
+          64,
+          0
+        ],
+        [
+          13,
+          64,
+          0
+        ],
+        [
+          14,
+          64,
+          1
+        ],
+        [
+          14,
+          64,
+          -1
+        ],
+        [
+          -14,
+          64,
+          0
+        ],
+        [
+          -14,
+          64,
+          4
+        ],
+        [
+          -14,
+          64,
+          5
+        ],
+        [
+          9,
+          64,
+          8
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 8
+    },
+    {
+      "action": "snapshot",
+      "name": "settled",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          8,
+          64,
+          8
+        ],
+        [
+          9,
+          64,
+          8
+        ],
+        [
+          10,
+          64,
+          8
+        ],
+        [
+          11,
+          64,
+          8
+        ],
+        [
+          12,
+          64,
+          8
+        ],
+        [
+          8,
+          64,
+          11
+        ],
+        [
+          9,
+          64,
+          9
+        ],
+        [
+          10,
+          64,
+          10
+        ],
+        [
+          8,
+          64,
+          9
+        ],
+        [
+          -8,
+          64,
+          -8
+        ],
+        [
+          -8,
+          65,
+          -8
+        ],
+        [
+          -8,
+          66,
+          -8
+        ],
+        [
+          -7,
+          65,
+          -8
+        ],
+        [
+          15,
+          64,
+          0
+        ],
+        [
+          13,
+          64,
+          0
+        ],
+        [
+          12,
+          64,
+          0
+        ],
+        [
+          14,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 10 minecraft:water"
+    },
+    {
+      "action": "wait",
+      "seconds": 4
+    },
+    {
+      "action": "snapshot",
+      "name": "cobblestone",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          10,
+          64,
+          8
+        ],
+        [
+          11,
+          64,
+          8
+        ],
+        [
+          10,
+          64,
+          10
+        ],
+        [
+          11,
+          64,
+          9
+        ],
+        [
+          12,
+          64,
+          9
+        ],
+        [
+          11,
+          64,
+          10
+        ],
+        [
+          12,
+          64,
+          10
+        ]
+      ]
+    }
+  ]
+}
