@@ -443,6 +443,11 @@ final class WoodlandMansion extends TemplatePiece
         self::add(self::pick($collection, 8), self::relative(self::relative($roomPos, $rotation, 'east', $east), $rotation, 'south', $south), $rot, $mirror);
     }
 
+    protected function placesEntities(): bool
+    {
+        return false;
+    }
+
     protected function handleDataMarker(StructureContext $context, Region $region, RandomSource $random, array $chunkBox, string $marker, int $x, int $y, int $z): void
     {
         if (str_starts_with($marker, 'Chest')) {
@@ -455,8 +460,19 @@ final class WoodlandMansion extends TemplatePiece
             }
             return;
         }
-        // The mob markers clear their block once the mob is spawned.
-        if (in_array($marker, ['Mage', 'Warrior', 'Group of Allays'], true) && Piece::inside($chunkBox, $x, $y, $z)) {
+        // Persistent mobs, each clearing the marker's block once it is added. The allays are
+        // counted from WorldGenRegion.getRandom.
+        if (!Piece::inside($chunkBox, $x, $y, $z)) {
+            return;
+        }
+        $mobs = match ($marker) {
+            'Mage' => ['evoker'],
+            'Warrior' => ['vindicator'],
+            'Group of Allays' => array_fill(0, $context->regionRandom->nextInt(3) + 1, 'allay'),
+            default => [],
+        };
+        foreach ($mobs as $id) {
+            $context->addEntity($id, [$x + 0.5, (float) $y, $z + 0.5], ['PersistenceRequired' => 1], true);
             $region->set($x, $y, $z, $context->state('air'));
         }
     }

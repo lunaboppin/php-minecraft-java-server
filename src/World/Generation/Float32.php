@@ -38,6 +38,19 @@ final class Float32
         return unpack('g', pack('g', $value))[1];
     }
 
+    /** Mth.wrapDegrees(float) */
+    public static function wrapDegrees(float $degrees): float
+    {
+        $wrapped = fmod($degrees, 360.0);
+        if ($wrapped >= 180.0) {
+            $wrapped = self::round($wrapped - 360.0);
+        }
+        if ($wrapped < -180.0) {
+            $wrapped = self::round($wrapped + 360.0);
+        }
+        return $wrapped;
+    }
+
     public static function lerp(float $t, float $a, float $b): float
     {
         return self::round($a + self::round($t * self::round($b - $a)));

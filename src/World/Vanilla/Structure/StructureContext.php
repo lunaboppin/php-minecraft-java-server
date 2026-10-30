@@ -66,6 +66,43 @@ final class StructureContext
      */
     public array $blockEntities = [];
 
+    /**
+     * Entities placed by structures, in placement order: each one's saved tag (id, Pos, Rotation
+     * and the template's own tags) and whether Mob.finalizeSpawn runs when it is added.
+     *
+     * @var list<array{nbt: array, finalize: bool}>
+     */
+    public array $entities = [];
+
+    /** WorldGenRegion.addFreshEntity of an entity a structure created, with its saved tags. */
+    public function addEntity(string $id, array $pos, array $nbt = [], bool $finalize = false): void
+    {
+        $this->entities[] = ['nbt' => ['id' => 'minecraft:' . $id, 'Pos' => $pos, 'Rotation' => [0.0, 0.0]] + $nbt, 'finalize' => $finalize];
+        if ($finalize && $this->regionRandom !== null) {
+            self::finalizeDraws($this->regionRandom, $id);
+        }
+    }
+
+    /**
+     * The WorldGenRegion.getRandom draws of Mob.finalizeSpawn for a structure spawn, which later
+     * structure code in the chunk (a mansion's allay count) reads after: the follow-range bonus
+     * (RandomSource.triangle) and the left-handed roll, then a vindicator's axe enchantment roll.
+     * PatrollingMonster skips its leader roll for structure spawns. Worldgen's regional difficulty
+     * has no special multiplier below hard, so the enchantment roll draws nothing more.
+     */
+    private static function finalizeDraws(RandomSource $random, string $id): void
+    {
+        if (!in_array($id, ['allay', 'evoker', 'vindicator', 'witch', 'elder_guardian'], true)) {
+            return;
+        }
+        $random->nextDouble();
+        $random->nextDouble();
+        $random->nextFloat();
+        if ($id === 'vindicator') {
+            $random->nextFloat();
+        }
+    }
+
     /** BlockPos.asLong */
     public function blockPosLong(int $x, int $y, int $z): int
     {
