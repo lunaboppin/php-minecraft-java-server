@@ -7,14 +7,10 @@ namespace PhpMinecraftJavaServer\World\Vanilla\Decoration;
 /**
  * BlockState.canSurvive for the blocks world generation places, chosen by each block's official
  * class chain (block-behaviour.json "classes"). Chunks have no light data during decoration, so
- * the raw brightness is full sky light in dimensions with a sky and zero in the Nether: mushrooms
- * survive on any solid block there, but only on their override blocks under a sky.
+ * the raw brightness is zero.
  */
 final class Survival
 {
-    /** Whether the dimension has sky light (the Overworld). */
-    public bool $skyLight = true;
-
     /** @var array<string, list<string>> */
     private readonly array $classes;
 
@@ -45,8 +41,9 @@ final class Survival
         return match ($class) {
             'SeagrassBlock', 'TallSeagrassBlock' => $blocks->sturdy($below, Blocks::UP) && !$blocks->inTag($below, 'cannot_support_seagrass'),
             'LilyPadBlock' => ($blocks->isWater($below) || $blocks->inTag($below, 'supports_lily_pad')) && !$blocks->hasFluid($region->get($x, $y + 1, $z)),
-            'MushroomBlock' => $blocks->inTag($below, 'overrides_mushroom_light_requirement')
-                || (!$this->skyLight && $blocks->flag($below, Blocks::SOLID_RENDER)),
+            // Nothing is lit while chunks decorate, so a mushroom survives on any solid block;
+            // post-processing removes those the finished chunk lights to 13 or more.
+            'MushroomBlock' => $blocks->inTag($below, 'overrides_mushroom_light_requirement') || $blocks->flag($below, Blocks::SOLID_RENDER),
             // Each Nether root and fungus block has its own supports_<block> tag.
             'NetherRootsBlock', 'NetherFungusBlock' => $blocks->inTag($below, 'supports_' . $blocks->name($state)),
             'NetherSproutsBlock' => $blocks->inTag($below, 'supports_nether_sprouts'),

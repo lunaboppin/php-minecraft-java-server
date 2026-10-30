@@ -65,8 +65,7 @@ final class GenerationSpawner
     /** @var array<string, true> */
     private array $alternatePolarBearBiomes = [];
 
-    /** @var array<string, int> the lowest Y of each column that sky light reaches undimmed */
-    private array $skyFloor = [];
+    private Light $light;
 
     public function __construct(private readonly Blocks $blocks, private readonly string $directory)
     {
@@ -85,7 +84,8 @@ final class GenerationSpawner
      */
     public function spawn(Region $region, bool $hasCeiling): array
     {
-        $this->skyFloor = [];
+        // The Overworld has sky light; the Nether, with its ceiling, does not.
+        $this->light = new Light(static fn (int $x, int $y, int $z): int => $region->get($x, $y, $z), $region->minY, $region->maxY(), !$hasCeiling, $this->directory . '/block-behaviour.json');
         $minX = $region->centerX << 4;
         $minZ = $region->centerZ << 4;
         $sourceY = $region->maxY();
@@ -317,62 +317,8 @@ final class GenerationSpawner
         return true;
     }
 
-    /**
-     * BlockAndLightGetter.getRawBrightness with no darkening: the larger of sky and block light.
-     * Light reaches a block over the cheapest path from a cell open to the sky (15) or a light
-     * source (its emission), losing at least 1 per step and the dampening of each block it
-     * enters; a search outward from the block finds it.
-     */
     private function brightness(Region $region, int $x, int $y, int $z): int
     {
-        if ($this->openToSky($region, $x, $y, $z)) {
-            return 15;
-        }
-        $best = $this->spawning[$region->get($x, $y, $z)] >> 8 & 15;
-        $start = $this->spawning[$region->get($x, $y, $z)] & 15;
-        // cost of the light's path into the start block, by the cell it comes from
-        $queue = new \SplPriorityQueue();
-        $seen = ["$x,$y,$z" => 0];
-        foreach (Blocks::OFFSETS as [$dx, $dy, $dz]) {
-            $queue->insert([$x + $dx, $y + $dy, $z + $dz, max(1, $start)], -max(1, $start));
-        }
-        while (!$queue->isEmpty()) {
-            [$cx, $cy, $cz, $cost] = $queue->extract();
-            if ($cost >= 15 - $best) {
-                break;
-            }
-            $key = "$cx,$cy,$cz";
-            if (isset($seen[$key]) || $cy < $region->minY || $cy >= $region->maxY()) {
-                continue;
-            }
-            $seen[$key] = $cost;
-            $state = $region->get($cx, $cy, $cz);
-            if ($this->openToSky($region, $cx, $cy, $cz)) {
-                return 15 - $cost;
-            }
-            $best = max($best, ($this->spawning[$state] >> 8 & 15) - $cost);
-            $step = max(1, $this->spawning[$state] & 15);
-            if ($step >= 15) {
-                continue;
-            }
-            foreach (Blocks::OFFSETS as [$dx, $dy, $dz]) {
-                $queue->insert([$cx + $dx, $cy + $dy, $cz + $dz, $cost + $step], -($cost + $step));
-            }
-        }
-        return $best;
-    }
-
-    /** A block with only light-transparent blocks above it, so sky light reaches it undimmed. */
-    private function openToSky(Region $region, int $x, int $y, int $z): bool
-    {
-        $key = "$x,$z";
-        if (!isset($this->skyFloor[$key])) {
-            $floor = $region->maxY() + 1;
-            while ($floor > $region->minY && ($this->spawning[$region->get($x, $floor - 1, $z)] & 15) === 0) {
-                --$floor;
-            }
-            $this->skyFloor[$key] = $floor;
-        }
-        return $y >= $this->skyFloor[$key];
+        return $this->light->brightness($x, $y, $z);
     }
 }
