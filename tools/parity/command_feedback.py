@@ -32,6 +32,9 @@ SCRIPT = [
     ('kick NobodyHere', False),
     ('kick Witness Bye  now', False), ('kick Witness', True),
     ('weather clear', True), ('weather rain', False), ('weather thunder', False),
+    # A storm left running strikes lightning at random on each server, which can kill the mobs
+    # summoned later, so the weather is cleared again.
+    ('weather clear', False),
     ('gamemode creative', False), ('gamemode survival', False), ('gamemode survival Witness', False), ('gamemode creative @a', False),
     ('setworldspawn 1 64 2', False), ('setworldspawn 1 64 2 90 10', False),
     ('spawnpoint Witness 3 64 4', False), ('spawnpoint @a 3 64 4 45 0', False),
