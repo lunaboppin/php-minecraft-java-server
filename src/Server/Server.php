@@ -61,6 +61,8 @@ final class Server
 
     use FireSimulation;
 
+    use Explosions;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -1352,6 +1354,27 @@ final class Server
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        // TntBlock.useItemOn: flint and steel or a fire charge primes TNT, wearing or using up the item.
+        if ($within && in_array($itemName, ['flint_and_steel', 'fire_charge'], true) && $name === 'tnt' && $this->editable($c, $x, $y, $z) && $this->gameRule('tnt_explodes') === 'true') {
+            $this->primeTnt($x, $y, $z, $c);
+            $this->setBlock($x, $y, $z, $this->version->catalog->state('air'));
+            if ($c->gameMode !== 1) {
+                if ($itemName === 'fire_charge') {
+                    \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot);
+                } else {
+                    $c->inventory[$slot]['damage'] = ($c->inventory[$slot]['damage'] ?? 0) + 1;
+                    if ($c->inventory[$slot]['damage'] >= $this->version->catalog->item($c->inventory[$slot]['item'])['durability']) {
+                        unset($c->inventory[$slot]);
+                    }
+                }
+                $this->syncInventory($c);
+            }
+            $this->useSwing($c, $hand);
+            $this->blockUpdate($c, $x, $y, $z);
+            $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         if ($itemName === 'flint_and_steel' && $this->ignitePortal($c, $tx, $ty, $tz, $slot)) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
