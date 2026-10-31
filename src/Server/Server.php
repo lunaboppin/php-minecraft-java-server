@@ -142,6 +142,7 @@ final class Server
                 $this->restoreAnimals();
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
+                $this->restoreTnt();
                 $this->restoreBlockSimulation();
             });
         }

@@ -67,6 +67,18 @@ trait Explosions
         return $id;
     }
 
+    /** Primed TNT saved with the level, burning on from its saved fuse. */
+    private function restoreTnt(): void
+    {
+        foreach ($this->world->setting('tnt') ?? [] as $saved) {
+            if (!isset($saved['uuid'], $saved['x'], $saved['y'], $saved['z'], $saved['fuse'])) {
+                continue;
+            }
+            $id = $this->addTnt((float) $saved['x'], (float) $saved['y'], (float) $saved['z'], array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), (int) $saved['fuse'], $saved['owner'] ?? null);
+            $this->tntEntities[$id]['uuid'] = hex2bin($saved['uuid']);
+        }
+    }
+
     /** TntBlock.onPlace and neighborChanged: TNT with a redstone signal beside it primes. */
     private function tntChanged(int $x, int $y, int $z): void
     {
