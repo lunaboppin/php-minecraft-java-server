@@ -110,6 +110,47 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/settings.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-settings
           python3 tools/parity/run.py --scenario tests/parity/music-redstone.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-music
           python3 tools/parity/run.py --scenario tests/parity/water.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-water
+          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: parity-evidence
+          path: |
+            tools/.cache/parity-self/
+            tools/.cache/parity-java/
+            tools/.cache/parity-lifecycle/
+            tools/.cache/parity-placement/
+            tools/.cache/parity-settings/
+            tools/.cache/parity-music/
+            tools/.cache/parity-water/
+          retention-days: 7
+
+  world-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          extensions: iconv, pdo_sqlite, zlib, openssl, curl
+          coverage: none
+        env:
+          update: 'true'
+      - uses: actions/setup-java@v4
+        if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Prepare pinned official reference
+        if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+        run: |
+          python3 tools/update_reference.py
+          mkdir -p tools/.cache/parity-consent
+          printf '%s\n' '# Repository owner accepted the Minecraft EULA for reference testing.' 'eula=true' > tools/.cache/parity-consent/eula.txt
+      - name: Compare world simulation and validate both wire directions
+        if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
+        run: |
           python3 tools/parity/run.py --scenario tests/parity/fluids.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-fluids
           python3 tools/parity/run.py --scenario tests/parity/bubble-columns.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bubbles
           python3 tools/parity/run.py --scenario tests/parity/random-ticks.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-random
@@ -124,23 +165,26 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/precipitation.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-precipitation
           python3 tools/parity/run.py --scenario tests/parity/bone-meal.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bone-meal
           python3 tools/parity/run.py --scenario tests/parity/light.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-light
-          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-plants/php-packets.json tools/.cache/parity-plants/reference-packets.json tools/.cache/parity-fire/php-packets.json tools/.cache/parity-fire/reference-packets.json tools/.cache/parity-explosion/php-packets.json tools/.cache/parity-explosion/reference-packets.json tools/.cache/parity-sleep/php-packets.json tools/.cache/parity-sleep/reference-packets.json tools/.cache/parity-weather/php-packets.json tools/.cache/parity-weather/reference-packets.json tools/.cache/parity-lightning/php-packets.json tools/.cache/parity-lightning/reference-packets.json tools/.cache/parity-precipitation/php-packets.json tools/.cache/parity-precipitation/reference-packets.json tools/.cache/parity-bone-meal/php-packets.json tools/.cache/parity-bone-meal/reference-packets.json tools/.cache/parity-light/php-packets.json tools/.cache/parity-light/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
+          python3 tools/parity/verify.py tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-plants/php-packets.json tools/.cache/parity-plants/reference-packets.json tools/.cache/parity-copper/php-packets.json tools/.cache/parity-copper/reference-packets.json tools/.cache/parity-fire/php-packets.json tools/.cache/parity-fire/reference-packets.json tools/.cache/parity-explosion/php-packets.json tools/.cache/parity-explosion/reference-packets.json tools/.cache/parity-tnt-restart/php-packets.json tools/.cache/parity-tnt-restart/reference-packets.json tools/.cache/parity-sleep/php-packets.json tools/.cache/parity-sleep/reference-packets.json tools/.cache/parity-weather/php-packets.json tools/.cache/parity-weather/reference-packets.json tools/.cache/parity-lightning/php-packets.json tools/.cache/parity-lightning/reference-packets.json tools/.cache/parity-precipitation/php-packets.json tools/.cache/parity-precipitation/reference-packets.json tools/.cache/parity-bone-meal/php-packets.json tools/.cache/parity-bone-meal/reference-packets.json tools/.cache/parity-light/php-packets.json tools/.cache/parity-light/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: parity-evidence
+          name: world-parity-evidence
           path: |
-            tools/.cache/parity-self/
-            tools/.cache/parity-java/
-            tools/.cache/parity-lifecycle/
-            tools/.cache/parity-placement/
-            tools/.cache/parity-settings/
-            tools/.cache/parity-music/
-            tools/.cache/parity-water/
             tools/.cache/parity-fluids/
             tools/.cache/parity-bubbles/
             tools/.cache/parity-random/
+            tools/.cache/parity-plants/
+            tools/.cache/parity-copper/
+            tools/.cache/parity-fire/
             tools/.cache/parity-explosion/
+            tools/.cache/parity-tnt-restart/
+            tools/.cache/parity-sleep/
+            tools/.cache/parity-weather/
+            tools/.cache/parity-lightning/
+            tools/.cache/parity-precipitation/
+            tools/.cache/parity-bone-meal/
+            tools/.cache/parity-light/
           retention-days: 7
 
   multiplayer-parity:
