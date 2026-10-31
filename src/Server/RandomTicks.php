@@ -39,6 +39,7 @@ trait RandomTicks
                     str_ends_with($name, '_leaves') => ($p['distance'] ?? '') === '7' && ($p['persistent'] ?? 'true') === 'false',
                     isset(self::CROPS[$name]) => (int) $p['age'] < self::CROPS[$name],
                     $name === 'nether_wart' => (int) $p['age'] < 3,
+                    isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
                     in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem'], true) => true,
                     default => false,
                 };
@@ -155,6 +156,8 @@ trait RandomTicks
             if ((int) $p['age'] < 3 && random_int(0, 9) === 0) {
                 $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
             }
+        } elseif (isset(self::GROWERS[$name])) {
+            $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
         } elseif ($name === 'farmland') {

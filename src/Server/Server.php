@@ -57,6 +57,8 @@ final class Server
 
     use RandomTicks;
 
+    use TreeGrowth;
+
     use SignAndPick;
 
     use EntityTracking;
