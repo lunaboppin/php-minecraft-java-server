@@ -3316,7 +3316,8 @@
     "entity.player.hurt_freeze": 1318,
     "entity.player.hurt_on_fire": 1319,
     "entity.player.hurt_sweet_berry_bush": 1320,
-    "entity.player.death": 1315
+    "entity.player.death": 1315,
+    "entity.tnt.primed": 1627
   },
   "particle_types": {
     "angry_villager": 0,
