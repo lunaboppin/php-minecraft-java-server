@@ -1554,8 +1554,13 @@ final class Server
         $this->world->set($x, $y, $z, $state);
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
+        $this->blockChanged($x, $y, $z);
+    }
+
+    /** ChunkHolder.blockChanged: clients hear of a changed block with the tick's other changes, and its light follows. */
+    private function blockChanged(int $x, int $y, int $z): void
+    {
         $this->relightAround($x, $z);
-        // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
     }
@@ -1569,7 +1574,21 @@ final class Server
     {
         $changes = $this->changedBlocks[$this->world->dimension] ?? [];
         unset($this->changedBlocks[$this->world->dimension]);
-        foreach ($changes as $key => $set) {
+        // ServerChunkCache.broadcastChangedChunks visits the chunks in the order they first changed,
+        // and each ChunkHolder its sections from the bottom up.
+        $chunks = [];
+        foreach (array_keys($changes) as $key) {
+            [$cx, $cz, $sy] = explode(':', $key);
+            $chunks[$cx . ':' . $cz][(int) $sy] = $key;
+        }
+        $ordered = [];
+        foreach ($chunks as $sections) {
+            ksort($sections);
+            foreach ($sections as $key) {
+                $ordered[$key] = $changes[$key];
+            }
+        }
+        foreach ($ordered as $key => $set) {
             [$cx, $cz, $sy] = array_map('intval', explode(':', $key));
             $players = array_filter($this->localPlayers(), static fn (Client $player): bool => isset($player->loadedChunks[$cx . ':' . $cz]));
             if ($players === []) {

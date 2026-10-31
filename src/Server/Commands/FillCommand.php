@@ -40,10 +40,9 @@ trait FillCommand
         }
         $min = array_map(min(...), $start, $end);
         $max = array_map(max(...), $start, $end);
-        $chunks = [];
         $changed = 0;
         $destroyed = [];
-        $this->world->transaction(function () use ($min, $max, $state, $mode, $filter, &$chunks, &$changed, &$destroyed) {
+        $this->world->transaction(function () use ($min, $max, $state, $mode, $filter, &$changed, &$destroyed) {
             // BlockPos.betweenClosed: X varies fastest, then Y, then Z.
             for ($z = $min[2]; $z <= $max[2]; ++$z) {
                 for ($y = $min[1]; $y <= $max[1]; ++$y) {
@@ -71,8 +70,8 @@ trait FillCommand
                         }
                         if ($affected) {
                             ++$changed;
+                            $this->blockChanged($x, $y, $z);
                         }
-                        $chunks[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
                     }
                 }
             }
@@ -80,13 +79,6 @@ trait FillCommand
         foreach ($destroyed as [$position, $previous]) {
             $this->levelEvent(2001, $position, $previous);
             $this->dropBlockLoot(...$position, state: $previous);
-        }
-        foreach ($this->localPlayers() as $player) {
-            foreach ($chunks as $key => $chunk) {
-                if (isset($player->loadedChunks[$key])) {
-                    $player->queuedChunks[$key] = $chunk;
-                }
-            }
         }
         if ($changed === 0) {
             throw new CommandFailure(['translate' => 'commands.fill.failed']);

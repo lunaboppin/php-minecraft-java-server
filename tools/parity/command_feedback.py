@@ -550,11 +550,24 @@ def collect(client, since, command=''):
     extra = next((packets for prefix, packets in EXTRA.items() if command.removeprefix('!witness ').startswith(prefix)), ())
     # Rain starting, stopping or fading follows each server's random weather, not the command.
     weather = lambda name, payload: name == 'game_event' and payload[0] in (1, 2, 7, 8) and not command.startswith('weather')
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if (name in COMPARED or name in extra) and not weather(name, payload)]
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:]
+            if (name in COMPARED or name in extra) and not weather(name, payload) and not surface(name, payload)]
+
+
+def surface(name, payload):
+    """Block changes below y 100 come from random ticks on the flat surface; the commands edit higher."""
+    if name == 'section_blocks_update':
+        section = ((struct.unpack_from('>q', payload)[0] & 0xfffff) ^ 0x80000) - 0x80000
+        return section * 16 < 100
+    if name in ('block_update', 'block_entity_data'):
+        return ((struct.unpack_from('>q', payload)[0] & 0xfff) ^ 0x800) - 0x800 < 100
+    return False
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+# Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
+BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

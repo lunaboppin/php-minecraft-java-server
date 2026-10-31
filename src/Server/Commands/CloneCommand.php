@@ -86,32 +86,62 @@ trait CloneCommand
                 }
             }
         }
+        // CloneCommands.clone: solid blocks, then block entities, then the rest are placed; sources
+        // are cleared with the rest first, in reverse, and the others after.
+        $solid = $entities = $other = $clear = [];
+        $collision = new \PhpMinecraftJavaServer\World\Collision($catalog);
+        foreach ($blocks as $block) {
+            if ($block[2] !== null) {
+                $entities[] = $block;
+                $clear[] = $block;
+            } elseif (!$this->fireBlocks()->flag($block[1], \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::SOLID_RENDER) && $collision->shape($block[1]) !== [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]]) {
+                $other[] = $block;
+                array_unshift($clear, $block);
+            } else {
+                $solid[] = $block;
+                $clear[] = $block;
+            }
+        }
+        $blocks = [...$solid, ...$entities, ...$other];
         if ($mode === 'move') {
-            $this->withDimension($from, function () use ($blocks): void {
-                $this->world->transaction(function () use ($blocks): void {
-                    foreach ($blocks as [$position, $state, $data]) {
+            $this->withDimension($from, function () use ($clear): void {
+                $this->world->transaction(function () use ($clear): void {
+                    foreach ($clear as [$position, $state, $data]) {
                         if ($data !== null) {
                             $this->world->deleteContainer($position);
                         }
+                        // A barrier and then air: the source changes even where it was air.
                         [$x, $y, $z] = $position;
                         $this->world->set($x, $y, $z, 0);
+                        $this->blockChanged($x, $y, $z);
                     }
                 });
-                $this->resendCloneChunks(array_column($blocks, 0));
             });
         }
         // Each block is first replaced by a barrier, so every placement but a barrier's changes it.
         $barrier = $catalog->state('barrier');
         $count = 0;
         $this->withDimension($to, function () use ($blocks, $offset, $barrier, &$count): void {
-            $placed = [];
-            $this->world->transaction(function () use ($blocks, $offset, $barrier, &$count, &$placed): void {
+            $this->world->transaction(function () use ($blocks, $offset, $barrier, &$count): void {
+                // The barriers go in last block first; ChunkHolder.blockChanged keeps that order.
+                $placing = [];
+                foreach (array_reverse($blocks) as [$position]) {
+                    [$x, $y, $z] = array_map(static fn (int $a, int $b): int => $a + $b, $position, $offset);
+                    if ($this->world->get($x, $y, $z) !== $barrier) {
+                        $this->blockChanged($x, $y, $z);
+                    } else {
+                        $placing[] = [$x, $y, $z];
+                    }
+                }
                 foreach ($blocks as [$position, $state, $data]) {
                     $target = array_map(static fn (int $a, int $b): int => $a + $b, $position, $offset);
                     if ($this->world->blockEntityType($this->world->get(...$target)) !== null) {
                         $this->world->deleteContainer($target);
                     }
                     [$x, $y, $z] = $target;
+                    if ($state !== $barrier && in_array($target, $placing, true)) {
+                        $this->blockChanged($x, $y, $z);
+                    }
                     $this->world->set($x, $y, $z, $state);
                     if ($data !== null) {
                         $this->world->container($target, ['position' => $target] + $data);
@@ -119,10 +149,8 @@ trait CloneCommand
                     if ($state !== $barrier) {
                         ++$count;
                     }
-                    $placed[] = $target;
                 }
             });
-            $this->resendCloneChunks($placed);
         });
         if ($count === 0) {
             throw new CommandFailure(['translate' => 'commands.clone.failed']);
@@ -151,21 +179,5 @@ trait CloneCommand
             }
         }
         return true;
-    }
-
-    /** Players in the current dimension get the changed chunks again. */
-    private function resendCloneChunks(array $positions): void
-    {
-        $chunks = [];
-        foreach ($positions as [$x, , $z]) {
-            $chunks[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
-        }
-        foreach ($this->localPlayers() as $player) {
-            foreach ($chunks as $key => $chunk) {
-                if (isset($player->loadedChunks[$key])) {
-                    $player->queuedChunks[$key] = $chunk;
-                }
-            }
-        }
     }
 }

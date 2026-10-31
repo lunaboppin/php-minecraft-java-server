@@ -129,15 +129,17 @@ final class Nbt
 
     public static function sign(array $data): string
     {
-        $out = "\x0a";
-        foreach (['front', 'back'] as $side) {
-            $out .= "\x0a" . self::string($side . '_text') . "\x09" . self::string('messages') . "\x08" . pack('N', 4);
+        // CompoundTag keeps its keys in a HashMap, whose order puts back_text, is_waxed, then front_text,
+        // and within each side has_glowing_text, color, then messages.
+        $side = static function (string $side) use ($data): string {
+            $out = "\x0a" . self::string($side . '_text') . "\x01" . self::string('has_glowing_text') . "\0"
+                . "\x08" . self::string('color') . self::string('black') . "\x09" . self::string('messages') . "\x08" . pack('N', 4);
             foreach ($data[$side] ?? ['', '', '', ''] as $line) {
                 $out .= self::string($line);
             }
-            $out .= "\x08" . self::string('color') . self::string('black') . "\x01" . self::string('has_glowing_text') . "\0\0";
-        }
-        return $out . "\x01" . self::string('is_waxed') . "\0\0";
+            return $out . "\0";
+        };
+        return "\x0a" . $side('back') . "\x01" . self::string('is_waxed') . "\0" . $side('front') . "\0";
     }
 
     // NBT uses Java modified UTF-8, including surrogate pairs for supplementary characters.
