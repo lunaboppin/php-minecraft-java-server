@@ -337,8 +337,8 @@ final class NetherFortressPiece extends Piece
         $stairs = $c->with($c->state('nether_brick_stairs'), 'facing', 'south');
         $nsFence = $c->with($c->with($c->state('nether_brick_fence'), 'north', 'true'), 'south', 'true');
         for ($step = 0; $step <= 9; ++$step) {
-            $floor = Math . max(1, 7 - $step);
-            $roof = Math . min(Math . max($floor + 5, 14 - $step), 13);
+            $floor = max(1, 7 - $step);
+            $roof = min(max($floor + 5, 14 - $step), 13);
             $z = $step;
             $this->generateBox(
                 $c,
