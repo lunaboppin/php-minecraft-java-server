@@ -31,7 +31,8 @@ SCRIPT = [
     # An unknown profile name makes vanilla query Mojang's profile service, so none is used here.
     ('kick NobodyHere', False),
     ('kick Witness Bye  now', False), ('kick Witness', True),
-    ('weather clear', True), ('weather rain', False), ('weather thunder', False),
+    # Thunder is cleared again at once: its random lightning would strike the mobs summoned later.
+    ('weather clear', True), ('weather rain', False), ('weather thunder', False), ('!quiet weather clear', False),
     ('gamemode creative', False), ('gamemode survival', False), ('gamemode survival Witness', False), ('gamemode creative @a', False),
     ('setworldspawn 1 64 2', False), ('setworldspawn 1 64 2 90 10', False),
     ('spawnpoint Witness 3 64 4', False), ('spawnpoint @a 3 64 4 45 0', False),
