@@ -152,7 +152,12 @@ SCRIPT = [
     ('give Witness diamond_sword[enchantments={"minecraft:sharpness":3,unbreaking:1}]', False), ('give Witness diamond_sword[damage=5,enchantments={sharpness:3}] 2', False), ('give Witness enchanted_book[stored_enchantments={mending:1}]', False),
     ('give Witness stick[enchantments={sharpness:1}]', False), ('give Witness golden_apple[enchantments={sharpness:1}]', False), ('give Witness diamond_sword[!damage]', False),
     ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
-    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
+    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False),
+    # Component presence, absence and negated equality, counted without clearing.
+    ('clear Witness diamond_sword[!damage] 0', False), ('clear Witness diamond_sword[damage] 0', False), ('clear Witness diamond_sword[!enchantments] 0', False),
+    ('clear Witness diamond_sword[!damage=5] 0', False), ('clear Witness *[max_damage] 0', False), ('clear Witness *[!max_damage] 0', False),
+    ('clear Witness enchanted_book[stored_enchantments] 0', False), ('clear Witness *[!damage=5,enchantments={sharpness:3}] 0', False),
+    ('clear Witness diamond_sword[damage=5]', False),
     ('clear Witness diamond_sword', False),
     # Scoreboard objectives, scores, display slots and score components; "kill" respawns both players.
     ('scoreboard objectives list', False), ('scoreboard objectives add kills dummy', False), ('scoreboard objectives add kills dummy', False),
