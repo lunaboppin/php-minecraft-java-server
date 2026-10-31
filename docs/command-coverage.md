@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **74** have an existing PHP handler; **18** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **79** have an existing PHP handler; **13** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -27,7 +27,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/damage` | [DamageCommand.php](../src/Server/Commands/DamageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/data` | [DataCommand.php](../src/Server/Commands/DataCommand.php) | Partial handler; native behavior incomplete | — |
 | `/datapack` | — | Unimplemented | — |
-| `/debug` | — | Unimplemented | — |
+| `/debug` | [DebugCommand.php](../src/Server/Commands/DebugCommand.php) | Partial handler; native behavior incomplete | — |
 | `/defaultgamemode` | [DefaultGameModeCommand.php](../src/Server/Commands/DefaultGameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/deop` | [DeOpCommand.php](../src/Server/Commands/DeOpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/dialog` | [DialogCommand.php](../src/Server/Commands/DialogCommand.php) | Partial handler; native behavior incomplete | — |
@@ -40,7 +40,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/fill` | [FillCommand.php](../src/Server/Commands/FillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fillbiome` | — | Unimplemented | — |
 | `/forceload` | [ForceLoadCommand.php](../src/Server/Commands/ForceLoadCommand.php) | Partial handler; native behavior incomplete | — |
-| `/function` | — | Unimplemented | — |
+| `/function` | [FunctionCommand.php](../src/Server/Commands/FunctionCommand.php) | Partial handler; native behavior incomplete | — |
 | `/gamemode` | [GameModeCommand.php](../src/Server/Commands/GameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/gamerule` | [GameRuleCommand.php](../src/Server/Commands/GameRuleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/give` | [GiveCommand.php](../src/Server/Commands/GiveCommand.php) | Partial handler; native behavior incomplete | — |
@@ -64,15 +64,15 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/posteffect` | [PostEffectCommand.php](../src/Server/Commands/PostEffectCommand.php) | Partial handler; native behavior incomplete | — |
 | `/random` | [RandomCommand.php](../src/Server/Commands/RandomCommand.php) | Partial handler; native behavior incomplete | — |
 | `/recipe` | — | Unimplemented | — |
-| `/reload` | — | Unimplemented | — |
-| `/return` | — | Unimplemented | — |
+| `/reload` | [ReloadCommand.php](../src/Server/Commands/ReloadCommand.php) | Partial handler; native behavior incomplete | — |
+| `/return` | [ReturnCommand.php](../src/Server/Commands/ReturnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ride` | [RideCommand.php](../src/Server/Commands/RideCommand.php) | Partial handler; native behavior incomplete | — |
 | `/rotate` | [RotateCommand.php](../src/Server/Commands/RotateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-all` | [SaveAllCommand.php](../src/Server/Commands/SaveAllCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-off` | [SaveOffCommand.php](../src/Server/Commands/SaveOffCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-on` | [SaveOnCommand.php](../src/Server/Commands/SaveOnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/say` | [SayCommand.php](../src/Server/Commands/SayCommand.php) | Partial handler; native behavior incomplete | — |
-| `/schedule` | — | Unimplemented | — |
+| `/schedule` | [ScheduleCommand.php](../src/Server/Commands/ScheduleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/scoreboard` | [ScoreboardCommand.php](../src/Server/Commands/ScoreboardCommand.php) | Partial handler; native behavior incomplete | — |
 | `/seed` | [SeedCommand.php](../src/Server/Commands/SeedCommand.php) | Partial handler; native behavior incomplete | — |
 | `/setblock` | [SetBlockCommand.php](../src/Server/Commands/SetBlockCommand.php) | Partial handler; native behavior incomplete | — |

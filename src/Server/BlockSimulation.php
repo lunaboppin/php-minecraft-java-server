@@ -33,6 +33,7 @@ trait BlockSimulation
         $this->randomTickChanged($x,$y,$z,$this->world->get($x,$y,$z));
         $this->leavesChanged($x,$y,$z);
         $this->fireChanged($x,$y,$z);
+        $this->heightChanged($x,$z);
         $this->tntChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){

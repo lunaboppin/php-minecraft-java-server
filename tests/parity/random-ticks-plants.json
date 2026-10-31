@@ -1,0 +1,329 @@
+{
+  "name": "random-ticks-plants",
+  "normalizations": [
+    "Compare blocks after random ticks at random_tick_speed 4096, once outcomes are certain: growing plants at their limits, buds fully grown, ore unlit.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs; the area's grass is replaced with stone so only these blocks tick.",
+    "Covers lit redstone ore, sweet berries, cocoa, kelp to the water's surface, twisting vines to age 25, a bamboo shoot's first stalk and budding amethyst on every face."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "time set noon"
+    },
+    {
+      "action": "command",
+      "text": "fill -32 63 -32 47 63 47 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -10 64 -10 30 100 30 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:redstone_ore[lit=true]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 63 0 minecraft:grass_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:sweet_berry_bush"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:jungle_log"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 1 minecraft:cocoa[facing=north]"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 63 -1 8 72 1 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "fill 7 64 0 7 71 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 63 0 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 64 0 minecraft:kelp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 64 0 minecraft:warped_nylium"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 65 0 minecraft:twisting_vines"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 63 0 minecraft:grass_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 0 minecraft:bamboo_sapling"
+    },
+    {
+      "action": "command",
+      "text": "setblock 16 70 0 minecraft:budding_amethyst"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 4096"
+    },
+    {
+      "action": "wait",
+      "seconds": 40
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 3"
+    },
+    {
+      "action": "snapshot",
+      "name": "grown",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          1
+        ],
+        [
+          12,
+          65,
+          0
+        ],
+        [
+          7,
+          64,
+          0
+        ],
+        [
+          7,
+          65,
+          0
+        ],
+        [
+          7,
+          66,
+          0
+        ],
+        [
+          7,
+          67,
+          0
+        ],
+        [
+          7,
+          68,
+          0
+        ],
+        [
+          7,
+          69,
+          0
+        ],
+        [
+          7,
+          70,
+          0
+        ],
+        [
+          7,
+          71,
+          0
+        ],
+        [
+          10,
+          65,
+          0
+        ],
+        [
+          10,
+          66,
+          0
+        ],
+        [
+          10,
+          67,
+          0
+        ],
+        [
+          10,
+          68,
+          0
+        ],
+        [
+          10,
+          69,
+          0
+        ],
+        [
+          10,
+          70,
+          0
+        ],
+        [
+          10,
+          71,
+          0
+        ],
+        [
+          10,
+          72,
+          0
+        ],
+        [
+          10,
+          73,
+          0
+        ],
+        [
+          10,
+          74,
+          0
+        ],
+        [
+          10,
+          75,
+          0
+        ],
+        [
+          10,
+          76,
+          0
+        ],
+        [
+          10,
+          77,
+          0
+        ],
+        [
+          10,
+          78,
+          0
+        ],
+        [
+          10,
+          79,
+          0
+        ],
+        [
+          10,
+          80,
+          0
+        ],
+        [
+          10,
+          81,
+          0
+        ],
+        [
+          10,
+          82,
+          0
+        ],
+        [
+          10,
+          83,
+          0
+        ],
+        [
+          10,
+          84,
+          0
+        ],
+        [
+          10,
+          85,
+          0
+        ],
+        [
+          10,
+          86,
+          0
+        ],
+        [
+          10,
+          87,
+          0
+        ],
+        [
+          10,
+          88,
+          0
+        ],
+        [
+          10,
+          89,
+          0
+        ],
+        [
+          10,
+          90,
+          0
+        ],
+        [
+          10,
+          91,
+          0
+        ],
+        [
+          17,
+          70,
+          0
+        ],
+        [
+          15,
+          70,
+          0
+        ],
+        [
+          16,
+          71,
+          0
+        ],
+        [
+          16,
+          69,
+          0
+        ],
+        [
+          16,
+          70,
+          1
+        ],
+        [
+          16,
+          70,
+          -1
+        ],
+        [
+          12,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

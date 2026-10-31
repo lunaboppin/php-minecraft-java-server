@@ -205,6 +205,11 @@ trait Entities
             if (!isset($this->itemEntities[$id])) {
                 continue;
             }
+            // ItemEntity.tick: an empty item is discarded.
+            if ($this->itemEntities[$id]['discard'] ?? false) {
+                $this->removeItem($id);
+                continue;
+            }
             $item = &$this->itemEntities[$id];
             ++$item['ticks'];
             if ($item['pickupDelay'] > 0 && $item['pickupDelay'] !== 32767) {
@@ -289,7 +294,7 @@ trait Entities
     /** ItemEntity.isMergable. */
     private function itemMergable(array $item): bool
     {
-        return $item['pickupDelay'] !== 32767 && $item['age'] < 6000 && $item['stack']['count'] < ($this->version->catalog->item($item['stack']['item'])['max_stack'] ?? 64);
+        return !($item['discard'] ?? false) && $item['pickupDelay'] !== 32767 && $item['age'] < 6000 && $item['stack']['count'] < ($this->version->catalog->item($item['stack']['item'])['max_stack'] ?? 64);
     }
 
     /** ItemEntity.mergeWithNeighbours: the smaller of two matching stacks joins the larger. */
@@ -331,7 +336,7 @@ trait Entities
     {
         foreach ($this->localPlayers() as $player) {
             $item = $this->itemEntities[$id] ?? null;
-            if ($item === null) {
+            if ($item === null || ($item['discard'] ?? false)) {
                 return;
             }
             if ($item['pickupDelay'] !== 0 || ($item['target'] !== null && $item['target'] !== $player->uuid) || $player->dead || $player->gameMode === 3) {

@@ -152,7 +152,12 @@ SCRIPT = [
     ('give Witness diamond_sword[enchantments={"minecraft:sharpness":3,unbreaking:1}]', False), ('give Witness diamond_sword[damage=5,enchantments={sharpness:3}] 2', False), ('give Witness enchanted_book[stored_enchantments={mending:1}]', False),
     ('give Witness stick[enchantments={sharpness:1}]', False), ('give Witness golden_apple[enchantments={sharpness:1}]', False), ('give Witness diamond_sword[!damage]', False),
     ('give Witness diamond_sword[damage="x"]', False), ('give Witness diamond_sword[damage=-1]', False), ('give Witness diamond_sword[max_stack_size=2]', False),
-    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False), ('clear Witness diamond_sword[damage=5]', False),
+    ('give Witness diamond_sword[enchantments={nope:1}]', False), ('give Witness dirt[damage=1]', False),
+    # Component presence, absence and negated equality, counted without clearing.
+    ('clear Witness diamond_sword[!damage] 0', False), ('clear Witness diamond_sword[damage] 0', False), ('clear Witness diamond_sword[!enchantments] 0', False),
+    ('clear Witness diamond_sword[!damage=5] 0', False), ('clear Witness *[max_damage] 0', False), ('clear Witness *[!max_damage] 0', False),
+    ('clear Witness enchanted_book[stored_enchantments] 0', False), ('clear Witness *[!damage=5,enchantments={sharpness:3}] 0', False),
+    ('clear Witness diamond_sword[damage=5]', False),
     ('clear Witness diamond_sword', False),
     # Scoreboard objectives, scores, display slots and score components; "kill" respawns both players.
     ('scoreboard objectives list', False), ('scoreboard objectives add kills dummy', False), ('scoreboard objectives add kills dummy', False),
@@ -499,6 +504,43 @@ SCRIPT = [
     ('item replace entity @s foo with stone', False), ('item modify entity @s weapon foo:bar', False), ('!witness item replace entity @s weapon with stone', False),
     ('item replace entity @s enderchest.3 with stone 7', False), ('item replace entity @s weapon from entity @s enderchest.3', False),
     ('item replace entity @s player.cursor with stone', False), ('item replace entity @s player.crafting.0 with stone', False),
+    # /item modify: inline loot functions, alone or in a list, on the filled slots of the range.
+    ('item replace entity @s weapon with diamond_sword', False), ('item modify entity @s weapon {type:"set_count",count:5}', False),
+    ('item replace entity @s hotbar.1 with stone 10', False), ('item modify entity @s hotbar.1 {type:"minecraft:set_count",count:3,add:true}', False),
+    ('clear @s stone 0', False), ('item modify entity @s hotbar.1 {type:"set_count",count:100}', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 [{type:"set_count",count:2},{type:"set_count",count:2,add:true}]', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 {type:"set_count",count:{type:"constant",value:6}}', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 {type:"set_count",count:2.7}', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 {type:"limit_count",limit:{min:9}}', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 {type:"limit_count",limit:{max:4}}', False), ('clear @s stone 0', False),
+    ('item modify entity @s hotbar.1 {type:"limit_count",limit:1}', False), ('item modify entity @s weapon {type:"set_damage",damage:0.5}', False),
+    ('clear @s diamond_sword[damage=780] 0', False), ('item modify entity @s weapon {type:"set_damage",damage:-0.25,add:true}', False),
+    ('clear @s diamond_sword[damage=1171] 0', False), ('item modify entity @s hotbar.1 {type:"set_damage",damage:0.5}', False),
+    ('item modify entity @s weapon {type:"set_enchantments",enchantments:{sharpness:3}}', False),
+    # Two enchantments would reach trackers in the order of identity-hashed holders, which differs between runs.
+    ('item modify entity @s weapon {type:"set_enchantments",enchantments:{sharpness:1},add:true}', False),
+    ('clear @s diamond_sword[enchantments={sharpness:4}] 0', False),
+    ('item modify entity @s weapon {type:"set_enchantments",enchantments:{sharpness:0}}', False), ('clear @s diamond_sword[enchantments={}] 0', False),
+    ('item modify entity @s weapon {type:"set_count",count:0,condition:{type:"random_chance",chance:0}}', False), ('clear @s diamond_sword 0', False),
+    ('item modify entity @s weapon {type:"set_count",count:0,condition:{condition:"random_chance",chance:0}}', False),
+    ('item modify entity @s weapon {type:"sequence",functions:[{type:"set_item",item:"iron_sword"}]}', False), ('clear @s iron_sword 0', False),
+    ('item modify entity @s hotbar.* {type:"set_count",count:2}', False), ('item modify entity @s hotbar.1 {type:"set_item",item:"dirt"}', False),
+    ('clear @s dirt 0', False), ('item replace entity @s weapon from entity @s hotbar.1 {type:"set_count",count:7}', False), ('clear @s dirt 0', False),
+    ('item replace entity @s hotbar.2 from entity @s hotbar.5 {type:"set_count",count:7}', False),
+    ('item modify entity @e[tag=itempig] armor.head {type:"set_count",count:2}', False), ('item modify entity @e[tag=itempig] armor.feet {type:"set_count",count:2}', False),
+    ('item modify entity @s hotbar.1 {type:"nope"}', False), ('item modify entity @s hotbar.1 {count:1}', False),
+    ('item modify entity @s hotbar.1 {type:"set_count"}', False), ('item modify entity @s hotbar.1 {type:"set_count",count:{min:4,max:4}}', False),
+    ('item modify entity @s hotbar.1 {type:"set_item",item:"nope"}', False), ('item modify entity @s hotbar.1 {type:"set_count",count:"x"}', False),
+    ('item modify entity @s hotbar.1 [{count:2},{type:"set_count",count:2,add:true},{add:1b}]', False), ('item modify entity @s hotbar.1 minecraft:nope', False),
+    ('item modify entity @s hotbar.1 []', False), ('item modify block 1 200 -1 container.* {type:"set_count",count:1}', False),
+    ('item modify block 0 199 0 container.0 {type:"set_count",count:4}', False), ('item modify entity @s hotbar.1 {type:"set_count",count:0}', False),
+    ('item modify entity @s hotbar.1 {type:"set_count",count:1}', False),
+    # An item entity's stack is its one slot; emptied, it is gone the next tick.
+    ('!quiet summon item 2.5 201 2.5 {Item:{id:"stone"}}', False), ('item replace entity @e[type=item] contents with diamond 3', False),
+    ('item replace entity @e[type=item] container.0 with emerald 2', False), ('item replace entity @e[type=item] container.1 with stone', False),
+    ('item replace entity @s weapon from entity @e[type=item,limit=1] contents', False), ('item replace entity @e[type=item] contents with air', False),
+    ('item replace entity @e[type=item] contents with stone', False), ('item replace entity @s weapon with air', False),
+    ('item replace entity @s weapon with air 5', False),
     ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
     # /data on command storage: paths, every modification and source, HashMap key order, the pretty
     # printer's styling and number formats, and the errors along the way.
@@ -748,6 +790,16 @@ SCRIPT = [
     ('!quiet setblock 1 201 -1 barrel', False),
     ('data get block 1 201 -1', False),
     ('!quiet kill @e[type=!player]', False), ('!quiet clear @a', False),
+    # Functions without data packs: unknown functions and tags, the vanilla data pack's empty tags, and schedules of them.
+    ('function foo:bar', False), ('function foo', False), ('function #minecraft:tick', False), ('function #foo:bar', False),
+    ('function foo:bar {a:1}', False), ('function foo:bar with entity @s', False), ('schedule function foo:bar 1t', False),
+    # Schedules report their due game time, which differs between servers, so only clearing them is compared.
+    ('schedule function foo:bar 0t', False), ('schedule clear foo:bar', False), ('schedule function #minecraft:load 0t', False),
+    ('!quiet schedule function #minecraft:load 2s append', False), ('!quiet schedule function #load 1.5s append', False), ('schedule clear #minecraft:load', False),
+    ('schedule clear #minecraft:load', False), ('!quiet schedule function #minecraft:tick 3', False), ('!quiet schedule function #minecraft:tick 1d', False),
+    ('schedule clear #minecraft:tick', False), ('schedule clear #tick', False), ('return 5', False), ('return fail', False), ('return run list', False),
+    ('reload', False), ('debug stop', False), ('debug start', False), ('debug start', False), ('!quiet debug stop', False),
+    ('debug function foo:bar', False), ('!quiet debug function #minecraft:tick', False),
     ('list', False),
 ]
 
@@ -756,11 +808,24 @@ def collect(client, since, command=''):
     extra = next((packets for prefix, packets in EXTRA.items() if command.removeprefix('!witness ').startswith(prefix)), ())
     # Rain starting, stopping or fading follows each server's random weather, not the command.
     weather = lambda name, payload: name == 'game_event' and payload[0] in (1, 2, 7, 8) and not command.startswith('weather')
-    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:] if (name in COMPARED or name in extra) and not weather(name, payload)]
+    return [{'packet': name, 'hex': payload.hex()} for name, payload in client.seen[since:]
+            if (name in COMPARED or name in extra) and not weather(name, payload) and not surface(name, payload)]
+
+
+def surface(name, payload):
+    """Block changes below y 100 come from random ticks on the flat surface; the commands edit higher."""
+    if name == 'section_blocks_update':
+        section = ((struct.unpack_from('>q', payload)[0] & 0xfffff) ^ 0x80000) - 0x80000
+        return section * 16 < 100
+    if name in ('block_update', 'block_entity_data'):
+        return ((struct.unpack_from('>q', payload)[0] & 0xfff) ^ 0x800) - 0x800 < 100
+    return False
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+# Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
+BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

@@ -83,6 +83,11 @@ final class CommandRegistry
             new CommandDefinition('posteffect', 'executePostEffect', true),
             new CommandDefinition('ride', 'executeRide', true),
             new CommandDefinition('item', 'executeItem', true),
+            new CommandDefinition('function', 'executeFunction', true),
+            new CommandDefinition('schedule', 'executeSchedule', true),
+            new CommandDefinition('return', 'executeReturn', true),
+            new CommandDefinition('reload', 'executeReload', true),
+            new CommandDefinition('debug', 'executeDebug', true),
             new CommandDefinition('data', 'executeData', true),
         ];
     }

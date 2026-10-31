@@ -187,10 +187,18 @@ def main():
                 time.sleep(.6)
                 a.send('attack', net.vi(cow_id))
                 a.until('entity_event', lambda p: struct.unpack_from('>i', p)[0] == cow_id and p[4] == 3)
-                # Knockback can carry the cow out of pickup reach before it dies, so bring any drops over.
-                time.sleep(1.2)
-                command(a, 'tp @e[type=item] @s')
-                inventory(a, lambda: total(a, 'beef') > 0)
+                # Knockback can carry the cow out of pickup reach before it dies, so bring any drops over,
+                # again until the beef arrives: on a slow runner the drops may not exist yet.
+                for _ in range(30):
+                    time.sleep(.5)
+                    command(a, 'tp @e[type=item] @s')
+                    try:
+                        # Read whatever arrives for half a second; the client tracks its inventory.
+                        a.until('no_such_packet', limit=100000, timeout=.5)
+                    except AssertionError:
+                        pass
+                    if total(a, 'beef') > 0:
+                        break
                 net.check(total(a, 'beef') > 0, 'animal combat drops collectible food')
                 command(a, 'kill Visitor')
                 b.until('player_combat_kill')

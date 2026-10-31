@@ -76,7 +76,8 @@ trait ClearCommand
 
     /**
      * ItemPredicateArgument: an item, an item tag or "*", with component tests. Damage and
-     * enchantments are compared exactly; other components and predicates are not.
+     * enchantments are compared exactly, and any component can be tested for presence or, with
+     * !, absence; other components and predicates are not compared.
      */
     private function itemPredicate(string $text): \Closure
     {
@@ -94,17 +95,27 @@ trait ClearCommand
             $ids = array_flip(array_map(fn (string $name): int => $this->version->blocks['items'][$name] ?? -1, $names));
         }
         $tests = [];
+        $presence = [];
         if ($reader->canRead() && $reader->peek() === '[') {
             $reader->skip();
             while ($reader->canRead() && $reader->peek() !== ']') {
                 $reader->skipWhitespace();
+                $negated = $reader->peek() === '!';
+                if ($negated) {
+                    $reader->skip();
+                }
                 $name = $reader->readIdentifier();
                 $reader->skipWhitespace();
-                $operator = $reader->read();
-                $reader->skipWhitespace();
-                $value = Snbt::read($reader);
-                if ($operator === '=' && in_array($name, ['minecraft:damage', 'minecraft:enchantments', 'minecraft:stored_enchantments'], true)) {
-                    $tests[$name] = $value;
+                if (!$reader->canRead() || !in_array($reader->peek(), ['=', '~'], true)) {
+                    // ComponentPredicate existence: the component is there, or with ! it is not.
+                    $presence[$name] = !$negated;
+                } else {
+                    $operator = $reader->read();
+                    $reader->skipWhitespace();
+                    $value = Snbt::read($reader);
+                    if ($operator === '=' && in_array($name, ['minecraft:damage', 'minecraft:enchantments', 'minecraft:stored_enchantments'], true)) {
+                        $tests[$name] = [$value, $negated];
+                    }
                 }
                 $reader->skipWhitespace();
                 if ($reader->canRead() && ($reader->peek() === ',' || $reader->peek() === '|')) {
@@ -113,12 +124,18 @@ trait ClearCommand
             }
         }
         $levels = static fn (array $tag): array => array_combine(array_map(static fn (string $name): string => str_contains($name, ':') ? $name : 'minecraft:' . $name, array_keys($tag['value'])), array_map(static fn (array $level): int => (int) $level['value'], $tag['value']));
-        return static function (array $stack) use ($ids, $tests, $levels): bool {
+        $codec = $this->version->catalog->itemStacks;
+        return static function (array $stack) use ($ids, $tests, $presence, $levels, $codec): bool {
             if ($ids !== null && !isset($ids[$stack['item']])) {
                 return false;
             }
-            foreach ($tests as $name => $value) {
-                $matched = match ($name) {
+            foreach ($presence as $name => $present) {
+                if ($codec->hasComponent($stack, $name) !== $present) {
+                    return false;
+                }
+            }
+            foreach ($tests as $name => [$value, $negated]) {
+                $matched = $negated !== match ($name) {
                     'minecraft:damage' => ($stack['damage'] ?? 0) === (int) $value['value'],
                     'minecraft:enchantments' => ($stack['enchantments'] ?? []) == $levels($value),
                     default => ($stack['storedEnchantments'] ?? []) == $levels($value),

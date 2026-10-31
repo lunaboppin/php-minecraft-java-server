@@ -71,6 +71,8 @@ final class Server
 
     use Precipitation;
 
+    use BoneMeal;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -1371,6 +1373,14 @@ final class Server
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        // BoneMealItem.useOn: a valid target grows, and the bone meal is used.
+        if ($within && $itemName === 'bone_meal' && $this->editable($c, $x, $y, $z) && $this->useBoneMeal($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
+            $this->blockUpdate($c, $x, $y, $z);
+            $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         // TntBlock.useItemOn: flint and steel or a fire charge primes TNT, wearing or using up the item.
         if ($within && in_array($itemName, ['flint_and_steel', 'fire_charge'], true) && $name === 'tnt' && $this->editable($c, $x, $y, $z) && $this->gameRule('tnt_explodes') === 'true') {
             $this->primeTnt($x, $y, $z, $c);
@@ -1544,8 +1554,13 @@ final class Server
         $this->world->set($x, $y, $z, $state);
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
+        $this->blockChanged($x, $y, $z);
+    }
+
+    /** ChunkHolder.blockChanged: clients hear of a changed block with the tick's other changes, and its light follows. */
+    private function blockChanged(int $x, int $y, int $z): void
+    {
         $this->relightAround($x, $z);
-        // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
     }
@@ -1559,7 +1574,21 @@ final class Server
     {
         $changes = $this->changedBlocks[$this->world->dimension] ?? [];
         unset($this->changedBlocks[$this->world->dimension]);
-        foreach ($changes as $key => $set) {
+        // ServerChunkCache.broadcastChangedChunks visits the chunks in the order they first changed,
+        // and each ChunkHolder its sections from the bottom up.
+        $chunks = [];
+        foreach (array_keys($changes) as $key) {
+            [$cx, $cz, $sy] = explode(':', $key);
+            $chunks[$cx . ':' . $cz][(int) $sy] = $key;
+        }
+        $ordered = [];
+        foreach ($chunks as $sections) {
+            ksort($sections);
+            foreach ($sections as $key) {
+                $ordered[$key] = $changes[$key];
+            }
+        }
+        foreach ($ordered as $key => $set) {
             [$cx, $cz, $sy] = array_map('intval', explode(':', $key));
             $players = array_filter($this->localPlayers(), static fn (Client $player): bool => isset($player->loadedChunks[$cx . ':' . $cz]));
             if ($players === []) {
@@ -1669,6 +1698,8 @@ final class Server
         // ServerLevel.tick: game time and clocks stand still while the game is frozen.
         if ($this->runGameElements) {
             $this->tickTime();
+            // ServerLevel.tickTime: the overworld's scheduled events come due with game time.
+            $this->tickScheduledFunctions();
         }
         $this->tickSwings();
         $this->tickDimensions();
