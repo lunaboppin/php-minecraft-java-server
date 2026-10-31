@@ -200,7 +200,7 @@ trait TreeGrowth
         foreach ($changes as [$x, $y, $z]) {
             $this->changedSimulation($x, $y, $z);
             if ($this->world->generator === 'terrain') {
-                $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
+                $this->relightAround($x, $z);
             }
         }
         foreach ($sections as $positions) {
