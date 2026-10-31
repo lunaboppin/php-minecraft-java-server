@@ -828,6 +828,19 @@ final class Server
         return max(0, abs($x - (int) floor($c->x / 16)) - 2) ** 2 + max(0, abs($z - (int) floor($c->z / 16)) - 2) ** 2 < $view * $view;
     }
 
+    /** ChunkMap.isChunkOnTrackedBorder: a chunk in view with a neighbour outside it. */
+    private function chunkOnViewBorder(Client $c, int $x, int $z): bool
+    {
+        for ($dx = -1; $dx <= 1; ++$dx) {
+            for ($dz = -1; $dz <= 1; ++$dz) {
+                if (!$this->chunkInView($c, $x + $dx, $z + $dz)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private function scheduleChunks(Client $c): void
     {
         $cx = (int) floor($c->x / 16);
@@ -1491,9 +1504,7 @@ final class Server
         $this->world->set($x, $y, $z, $state);
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
-        if ($this->world->generator === 'terrain') {
-            $this->relightAround($x, $z);
-        }
+        $this->relightAround($x, $z);
         // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));

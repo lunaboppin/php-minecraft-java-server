@@ -87,11 +87,11 @@ final class Lighting
         }
         return $out;
     }
-    /** Whether two states block and give light alike, so swapping one for the other leaves light unchanged. */
+    /** Whether two states block (by dampening and shape) and give light alike, so swapping one for the other leaves light unchanged. */
     public static function sameLight(int $a,int $b,Catalog $catalog,?string $directory):bool {
         if($directory===null){return (($catalog->flags[$a]??0)&0xfc)===(($catalog->flags[$b]??0)&0xfc);}
-        $table=self::$light[$directory]??=self::table($directory);
-        return $table[$a]===$table[$b];
+        $table=self::$light[$directory]??=self::table($directory);$faces=self::faces($directory);
+        return $table[$a]===$table[$b] && ($faces[$a]??null)===($faces[$b]??null);
     }
     /** @return \Closure(int): int light dampening by state */
     private static function damper(Catalog $catalog,?string $directory):\Closure {
