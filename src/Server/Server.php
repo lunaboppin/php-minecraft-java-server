@@ -1366,7 +1366,10 @@ final class Server
                 $this->useSwing($c, $hand);
             }
         }
-        $this->blockUpdate($c, $tx, $ty, $tz);
+        // ServerGamePacketListenerImpl.handleUseItemOn: the clicked block and the one on its clicked
+        // face are sent to the player, correcting the client's prediction either way.
+        $this->blockUpdate($c, $x, $y, $z);
+        $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
         $this->acknowledge($c, $sequence);
     }
 
