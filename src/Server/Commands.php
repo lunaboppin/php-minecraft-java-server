@@ -46,6 +46,8 @@ trait Commands
 
     use CommandModules\DataCommand;
 
+    use CommandModules\DataAccessors;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
