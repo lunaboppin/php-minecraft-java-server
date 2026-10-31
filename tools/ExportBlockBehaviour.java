@@ -111,6 +111,45 @@ public class ExportBlockBehaviour {
             }
         }
         root.add("flammable", flammable);
+        // LightEngine.getOcclusionShape: for states that use their shape for light occlusion, each
+        // face's occlusion shape (down, up, north, south, west, east) as a 16×16 coverage mask,
+        // u then v: x, z on y faces; x, y on z faces; z, y on x faces.
+        var masks = new java.util.LinkedHashMap<String, Integer>();
+        var maskList = new JsonArray();
+        var shaped = new JsonObject();
+        for (int id = 0; id < count; ++id) {
+            var state = Block.BLOCK_STATE_REGISTRY.byId(id);
+            if (!state.canOcclude() || !state.useShapeForLightOcclusion()) continue;
+            var faces = new JsonArray();
+            for (Direction direction : Direction.values()) {
+                VoxelShape face = state.getFaceOcclusionShape(direction);
+                var bits = new byte[32];
+                for (int v = 0; v < 16; ++v) {
+                    for (int u = 0; u < 16; ++u) {
+                        double u0 = (u + 0.01) / 16, u1 = (u + 0.99) / 16, v0 = (v + 0.01) / 16, v1 = (v + 0.99) / 16;
+                        VoxelShape cell = switch (direction.getAxis()) {
+                            case Y -> Shapes.box(u0, 0, v0, u1, 1, v1);
+                            case Z -> Shapes.box(u0, v0, 0, u1, v1, 1);
+                            case X -> Shapes.box(0, v0, u0, 1, v1, u1);
+                        };
+                        if (Shapes.joinIsNotEmpty(face, cell, BooleanOp.AND)) bits[(v * 16 + u) >> 3] |= (byte) (1 << ((v * 16 + u) & 7));
+                    }
+                }
+                String key = Base64.getEncoder().encodeToString(bits);
+                Integer index = masks.get(key);
+                if (index == null) {
+                    index = masks.size();
+                    masks.put(key, index);
+                    maskList.add(key);
+                }
+                faces.add(index);
+            }
+            shaped.add(Integer.toString(id), faces);
+        }
+        var lightFaces = new JsonObject();
+        lightFaces.add("masks", maskList);
+        lightFaces.add("states", shaped);
+        root.add("light_faces", lightFaces);
         Files.writeString(Path.of(output), new Gson().toJson(root) + "\n");
     }
 }
