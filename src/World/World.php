@@ -217,12 +217,17 @@ class World
     public function set(int $x,int $y,int $z,int $state):void {
         if($y<$this->minY || $y>=$this->minY+$this->height || abs($x)>29999984 || abs($z)>29999984 || $state<0 || $state>=$this->version->blocks['state_count']){throw new \InvalidArgumentException('Invalid block');}
         if(isset($this->containerPositions[$x.':'.$y.':'.$z]) && $this->version->catalog->blockName($state)!==$this->version->catalog->blockName($this->get($x,$y,$z))){$this->deleteContainer([$x,$y,$z]);}
+        $previous=$this->get($x,$y,$z);
         $base=$this->terrain===null?$this->base($y):$this->baseSections($x>>4,$z>>4)[($y-$this->minY)>>4][(($y&15)<<8)|(($z&15)<<4)|($x&15)];
         if($state===$base){$q=$this->db->prepare('DELETE FROM blocks WHERE x=? AND y=? AND z=?');$q->execute([$x,$y,$z]);}
         else{$q=$this->db->prepare('INSERT INTO blocks(x,y,z,state) VALUES(?,?,?,?) ON CONFLICT(x,y,z) DO UPDATE SET state=excluded.state');$q->execute([$x,$y,$z,$state]);}
-        $key=($x>>4).':'.($z>>4);unset($this->cache[$key],$this->ownLight[$key]);
-        // Light crosses chunk borders, so the neighbours' light is built again too.
-        for($dx=-1;$dx<=1;++$dx){for($dz=-1;$dz<=1;++$dz){$this->relight(($x>>4)+$dx,($z>>4)+$dz);}}
+        $key=($x>>4).':'.($z>>4);unset($this->cache[$key]);
+        // A change that blocks or gives light differently relights the chunk and, as light crosses
+        // chunk borders, its neighbours.
+        if(!Lighting::sameLight($previous,$state,$this->version->catalog,$this->version->directory)){
+            unset($this->ownLight[$key]);
+            for($dx=-1;$dx<=1;++$dx){for($dz=-1;$dz<=1;++$dz){$this->relight(($x>>4)+$dx,($z>>4)+$dz);}}
+        }
         if(isset($this->editCache[$key])){$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);if($state===$base){unset($this->editCache[$key][$index]);}else{$this->editCache[$key][$index]=$state;}}
     }
     public function sections(int $cx,int $cz):array {
