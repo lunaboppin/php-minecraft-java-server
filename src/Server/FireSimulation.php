@@ -149,7 +149,7 @@ trait FireSimulation
         $newAge = min(15, $age + intdiv(random_int(0, 2), 2));
         if ($newAge !== $age) {
             $state = $catalog->state('fire', array_merge($catalog->properties($state), ['age' => (string) $newAge]));
-            $this->setBlock($x, $y, $z, $state);
+            $this->setBlockQuietly($x, $y, $z, $state);
         }
         if (!$infiniburn) {
             if (!$this->validFireLocation($x, $y, $z)) {
