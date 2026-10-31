@@ -284,10 +284,11 @@ SCRIPT = [
     ('damage @e[type=giant,limit=1] 1', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 0 101 0 minecraft:stone', False),
     ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 101 0 minecraft:air', False),
     ('!quiet gamemode creative @s', False),
-    # A dropped item has 5 health, truncated after each hit, and goes at 0; the operator stands clear of it.
-    ('!quiet tp @s 0 110 6', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
+    # A dropped item has 5 health, truncated after each hit, and goes at 0; both players stand clear of
+    # it, the witness on the box's roof instead of beside where it lands.
+    ('!quiet tp @s 0 110 6', False), ('!quiet tp Witness 0 109 0', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
     ('damage @e[type=item,limit=1] 2', False), ('damage @e[type=item,limit=1] 2.9 in_fire', False), ('damage @e[type=item,limit=1] 1', False),
-    ('damage @e[type=item,limit=1] 1', False),
+    ('damage @e[type=item,limit=1] 1', False), ('!quiet tp Witness 1 100 0', False),
     # Command chat reaches unsigned clients as disguised chat with the bound chat type.
     ('say hello there', False), ('say spaced   out  text', False), ('say @a', False), ('say @e[type=pig]', False), ('!witness say no permission', False),
     ('me waves', False), ('me @e[type=player,limit=1] waves', False), ('!witness me @a stays literal', False),
@@ -373,10 +374,11 @@ SCRIPT = [
     ('!quiet gamemode spectator @s', False), ('spectate Witness', False), ('tp @s 3 200 3', False), ('spectate Witness', False),
     ('!quiet kill @e[type=pig]', False), ('!quiet gamemode creative @s', False),
     # Swings on a platform both players stand on, with their swing_animation packets.
+    # The item lands out of the players' pickup reach, so it is still there for the next line.
     ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('swing', False), ('swing @s offhand', False),
     ('swing Witness mainhand stab', False), ('swing @a offhand whack 20', False), ('swing @a mainhand none 1s', False),
     ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False),
-    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
+    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 2.5 201 2.5 {Item:{id:"stone"}}', False),
     ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
     # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
     ('stopwatch query lap', False), ('stopwatch create lap', False), ('stopwatch create minecraft:lap', False),
@@ -460,6 +462,44 @@ SCRIPT = [
     ('execute summon player run say no', False), ('!quiet kill @e[type=!player]', False),
     # CombatTracker: a living attacker's hit starts combat; death ends it with its duration.
     ('!quiet gamemode survival Witness', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 2 minecraft:mob_attack by ParityProbe', False), ('damage Witness 40 minecraft:mob_attack by ParityProbe', False), ('!respawn', False), ('!quiet gamemode creative Witness', False),
+    # Player knockback: hurt_animation's direction and the motion the player and its trackers get.
+    # The air above the platform is cleared: water left from the /execute lines would flow under
+    # the witness, and vanilla's current would push it before the hit.
+    ('!quiet kill @e[type=!player]', False), ('!quiet fill -3 199 -3 3 199 5 stone', False), ('!quiet fill -3 200 -3 3 202 5 air', False),
+    ('!quiet tp Witness 2 200 3 90 0', False), ('!quiet tp ParityProbe 0 200 0', False), ('!quiet gamemode survival Witness', False),
+    ('damage Witness 3 minecraft:mob_attack by ParityProbe', False), ('!quiet effect give Witness instant_health 1 10', False),
+    ('!quiet gamemode creative Witness', False),
+    # Riding: set_passengers, the rider's teleport into the seat and the dismount beside the vehicle.
+    ('!quiet kill @e[type=!player]', False), ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["ridea"],Rotation:[0f,0f]}', False), ('!quiet summon cow -1 200 1 {NoAI:1b,Tags:["rideb"],Rotation:[0f,0f]}', False),
+    ('ride @e[tag=ridea,limit=1] dismount', False), ('ride @e[tag=ridea,limit=1] mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[tag=ridea,limit=1] mount @e[tag=rideb,limit=1]', False), ('ride @e[tag=rideb,limit=1] mount @e[tag=ridea,limit=1]', False),
+    ('ride @e[tag=rideb,limit=1] mount @s', False), ('ride @e[tag=rideb,limit=1] mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[tag=ridea,limit=1] dismount', False), ('ride @s mount @e[tag=ridea,limit=1]', False), ('ride @s mount @e[tag=rideb,limit=1]', False),
+    ('ride @s dismount', False), ('ride @s dismount', False), ('!witness ride @s mount @e[tag=rideb,limit=1]', False),
+    ('ride @e[type=player] mount @e[tag=ridea,limit=1]', False), ('ride Witness mount @e[tag=rideb,limit=1]', False),
+    ('ride ParityProbe mount @e[tag=rideb,limit=1]', False), ('!quiet kill @e[tag=rideb]', False), ('ride Witness dismount', False),
+    ('!quiet kill @e[type=!player]', False),
+    # /item replace, fill and override with slot names, between players, a mob and a chest.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False), ('!quiet clear @a', False),
+    ('!quiet summon pig 1 200 1 {NoAI:1b,Tags:["itempig"]}', False),
+    ('item replace entity @s weapon.mainhand with diamond_sword', False), ('item replace entity @s hotbar.1 with stone 32', False),
+    ('item replace entity @s hotbar.1 with stone 65', False), ('item replace entity @s armor.chest with stone', False),
+    ('item replace entity @s armor.chest with golden_chestplate', False), ('item replace entity @s armor.head with dirt', False),
+    ('item replace entity @s armor.body with stone', False), ('item override entity @s armor.body from entity @s hotbar.8', False),
+    ('item replace entity @s container.40 with stone', False), ('item fill entity @s hotbar.* with apple 3', False),
+    ('item replace entity @s inventory.* from entity @s hotbar.*', False), ('item override entity @s inventory.* from entity @s hotbar.0', False),
+    ('item replace entity @a weapon.offhand with shield', False), ('item replace entity @e[tag=itempig] saddle with saddle', False),
+    ('item replace entity @e[tag=itempig] armor.head with carved_pumpkin', False), ('item replace entity @e[tag=itempig] armor.chest with diamond_chestplate', False),
+    ('item replace entity @e[tag=itempig] mob.inventory.0 with stone', False), ('item replace entity @e[tag=itempig] weapon from entity @s weapon', False),
+    ('item replace entity @e[tag=itempig] weapon from entity @e[tag=itempig] mob.inventory.0', False),
+    ('item replace block 0 199 0 container.0 with stone', False), ('!quiet setblock 1 200 -1 chest', False),
+    ('item replace block 1 200 -1 container.0 with stone 5', False), ('item replace block 1 200 -1 container.27 with stone', False),
+    ('item replace entity @s weapon from block 1 200 -1 container.0', False), ('item replace block 1 200 -1 container.1 from block 0 199 0 container.0', False),
+    ('item replace entity @s foo with stone', False), ('item modify entity @s weapon foo:bar', False), ('!witness item replace entity @s weapon with stone', False),
+    ('item replace entity @s enderchest.3 with stone 7', False), ('item replace entity @s weapon from entity @s enderchest.3', False),
+    ('item replace entity @s player.cursor with stone', False), ('item replace entity @s player.crafting.0 with stone', False),
+    ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
     ('list', False),
 ]
 
@@ -472,7 +512,7 @@ def collect(client, since, command=''):
 
 
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
-EXTRA = {'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+EXTRA = {'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -550,7 +590,8 @@ def normalize_uuids(items):
 
 
 # Packets that start with the affected entity's network ID as a VarInt.
-ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event', 'set_camera', 'swing_animation')
+ENTITY_ADDRESSED = ('update_mob_effect', 'remove_mob_effect', 'update_attributes', 'damage_event', 'set_camera', 'swing_animation',
+                    'hurt_animation', 'set_entity_motion', 'set_equipment')
 
 
 def normalize_entity_ids(items):
@@ -602,16 +643,53 @@ def normalize_boss_bars(items):
     return [{**item, 'hex': '00' * 16 + item['hex'][32:]} if item['packet'] == 'boss_event' else item for item in items]
 
 
+def normalize_riding(items):
+    """Zero the entity IDs in set_passengers and entity_position_sync, and drop syncs of mobs off the test platform.
+
+    Vanilla's naturally spawned animals wander far below the platform at y=200.
+    """
+    def varint(data, at):
+        value = shift = 0
+        while True:
+            byte = data[at]
+            at += 1
+            value |= (byte & 0x7f) << shift
+            shift += 7
+            if byte < 0x80:
+                return value, at
+    def passengers(payload):
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        count, at = varint(data, at)
+        return '00' + bytes([count]).hex() + '00' * count
+    def sync(payload):
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        return '00' + data[at:].hex()
+    def far(payload):
+        # The ID, then a PositionPath: a linear end point, or a step count and steps.
+        data = bytes.fromhex(payload)
+        _, at = varint(data, 0)
+        if data[at] == 1:
+            _, at = varint(data, at + 1)
+        else:
+            at += 1
+        return struct.unpack('>d', data[at + 8:at + 16])[0] < 150
+    return [{**item, 'hex': passengers(item['hex'])} if item['packet'] == 'set_passengers'
+            else {**item, 'hex': sync(item['hex'])} if item['packet'] == 'entity_position_sync'
+            else item for item in items if not (item['packet'] == 'entity_position_sync' and far(item['hex']))]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         unordered = expected['command'].startswith('kick ')
         # A summoned entity has a random UUID on each server.
-        random_ids = expected['command'].startswith('summon ') or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
+        random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))) != key(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))):
+            if key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))))) != key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 

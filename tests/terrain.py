@@ -44,12 +44,16 @@ def use_block(c, x, y, z, sequence=20):
     payload = net.vi(0) + net.block_position(x, y, z) + net.vi(1) + struct.pack('>fff', .5, 1, .5) + b'\0\0' + net.vi(sequence)
     c.send('use_item_on', payload)
     c.until('open_screen')
-    inventory(c, lambda: c.window == 1)
+    # Window IDs count up with each menu opened, as ServerPlayer.nextContainerCounter does.
+    inventory(c, lambda: c.window != 0)
 
 
 def close(c):
     c.send('container_close', net.vi(c.window))
-    inventory(c, lambda: c.window == 0)
+    # handleContainerClose sends nothing back, so the client falls back to its own inventory.
+    c.window = 0
+    c.send('ping_request', b'terrain!')
+    c.until('pong_response', lambda payload: payload == b'terrain!')
 
 
 def main():

@@ -54,6 +54,10 @@ trait Dimensions
                 if ($this->runGameElements) {
                     $this->tickBlocks();
                     $this->tickRandomBlocks();
+                }
+                $this->broadcastChangedBlocks();
+                if ($this->runGameElements) {
+                    $this->runBlockEvents();
                     $this->tickItems();
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();

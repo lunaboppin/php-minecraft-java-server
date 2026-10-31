@@ -78,6 +78,17 @@ trait Survival
         $c->postEffects = $data['postEffects'] ?? [];
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
+        foreach ($data['enderItems'] ?? [] as $slot => $stack) {
+            $item = $this->version->catalog->item((int) ($stack['item'] ?? -1));
+            if ($slot >= 0 && $slot < 27 && $item !== null && ($stack['count'] ?? 0) > 0) {
+                $stack['item'] = (int) $stack['item'];
+                $stack['count'] = min($item['max_stack'], (int) $stack['count']);
+                $restored = $this->version->catalog->itemStacks->canonical($stack);
+                if ($restored !== null) {
+                    $c->enderItems[(int) $slot] = $restored;
+                }
+            }
+        }
         foreach ($data['inventory'] ?? [] as $slot => $stack) {
             $item = $this->version->catalog->item((int) ($stack['item'] ?? -1));
             if ($slot >= 1 && $slot <= 45 && $item !== null && ($stack['count'] ?? 0) > 0) {
@@ -96,7 +107,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -224,7 +235,8 @@ trait Survival
             return false;
         }
         // During the invulnerability window only a stronger hit lands, for the difference.
-        if ($this->ticks - $c->lastDamageTick < 10) {
+        $fullDamage = $this->ticks - $c->lastDamageTick >= 10;
+        if (!$fullDamage) {
             if ($amount <= $c->lastDamageAmount) {
                 return false;
             }
@@ -279,8 +291,12 @@ trait Survival
                 $p->send($this->version, 'entity_event', pack('N', $c->entityId) . "\3");
             }
         }
+        if ($fullDamage) {
+            $this->knockbackPlayer($c, $type, $attacker);
+        }
         if ($c->health <= 0) {
             $c->dead = true;
+            $this->leaveVehicle($c);
             // The respawned player starts without effects or absorption.
             [$c->effects, $c->absorption] = [[], 0.0];
             // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.
@@ -344,6 +360,95 @@ trait Survival
         return $credit === null
             ? ['translate' => $key, 'with' => [$victim]]
             : ['translate' => $key . '.player', 'with' => [$victim, $this->displayName($credit)]];
+    }
+
+    /**
+     * LivingEntity.dealDefaultKnockback for a player: away from the attacker (or a random way
+     * without one), shown by hurt_animation and, unless the damage makes no impact, the new motion.
+     */
+    private function knockbackPlayer(Client $c, string $type, ?Client $attacker): void
+    {
+        $tags = $this->version->catalog->damageTypes['tags'];
+        if (in_array($type, $tags['minecraft:no_knockback'] ?? [], true)) {
+            return;
+        }
+        [$dx, $dz] = $attacker === null ? [0.0, 0.0] : [$attacker->x - $c->x, $attacker->z - $c->z];
+        $resistance = $this->playerAttribute($c, 'knockback_resistance');
+        $result = \PhpMinecraftJavaServer\World\EntityPhysics::knockback([0.0, $c->velocityY, 0.0], 0.4, $resistance, $c->ground, $dx, $dz, new \PhpMinecraftJavaServer\World\Generation\XoroshiroRandom(random_int(PHP_INT_MIN, PHP_INT_MAX)));
+        // ServerPlayer.indicateDamage: the direction of the hit relative to where the player faces.
+        $direction = \PhpMinecraftJavaServer\World\Generation\Float32::round(self::mthAtan2($dz, $dx) * 180.0 / \PhpMinecraftJavaServer\World\Generation\Float32::round(M_PI) - $c->yaw);
+        $c->send($this->version, 'hurt_animation', Binary::writeVarInt($c->entityId) . pack('G', $direction));
+        if (in_array($type, $tags['minecraft:no_impact'] ?? [], true) || !$result['synchronize']) {
+            return;
+        }
+        // Entity.markHurt: the server entity sends the new motion to the player and its trackers.
+        [$vx, $vy, $vz] = $result['velocity'];
+        $c->velocityY = $vy;
+        $c->knockbackMotion = Binary::writeVarInt($c->entityId) . \PhpMinecraftJavaServer\Protocol\LowPrecisionVector::encode($vx, $vy, $vz);
+    }
+
+    /**
+     * ServerEntity.sendChanges on the next tick: a hurt player's motion goes to it and its trackers,
+     * and the impulse sends it to the trackers again.
+     */
+    private function sendKnockbackMotion(Client $c): void
+    {
+        if ($c->knockbackMotion === null) {
+            return;
+        }
+        $packet = $c->knockbackMotion;
+        $c->knockbackMotion = null;
+        foreach ($this->localPlayers() as $player) {
+            if ($player === $c || isset($player->entities[$c->entityId])) {
+                $player->send($this->version, 'set_entity_motion', $packet);
+            }
+        }
+        foreach ($this->localPlayers() as $player) {
+            if ($player !== $c && isset($player->entities[$c->entityId])) {
+                $player->send($this->version, 'set_entity_motion', $packet);
+            }
+        }
+    }
+
+    /** Mth.atan2: vanilla's table-based arctangent, which differs from atan2 in the last bits. */
+    private static function mthAtan2(float $y, float $x): float
+    {
+        static $asin = null, $cos = null;
+        if ($asin === null) {
+            for ($index = 0; $index < 257; ++$index) {
+                $asin[$index] = asin($index / 256.0);
+                $cos[$index] = cos($asin[$index]);
+            }
+        }
+        $squared = $x * $x + $y * $y;
+        if (is_nan($squared)) {
+            return NAN;
+        }
+        $negativeY = $y < 0.0;
+        $negativeX = $x < 0.0;
+        [$y, $x] = [abs($y), abs($x)];
+        $steep = $y > $x;
+        if ($steep) {
+            [$x, $y] = [$y, $x];
+        }
+        // fastInvSqrt
+        $bits = 6910469410427058090 - (unpack('q', pack('d', $squared))[1] >> 1);
+        $estimate = unpack('d', pack('q', $bits))[1];
+        $inverse = $estimate * (1.5 - 0.5 * $squared * $estimate * $estimate);
+        [$x, $y] = [$x * $inverse, $y * $inverse];
+        $bias = unpack('d', pack('q', 4805340802404319232))[1];
+        $biased = $bias + $y;
+        $index = unpack('q', pack('d', $biased))[1] & 0xffffffff;
+        $sine = $biased - $bias;
+        $delta = $y * $cos[$index] - $x * $sine;
+        $theta = $asin[$index] + (6.0 + $delta * $delta) * $delta * 0.16666666666666666;
+        if ($steep) {
+            $theta = M_PI / 2 - $theta;
+        }
+        if ($negativeX) {
+            $theta = M_PI - $theta;
+        }
+        return $negativeY ? -$theta : $theta;
     }
 
     /** CombatTracker.recheckStatus: combat ends 300 ticks after the last damage (100 when only hurt), or at death. */

@@ -24,7 +24,10 @@ trait TeleportCommand
             $to = $this->selectEntities($destination[0], $sender, false, true)[0];
             $dimension = isset($to['client']) ? $to['client']->dimension : $this->sourceDimension($sender);
             foreach ($targets as $target) {
-                $this->moveEntity($target, $dimension, [$to['x'], $to['y'], $to['z']]);
+                // performTeleport to an entity: no relatives, and the destination's rotation.
+                $from = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z, $target['client']->yaw, $target['client']->pitch] : null;
+                $this->rotateEntity($target, (float) $to['yaw'], (float) $to['pitch']);
+                $this->moveEntity($target, $dimension, [$to['x'], $to['y'], $to['z']], 0, $from);
             }
             $message = count($targets) === 1
                 ? ['translate' => 'commands.teleport.success.entity.single', 'with' => [$this->entityName($targets[0]), $this->entityName($to)]]
@@ -47,7 +50,18 @@ trait TeleportCommand
         }
         // Relative coordinates are resolved from the command's sender, even for other targets.
         $position = $this->positionArguments($destination, $sender);
+        // TeleportCommand.getRelatives: "~" axes and their velocities stay relative (local "^"
+        // coordinates count as relative on every axis), and so do angles that are "~" or not given.
+        // A change of dimension sends absolute coordinates instead.
+        $relative = 0;
+        foreach ($destination as $axis => $text) {
+            if ($text[0] === '~' || $text[0] === '^') {
+                $relative |= (1 << (5 + $axis)) | (1 << $axis);
+            }
+        }
+        $relative |= $rotation === null ? 0x18 : ((str_starts_with($rotation[0], '~') ? 0x08 : 0) | (str_starts_with($rotation[1], '~') ? 0x10 : 0));
         foreach ($targets as $target) {
+            $from = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z, $target['client']->yaw, $target['client']->pitch] : null;
             if ($rotation !== null) {
                 // RotationArgument: yaw then pitch; "~" is relative to the target's own rotation.
                 $angle = static fn (string $text, float $current): float => str_starts_with($text, '~') ? $current + (float) substr($text, 1) : (float) $text;
@@ -55,7 +69,7 @@ trait TeleportCommand
                 $yaw -= 360.0 * floor(($yaw + 180.0) / 360.0);
                 $this->rotateEntity($target, $yaw, max(-90.0, min(90.0, $angle($rotation[1], $target['pitch']))));
             }
-            $this->moveEntity($target, $this->sourceDimension($sender), $position);
+            $this->moveEntity($target, $this->sourceDimension($sender), $position, $relative, $from);
             if ($facing !== null) {
                 $this->faceEntity($target, $facing);
             }
@@ -77,6 +91,8 @@ trait TeleportCommand
 
     private function rotateEntity(array $target, float $yaw, float $pitch): void
     {
+        // Entity.setXRot: the pitch, as a float remainder of 360, within ±90.
+        $pitch = max(-90.0, min(90.0, fmod(unpack('G', pack('G', $pitch))[1], 360.0)));
         if (isset($target['orb'])) {
             $this->experienceOrbs[$target['orb']]['yaw'] = $yaw;
             return;
@@ -119,7 +135,7 @@ trait TeleportCommand
     }
 
     /** Move a selected player (across dimensions if needed) or a mob in the sender's dimension. */
-    private function moveEntity(array $target, string $dimension, array $position): void
+    private function moveEntity(array $target, string $dimension, array $position, int $relative = 0, ?array $from = null): void
     {
         if (isset($target['orb'])) {
             // The orb's tracker sends the new position with its next update.
@@ -146,7 +162,7 @@ trait TeleportCommand
         // ServerPlayer.teleportTo with resetCamera: a teleported spectator stops viewing.
         $this->setCamera($player, null);
         if ($player->dimension === $dimension) {
-            $this->teleport($player, $position);
+            $this->teleport($player, $position, $relative, $from);
         } else {
             $this->changeDimension($player, $dimension, $position);
         }

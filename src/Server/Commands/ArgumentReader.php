@@ -257,6 +257,22 @@ final class ArgumentReader
                     throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:dialog']);
                 }
                 return;
+            case 'minecraft:slot_source':
+                // SlotSourceArgument: a slot range name up to the next space, else a slot source by ID or inline.
+                $start = $reader->cursor;
+                $name = '';
+                while ($reader->canRead() && $reader->peek() !== ' ') {
+                    $name .= $reader->read();
+                }
+                if (ItemSlots::range($name) !== null) {
+                    return;
+                }
+                $reader->cursor = $start;
+                $this->resourceOrId($reader, 'minecraft:slot_source');
+                return;
+            case 'minecraft:loot_modifier':
+                $this->resourceOrId($reader, 'minecraft:item_modifier');
+                return;
             case 'minecraft:heightmap':
                 // HeightmapTypeArgument: the heightmaps kept after world generation.
                 $name = $reader->readUnquotedString();
@@ -275,6 +291,17 @@ final class ArgumentReader
                 // Other structured values: one balanced token.
                 self::balanced($reader);
         }
+    }
+
+    /** ResourceOrIdArgument for a registry this server holds no entries of: inline values only. */
+    private function resourceOrId(StringReader $reader, string $registry): void
+    {
+        if ($reader->canRead() && in_array($reader->peek(), ['{', '"', "'", '['], true)) {
+            Snbt::read($reader);
+            return;
+        }
+        $id = $reader->readIdentifier();
+        throw $reader->error('argument.resource_or_id.no_such_element', [$id, $registry]);
     }
 
     /** IntegerArgumentType, FloatArgumentType and DoubleArgumentType bounds, reported at the number's start. */

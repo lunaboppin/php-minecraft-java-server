@@ -6,11 +6,13 @@ namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\Framing;
+use PhpMinecraftJavaServer\Protocol\LowPrecisionVector;
 use PhpMinecraftJavaServer\Protocol\Nbt;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Protocol\ProtocolException;
 use PhpMinecraftJavaServer\Protocol\Version;
 use PhpMinecraftJavaServer\World\Generation\Float32;
+use PhpMinecraftJavaServer\World\ShortOpenHashSet;
 use PhpMinecraftJavaServer\World\World;
 
 final class Server
@@ -76,6 +78,13 @@ final class Server
     use TickRates;
 
     use CommandSources;
+
+    use Riding;
+
+    use ContainerOpeners;
+
+    /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
+    private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
 
     private mixed $listener = null;
@@ -754,13 +763,13 @@ final class Server
         }
     }
 
-    private function teleport(Client $c, ?array $position = null): void
+    private function teleport(Client $c, ?array $position = null, int $relative = 0, ?array $from = null): void
     {
         if ($c->dimension !== $this->world->dimension) {
-            $this->withDimension($c->dimension, fn () => $this->teleport($c, $position));
+            $this->withDimension($c->dimension, fn () => $this->teleport($c, $position, $relative, $from));
             return;
         }
-        $this->sendPosition($c, $position ?? $this->world->spawn());
+        $this->sendPosition($c, $position ?? $this->world->spawn(), $relative, $from);
         $this->scheduleChunks($c);
         // Trackers follow in the player's tick, as ChunkMap.tick does, after a command's reply.
         $c->teleportBroadcastPending = true;
@@ -788,8 +797,13 @@ final class Server
         return $wrapped;
     }
 
-    private function sendPosition(Client $c, array $position): void
+    /**
+     * Relative flags (Relative.pack) send each flagged coordinate or angle as its change from the
+     * pose before, which defaults to the player's current one; the client adds it to its own.
+     */
+    private function sendPosition(Client $c, array $position, int $relative = 0, ?array $from = null): void
     {
+        $from ??= [$c->x, $c->y, $c->z, $c->yaw, $c->pitch];
         [$c->x, $c->y, $c->z] = $position;
         // ServerPlayer.teleport resets the connection's movement check to the destination.
         $c->tickPosition = [$c->x, $c->y, $c->z];
@@ -798,7 +812,13 @@ final class Server
         $c->velocityY = 0.0;
         $c->teleport = ++$c->teleportCounter;
         $c->teleportTick = $this->ticks;
-        $c->send($this->version, 'player_position', Packets::position($c->teleport, $c->x, $c->y, $c->z, $c->yaw, $c->pitch));
+        $pose = [$c->x, $c->y, $c->z, $c->yaw, $c->pitch];
+        foreach ($pose as $i => $value) {
+            if (($relative >> $i & 1) === 1) {
+                $pose[$i] = $value - $from[$i];
+            }
+        }
+        $c->send($this->version, 'player_position', Packets::position($c->teleport, ...$pose, relative: $relative));
     }
 
     /** ChunkTrackingView.isWithinDistance: the cylinder of chunks a player's view keeps, with its border. */
@@ -865,8 +885,10 @@ final class Server
                     return;
                 }
                 $c->teleport = null;
-                // handleAcceptTeleportPacket moves the player as a packet that is not on the ground.
+                // handleAcceptTeleportPacket then moves the player to the confirmed pose, rotation
+                // included, as a packet that is not on the ground.
                 $c->ground = false;
+                $this->playerPositionChange($c, $confirmation['x'], $confirmation['y'], $confirmation['z'], $confirmation['yaw'], $confirmation['pitch'], 0);
                 return;
             case 'client_tick_end':
                 $r->end();
@@ -996,8 +1018,12 @@ final class Server
             case 'container_close': $window = $r->varInt();
                 $r->end();
                 if ($window === $c->windowId) {
+                    // handleContainerClose sends nothing back unless the cursor or crafting grid returned items.
+                    $before = [$c->inventory, $c->cursor];
                     $this->closeWindow($c);
-                    $this->syncInventory($c);
+                    if ([$c->inventory, $c->cursor] !== $before) {
+                        $this->syncInventory($c);
+                    }
                 }return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
@@ -1029,6 +1055,17 @@ final class Server
             case 'attack': $id = $r->varInt();
                 $r->end();
                 $this->attackEntity($c, $id);
+                return;
+            case 'interact':
+                $id = $r->varInt();
+                $hand = $r->varInt();
+                LowPrecisionVector::decode($r);
+                $secondary = $r->bool();
+                $r->end();
+                if ($c->playerLoaded) {
+                    $c->lastActionTime = self::now();
+                    $this->interactEntity($c, $id, $hand, $secondary);
+                }
                 return;
             default:
                 // Optional client telemetry and unsupported interactions have no world effects.
@@ -1067,6 +1104,12 @@ final class Server
             }
             $c->positionThisTick = true;
         }
+        $this->playerPositionChange($c, $x, $y, $z, $yaw, $pitch, $flags);
+    }
+
+    /** ServerGamePacketListenerImpl.handlePlayerPositionChange, for movement packets and confirmed teleports. */
+    private function playerPositionChange(Client $c, float $x, float $y, float $z, float $yaw, float $pitch, int $flags): void
+    {
         $x = max(-3.0E7, min(3.0E7, $x));
         $y = max(-2.0E7, min(2.0E7, $y));
         $z = max(-3.0E7, min(3.0E7, $z));
@@ -1081,6 +1124,13 @@ final class Server
             }
             $c->yaw = $yaw;
             $c->pitch = $pitch;
+            return;
+        }
+        // handlePlayerPositionChange: a passenger only turns; its vehicle places it.
+        if ($c->vehicle !== null) {
+            $c->yaw = $yaw;
+            $c->pitch = $pitch;
+            $this->broadcastPlayerPosition($c);
             return;
         }
         // handlePlayerPositionChange: more than ten blocks from where the tick began, allowing more
@@ -1234,12 +1284,24 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace' => 'furnace','chest','barrel' => 'chest',default => null
+                'crafting_table' => 'crafting','furnace' => 'furnace','chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
-            if ($type !== null) {
-                $this->openWindow($c, $type, [$x, $y, $z]);
+            // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
+            // above either half of a double chest.
+            $blockedAbove = fn (int $bx, int $bz): bool => $this->version->catalog->collision['shapes'][$this->version->catalog->collision['states'][$this->world->get($bx, $y + 1, $bz)]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]];
+            $chest = $name === 'chest' || $name === 'trapped_chest';
+            $partner = $chest ? $this->chestPartner([$x, $y, $z]) : null;
+            if (($type === 'ender' || $chest) && ($blockedAbove($x, $z) || ($partner !== null && $blockedAbove($partner[0], $partner[2])))) {
                 $this->useSwing($c, $hand);
                 $this->acknowledge($c, $sequence);
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
+                return;
+            }
+            if ($type !== null) {
+                $this->openWindow($c, $type, [$x, $y, $z], $partner);
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
                 return;
             }
             $properties = $this->version->catalog->properties($clicked);
@@ -1321,6 +1383,9 @@ final class Server
             if (isset($block['properties']['waterlogged'])) {
                 $properties['waterlogged'] = $this->version->catalog->blockName($this->world->get($tx, $ty, $tz)) === 'water' ? 'true' : 'false';
             }
+            if ($blockName === 'chest' || $blockName === 'trapped_chest') {
+                [$properties['facing'], $properties['type']] = $this->chestPlacement($blockName, [$tx, $ty, $tz], $facing, $face, $c->sneaking);
+            }
             $blocked = false;
             if ($block['full_cube']) {
                 foreach ($this->localPlayers() as $player) {
@@ -1345,6 +1410,12 @@ final class Server
             }
             if (!$blocked) {
                 $this->setBlock($tx, $ty, $tz, $this->version->catalog->state($blockName, $properties));
+                if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
+                    $this->joinChest([$tx, $ty, $tz]);
+                }
+                if (!str_ends_with($itemName, '_bucket')) {
+                    $this->placeSound($c, $tx, $ty, $tz, $blockName);
+                }
                 if (str_ends_with($blockName, '_sign')) {
                     $this->openSign($c, $tx, $ty, $tz, 1);
                 }
@@ -1366,11 +1437,8 @@ final class Server
                 $this->useSwing($c, $hand);
             }
         }
-        // ServerGamePacketListenerImpl.handleUseItemOn: the clicked block and the one on its clicked
-        // face are sent to the player, correcting the client's prediction either way.
-        $this->blockUpdate($c, $x, $y, $z);
-        $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
         $this->acknowledge($c, $sequence);
+        $this->resendUsedBlocks($c, $x, $y, $z, $face);
     }
 
     private function creativeSlot(Client $c, Binary $r): void
@@ -1421,14 +1489,78 @@ final class Server
             $this->ejectJukebox([$x, $y, $z], false);
         }
         $this->world->set($x, $y, $z, $state);
+        $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         if ($this->world->generator === 'terrain') {
             $this->relightAround($x, $z);
         }
-        foreach ($this->localPlayers() as $player) {
-            if (isset($player->loadedChunks[($x >> 4) . ':' . ($z >> 4)])) {
-                $this->blockUpdate($player, $x, $y, $z);
+        // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
+        $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
+        $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
+    }
+
+    /**
+     * ChunkHolder.broadcastChanges: each section's changed blocks reach the players the chunk is
+     * sent to, one as a block update and more as a section update, each followed by any block
+     * entity data.
+     */
+    private function broadcastChangedBlocks(): void
+    {
+        $changes = $this->changedBlocks[$this->world->dimension] ?? [];
+        unset($this->changedBlocks[$this->world->dimension]);
+        foreach ($changes as $key => $set) {
+            [$cx, $cz, $sy] = array_map('intval', explode(':', $key));
+            $players = array_filter($this->localPlayers(), static fn (Client $player): bool => isset($player->loadedChunks[$cx . ':' . $cz]));
+            if ($players === []) {
+                continue;
             }
+            $positions = array_map(static fn (int $packed): array => [($cx << 4) | (($packed >> 8) & 15), ($sy << 4) | ($packed & 15), ($cz << 4) | (($packed >> 4) & 15)], $set->values());
+            if (count($positions) === 1) {
+                foreach ($players as $player) {
+                    $this->blockUpdate($player, ...$positions[0]);
+                }
+                continue;
+            }
+            $section = pack('J', (($cx & 0x3fffff) << 42) | (($cz & 0x3fffff) << 20) | ($sy & 0xfffff));
+            $payload = $section . Binary::writeVarInt(count($positions));
+            foreach ($positions as [$x, $y, $z]) {
+                $payload .= Binary::writeVarLong(($this->world->get($x, $y, $z) << 12) | (($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
+            }
+            foreach ($players as $player) {
+                $player->send($this->version, 'section_blocks_update', $payload);
+                foreach ($positions as [$x, $y, $z]) {
+                    $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+                    if ($type !== null) {
+                        $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * BlockItem.place: the block's place sound, at its SoundType's volume eased toward full and
+     * 80% of its pitch, for the players near it but not the placer, who plays it themself.
+     */
+    private function placeSound(Client $placer, int $x, int $y, int $z, string $block): void
+    {
+        [$sound, $volume, $pitch] = $this->version->catalog->simulation['place_sounds'][$block];
+        $volume = Float32::round(($volume + 1.0) / 2.0);
+        $payload = Packets::sound($sound, 4, $x + 0.5, $y + 0.5, $z + 0.5, $volume, Float32::round($pitch * Float32::round(0.8)), unpack('J', random_bytes(8))[1]);
+        $range = $volume > 1.0 ? 16.0 * $volume : 16.0;
+        foreach ($this->localPlayers() as $player) {
+            if ($player !== $placer && ($player->x - $x - 0.5) ** 2 + ($player->y - $y - 0.5) ** 2 + ($player->z - $z - 0.5) ** 2 < $range ** 2) {
+                $player->send($this->version, 'sound', $payload);
+            }
+        }
+    }
+
+    /** handleUseItemOn resends the used block and the one on its clicked face. */
+    private function resendUsedBlocks(Client $c, int $x, int $y, int $z, int $face): void
+    {
+        [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
+        foreach ([[$x, $y, $z], [$x + $dx, $y + $dy, $z + $dz]] as [$bx, $by, $bz]) {
+            $c->send($this->version, 'block_update', Binary::writePosition($bx, $by, $bz) . Binary::writeVarInt($this->world->get($bx, $by, $bz)));
         }
     }
 
@@ -1565,6 +1697,7 @@ final class Server
                         return;
                     }
                     $this->tickSurvival($c);
+                    $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
                     // ServerPlayer.tick ends by sending changed post effects, the empty list included.
@@ -1648,6 +1781,7 @@ final class Server
         }
         $this->sessionVerifier?->cancel($id);
         $this->forgetPushingEntity($c->entityId, $c->dimension);
+        $this->leaveVehicle($c);
         unset($this->clients[$id]);
         if ($c->state === 'play') {
             $this->closeWindow($c);

@@ -97,6 +97,9 @@ public class ExportReference {
             info.addProperty("id",BuiltInRegistries.ITEM.getId(item));info.addProperty("max_stack",stack.getMaxStackSize());info.addProperty("durability",stack.getMaxDamage());
             var food=stack.get(net.minecraft.core.component.DataComponents.FOOD);
             if(food!=null) {info.addProperty("nutrition",food.nutrition());info.addProperty("saturation",food.saturation());}
+            // LivingEntity.getEquipmentSlotForItem: the equippable slot, which armor slots require.
+            var equippable=stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+            if(equippable!=null)info.addProperty("equip_slot",equippable.slot().getSerializedName());
             items.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);
         }
         var simulation=new JsonObject();var pickItems=new JsonObject();for(var block:BuiltInRegistries.BLOCK){pickItems.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),BuiltInRegistries.ITEM.getId(block.asItem()));}simulation.add("pick_items",pickItems);var instruments=new JsonObject();var blockInstruments=new JsonObject();var songs=new JsonObject();
@@ -108,7 +111,7 @@ public class ExportReference {
         for(var block:BuiltInRegistries.BLOCK){var instrument=block.defaultBlockState().instrument();if(instrument!=net.minecraft.world.level.block.state.properties.NoteBlockInstrument.HARP)blockInstruments.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),instrument.getSerializedName());}
         for(var item:BuiltInRegistries.ITEM){var playable=new net.minecraft.world.item.ItemStack(item).get(net.minecraft.core.component.DataComponents.JUKEBOX_PLAYABLE);
             if(playable!=null){var info=new JsonObject();info.addProperty("song",playable.song().unwrapKey().orElseThrow().identifier().getPath());info.addProperty("ticks",playable.song().value().lengthInTicks()+20);info.addProperty("comparator",playable.song().value().comparatorOutput());songs.add(BuiltInRegistries.ITEM.getKey(item).getPath(),info);}}
-        simulation.add("instruments",instruments);simulation.add("block_instruments",blockInstruments);simulation.add("songs",songs);simulation.addProperty("note_block_id",BuiltInRegistries.BLOCK.getId(Blocks.NOTE_BLOCK));
+        var blockIds=new JsonObject();for(var block:BuiltInRegistries.BLOCK)blockIds.addProperty(BuiltInRegistries.BLOCK.getKey(block).getPath(),BuiltInRegistries.BLOCK.getId(block));simulation.add("block_ids",blockIds);var placeSounds=new JsonObject();for(var block:BuiltInRegistries.BLOCK){var sound=block.defaultBlockState().getSoundType();var entry=new JsonArray();entry.add(BuiltInRegistries.SOUND_EVENT.getId(sound.getPlaceSound()));entry.add((double)sound.getVolume());entry.add((double)sound.getPitch());placeSounds.add(BuiltInRegistries.BLOCK.getKey(block).getPath(),entry);}simulation.add("place_sounds",placeSounds);simulation.add("instruments",instruments);simulation.add("block_instruments",blockInstruments);simulation.add("songs",songs);simulation.addProperty("note_block_id",BuiltInRegistries.BLOCK.getId(Blocks.NOTE_BLOCK));
         Files.writeString(out.resolve("simulation.json"),gson.toJson(simulation)+"\n");
         var tracking=new JsonObject();var ranges=new JsonObject();var poses=new JsonObject();
         for(var type:BuiltInRegistries.ENTITY_TYPE)ranges.addProperty(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath(),type.clientTrackingRange()*16);
@@ -125,6 +128,11 @@ public class ExportReference {
             // Entity dimensions are floats widened to doubles during collision.
             // Retain those exact values rather than shortening them to decimals.
             info.addProperty("width",(double)type.getWidth());info.addProperty("height",(double)type.getHeight());info.addProperty("eye_height",(double)type.getDimensions().eyeHeight());
+            // Riders sit at the vehicle's PASSENGER points and hang from their own VEHICLE point.
+            var attachments=type.getDimensions().attachments();var passengerPoints=new JsonArray();
+            for(int i=0;attachments.getNullable(net.minecraft.world.entity.EntityAttachment.PASSENGER,i,0.0F)!=null;i++){var point=attachments.getNullable(net.minecraft.world.entity.EntityAttachment.PASSENGER,i,0.0F);var xyz=new JsonArray();xyz.add(point.x);xyz.add(point.y);xyz.add(point.z);passengerPoints.add(xyz);}
+            var vehiclePoint=attachments.get(net.minecraft.world.entity.EntityAttachment.VEHICLE,0,0.0F);var vehicleXyz=new JsonArray();vehicleXyz.add(vehiclePoint.x);vehicleXyz.add(vehiclePoint.y);vehicleXyz.add(vehiclePoint.z);
+            info.add("passenger_attachments",passengerPoints);info.add("vehicle_attachment",vehicleXyz);
             info.addProperty("category",type.getCategory().getName());info.addProperty("fire_immune",type.fireImmune());info.addProperty("summonable",type.canSummon());
             info.addProperty("peaceful",type.isAllowedInPeaceful());info.addProperty("enabled",type.isEnabled(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
             var stats=new JsonObject();

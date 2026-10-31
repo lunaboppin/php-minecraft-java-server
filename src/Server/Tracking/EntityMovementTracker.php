@@ -32,6 +32,8 @@ final class EntityMovementTracker
 
     private int $teleportDelay = 0;
 
+    private bool $wasRiding = false;
+
     public function __construct(
         private readonly int $id,
         private readonly int $interval,
@@ -94,6 +96,22 @@ final class EntityMovementTracker
             $yaw = self::angle($state['yaw']);
             $pitch = self::angle($state['pitch']);
             $rotated = abs($yaw - $this->lastYaw) >= 1 || abs($pitch - $this->lastPitch) >= 1;
+            if ($state['passenger'] ?? false) {
+                // A passenger's position follows its vehicle: only its rotation is sent, and the
+                // first update after it dismounts is a full position sync.
+                if ($rotated) {
+                    $packets[] = $this->packet('move_entity_rot', chr((int) $state['ground']) . chr($yaw & 255) . chr($pitch & 255));
+                    $this->lastYaw = $yaw;
+                    $this->lastPitch = $pitch;
+                }
+                $this->steps->clear();
+                $this->positions->base = $state['position'];
+                $this->wasRiding = true;
+                $this->updateHead($state, $packets);
+                $state['needs_sync'] = false;
+                $this->ticks = Int64::signed32($this->ticks + 1);
+                return $this->velocitySync($state, $packets);
+            }
             ++$this->teleportDelay;
             $path = $this->stepped ? $this->steps->path($state['position']) : PositionPath::linear($state['position']);
             $this->steps->clear();
@@ -101,7 +119,7 @@ final class EntityMovementTracker
             $movement = null;
             $hasPosition = false;
             $hasRotation = false;
-            $fullPosition = ($state['precise'] ?? false) || $this->teleportDelay > 400 || $this->lastGround !== $state['ground'];
+            $fullPosition = ($state['precise'] ?? false) || $this->teleportDelay > 400 || $this->wasRiding || $this->lastGround !== $state['ground'];
             if ($fullPosition) {
                 $this->lastGround = $state['ground'];
                 $this->teleportDelay = 0;
@@ -141,14 +159,25 @@ final class EntityMovementTracker
                     $this->lastPitch = $pitch;
                 }
             }
-            $head = self::angle($state['head']);
-            if (abs($head - $this->lastHead) >= 1) {
-                $packets[] = $this->packet('rotate_head', chr($head & 255));
-                $this->lastHead = $head;
-            }
+            $this->wasRiding = false;
+            $this->updateHead($state, $packets);
             $state['needs_sync'] = false;
         }
         $this->ticks = Int64::signed32($this->ticks + 1);
+        return $this->velocitySync($state, $packets);
+    }
+
+    private function updateHead(array $state, array &$packets): void
+    {
+        $head = self::angle($state['head']);
+        if (abs($head - $this->lastHead) >= 1) {
+            $packets[] = $this->packet('rotate_head', chr($head & 255));
+            $this->lastHead = $head;
+        }
+    }
+
+    private function velocitySync(array &$state, array $packets): array
+    {
         if ($state['sync_velocity']) {
             $packets[] = $this->packet('set_entity_motion', LowPrecisionVector::encode(...$state['velocity']), 'tracking_and_self');
             $state['sync_velocity'] = false;

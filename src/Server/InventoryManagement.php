@@ -66,10 +66,12 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'furnace' => 3,default => 27
+                'crafting' => 10,'furnace' => 3,default => $c->windowPartner === null ? 27 : 54
             };
             $items = array_fill(0, $count + 36, null);
-            $slots = $c->windowType === 'crafting' ? $c->craftGrid : $this->world->container($c->windowPosition)['slots'];
+            $slots = match ($c->windowType) {
+                'crafting' => $c->craftGrid, 'ender' => $c->enderItems, default => $this->windowContainerSlots($c)
+            };
             foreach ($slots as $slot => $stack) {
                 if ($slot >= 0 && $slot < $count) {
                     $items[$slot] = $stack;
@@ -102,7 +104,7 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'furnace' => 3,default => 27
+                'crafting' => 10,'furnace' => 3,default => $c->windowPartner === null ? 27 : 54
             };
             $slots = [];
             for ($i = 0; $i < $count; ++$i) {
@@ -112,10 +114,10 @@ trait InventoryManagement
             }
             if ($c->windowType === 'crafting') {
                 $c->craftGrid = $slots;
+            } elseif ($c->windowType === 'ender') {
+                $c->enderItems = $slots;
             } else {
-                $data = $this->world->container($c->windowPosition);
-                $data['slots'] = $slots;
-                $this->world->container($c->windowPosition, $data);
+                $this->storeWindowContainerSlots($c, $slots);
             }
             for ($i = 0; $i < 36; ++$i) {
                 if (isset($items[$count + $i])) {
@@ -133,13 +135,41 @@ trait InventoryManagement
             $this->withDimension($c->dimension, fn () => $this->syncInventory($c));
             return;
         }
-        $c->send($this->version, 'container_set_content', Packets::inventory($c->windowId, ++$c->inventoryRevision, $this->menuItems($c), $c->cursor, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+        $revision = $c->windowType === 'player' ? ++$c->inventoryRevision : ++$c->menuRevision;
+        $c->send($this->version, 'container_set_content', Packets::inventory($c->windowId, $revision, $this->menuItems($c), $c->cursor, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+    }
+
+    /** The open container's slots; a double chest's right half fills 0-26 and its left half 27-53. */
+    private function windowContainerSlots(Client $c): array
+    {
+        $slots = $this->world->container($c->windowPosition)['slots'];
+        if ($c->windowPartner !== null) {
+            foreach ($this->world->container($c->windowPartner)['slots'] as $slot => $stack) {
+                $slots[$slot + 27] = $stack;
+            }
+        }
+        return $slots;
+    }
+
+    private function storeWindowContainerSlots(Client $c, array $slots): void
+    {
+        $halves = $c->windowPartner === null ? [[$c->windowPosition, 0]] : [[$c->windowPosition, 0], [$c->windowPartner, 27]];
+        foreach ($halves as [$position, $offset]) {
+            $data = $this->world->container($position);
+            $data['slots'] = [];
+            foreach ($slots as $slot => $stack) {
+                if ($slot >= $offset && $slot < $offset + 27) {
+                    $data['slots'][$slot - $offset] = $stack;
+                }
+            }
+            $this->world->container($position, $data);
+        }
     }
 
     private function syncContainer(array $position): void
     {
         foreach ($this->localPlayers() as $player) {
-            if ($player->windowPosition === $position) {
+            if ($player->windowPosition === $position || $player->windowPartner === $position) {
                 $this->syncInventory($player);
             }
         }
@@ -169,26 +199,51 @@ trait InventoryManagement
         if ($notify) {
             $c->send($this->version, 'container_close', Binary::writeVarInt($c->windowId));
         }
+        if ($c->windowPosition !== null && ($c->windowType === 'chest' || $c->windowType === 'ender')) {
+            $this->containerClosed($c, $c->windowPosition);
+            if ($c->windowPartner !== null) {
+                $this->containerClosed($c, $c->windowPartner);
+            }
+        }
         $c->dragSlots = [];
         $c->dragType = -1;
         $c->windowType = 'player';
         $c->windowPosition = null;
+        $c->windowPartner = null;
         $c->windowId = 0;
     }
 
-    private function openWindow(Client $c, string $type, array $position): void
+    /** A double chest's window holds the right half's slots, then the left half's. */
+    private function openWindow(Client $c, string $type, array $position, ?array $partner = null): void
     {
-        $this->closeWindow($c, true);
-        $c->windowId = 1;
+        // ServerPlayer.openMenu closes an open container first.
+        $this->closeWindow($c, $c->windowType !== 'player');
+        // ServerPlayer.nextContainerCounter: window IDs run from 1 to 100.
+        $c->windowId = $c->containerCounter = $c->containerCounter % 100 + 1;
+        // CompoundContainer for a double chest: the right half first.
+        if ($partner !== null && $this->version->catalog->properties($this->world->get(...$position))['type'] === 'left') {
+            [$position, $partner] = [$partner, $position];
+        }
         $c->windowType = $type;
         $c->windowPosition = $position;
+        $c->windowPartner = $partner;
+        $c->menuRevision = 0;
         $menu = match ($type) {
-            'crafting' => 'crafting','furnace' => 'furnace',default => 'generic_9x3'
+            'crafting' => 'crafting','furnace' => 'furnace',default => $partner === null ? 'generic_9x3' : 'generic_9x6'
         };
+        // The block entity's default name, or the crafting table's.
         $title = match ($type) {
-            'crafting' => 'Crafting','furnace' => 'Furnace',default => 'Chest'
+            'crafting' => 'container.crafting','furnace' => 'container.furnace','ender' => 'container.enderchest',
+            default => $partner !== null ? 'container.chestDouble' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest')
         };
-        $c->send($this->version, 'open_screen', "\1" . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::text($title));
+        // The menu's constructor opens the container before the screen is sent.
+        if ($type === 'chest' || $type === 'ender') {
+            $this->containerOpened($c, $position);
+            if ($partner !== null) {
+                $this->containerOpened($c, $partner);
+            }
+        }
+        $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
         if ($type === 'furnace') {
             $this->activeFurnaces[implode(':', $position)] = $position;
         }
@@ -204,8 +259,12 @@ trait InventoryManagement
             return false;
         }
         $name = $this->version->catalog->blockName($this->world->get($x, $y, $z));
+        // A double chest stays open while both halves are still joined.
+        if ($c->windowPartner !== null && $this->chestPartner($c->windowPosition) !== $c->windowPartner) {
+            return false;
+        }
         return match ($c->windowType) {
-            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'barrel'], true),default => true
+            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
         };
     }
 

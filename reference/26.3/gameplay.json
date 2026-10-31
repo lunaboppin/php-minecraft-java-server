@@ -73135,7 +73135,8 @@
     "carved_pumpkin": {
       "id": 431,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "jack_o_lantern": {
       "id": 432,
@@ -73880,82 +73881,98 @@
     "white_carpet": {
       "id": 580,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "orange_carpet": {
       "id": 581,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "magenta_carpet": {
       "id": 582,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "light_blue_carpet": {
       "id": 583,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "yellow_carpet": {
       "id": 584,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "lime_carpet": {
       "id": 585,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "pink_carpet": {
       "id": 586,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "gray_carpet": {
       "id": 587,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "light_gray_carpet": {
       "id": 588,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "cyan_carpet": {
       "id": 589,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "purple_carpet": {
       "id": 590,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "blue_carpet": {
       "id": 591,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "brown_carpet": {
       "id": 592,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "green_carpet": {
       "id": 593,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "red_carpet": {
       "id": 594,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "black_carpet": {
       "id": 595,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "terracotta": {
       "id": 596,
@@ -75725,87 +75742,104 @@
     "saddle": {
       "id": 949,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "saddle"
     },
     "white_harness": {
       "id": 950,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "orange_harness": {
       "id": 951,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "magenta_harness": {
       "id": 952,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "light_blue_harness": {
       "id": 953,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "yellow_harness": {
       "id": 954,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "lime_harness": {
       "id": 955,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "pink_harness": {
       "id": 956,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "gray_harness": {
       "id": 957,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "light_gray_harness": {
       "id": 958,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "cyan_harness": {
       "id": 959,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "purple_harness": {
       "id": 960,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "blue_harness": {
       "id": 961,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "brown_harness": {
       "id": 962,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "green_harness": {
       "id": 963,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "red_harness": {
       "id": 964,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "black_harness": {
       "id": 965,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "minecart": {
       "id": 966,
@@ -75850,7 +75884,8 @@
     "elytra": {
       "id": 974,
       "max_stack": 1,
-      "durability": 432
+      "durability": 432,
+      "equip_slot": "chest"
     },
     "oak_boat": {
       "id": 975,
@@ -75985,7 +76020,8 @@
     "turtle_helmet": {
       "id": 1001,
       "max_stack": 1,
-      "durability": 275
+      "durability": 275,
+      "equip_slot": "head"
     },
     "turtle_scute": {
       "id": 1002,
@@ -76000,7 +76036,8 @@
     "wolf_armor": {
       "id": 1004,
       "max_stack": 1,
-      "durability": 64
+      "durability": 64,
+      "equip_slot": "body"
     },
     "flint_and_steel": {
       "id": 1005,
@@ -76326,142 +76363,170 @@
     "leather_helmet": {
       "id": 1068,
       "max_stack": 1,
-      "durability": 55
+      "durability": 55,
+      "equip_slot": "head"
     },
     "leather_chestplate": {
       "id": 1069,
       "max_stack": 1,
-      "durability": 80
+      "durability": 80,
+      "equip_slot": "chest"
     },
     "leather_leggings": {
       "id": 1070,
       "max_stack": 1,
-      "durability": 75
+      "durability": 75,
+      "equip_slot": "legs"
     },
     "leather_boots": {
       "id": 1071,
       "max_stack": 1,
-      "durability": 65
+      "durability": 65,
+      "equip_slot": "feet"
     },
     "copper_helmet": {
       "id": 1072,
       "max_stack": 1,
-      "durability": 121
+      "durability": 121,
+      "equip_slot": "head"
     },
     "copper_chestplate": {
       "id": 1073,
       "max_stack": 1,
-      "durability": 176
+      "durability": 176,
+      "equip_slot": "chest"
     },
     "copper_leggings": {
       "id": 1074,
       "max_stack": 1,
-      "durability": 165
+      "durability": 165,
+      "equip_slot": "legs"
     },
     "copper_boots": {
       "id": 1075,
       "max_stack": 1,
-      "durability": 143
+      "durability": 143,
+      "equip_slot": "feet"
     },
     "chainmail_helmet": {
       "id": 1076,
       "max_stack": 1,
-      "durability": 165
+      "durability": 165,
+      "equip_slot": "head"
     },
     "chainmail_chestplate": {
       "id": 1077,
       "max_stack": 1,
-      "durability": 240
+      "durability": 240,
+      "equip_slot": "chest"
     },
     "chainmail_leggings": {
       "id": 1078,
       "max_stack": 1,
-      "durability": 225
+      "durability": 225,
+      "equip_slot": "legs"
     },
     "chainmail_boots": {
       "id": 1079,
       "max_stack": 1,
-      "durability": 195
+      "durability": 195,
+      "equip_slot": "feet"
     },
     "iron_helmet": {
       "id": 1080,
       "max_stack": 1,
-      "durability": 165
+      "durability": 165,
+      "equip_slot": "head"
     },
     "iron_chestplate": {
       "id": 1081,
       "max_stack": 1,
-      "durability": 240
+      "durability": 240,
+      "equip_slot": "chest"
     },
     "iron_leggings": {
       "id": 1082,
       "max_stack": 1,
-      "durability": 225
+      "durability": 225,
+      "equip_slot": "legs"
     },
     "iron_boots": {
       "id": 1083,
       "max_stack": 1,
-      "durability": 195
+      "durability": 195,
+      "equip_slot": "feet"
     },
     "diamond_helmet": {
       "id": 1084,
       "max_stack": 1,
-      "durability": 363
+      "durability": 363,
+      "equip_slot": "head"
     },
     "diamond_chestplate": {
       "id": 1085,
       "max_stack": 1,
-      "durability": 528
+      "durability": 528,
+      "equip_slot": "chest"
     },
     "diamond_leggings": {
       "id": 1086,
       "max_stack": 1,
-      "durability": 495
+      "durability": 495,
+      "equip_slot": "legs"
     },
     "diamond_boots": {
       "id": 1087,
       "max_stack": 1,
-      "durability": 429
+      "durability": 429,
+      "equip_slot": "feet"
     },
     "golden_helmet": {
       "id": 1088,
       "max_stack": 1,
-      "durability": 77
+      "durability": 77,
+      "equip_slot": "head"
     },
     "golden_chestplate": {
       "id": 1089,
       "max_stack": 1,
-      "durability": 112
+      "durability": 112,
+      "equip_slot": "chest"
     },
     "golden_leggings": {
       "id": 1090,
       "max_stack": 1,
-      "durability": 105
+      "durability": 105,
+      "equip_slot": "legs"
     },
     "golden_boots": {
       "id": 1091,
       "max_stack": 1,
-      "durability": 91
+      "durability": 91,
+      "equip_slot": "feet"
     },
     "netherite_helmet": {
       "id": 1092,
       "max_stack": 1,
-      "durability": 407
+      "durability": 407,
+      "equip_slot": "head"
     },
     "netherite_chestplate": {
       "id": 1093,
       "max_stack": 1,
-      "durability": 592
+      "durability": 592,
+      "equip_slot": "chest"
     },
     "netherite_leggings": {
       "id": 1094,
       "max_stack": 1,
-      "durability": 555
+      "durability": 555,
+      "equip_slot": "legs"
     },
     "netherite_boots": {
       "id": 1095,
       "max_stack": 1,
-      "durability": 481
+      "durability": 481,
+      "equip_slot": "feet"
     },
     "flint": {
       "id": 1096,
@@ -77962,37 +78027,44 @@
     "skeleton_skull": {
       "id": 1384,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "wither_skeleton_skull": {
       "id": 1385,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "player_head": {
       "id": 1386,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "zombie_head": {
       "id": 1387,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "creeper_head": {
       "id": 1388,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "dragon_head": {
       "id": 1389,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "piglin_head": {
       "id": 1390,
       "max_stack": 64,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "head"
     },
     "nether_star": {
       "id": 1391,
@@ -78080,32 +78152,38 @@
     "copper_horse_armor": {
       "id": 1406,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "iron_horse_armor": {
       "id": 1407,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "golden_horse_armor": {
       "id": 1408,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "diamond_horse_armor": {
       "id": 1409,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "netherite_horse_armor": {
       "id": 1410,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "leather_horse_armor": {
       "id": 1411,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "lead": {
       "id": 1412,
@@ -78290,7 +78368,8 @@
     "shield": {
       "id": 1446,
       "max_stack": 1,
-      "durability": 336
+      "durability": 336,
+      "equip_slot": "offhand"
     },
     "wooden_spear": {
       "id": 1447,
@@ -78485,27 +78564,32 @@
     "iron_nautilus_armor": {
       "id": 1485,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "golden_nautilus_armor": {
       "id": 1486,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "diamond_nautilus_armor": {
       "id": 1487,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "netherite_nautilus_armor": {
       "id": 1488,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "copper_nautilus_armor": {
       "id": 1489,
       "max_stack": 1,
-      "durability": 0
+      "durability": 0,
+      "equip_slot": "body"
     },
     "heart_of_the_sea": {
       "id": 1490,

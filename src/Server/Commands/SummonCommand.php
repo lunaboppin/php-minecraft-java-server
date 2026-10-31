@@ -16,6 +16,10 @@ trait SummonCommand
         if ($info !== null && (!$info['summonable'] || $kind === 'player')) {
             throw new CommandFailure(['translate' => 'entity.not_summonable', 'with' => [['text' => 'minecraft:' . $kind]]]);
         }
+        if ($kind === 'item') {
+            $this->summonItem($sender, $arguments, $text);
+            return;
+        }
         if (!isset($info['attributes']['max_health'])) {
             throw new \InvalidArgumentException('Unknown living entity type');
         }
@@ -29,6 +33,25 @@ trait SummonCommand
         $this->applyMobNbt($id, $nbt);
         $animal = $this->animals[$id];
         $this->sendSuccess($sender, ['translate' => 'commands.summon.success', 'with' => [$this->entityComponent($kind, hex2bin($animal['uuid']), $animal['customName'] ?? null)]], true);
+    }
+
+    /**
+     * An item entity from ItemEntity's bare constructor, which neither pushes nor delays it, then
+     * its Item tag. Without a stack the entity is discarded as it loads, so nothing appears.
+     */
+    private function summonItem(Client $sender, array $arguments, string $text): void
+    {
+        $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
+        $tag = (count($arguments) > 4 ? $this->summonNbt($text) : [])['Item']['value'] ?? [];
+        $name = preg_replace('/^minecraft:/', '', (string) ($tag['id']['value'] ?? ''));
+        $count = (int) ($tag['count']['value'] ?? 1);
+        $item = $this->version->blocks['items'][$name] ?? null;
+        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0]]);
+        if ($id === null) {
+            throw new CommandFailure(['translate' => 'commands.summon.failed']);
+        }
+        $entity = $this->itemEntities[$id];
+        $this->sendSuccess($sender, ['translate' => 'commands.summon.success', 'with' => [$this->entityComponent('item', $entity['uuid'], $this->version->catalog->displayNames['items']['minecraft:' . $name]['name'])]], true);
     }
 
     /** The NBT compound after the entity and position, read from the raw input as the parser reads it. */

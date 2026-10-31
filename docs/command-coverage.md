@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **71** have an existing PHP handler; **21** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **73** have an existing PHP handler; **19** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -45,7 +45,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/gamerule` | [GameRuleCommand.php](../src/Server/Commands/GameRuleCommand.php) | Partial handler; native behavior incomplete | — |
 | `/give` | [GiveCommand.php](../src/Server/Commands/GiveCommand.php) | Partial handler; native behavior incomplete | — |
 | `/help` | [HelpCommand.php](../src/Server/Commands/HelpCommand.php) | Partial handler; native behavior incomplete | — |
-| `/item` | — | Unimplemented | — |
+| `/item` | [ItemCommand.php](../src/Server/Commands/ItemCommand.php) | Partial handler; native behavior incomplete | — |
 | `/jfr` | — | Unimplemented | — |
 | `/kick` | [KickCommand.php](../src/Server/Commands/KickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kill` | [KillCommand.php](../src/Server/Commands/KillCommand.php) | Partial handler; native behavior incomplete | — |
@@ -66,7 +66,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/recipe` | — | Unimplemented | — |
 | `/reload` | — | Unimplemented | — |
 | `/return` | — | Unimplemented | — |
-| `/ride` | — | Unimplemented | — |
+| `/ride` | [RideCommand.php](../src/Server/Commands/RideCommand.php) | Partial handler; native behavior incomplete | — |
 | `/rotate` | [RotateCommand.php](../src/Server/Commands/RotateCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-all` | [SaveAllCommand.php](../src/Server/Commands/SaveAllCommand.php) | Partial handler; native behavior incomplete | — |
 | `/save-off` | [SaveOffCommand.php](../src/Server/Commands/SaveOffCommand.php) | Partial handler; native behavior incomplete | — |

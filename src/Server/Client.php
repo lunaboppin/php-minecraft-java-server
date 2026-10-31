@@ -68,10 +68,17 @@ final class Client
     public array $dragSlots = [];
     public int $dragType = -1;
     public int $inventoryRevision = 0;
+    /** AbstractContainerMenu.stateId of the open container, from 1 on each opening. */
+    public int $menuRevision = 0;
     public int $windowId = 0;
+    public int $containerCounter = 0;
+    /** The left half of an open double chest; windowPosition is its right half. */
+    public ?array $windowPartner = null;
     public string $windowType = 'player';
     public ?array $windowPosition = null;
     public array $craftGrid = [];
+    /** PlayerEnderChestContainer: 27 slots, kept through death. */
+    public array $enderItems = [];
     public array $entities = [];
     public bool $trackingDirty = true;
     public ?array $personalSpawn = null;
@@ -118,6 +125,8 @@ final class Client
     public int $takeXpDelay = 0;
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
+    /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
+    public ?string $knockbackMotion = null;
     /** Whether a position arrived since the client's last client_tick_end. */
     public bool $positionThisTick = false;
     /** Where the player's last tick left them, and the movement packets since. */
@@ -125,6 +134,8 @@ final class Client
     public int $movesThisTick = 0;
     public int $teleportCounter = 0;
     public ?int $teleport = null;
+    /** The mob this player rides, by entity ID. */
+    public ?int $vehicle = null;
     public int $teleportTick = 0;
     public int $chunkX = 0;
     public int $chunkZ = 0;
