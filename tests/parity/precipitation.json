@@ -1,7 +1,7 @@
 {
   "name": "precipitation",
   "normalizations": [
-    "Compare cauldrons after rain at a raised random_tick_speed, when every one has caught rain to the brim; the loaded area's grass is replaced with stone so only precipitation ticks.",
+    "Compare cauldrons after rain at random_tick_speed 4096, when every one has caught rain to the brim (about 40 fills expected each, so a slow runner still fills them); the loaded area's grass is replaced with stone so only precipitation ticks.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
     "Covers ServerLevel.tickPrecipitation's column picks and CauldronBlock/LayeredCauldronBlock filling with rain; freezing and snow need a cold biome and are not compared."
   ],
@@ -24,7 +24,7 @@
     },
     {
       "action": "command",
-      "text": "gamerule random_tick_speed 1024"
+      "text": "gamerule random_tick_speed 4096"
     },
     {
       "action": "command",
@@ -32,7 +32,7 @@
     },
     {
       "action": "wait",
-      "seconds": 150
+      "seconds": 120
     },
     {
       "action": "command",
