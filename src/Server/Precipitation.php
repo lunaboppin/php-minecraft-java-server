@@ -17,6 +17,9 @@ trait Precipitation
 {
     private ?BiomeClimate $precipitationClimate = null;
 
+    /** @var array<string, bool> whether each biome has precipitation */
+    private array $precipitationBiomes = [];
+
     /** ServerLevel.tickChunk: tickSpeed tries, each one in 48, before the chunk's random ticks. */
     private function tickChunkPrecipitation(int $cx, int $cz, int $speed): void
     {
@@ -72,8 +75,8 @@ trait Precipitation
             }
         }
         // Block.handlePrecipitation: cauldrons fill by chance with rain or powder snow.
-        $json = json_decode((string) file_get_contents($this->version->directory . '/worldgen/biome/' . $biome . '.json'), true, 512, JSON_THROW_ON_ERROR);
-        if (!($json['has_precipitation'] ?? false) || $below < $this->world->minY) {
+        $this->precipitationBiomes[$biome] ??= (bool) (json_decode((string) file_get_contents($this->version->directory . '/worldgen/biome/' . $biome . '.json'), true, 512, JSON_THROW_ON_ERROR)['has_precipitation'] ?? false);
+        if (!$this->precipitationBiomes[$biome] || $below < $this->world->minY) {
             return;
         }
         $snow = $cold($below);

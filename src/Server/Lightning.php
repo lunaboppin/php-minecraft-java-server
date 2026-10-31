@@ -16,6 +16,9 @@ trait Lightning
     /** @var array<int, array> lightning bolts by entity ID */
     private array $lightningBolts = [];
 
+    /** @var array<string, array<int, int>> MOTION_BLOCKING heights by chunk and column */
+    private array $motionHeights = [];
+
     /** ServerLevel.tickThunder for one ticking chunk, before its random ticks. */
     private function tickThunder(int $cx, int $cz): void
     {
@@ -53,14 +56,31 @@ trait Lightning
     /** The MOTION_BLOCKING heightmap: the first Y above every motion-blocking block or fluid. */
     private function motionBlockingHeight(int $x, int $z): int
     {
+        // Heights stay known until a block in their column changes (heightChanged).
+        $key = ($x >> 4) . ':' . ($z >> 4);
+        $column = (($z & 15) << 4) | ($x & 15);
+        if (isset($this->motionHeights[$key][$column])) {
+            return $this->motionHeights[$key][$column];
+        }
         $blocks = $this->fireBlocks();
+        $height = $this->world->minY;
         for ($y = $this->world->minY + $this->world->height - 1; $y >= $this->world->minY; --$y) {
             $state = $this->world->get($x, $y, $z);
             if ($blocks->flag($state, \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::MOTION_HEIGHTMAP) || $blocks->hasFluid($state)) {
-                return $y + 1;
+                $height = $y + 1;
+                break;
             }
         }
-        return $this->world->minY - 1 + 1;
+        if (count($this->motionHeights) > 256) {
+            array_shift($this->motionHeights);
+        }
+        return $this->motionHeights[$key][$column] = $height;
+    }
+
+    /** A changed block can change its column's MOTION_BLOCKING height. */
+    private function heightChanged(int $x, int $z): void
+    {
+        unset($this->motionHeights[($x >> 4) . ':' . ($z >> 4)][(($z & 15) << 4) | ($x & 15)]);
     }
 
     /** A LightningBolt entity: life 2 and one to three flashes. */
