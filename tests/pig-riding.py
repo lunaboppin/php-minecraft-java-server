@@ -24,10 +24,12 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 from run import Server
 
-WATCHED = ('set_passengers', 'player_position', 'swing_animation', 'entity_position_sync', 'move_vehicle', 'move_entity_pos',
+# move_entity_pos is left out: ServerEntity resends a still pig's position every 60 ticks, and which
+# step that falls in depends on the tick the step starts at. The steered moves arrive as syncs.
+WATCHED = ('set_passengers', 'player_position', 'swing_animation', 'entity_position_sync', 'move_vehicle',
            'move_entity_pos_rot', 'move_entity_rot', 'rotate_head', 'set_entity_data')
 # Packets that name an entity, compared for the pig only.
-PIG_ONLY = ('entity_position_sync', 'move_entity_pos', 'move_entity_pos_rot', 'move_entity_rot', 'rotate_head', 'set_entity_data')
+PIG_ONLY = ('entity_position_sync', 'move_entity_pos_rot', 'move_entity_rot', 'rotate_head', 'set_entity_data')
 
 
 def varint(data, at=0):
