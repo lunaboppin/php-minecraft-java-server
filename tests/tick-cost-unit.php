@@ -48,24 +48,38 @@ try {
     }
     $checks += 2;
 
-    // A player with the chunk loaded still receives the light update.
-    $player = new Client($socket, 'test');
-    $player->entityId = 1;
-    $player->state = 'play';
-    [$player->x, $player->y, $player->z] = [4000.5, 120.0, 4000.5];
-    $player->loadedChunks['250:250'] = [250, 250];
-    $tickCostProperty(Server::class, 'clients')->setValue($server, [(int) $socket => $player]);
+    // A player for whom the chunk is on the border of their view receives the light update
+    // (ChunkMap.isChunkOnTrackedBorder); one standing in it lights their own copy and gets none.
+    $other = stream_socket_server('tcp://127.0.0.1:0');
+    $players = [];
+    foreach (['border', 'inside'] as $index => $name) {
+        $player = new Client($index === 0 ? $socket : $other, $name);
+        $player->entityId = $index + 1;
+        $player->state = 'play';
+        [$player->x, $player->y, $player->z] = [4000.5, 120.0, 4000.5];
+        $player->loadedChunks['250:250'] = [250, 250];
+        $players[$name] = $player;
+    }
+    $view = $tickCostInvoke($server, 'viewDistance', $players['border']);
+    $players['border']->x = (250 - ($view + 1)) * 16 + 8.5;
+    $tickCostProperty(Server::class, 'clients')->setValue($server, [(int) $socket => $players['border'], (int) $other => $players['inside']]);
     $tickCostInvoke($server, 'setBlock', 4001, 100, 4000, $stone);
-    $player->output = '';
+    $players['border']->output = $players['inside']->output = '';
     $tickCostInvoke($server, 'tick', hrtime(true) / 1e9);
     $light = Binary::writeVarInt($version->id('play', 'light_update')) . Binary::writeVarInt(250) . Binary::writeVarInt(250) . $world->chunkLight(250, 250);
-    if (!str_contains($player->output, $light)) {
-        throw new RuntimeException('A viewer did not receive the relit chunk');
+    if (!str_contains($players['border']->output, $light)) {
+        throw new RuntimeException('A viewer at their view border did not receive the relit chunk');
     }
-    ++$checks;
+    if (str_contains($players['inside']->output, $light)) {
+        throw new RuntimeException('A viewer inside their view received a light update');
+    }
+    $checks += 2;
 } finally {
-    unset($server, $world, $database, $player);
+    unset($server, $world, $database, $player, $players);
     fclose($socket);
+    if (isset($other)) {
+        fclose($other);
+    }
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
     foreach ($iterator as $path) {
         $path->isDir() ? rmdir($path->getPathname()) : unlink($path->getPathname());

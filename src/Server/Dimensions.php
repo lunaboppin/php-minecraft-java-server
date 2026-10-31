@@ -64,10 +64,11 @@ trait Dimensions
                     $this->tickAnimals();
                 }
                 foreach (array_slice($this->pendingLight, 0, 9, true) as $key => [$cx,$cz]) {
-                    // Relighting rebuilds the whole chunk, so skip it when no player would receive it.
-                    // A player who loads the chunk later gets its current light with the chunk. As
-                    // the light engine sends only changed light, an unchanged chunk sends nothing.
-                    $viewers = array_filter($this->localPlayers(), static fn (Client $p): bool => isset($p->loadedChunks[$key]));
+                    // ChunkHolder.broadcastChanges sends light only to players for whom the chunk is on
+                    // their view's border (ChunkMap.isChunkOnTrackedBorder); the others light their copy
+                    // themselves from the block changes. Relighting rebuilds the whole chunk, so skip it
+                    // when no player would receive it; an unchanged chunk sends nothing.
+                    $viewers = array_filter($this->localPlayers(), fn (Client $p): bool => isset($p->loadedChunks[$key]) && $this->chunkOnViewBorder($p, $cx, $cz));
                     if ($viewers !== [] && $this->world->lightChanged($cx, $cz)) {
                         $payload = Binary::writeVarInt($cx) . Binary::writeVarInt($cz) . $this->world->chunkLight($cx, $cz);
                         foreach ($viewers as $p) {
