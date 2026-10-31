@@ -156,6 +156,24 @@ trait TreeGrowth
         foreach ($saplings as [$sx, $sy, $sz, $state]) {
             $this->setBlock($sx, $sy, $sz, $catalog->state(($catalog->properties($state)['waterlogged'] ?? 'false') === 'true' ? 'water' : 'air'));
         }
+        $placed = $this->onRegion($x, $z, fn (Region $region, Decorator $decorator): bool => $decorator->place($feature, $region, $random, $x, $y, $z));
+        if (!$placed) {
+            foreach ($saplings as [$sx, $sy, $sz, $state]) {
+                $this->setBlock($sx, $sy, $sz, $state);
+            }
+        }
+        return $placed;
+    }
+
+    /**
+     * Run worldgen code on a copy of the 3×3 chunks around a column, as features see a
+     * WorldGenRegion, then set the blocks it changed in the world. Nothing changes when the
+     * code reports failure.
+     *
+     * @param \Closure(Region, Decorator): bool $work
+     */
+    private function onRegion(int $x, int $z, \Closure $work): bool
+    {
         $decorator = $this->treeDecorator();
         [$cx, $cz] = [$x >> 4, $z >> 4];
         $height = $this->world->height;
@@ -173,10 +191,7 @@ trait TreeGrowth
             }
         }
         $region = new Region($decorator->blocks, $cx, $cz, $chunks, $this->world->minY, $height, 63, 0, $this->world->seed);
-        if (!$decorator->place($feature, $region, $random, $x, $y, $z)) {
-            foreach ($saplings as [$sx, $sy, $sz, $state]) {
-                $this->setBlock($sx, $sy, $sz, $state);
-            }
+        if (!$work($region, $decorator)) {
             return false;
         }
         $changed = [];
