@@ -1,0 +1,102 @@
+{
+  "name": "fire",
+  "normalizations": [
+    "Compare block states once fire has settled; fire's random spread is not compared tick by tick.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers fire going out without fuel, fire kept by infiniburn netherrack, unsupported fire dropping out and fire losing its fuel; burning and spreading are random and not compared."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule fire_spread_radius_around_player -1"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 -2 22 63 2 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 22 75 2 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:fire[age=4]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 0 minecraft:netherrack"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:fire[age=15]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 14 70 0 minecraft:fire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 18 64 0 minecraft:white_wool"
+    },
+    {
+      "action": "command",
+      "text": "setblock 18 65 0 minecraft:fire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 18 64 0 minecraft:air"
+    },
+    {
+      "action": "snapshot",
+      "name": "placed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          18,
+          64,
+          0
+        ],
+        [
+          18,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 20
+    },
+    {
+      "action": "snapshot",
+      "name": "burnt",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          14,
+          70,
+          0
+        ],
+        [
+          18,
+          65,
+          0
+        ]
+      ]
+    }
+  ]
+}

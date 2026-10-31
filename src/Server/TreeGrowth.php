@@ -85,7 +85,7 @@ trait TreeGrowth
             return;
         }
         if ($p['stage'] === '0') {
-            $this->setBlock($x, $y, $z, $this->version->catalog->state($name, array_merge($p, ['stage' => '1'])));
+            $this->setBlockQuietly($x, $y, $z, $this->version->catalog->state($name, array_merge($p, ['stage' => '1'])));
             return;
         }
         $this->growTree($x, $y, $z, $name);
@@ -200,7 +200,7 @@ trait TreeGrowth
         foreach ($changes as [$x, $y, $z]) {
             $this->changedSimulation($x, $y, $z);
             if ($this->world->generator === 'terrain') {
-                $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
+                $this->relightAround($x, $z);
             }
         }
         foreach ($sections as $positions) {

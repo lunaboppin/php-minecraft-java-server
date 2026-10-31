@@ -9,7 +9,7 @@ use PhpMinecraftJavaServer\World\World;
 
 // Chunk packets (sections, palettes, heightmaps, block entities and light) are built on every
 // chunk send. This hash was recorded before the packet builder was optimized and again for light
-// propagation; any change means different bytes reach clients. It is computed without the JIT:
+// propagation, then for light crossing chunk borders; any change means different bytes reach clients. It is computed without the JIT:
 // PHP 8.5.12's tracing JIT changes the legacy terrain and End generators' output.
 $chunkVersion = new Version();
 $chunkDirectory = sys_get_temp_dir() . '/php-chunk-packets-' . bin2hex(random_bytes(8));
@@ -29,7 +29,7 @@ try {
         }
         unset($world);
     }
-    if (hash_final($chunkHash) !== '28282aac09be2c86b9563d9294df958536b4a6b8de2bc3b7fc0c9d314148bccb') {
+    if (hash_final($chunkHash) !== 'fa79981b531a6b91a108be142a817bd57443ad538f902e3971a345c9451ae5ce') {
         throw new RuntimeException('Chunk packet bytes changed');
     }
 } finally {

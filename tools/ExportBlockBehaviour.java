@@ -93,6 +93,24 @@ public class ExportBlockBehaviour {
         root.add("classes", classes);
         root.addProperty("spawning_bits", "two bytes per state: light dampening | 16 propagates skylight down | 32 pathfindable on land; light emission | 16 valid spawn for a creature | 32 for a parrot | 64 for a polar bear | 128 valid empty spawn block");
         root.addProperty("spawning", Base64.getEncoder().encodeToString(spawning));
+        // FireBlock.bootStrap: ignite and burn odds of flammable blocks.
+        var fire = (net.minecraft.world.level.block.FireBlock) net.minecraft.world.level.block.Blocks.FIRE;
+        var igniteField = net.minecraft.world.level.block.FireBlock.class.getDeclaredField("igniteOdds");
+        var burnField = net.minecraft.world.level.block.FireBlock.class.getDeclaredField("burnOdds");
+        igniteField.setAccessible(true);
+        burnField.setAccessible(true);
+        var ignite = (it.unimi.dsi.fastutil.objects.Object2IntMap<?>) igniteField.get(fire);
+        var burn = (it.unimi.dsi.fastutil.objects.Object2IntMap<?>) burnField.get(fire);
+        var flammable = new JsonObject();
+        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            if (ignite.containsKey(block)) {
+                var odds = new JsonArray();
+                odds.add(ignite.getInt(block));
+                odds.add(burn.getInt(block));
+                flammable.add(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath(), odds);
+            }
+        }
+        root.add("flammable", flammable);
         Files.writeString(Path.of(output), new Gson().toJson(root) + "\n");
     }
 }

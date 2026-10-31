@@ -2,7 +2,7 @@
   "name": "random-ticks",
   "normalizations": [
     "Compare block states after random ticks at a raised random_tick_speed, once outcomes have settled.",
-    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs. A growing sugar cane's age changes on the server only, so the client's view of the base depends on when its chunk arrived; only the cane above it is compared.",
     "Covers crop growth, farmland drying, leaf distance and decay, grass spread, sugar cane growth, ice melting, sapling growth in light and darkness and hanging propagule ageing; not the random tick order or timing."
   ],
   "steps": [
@@ -187,11 +187,6 @@
         [
           12,
           63,
-          0
-        ],
-        [
-          14,
-          64,
           0
         ],
         [

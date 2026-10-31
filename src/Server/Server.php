@@ -59,6 +59,8 @@ final class Server
 
     use TreeGrowth;
 
+    use FireSimulation;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -619,6 +621,11 @@ final class Server
         if ($batch === []) {
             return;
         }
+        // The light engine settles light apart from chunk sending, so the light the batch's chunks
+        // need is worked out before the batch's time budget starts.
+        foreach ($batch as [$x, $z]) {
+            $this->world->warmLight($x, $z);
+        }
         $c->send($this->version, 'chunk_batch_start');
         ++$c->unacknowledgedBatches;
         $count = 0;
@@ -626,6 +633,10 @@ final class Server
         foreach ($batch as $key => [$x, $z]) {
             $c->send($this->version, 'level_chunk_with_light', $this->world->chunk($x, $z));
             $c->loadedChunks[$key] = [$x, $z];
+            // Neighbours lit before this chunk was generated take in the light it lets across.
+            foreach ($this->world->neighbourArrived($x, $z) as [$nx, $nz]) {
+                $this->pendingLight[$nx . ':' . $nz] = [$nx, $nz];
+            }
             $this->loadChunkMobs($x, $z);
             if ($this->world->vanilla !== null) {
                 $this->generatedEntities($x, $z);
@@ -1481,7 +1492,7 @@ final class Server
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         if ($this->world->generator === 'terrain') {
-            $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
+            $this->relightAround($x, $z);
         }
         // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
@@ -1550,6 +1561,16 @@ final class Server
         [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
         foreach ([[$x, $y, $z], [$x + $dx, $y + $dy, $z + $dz]] as [$bx, $by, $bz]) {
             $c->send($this->version, 'block_update', Binary::writePosition($bx, $by, $bz) . Binary::writeVarInt($this->world->get($bx, $by, $bz)));
+        }
+    }
+
+    /** Queue light updates for a changed block's chunk and its neighbours, which light crosses into. */
+    private function relightAround(int $x, int $z): void
+    {
+        for ($dx = -1; $dx <= 1; ++$dx) {
+            for ($dz = -1; $dz <= 1; ++$dz) {
+                $this->pendingLight[(($x >> 4) + $dx) . ':' . (($z >> 4) + $dz)] = [($x >> 4) + $dx, ($z >> 4) + $dz];
+            }
         }
     }
 
