@@ -833,6 +833,26 @@ SCRIPT = [
     ('clear @s white_wool 0', False),
     ('!quiet kill @e[type=item]', False),
     ('!quiet clear @a', False),
+    # /spreadplayers: centers, ranges, heights, teams and failures. The spots are random, so only
+    # replies that do not depend on them (one spot, or none found) are compared.
+    ('!quiet tp @a 0 200 0 0 0', False),
+    ('spreadplayers 0 0 1 10 false @s', False),
+    ('spreadplayers 0 0 0 1 false @s', False),
+    ('spreadplayers 0.25 0.75 1 10 false @s', False),
+    ('spreadplayers 0 0 1 10 true @s', False),
+    ('spreadplayers 0 0 1 10 true @a', False),
+    ('spreadplayers 0 0 1 10 under -100 false @s', False),
+    ('spreadplayers 0 0 1 10 under -64 false @s', False),
+    ('spreadplayers 0 0 1 10 under 50 false @s', False),
+    ('spreadplayers 0 0 1 10 under 200 false @s', False),
+    ('spreadplayers 0 0 1000 1 false @a', False),
+    ('spreadplayers 0 0 -1 10 false @s', False),
+    ('spreadplayers 0 0 1 0.5 false @s', False),
+    ('spreadplayers 0 0 1 10 false @e[type=cow]', False),
+    ('!quiet tp @s 3 200 3', False),
+    ('spreadplayers ~ ~ 1 10 false @s', False),
+    ('spreadplayers 0 0 1 10 maybe @s', False),
+    ('!quiet tp @a 0 200 0 0 0', False),
     ('list', False),
 ]
 
