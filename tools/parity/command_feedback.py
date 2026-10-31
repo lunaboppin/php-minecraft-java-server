@@ -552,6 +552,26 @@ SCRIPT = [
     ('schedule clear #minecraft:tick', False), ('schedule clear #tick', False), ('return 5', False), ('return fail', False), ('return run list', False),
     ('reload', False), ('debug stop', False), ('debug start', False), ('debug start', False), ('!quiet debug stop', False),
     ('debug function foo:bar', False), ('!quiet debug function #minecraft:tick', False),
+    # /spreadplayers: centers, ranges, heights, teams and failures. The spots are random, so only
+    # replies that do not depend on them (one spot, or none found) are compared.
+    ('!quiet tp @a 0 200 0 0 0', False),
+    ('spreadplayers 0 0 1 10 false @s', False),
+    ('spreadplayers 0 0 0 1 false @s', False),
+    ('spreadplayers 0.25 0.75 1 10 false @s', False),
+    ('spreadplayers 0 0 1 10 true @s', False),
+    ('spreadplayers 0 0 1 10 true @a', False),
+    ('spreadplayers 0 0 1 10 under -100 false @s', False),
+    ('spreadplayers 0 0 1 10 under -64 false @s', False),
+    ('spreadplayers 0 0 1 10 under 50 false @s', False),
+    ('spreadplayers 0 0 1 10 under 200 false @s', False),
+    ('spreadplayers 0 0 1000 1 false @a', False),
+    ('spreadplayers 0 0 -1 10 false @s', False),
+    ('spreadplayers 0 0 1 0.5 false @s', False),
+    ('spreadplayers 0 0 1 10 false @e[type=cow]', False),
+    ('!quiet tp @s 3 200 3', False),
+    ('spreadplayers ~ ~ 1 10 false @s', False),
+    ('spreadplayers 0 0 1 10 maybe @s', False),
+    ('!quiet tp @a 0 200 0 0 0', False),
     ('list', False),
 ]
 

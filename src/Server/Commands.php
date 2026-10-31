@@ -54,6 +54,8 @@ trait Commands
 
     use CommandModules\DebugCommand;
 
+    use CommandModules\SpreadPlayersCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
