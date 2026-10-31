@@ -115,9 +115,10 @@ trait Survival
         foreach ($this->players() as $player) {
             $this->savePlayer($player);
         }
-        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
+        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'rainLevel', 'thunderLevel', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $this->worlds['overworld']->setting($key, $this->$key);
         }
+        $this->worlds['overworld']->setting('weatherData', $this->weatherData);
         $this->saveStopwatches();
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {

@@ -316,11 +316,8 @@ trait Sleeping
                 $this->stopSleeping($player, false, false);
             }
         }
-        if ($this->gameRule('advance_weather') === 'true' && $this->weather !== 'clear') {
-            $this->weather = 'clear';
-            foreach ($this->players() as $player) {
-                $this->sendWeather($player);
-            }
+        if ($this->gameRule('advance_weather') === 'true' && $this->raining()) {
+            $this->resetWeatherCycle();
         }
     }
 }

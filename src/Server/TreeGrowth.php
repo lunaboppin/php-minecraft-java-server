@@ -60,10 +60,16 @@ trait TreeGrowth
             }
         }
         $level = $f(15.0 * $factor);
-        if ($this->weather === 'rain') {
-            $level = $f($level + 0.3125 * (4.0 - $level));
-        } elseif ($this->weather === 'thunder') {
-            $level = $f($level + 0.52734375 * (4.0 - $level));
+        // WeatherAttributes: rain blends towards 4 by its level less thunder's, then thunder by its own.
+        $thunder = $this->thunderStrength();
+        $rain = $f($this->rainLevel - $thunder);
+        if ($rain > 0.0) {
+            $value = $f($level + 0.3125 * (4.0 - $level));
+            $level = $f($level + $rain * ($value - $level));
+        }
+        if ($thunder > 0.0) {
+            $value = $f($level + 0.52734375 * (4.0 - $level));
+            $level = $f($level + $thunder * ($value - $level));
         }
         return (int) (15.0 - $level);
     }

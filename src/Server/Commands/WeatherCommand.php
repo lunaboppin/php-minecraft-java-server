@@ -19,11 +19,14 @@ trait WeatherCommand
             || (int) round((float) $match[1] * ['' => 1, 't' => 1, 's' => 20, 'd' => 24000][$match[2]]) < 1)) {
             throw new \InvalidArgumentException('Invalid duration: ' . $arguments[1]);
         }
-        // There is no natural weather cycle yet, so the weather persists until changed.
-        $this->weather = $weather;
-        foreach ($this->players() as $player) {
-            $this->sendWeather($player);
-        }
+        // WeatherCommand: the weather lasts the given ticks or a random span, and the levels then
+        // fade towards it with the weather cycle.
+        $ticks = isset($arguments[1]) ? (int) round((float) $match[1] * ['' => 1, 't' => 1, 's' => 20, 'd' => 24000][$match[2]]) : null;
+        match ($weather) {
+            'clear' => $this->setWeatherParameters($ticks ?? random_int(12000, 180000), 0, false, false),
+            'rain' => $this->setWeatherParameters(0, $ticks ?? random_int(12000, 24000), true, false),
+            'thunder' => $this->setWeatherParameters(0, $ticks ?? random_int(3600, 15600), true, true),
+        };
         $this->sendSuccess($sender, ['translate' => 'commands.weather.set.' . $weather], true);
     }
 }

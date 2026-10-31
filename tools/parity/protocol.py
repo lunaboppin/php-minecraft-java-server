@@ -107,7 +107,7 @@ def block_pos(value):
 class Probe(wire.Client):
     def __init__(self,port,label):
         super().__init__(port,terrain=True)
-        self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={};self.light={}
+        self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={};self.light={};self.weather={'raining':False,'rain':0.0,'thunder':0.0,'events':0}
         self.health=20.;self.food=20;self.mode=None;self.position=None;self.deaths=0
         self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
         self.equipment={}
@@ -189,6 +189,12 @@ class Probe(wire.Client):
             elif name=='set_time':self.game_time=struct.unpack_from('>q',p)[0]
             elif name=='chunk_batch_finished' and not self.loaded:
                 self.send('player_loaded');self.loaded=True
+            elif name=='game_event' and p[0] in (1,2,7,8):
+                value=round(struct.unpack_from('>f',p,1)[0],4);self.weather['events']+=1
+                if p[0]==1:self.weather['raining']=True
+                elif p[0]==2:self.weather['raining']=False
+                elif p[0]==7:self.weather['rain']=value
+                else:self.weather['thunder']=value
             elif name=='set_health':
                 self.health=struct.unpack_from('>f',p)[0];self.food,_=wire.read_vi(p,4)
             elif name=='player_combat_kill':self.deaths+=1
@@ -299,6 +305,6 @@ class Probe(wire.Client):
             elif field=='entities':output[field]=sorted(self.entities.values())
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
-            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns'):output[field]=getattr(self,field)
+            elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns','weather'):output[field]=getattr(self,field)
             else:raise ValueError('Unknown snapshot field: '+field)
         return copy.deepcopy(output)
