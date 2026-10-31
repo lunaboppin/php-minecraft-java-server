@@ -867,22 +867,13 @@ trait Commands
         }
     }
 
-    /** sendLevelInfo: weather is only sent to a joining player while it rains. */
+    /** sendLevelInfo: weather is only sent to a joining player while it rains in their level. */
     private function sendJoinWeather(Client $client): void
     {
-        if ($client->dimension === 'overworld' && $this->weather !== 'clear') {
+        if ($client->dimension === 'overworld' && $this->raining()) {
             $client->send($this->version, 'game_event', "\1" . pack('G', 0));
-            $client->send($this->version, 'game_event', "\7" . pack('G', 1.0));
-            $client->send($this->version, 'game_event', "\x08" . pack('G', $this->weather === 'thunder' ? 1.0 : 0.0));
+            $client->send($this->version, 'game_event', "\7" . pack('G', $this->rainLevel));
+            $client->send($this->version, 'game_event', "\x08" . pack('G', $this->thunderStrength()));
         }
-    }
-
-    private function sendWeather(Client $client): void
-    {
-        $rain = $client->dimension === 'overworld' && $this->weather !== 'clear' ? 1.0 : 0.0;
-        $thunder = $client->dimension === 'overworld' && $this->weather === 'thunder' ? 1.0 : 0.0;
-        $client->send($this->version, 'game_event', chr($rain > 0 ? 1 : 2) . pack('G', 0));
-        $client->send($this->version, 'game_event', "\7" . pack('G', $rain));
-        $client->send($this->version, 'game_event', "\x08" . pack('G', $thunder));
     }
 }

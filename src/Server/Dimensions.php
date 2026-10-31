@@ -60,6 +60,7 @@ trait Dimensions
                     $this->runBlockEvents();
                     $this->tickItems();
                     $this->tickTnt();
+                    $this->tickWeather();
                     $this->tickSleep();
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();
@@ -129,8 +130,8 @@ trait Dimensions
             // PlayerList.sendLevelInfo: the new dimension's border, then time, spawn and weather.
             $this->sendBorder($c);
             $c->send($this->version, 'set_time', $this->clockPacket(array_keys(self::CLOCKS)));
-            $this->sendWeather($c);
             $c->send($this->version, 'set_default_spawn_position', $this->worldSpawnPacket());
+            $this->sendJoinWeather($c);
             $c->send($this->version, 'game_event', "\x0d" . pack('G', 0));
             $this->teleport($c, $position ?? $this->safeArrival($this->world->spawn()));
             $this->playerMotionTracker($c);

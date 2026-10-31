@@ -1,0 +1,59 @@
+{
+  "name": "weather",
+  "normalizations": [
+    "Compare the weather a client holds (raining, rain and thunder levels) and how many weather events it got, once each change has faded in.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers /weather rain, thunder and clear with durations, the 0.01-per-tick fade and the start and end of rain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule advance_weather true"
+    },
+    {
+      "action": "command",
+      "text": "weather rain 6000"
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "snapshot",
+      "name": "raining",
+      "fields": [
+        "weather"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "weather thunder 6000"
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "snapshot",
+      "name": "thundering",
+      "fields": [
+        "weather"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "weather clear 6000"
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "snapshot",
+      "name": "cleared",
+      "fields": [
+        "weather"
+      ]
+    }
+  ]
+}

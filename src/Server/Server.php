@@ -65,6 +65,8 @@ final class Server
 
     use Sleeping;
 
+    use WeatherCycle;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -142,12 +144,13 @@ final class Server
             });
         }
         $this->crafting = new \PhpMinecraftJavaServer\World\Crafting($version->directory);
-        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
+        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'rainLevel', 'thunderLevel', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $saved = $this->world->setting($key);
             if ($saved !== null) {
                 $this->$key = $saved;
             }
         }
+        $this->restoreWeather($this->world->setting('weatherData'));
         // Both clocks start with the world; a world saved before the End clock existed takes its age.
         $this->endClockTicks ??= $this->worldAge;
     }

@@ -94,6 +94,8 @@ def main():
                     second.close()
                 first.send('chat_command', wire.string('weather thunder'))
                 first.tick_barrier()
+                # The rain and thunder fade in by 0.01 a tick; join once both are full.
+                first.until('game_event', lambda p: p == b'\x08\x3f\x80\x00\x00', limit=100000)
                 rain = Probe(port, 'rain').login('Rainy')
                 try:
                     events = [p for n, p in rain.seen if n == 'game_event']
