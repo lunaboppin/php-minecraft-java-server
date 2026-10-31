@@ -542,6 +542,16 @@ SCRIPT = [
     ('item replace entity @e[type=item] contents with stone', False), ('item replace entity @s weapon with air', False),
     ('item replace entity @s weapon with air 5', False),
     ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
+    # Functions without data packs: unknown functions and tags, the vanilla data pack's empty tags, and schedules of them.
+    ('function foo:bar', False), ('function foo', False), ('function #minecraft:tick', False), ('function #foo:bar', False),
+    ('function foo:bar {a:1}', False), ('function foo:bar with entity @s', False), ('schedule function foo:bar 1t', False),
+    # Schedules report their due game time, which differs between servers, so only clearing them is compared.
+    ('schedule function foo:bar 0t', False), ('schedule clear foo:bar', False), ('schedule function #minecraft:load 0t', False),
+    ('!quiet schedule function #minecraft:load 2s append', False), ('!quiet schedule function #load 1.5s append', False), ('schedule clear #minecraft:load', False),
+    ('schedule clear #minecraft:load', False), ('!quiet schedule function #minecraft:tick 3', False), ('!quiet schedule function #minecraft:tick 1d', False),
+    ('schedule clear #minecraft:tick', False), ('schedule clear #tick', False), ('return 5', False), ('return fail', False), ('return run list', False),
+    ('reload', False), ('debug stop', False), ('debug start', False), ('debug start', False), ('!quiet debug stop', False),
+    ('debug function foo:bar', False), ('!quiet debug function #minecraft:tick', False),
     ('list', False),
 ]
 
