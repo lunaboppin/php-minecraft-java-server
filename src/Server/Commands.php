@@ -262,11 +262,10 @@ trait Commands
             foreach ($this->experienceOrbs as $id => $orb) {
                 $items[] = ['orb' => $id, 'x' => $orb['x'], 'y' => $orb['y'], 'z' => $orb['z'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:experience_orb', 'width' => 0.5, 'height' => 0.5, 'id' => $id, 'uuid' => $orb['uuid']];
             }
+            // A dying mob stays in the level, and selectable, until its death animation ends.
             foreach ($this->animals as $id => $animal) {
-                if (!isset($animal['deadAt'])) {
-                    $info = $this->version->catalog->mobs['entities'][$animal['kind']];
-                    $mobs[] = ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0, 'type' => 'minecraft:' . $animal['kind'], 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
-                }
+                $info = $this->version->catalog->mobs['entities'][$animal['kind']];
+                $mobs[] = ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0, 'type' => 'minecraft:' . $animal['kind'], 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
             }
         }
         $candidates = match ($selector->kind) {
