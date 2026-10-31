@@ -61,6 +61,10 @@ final class Server
 
     use FireSimulation;
 
+    use Explosions;
+
+    use Sleeping;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -830,6 +834,19 @@ final class Server
         return max(0, abs($x - (int) floor($c->x / 16)) - 2) ** 2 + max(0, abs($z - (int) floor($c->z / 16)) - 2) ** 2 < $view * $view;
     }
 
+    /** ChunkMap.isChunkOnTrackedBorder: a chunk in view with a neighbour outside it. */
+    private function chunkOnViewBorder(Client $c, int $x, int $z): bool
+    {
+        for ($dx = -1; $dx <= 1; ++$dx) {
+            for ($dz = -1; $dz <= 1; ++$dz) {
+                if (!$this->chunkInView($c, $x + $dx, $z + $dz)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private function scheduleChunks(Client $c): void
     {
         $cx = (int) floor($c->x / 16);
@@ -1055,7 +1072,12 @@ final class Server
                 }
                 if ($c->playerLoaded && in_array($action, [1, 2], true)) {
                     $c->sprinting = $action === 1;
-                }return;
+                }
+                // ServerboundPlayerCommandPacket.Action.STOP_SLEEPING: leaving the bed.
+                if ($action === 0 && $c->sleepingPos !== null) {
+                    $this->withDimension($c->dimension, fn () => $this->stopSleeping($c, false, true));
+                }
+                return;
             case 'attack': $id = $r->varInt();
                 $r->end();
                 $this->attackEntity($c, $id);
@@ -1324,12 +1346,10 @@ final class Server
                 $this->acknowledge($c, $sequence);
                 return;
             }
-            if (str_ends_with($name, '_bed') && $c->dimension === 'overworld') {
-                $c->personalSpawn = [$x + 0.5, (float) $y + 1, $z + 0.5];
+            // Sneaking with an item in hand skips the block's own use.
+            if (str_ends_with($name, '_bed') && !($c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]))) && $this->useBed($c, $x, $y, $z)) {
                 // BedBlock answers SUCCESS_SERVER, which the sleeper sees too.
                 $this->useSwing($c, $hand, true);
-                $this->savePlayer($c);
-                $this->tell($c, 'Respawn point set');
                 $this->acknowledge($c, $sequence);
                 return;
             }
@@ -1343,6 +1363,27 @@ final class Server
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        // TntBlock.useItemOn: flint and steel or a fire charge primes TNT, wearing or using up the item.
+        if ($within && in_array($itemName, ['flint_and_steel', 'fire_charge'], true) && $name === 'tnt' && $this->editable($c, $x, $y, $z) && $this->gameRule('tnt_explodes') === 'true') {
+            $this->primeTnt($x, $y, $z, $c);
+            $this->setBlock($x, $y, $z, $this->version->catalog->state('air'));
+            if ($c->gameMode !== 1) {
+                if ($itemName === 'fire_charge') {
+                    \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot);
+                } else {
+                    $c->inventory[$slot]['damage'] = ($c->inventory[$slot]['damage'] ?? 0) + 1;
+                    if ($c->inventory[$slot]['damage'] >= $this->version->catalog->item($c->inventory[$slot]['item'])['durability']) {
+                        unset($c->inventory[$slot]);
+                    }
+                }
+                $this->syncInventory($c);
+            }
+            $this->useSwing($c, $hand);
+            $this->blockUpdate($c, $x, $y, $z);
+            $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         if ($itemName === 'flint_and_steel' && $this->ignitePortal($c, $tx, $ty, $tz, $slot)) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
@@ -1495,9 +1536,7 @@ final class Server
         $this->world->set($x, $y, $z, $state);
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
-        if ($this->world->generator === 'terrain') {
-            $this->relightAround($x, $z);
-        }
+        $this->relightAround($x, $z);
         // ChunkHolder.blockChanged: clients hear of it with the tick's other changes.
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)] ??= new ShortOpenHashSet();
         $this->changedBlocks[$this->world->dimension][($x >> 4) . ':' . ($z >> 4) . ':' . ($y >> 4)]->add((($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
@@ -1787,7 +1826,14 @@ final class Server
         $this->sessionVerifier?->cancel($id);
         $this->forgetPushingEntity($c->entityId, $c->dimension);
         $this->leaveVehicle($c);
+        // ServerPlayer.disconnect leaves the bed; the level then recounts its sleepers.
+        if ($c->state === 'play' && $c->sleepingPos !== null) {
+            $this->withDimension($c->dimension, fn () => $this->stopSleeping($c, true, false));
+        }
         unset($this->clients[$id]);
+        if ($c->state === 'play') {
+            $this->withDimension($c->dimension, fn () => $this->updateSleepingPlayers());
+        }
         if ($c->state === 'play') {
             $this->closeWindow($c);
             $this->savePlayer($c);

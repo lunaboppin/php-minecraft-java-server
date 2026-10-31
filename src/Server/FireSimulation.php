@@ -217,6 +217,10 @@ trait FireSimulation
         } else {
             $this->setBlock($x, $y, $z, $this->version->catalog->state('air'));
         }
+        // A burnt TNT block primes.
+        if ($this->version->catalog->blockName($state) === 'tnt') {
+            $this->primeTnt($x, $y, $z);
+        }
     }
 
     /** ServerLevel.canSpreadFireAround: a non-spectator within fire_spread_radius_around_player blocks. */

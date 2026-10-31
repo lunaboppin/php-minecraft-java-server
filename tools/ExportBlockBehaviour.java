@@ -111,6 +111,12 @@ public class ExportBlockBehaviour {
             }
         }
         root.add("flammable", flammable);
+        // Block.getExplosionResistance, which explosion rays lose power to.
+        var resistance = new JsonObject();
+        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            resistance.addProperty(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath(), block.getExplosionResistance());
+        }
+        root.add("explosion_resistance", resistance);
         // LightEngine.getOcclusionShape: for states that use their shape for light occlusion, each
         // face's occlusion shape (down, up, north, south, west, east) as a 16×16 coverage mask,
         // u then v: x, z on y faces; x, y on z faces; z, y on x faces.

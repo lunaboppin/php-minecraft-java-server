@@ -45,6 +45,60 @@ def chunk_blocks(data,dimension):
     return cx,cz,minimum,sections
 
 
+def skip_nbt(data,off,tag=None):
+    """The offset after a network NBT value (a nameless root compound when tag is None)."""
+    if tag is None:
+        tag=data[off];off+=1
+        if tag==0:return off
+    if tag in (1,):return off+1
+    if tag==2:return off+2
+    if tag in (3,5):return off+4
+    if tag in (4,6):return off+8
+    if tag==7:return off+4+struct.unpack_from('>i',data,off)[0]
+    if tag==8:return off+2+struct.unpack_from('>H',data,off)[0]
+    if tag==9:
+        kind=data[off];count=struct.unpack_from('>i',data,off+1)[0];off+=5
+        for _ in range(count):off=skip_nbt(data,off,kind)
+        return off
+    if tag==10:
+        while True:
+            kind=data[off];off+=1
+            if kind==0:return off
+            off+=2+struct.unpack_from('>H',data,off)[0];off=skip_nbt(data,off,kind)
+    if tag==11:return off+4+4*struct.unpack_from('>i',data,off)[0]
+    if tag==12:return off+4+8*struct.unpack_from('>i',data,off)[0]
+    raise ValueError('Unknown NBT tag %d'%tag)
+
+
+def light_data(data,off):
+    """Sky and block light from a chunk or light packet: {section index: 2048 bytes}, plus the cleared sections."""
+    masks=[]
+    for _ in range(4):
+        # 26.3 writes each BitSet as its little-endian bytes after a VarInt length.
+        n,off=wire.read_vi(data,off);masks.append(int.from_bytes(data[off:off+n],'little'));off+=n
+    layers=[]
+    for mask in masks[:2]:
+        count,off=wire.read_vi(data,off);arrays={};indexes=[i for i in range(mask.bit_length()) if mask>>i&1]
+        for i in range(count):
+            size,off=wire.read_vi(data,off);arrays[indexes[i]]=data[off:off+size];off+=size
+        layers.append(arrays)
+    empty=[{i for i in range(m.bit_length()) if m>>i&1} for m in masks[2:]]
+    return layers,empty,off
+
+
+def chunk_light(data,dimension):
+    """The light arrays that follow a chunk packet's sections and block entities."""
+    cx,cz=struct.unpack_from('>ii',data);n,off=wire.read_vi(data,8)
+    for _ in range(n):
+        _,off=wire.read_vi(data,off);size,off=wire.read_vi(data,off);off+=size*8
+    length,off=wire.read_vi(data,off);off+=length
+    count,off=wire.read_vi(data,off)
+    for _ in range(count):
+        off+=3;_,off=wire.read_vi(data,off);off=skip_nbt(data,off)
+    layers,_,_=light_data(data,off)
+    return layers
+
+
 def block_pos(value):
     x=value>>38;y=value&4095;z=(value>>12)&0x3ffffff
     return x,y-4096 if y>=2048 else y,z-0x4000000 if z>=0x2000000 else z
@@ -53,7 +107,7 @@ def block_pos(value):
 class Probe(wire.Client):
     def __init__(self,port,label):
         super().__init__(port,terrain=True)
-        self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={}
+        self.label=label;self.trace=[];self.step='connect';self.blocks={};self.chunks={};self.light={}
         self.health=20.;self.food=20;self.mode=None;self.position=None;self.deaths=0
         self.notes=[];self.records=[];self.appearance={};self.entities={};self.observed=[];self.game_time=None;self.loaded=False;self._receiving=False;self._automatic=[]
         self.equipment={}
@@ -101,7 +155,7 @@ class Probe(wire.Client):
                 self.mode,_=wire.read_vi(p,off+8)
             elif name=='respawn':
                 _,off=wire.read_vi(p);_,off=wire.read_string(p,off);self.mode,_=wire.read_vi(p,off+8)
-                self.chunks={};self.blocks={};self.entities={};self.equipment={};self.player_metadata={};self.loaded=False
+                self.chunks={};self.blocks={};self.light={};self.entities={};self.equipment={};self.player_metadata={};self.loaded=False
             elif name=='game_event' and p[0]==3:self.mode=int(struct.unpack_from('>f',p,1)[0])
             elif name=='player_position':
                 _,off=wire.read_vi(p);self.position=list(struct.unpack_from('>ddd',p,off))
@@ -140,9 +194,17 @@ class Probe(wire.Client):
             elif name=='player_combat_kill':self.deaths+=1
             elif name=='level_chunk_with_light':
                 cx,cz,minimum,sections=chunk_blocks(p,self.dimension)
-                self.chunks[(cx,cz)]=(minimum,sections)
+                self.chunks[(cx,cz)]=(minimum,sections);self.light[(cx,cz)]=chunk_light(p,self.dimension)
+            elif name=='light_update':
+                cx,off=wire.read_vi(p);cz,off=wire.read_vi(p,off)
+                if cx>=1<<31:cx-=1<<32
+                if cz>=1<<31:cz-=1<<32
+                layers,empty,_=light_data(p,off);current=self.light.setdefault((cx,cz),[{},{}])
+                for layer in range(2):
+                    current[layer].update(layers[layer])
+                    for i in empty[layer]:current[layer].pop(i,None)
             elif name=='forget_level_chunk':
-                cz,cx=struct.unpack_from('>ii',p);self.chunks.pop((cx,cz),None)
+                cz,cx=struct.unpack_from('>ii',p);self.chunks.pop((cx,cz),None);self.light.pop((cx,cz),None)
                 self.blocks={pos:state for pos,state in self.blocks.items() if (pos[0]>>4,pos[2]>>4)!=(cx,cz)}
             elif name=='block_update':
                 pos=block_pos(struct.unpack_from('>q',p)[0]);state,_=wire.read_vi(p,8);self.blocks[pos]=state
@@ -221,10 +283,18 @@ class Probe(wire.Client):
         if not minimum<=y<minimum+len(sections)*16:return 0
         return sections[(y-minimum)>>4][((y&15)<<8)|((z&15)<<4)|(x&15)]
 
+    def light_at(self,pos):
+        """[sky, block] light at a position as the client holds it, or None outside received chunks."""
+        x,y,z=pos;layers=self.light.get((x>>4,z>>4))
+        if layers is None:return None
+        minimum=-64 if self.dimension=='overworld' else 0;index=((y-minimum)>>4)+1;cell=((y&15)<<8)|((z&15)<<4)|(x&15)
+        return [layer[index][cell>>1]>>((cell&1)*4)&15 if index in layer else 0 for layer in layers]
+
     def snapshot(self,fields,positions=()):
         output={}
         for field in fields:
             if field=='blocks':output[field]={','.join(map(str,p)):self.block(p) for p in positions}
+            elif field=='light':output[field]={','.join(map(str,p)):self.light_at(p) for p in positions}
             elif field=='inventory':output[field]=[None if s is None else {k:v for k,v in sorted(s.items()) if k!='damage' or v!=0} for s in self.inventory]
             elif field=='entities':output[field]=sorted(self.entities.values())
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
