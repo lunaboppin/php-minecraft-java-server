@@ -114,6 +114,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/bubble-columns.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bubbles
           python3 tools/parity/run.py --scenario tests/parity/random-ticks.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-random
           python3 tools/parity/run.py --scenario tests/parity/random-ticks-plants.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-plants
+          python3 tools/parity/run.py --scenario tests/parity/copper-weathering.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-copper
           python3 tools/parity/run.py --scenario tests/parity/fire.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-fire
           python3 tools/parity/run.py --scenario tests/parity/explosion.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-explosion
           python3 tools/parity/run.py --scenario tests/parity/tnt-restart.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tnt-restart

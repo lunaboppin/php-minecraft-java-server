@@ -26,6 +26,10 @@ trait RandomTicks
 
     private const CROPS = ['wheat' => 7, 'carrots' => 7, 'potatoes' => 7, 'beetroots' => 3];
 
+    /** WeatheringCopper.NEXT_BY_BLOCK: the unaffected copper blocks; copper_block's later stages drop "_block". */
+    private const COPPER = ['copper_block', 'cut_copper', 'chiseled_copper', 'cut_copper_slab', 'cut_copper_stairs', 'copper_door', 'copper_trapdoor',
+        'copper_bars', 'copper_grate', 'copper_bulb', 'copper_lantern', 'copper_chest', 'copper_golem_statue', 'lightning_rod', 'copper_chain'];
+
     /** GrowingPlantHeadBlock: growth chance a tick, direction (1 up, -1 down) and body block. */
     private const PLANT_HEADS = ['kelp' => [0.14, 1, 'kelp_plant'], 'weeping_vines' => [0.1, -1, 'weeping_vines_plant'],
         'twisting_vines' => [0.1, 1, 'twisting_vines_plant'], 'cave_vines' => [0.1, -1, 'cave_vines_plant']];
@@ -44,6 +48,7 @@ trait RandomTicks
                     isset(self::CROPS[$name]) => (int) $p['age'] < self::CROPS[$name],
                     $name === 'nether_wart' => (int) $p['age'] < 3,
                     isset(self::PLANT_HEADS[$name]) => (int) $p['age'] < 25,
+                    ($age = self::copperAge($name)) !== null => $age[1] < 3 && ($name !== 'copper_door' && !str_ends_with($name, '_copper_door') || $p['half'] === 'lower'),
                     $name === 'sweet_berry_bush' => (int) $p['age'] < 3,
                     $name === 'cocoa' => (int) $p['age'] < 2,
                     $name === 'redstone_ore' || $name === 'deepslate_redstone_ore' => $p['lit'] === 'true',
@@ -168,6 +173,8 @@ trait RandomTicks
             if ((int) $p['age'] < 3 && random_int(0, 9) === 0) {
                 $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
             }
+        } elseif (($age = self::copperAge($name)) !== null && $age[1] < 3) {
+            $this->weatherCopper($x, $y, $z, $state, $age);
         } elseif (isset(self::PLANT_HEADS[$name]) || in_array($name, ['sweet_berry_bush', 'cocoa', 'redstone_ore', 'deepslate_redstone_ore', 'bamboo', 'bamboo_sapling', 'budding_amethyst', 'brown_mushroom', 'red_mushroom'], true)) {
             $this->plantTick($x, $y, $z, $name, $p);
         } elseif (isset(self::GROWERS[$name])) {
@@ -356,6 +363,80 @@ trait RandomTicks
         }
         if ($catalog->air($this->world->get(...$offset)) && $survives(...$offset)) {
             $this->setBlock($offset[0], $offset[1], $offset[2], $catalog->state($name));
+        }
+    }
+
+    /**
+     * The unaffected copper block a weathering copper block ages from and its WeatherState
+     * (0 unaffected, 1 exposed, 2 weathered, 3 oxidized), or null for anything else (waxed
+     * copper included).
+     *
+     * @return array{0: string, 1: int}|null
+     */
+    private static function copperAge(string $name): ?array
+    {
+        foreach (['oxidized_' => 3, 'weathered_' => 2, 'exposed_' => 1, '' => 0] as $prefix => $age) {
+            if ($prefix !== '' && !str_starts_with($name, $prefix)) {
+                continue;
+            }
+            $base = substr($name, strlen($prefix));
+            if ($age > 0 && $base === 'copper') {
+                $base = 'copper_block';
+            }
+            if (in_array($base, self::COPPER, true)) {
+                return [$base, $age];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * ChangeOverTimeBlock.changeOverTime: about once a day per block it may age a stage, unless
+     * younger copper is within 4 blocks; more older neighbours make it likelier.
+     *
+     * @param array{0: string, 1: int} $age
+     */
+    private function weatherCopper(int $x, int $y, int $z, int $state, array $age): void
+    {
+        if (self::randomUnit() >= 0.05688889) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        [$base, $own] = $age;
+        $same = 0;
+        $older = 0;
+        for ($dx = -4; $dx <= 4; ++$dx) {
+            for ($dy = -4 + abs($dx); $dy <= 4 - abs($dx); ++$dy) {
+                $reach = 4 - abs($dx) - abs($dy);
+                for ($dz = -$reach; $dz <= $reach; ++$dz) {
+                    if ($dx === 0 && $dy === 0 && $dz === 0) {
+                        continue;
+                    }
+                    $other = self::copperAge($catalog->blockName($this->world->get($x + $dx, $y + $dy, $z + $dz)));
+                    if ($other === null) {
+                        continue;
+                    }
+                    if ($other[1] < $own) {
+                        return;
+                    }
+                    $other[1] > $own ? ++$older : ++$same;
+                }
+            }
+        }
+        $chance = ($older + 1) / ($older + $same + 1);
+        if (self::randomUnit() >= $chance * $chance * ($own === 0 ? 0.75 : 1.0)) {
+            return;
+        }
+        $stem = $base === 'copper_block' ? 'copper' : $base;
+        $next = ['exposed_', 'weathered_', 'oxidized_'][$own] . $stem;
+        $properties = $catalog->properties($state);
+        $this->setBlock($x, $y, $z, $catalog->state($next, $properties));
+        // A copper door's upper half follows its lower half.
+        if (str_ends_with($base, 'copper_door') && ($properties['half'] ?? '') === 'lower') {
+            $upper = $this->world->get($x, $y + 1, $z);
+            if (self::copperAge($catalog->blockName($upper)) === $age) {
+                $this->setBlock($x, $y + 1, $z, $catalog->state($next, $catalog->properties($upper)));
+            }
         }
     }
 
