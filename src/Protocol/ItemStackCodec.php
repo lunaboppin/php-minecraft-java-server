@@ -135,6 +135,18 @@ final class ItemStackCodec
         return $stack;
     }
 
+    /** DataComponentHolder.has: a component set on the stack, or one of its item's defaults it keeps. */
+    public function hasComponent(array $stack, string $name): bool
+    {
+        if (in_array($name, $stack['removedComponents'] ?? [], true)) {
+            return false;
+        }
+        if (isset($this->componentFields[$name]) && array_key_exists($this->componentFields[$name], $stack)) {
+            return true;
+        }
+        return in_array($name, $this->rules['defaults'][$stack['item']]['present'] ?? [], true);
+    }
+
     /** Current merged component metadata for the native mob enchanting phase. */
     public function enchantingMetadata(?array $stack): array
     {
