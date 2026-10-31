@@ -27,7 +27,7 @@ final class Snbt
             return self::listOrArray($reader);
         }
         if ($char === '"' || $char === "'") {
-            return ['type' => 'string', 'value' => $reader->readQuotedString()];
+            return ['type' => 'string', 'value' => self::quoted($reader)];
         }
         return self::scalar($reader);
     }
@@ -39,7 +39,7 @@ final class Snbt
         $reader->skipWhitespace();
         while ($reader->canRead() && $reader->peek() !== '}') {
             $reader->skipWhitespace();
-            $key = $reader->canRead() && ($reader->peek() === '"' || $reader->peek() === "'") ? $reader->readQuotedString() : $reader->readUnquotedString();
+            $key = $reader->canRead() && ($reader->peek() === '"' || $reader->peek() === "'") ? self::quoted($reader) : $reader->readUnquotedString();
             if ($key === '') {
                 throw $reader->error('parsing.expected', ['key']);
             }
@@ -54,7 +54,8 @@ final class Snbt
             $reader->skipWhitespace();
         }
         $reader->skipWhitespace();
-        self::expect($reader, '}', ',');
+        // With no entry yet, the grammar would continue with a quoted key.
+        self::expect($reader, '}', $entries === [] ? '"' : ',');
         return ['type' => 'compound', 'value' => $entries];
     }
 
@@ -82,6 +83,44 @@ final class Snbt
         $reader->skipWhitespace();
         self::expect($reader, ']', ',');
         return ['type' => $type, 'value' => $values];
+    }
+
+    /**
+     * SnbtGrammar's quoted string: \\, the quotes, \b \s \t \n \f \r, and \x, \u and \U hex
+     * escapes; any other escape is invalid.
+     */
+    private static function quoted(StringReader $reader): string
+    {
+        $quote = $reader->read();
+        $out = '';
+        while ($reader->canRead()) {
+            $char = $reader->read();
+            if ($char === $quote) {
+                return $out;
+            }
+            if ($char !== '\\') {
+                $out .= $char;
+                continue;
+            }
+            if (!$reader->canRead()) {
+                break;
+            }
+            $escape = $reader->read();
+            $simple = ['\\' => '\\', '"' => '"', "'" => "'", 'b' => "\x08", 's' => ' ', 't' => "\t", 'n' => "\n", 'f' => "\x0c", 'r' => "\r"][$escape] ?? null;
+            if ($simple !== null) {
+                $out .= $simple;
+                continue;
+            }
+            $digits = ['x' => 2, 'u' => 4, 'U' => 8][$escape] ?? null;
+            $hex = $digits === null ? '' : substr($reader->string, $reader->cursor, $digits);
+            if ($digits === null || strlen($hex) !== $digits || !ctype_xdigit($hex)) {
+                --$reader->cursor;
+                throw $reader->error('parsing.quote.escape', [$escape]);
+            }
+            $reader->cursor += $digits;
+            $out .= mb_chr((int) hexdec($hex), 'UTF-8');
+        }
+        throw $reader->error('parsing.quote.expected.end');
     }
 
     /** Unquoted text: booleans, numbers with an optional type suffix, or a plain string. */
