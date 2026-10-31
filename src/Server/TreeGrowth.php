@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server;
 
+use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Decorator;
@@ -172,12 +173,62 @@ trait TreeGrowth
             }
             return false;
         }
+        $changed = [];
         foreach ($chunks as $key => $chunk) {
             foreach (array_diff_assoc($chunk->blocks, $before[$key]) as $index => $state) {
-                $this->setBlock($chunk->x * 16 + ($index & 15), $this->world->minY + ($index >> 8), $chunk->z * 16 + (($index >> 4) & 15), $state);
+                $changed[] = [$chunk->x * 16 + ($index & 15), $this->world->minY + ($index >> 8), $chunk->z * 16 + (($index >> 4) & 15), $state];
             }
         }
+        $this->setTreeBlocks($changed);
         return true;
+    }
+
+    /**
+     * Set the tree's blocks, then send them as ChunkHolder.broadcastChanges does: one
+     * section_blocks_update per section with several changes, block_update for a single one,
+     * and the data of block entities among them (bee nests).
+     *
+     * @param list<array{0: int, 1: int, 2: int, 3: int}> $changes
+     */
+    private function setTreeBlocks(array $changes): void
+    {
+        $sections = [];
+        foreach ($changes as [$x, $y, $z, $state]) {
+            $this->world->set($x, $y, $z, $state);
+            $sections[($x >> 4) . ':' . ($y >> 4) . ':' . ($z >> 4)][] = [$x, $y, $z];
+        }
+        foreach ($changes as [$x, $y, $z]) {
+            $this->changedSimulation($x, $y, $z);
+            if ($this->world->generator === 'terrain') {
+                $this->pendingLight[($x >> 4) . ':' . ($z >> 4)] = [$x >> 4, $z >> 4];
+            }
+        }
+        foreach ($sections as $positions) {
+            [$sx, $sy, $sz] = [$positions[0][0] >> 4, $positions[0][1] >> 4, $positions[0][2] >> 4];
+            $payload = null;
+            if (count($positions) > 1) {
+                $payload = Binary::writeLong((($sx & 0x3fffff) << 42) | (($sz & 0x3fffff) << 20) | ($sy & 0xfffff)) . Binary::writeVarInt(count($positions));
+                foreach ($positions as [$x, $y, $z]) {
+                    $payload .= Binary::writeVarLong(($this->world->get($x, $y, $z) << 12) | (($x & 15) << 8) | (($z & 15) << 4) | ($y & 15));
+                }
+            }
+            foreach ($this->localPlayers() as $player) {
+                if (!isset($player->loadedChunks[$sx . ':' . $sz])) {
+                    continue;
+                }
+                if ($payload === null) {
+                    $this->blockUpdate($player, ...$positions[0]);
+                    continue;
+                }
+                $player->send($this->version, 'section_blocks_update', $payload);
+                foreach ($positions as [$x, $y, $z]) {
+                    $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+                    if ($type !== null) {
+                        $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
+                    }
+                }
+            }
+        }
     }
 
     private function treeDecorator(): Decorator
