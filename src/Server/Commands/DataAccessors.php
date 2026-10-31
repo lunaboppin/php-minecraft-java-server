@@ -133,7 +133,7 @@ trait DataAccessors
             ['XpLevel', new NbtTag('int', $player->experienceLevel)],
             ['XpTotal', new NbtTag('int', $player->experience)],
             ['XpSeed', new NbtTag('int', 0)],
-            ['Score', new NbtTag('int', 0)],
+            ['Score', new NbtTag('int', $player->score)],
             ['foodLevel', new NbtTag('int', $player->food)],
             ['foodTickTimer', new NbtTag('int', $player->foodTimer)],
             ['foodSaturationLevel', new NbtTag('float', $player->saturation)],
