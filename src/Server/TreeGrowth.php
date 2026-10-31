@@ -85,7 +85,7 @@ trait TreeGrowth
             return;
         }
         if ($p['stage'] === '0') {
-            $this->setBlock($x, $y, $z, $this->version->catalog->state($name, array_merge($p, ['stage' => '1'])));
+            $this->setBlockQuietly($x, $y, $z, $this->version->catalog->state($name, array_merge($p, ['stage' => '1'])));
             return;
         }
         $this->growTree($x, $y, $z, $name);

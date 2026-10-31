@@ -256,7 +256,11 @@ trait RandomTicks
         }
     }
 
-    /** SugarCaneBlock and CactusBlock random ticks: grow up to three tall. */
+    /**
+     * SugarCaneBlock and CactusBlock random ticks: grow up to three tall, and a cactus at age 8
+     * may sprout a flower. Ages change on the server only (block flags 260), so clients keep the
+     * age they last saw.
+     */
     private function growTall(int $x, int $y, int $z, string $name, array $p): void
     {
         $catalog = $this->version->catalog;
@@ -270,15 +274,52 @@ trait RandomTicks
                 return;
             }
         }
-        if ($height >= 3) {
+        if ($name === 'sugar_cane') {
+            if ($height >= 3) {
+                return;
+            }
+            if ($age === 15) {
+                $this->setBlock($x, $y + 1, $z, $catalog->state($name));
+                $this->setBlockQuietly($x, $y, $z, $catalog->state($name, ['age' => '0']));
+            } else {
+                $this->setBlockQuietly($x, $y, $z, $catalog->state($name, ['age' => (string) ($age + 1)]));
+            }
             return;
         }
-        if ($age === 15) {
+        if ($age === 8 && $this->cactusSurvives($x, $y + 1, $z)) {
+            if (self::randomUnit() <= ($height >= 3 ? 0.25 : 0.1)) {
+                $this->setBlock($x, $y + 1, $z, $catalog->state('cactus_flower'));
+            }
+        } elseif ($age === 15 && $height < 3) {
             $this->setBlock($x, $y + 1, $z, $catalog->state($name));
-            $this->setBlock($x, $y, $z, $catalog->state($name, ['age' => '0']));
-        } else {
-            $this->setBlock($x, $y, $z, $catalog->state($name, ['age' => (string) ($age + 1)]));
+            $this->setBlockQuietly($x, $y, $z, $catalog->state($name, ['age' => '0']));
         }
+        if ($age < 15) {
+            $this->setBlockQuietly($x, $y, $z, $catalog->state($name, ['age' => (string) ($age + 1)]));
+        }
+    }
+
+    /** CactusBlock.canSurvive for a cactus placed on one: no solid block or lava beside it, no liquid above. */
+    private function cactusSurvives(int $x, int $y, int $z): bool
+    {
+        $blocks = $this->fireBlocks();
+        foreach ([[1, 0], [-1, 0], [0, 1], [0, -1]] as [$dx, $dz]) {
+            $state = $this->world->get($x + $dx, $y, $z + $dz);
+            if ($blocks->isSolid($state) || $blocks->isLava($state)) {
+                return false;
+            }
+        }
+        return !$blocks->hasFluid($this->world->get($x, $y + 1, $z));
+    }
+
+    /**
+     * Level.setBlock without UPDATE_CLIENTS or neighbour updates (flags 260): only the server's
+     * block changes, as for growing ages and stages.
+     */
+    private function setBlockQuietly(int $x, int $y, int $z, int $state): void
+    {
+        $this->world->set($x, $y, $z, $state);
+        $this->randomTickChanged($x, $y, $z, $state);
     }
 
     /** FarmlandBlock.randomTick: wet near water, drying out and turning back to dirt without it. */
