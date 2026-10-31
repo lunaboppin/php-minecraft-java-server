@@ -26,6 +26,10 @@ trait RandomTicks
 
     private const CROPS = ['wheat' => 7, 'carrots' => 7, 'potatoes' => 7, 'beetroots' => 3];
 
+    /** GrowingPlantHeadBlock: growth chance a tick, direction (1 up, -1 down) and body block. */
+    private const PLANT_HEADS = ['kelp' => [0.14, 1, 'kelp_plant'], 'weeping_vines' => [0.1, -1, 'weeping_vines_plant'],
+        'twisting_vines' => [0.1, 1, 'twisting_vines_plant'], 'cave_vines' => [0.1, -1, 'cave_vines_plant']];
+
     /** BlockBehaviour.isRandomlyTicking for the blocks whose random ticks are implemented. */
     private function randomlyTicking(int $state): bool
     {
@@ -39,6 +43,12 @@ trait RandomTicks
                     str_ends_with($name, '_leaves') => ($p['distance'] ?? '') === '7' && ($p['persistent'] ?? 'true') === 'false',
                     isset(self::CROPS[$name]) => (int) $p['age'] < self::CROPS[$name],
                     $name === 'nether_wart' => (int) $p['age'] < 3,
+                    isset(self::PLANT_HEADS[$name]) => (int) $p['age'] < 25,
+                    $name === 'sweet_berry_bush' => (int) $p['age'] < 3,
+                    $name === 'cocoa' => (int) $p['age'] < 2,
+                    $name === 'redstone_ore' || $name === 'deepslate_redstone_ore' => $p['lit'] === 'true',
+                    $name === 'bamboo' => $p['stage'] === '0',
+                    in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
                     in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem'], true) => true,
                     default => false,
@@ -158,6 +168,8 @@ trait RandomTicks
             if ((int) $p['age'] < 3 && random_int(0, 9) === 0) {
                 $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
             }
+        } elseif (isset(self::PLANT_HEADS[$name]) || in_array($name, ['sweet_berry_bush', 'cocoa', 'redstone_ore', 'deepslate_redstone_ore', 'bamboo', 'bamboo_sapling', 'budding_amethyst', 'brown_mushroom', 'red_mushroom'], true)) {
+            $this->plantTick($x, $y, $z, $name, $p);
         } elseif (isset(self::GROWERS[$name])) {
             $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
@@ -174,6 +186,176 @@ trait RandomTicks
                     $this->setBlock($x, $y, $z, $this->world->dimension === 'the_nether' ? $catalog->state('air') : $catalog->state('water'));
                 }
             }
+        }
+    }
+
+    /**
+     * Random ticks of growing plants, bamboo, budding amethyst, mushrooms and lit redstone ore
+     * (GrowingPlantHeadBlock, SweetBerryBushBlock, CocoaBlock, BambooStalkBlock,
+     * BambooSaplingBlock, BuddingAmethystBlock, MushroomBlock, RedStoneOreBlock).
+     *
+     * @param array<string, string> $p
+     */
+    private function plantTick(int $x, int $y, int $z, string $name, array $p): void
+    {
+        $catalog = $this->version->catalog;
+        $with = fn (array $changes): int => $catalog->state($name, array_merge($p, array_map('strval', $changes)));
+        if (isset(self::PLANT_HEADS[$name])) {
+            [$chance, $step, $body] = self::PLANT_HEADS[$name];
+            if ((int) $p['age'] >= 25 || self::randomUnit() >= $chance) {
+                return;
+            }
+            $target = $this->world->get($x, $y + $step, $z);
+            $into = $name === 'kelp' ? $catalog->blockName($target) === 'water' : $catalog->air($target);
+            if (!$into || $y + $step < $this->world->minY || $y + $step >= $this->world->minY + $this->world->height) {
+                return;
+            }
+            $grown = ['age' => (int) $p['age'] + 1];
+            if ($name === 'cave_vines') {
+                $grown['berries'] = self::randomUnit() < 0.11 ? 'true' : 'false';
+            }
+            $this->setBlock($x, $y + $step, $z, $with($grown));
+            // GrowingPlantHeadBlock.updateShape: the old head becomes the plant's body.
+            $this->setBlock($x, $y, $z, $catalog->state($body, $name === 'cave_vines' ? ['berries' => $p['berries']] : []));
+            return;
+        }
+        switch ($name) {
+            case 'sweet_berry_bush':
+                if ((int) $p['age'] < 3 && random_int(0, 4) === 0 && $this->world->rawBrightness($x, $y + 1, $z) >= 9) {
+                    $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
+                }
+                return;
+            case 'cocoa':
+                if (random_int(0, 4) === 0 && (int) $p['age'] < 2) {
+                    $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
+                }
+                return;
+            case 'redstone_ore':
+            case 'deepslate_redstone_ore':
+                if ($p['lit'] === 'true') {
+                    $this->setBlock($x, $y, $z, $with(['lit' => 'false']));
+                }
+                return;
+            case 'bamboo_sapling':
+                if (random_int(0, 2) === 0 && $catalog->air($this->world->get($x, $y + 1, $z)) && $this->world->rawBrightness($x, $y + 1, $z) >= 9) {
+                    $this->setBlock($x, $y + 1, $z, $catalog->state('bamboo', ['leaves' => 'small']));
+                    // BambooSaplingBlock.updateShape: with bamboo above, the shoot becomes bamboo.
+                    $this->setBlock($x, $y, $z, $catalog->state('bamboo'));
+                }
+                return;
+            case 'bamboo':
+                if ($p['stage'] !== '0' || random_int(0, 2) !== 0 || !$catalog->air($this->world->get($x, $y + 1, $z)) || $this->world->rawBrightness($x, $y + 1, $z) < 9) {
+                    return;
+                }
+                $height = 0;
+                while ($height < 16 && $catalog->blockName($this->world->get($x, $y - $height - 1, $z)) === 'bamboo') {
+                    ++$height;
+                }
+                if (++$height < 16) {
+                    $this->growBamboo($x, $y, $z, $p, $height);
+                }
+                return;
+            case 'budding_amethyst':
+                $this->growAmethyst($x, $y, $z);
+                return;
+            case 'brown_mushroom':
+            case 'red_mushroom':
+                $this->spreadMushroom($x, $y, $z, $name);
+                return;
+        }
+    }
+
+    /** BambooStalkBlock.growBamboo: the new top gets leaves and the stalk's leaves shift down. */
+    private function growBamboo(int $x, int $y, int $z, array $p, int $height): void
+    {
+        $catalog = $this->version->catalog;
+        $below = $this->world->get($x, $y - 1, $z);
+        $twoBelow = $this->world->get($x, $y - 2, $z);
+        $isBamboo = static fn (int $state): bool => $catalog->blockName($state) === 'bamboo';
+        $leaves = 'none';
+        if ($height >= 1) {
+            if (!$isBamboo($below) || $catalog->properties($below)['leaves'] === 'none') {
+                $leaves = 'small';
+            } else {
+                $leaves = 'large';
+                if ($isBamboo($twoBelow)) {
+                    $this->setBlock($x, $y - 1, $z, $catalog->state('bamboo', array_merge($catalog->properties($below), ['leaves' => 'small'])));
+                    $this->setBlock($x, $y - 2, $z, $catalog->state('bamboo', array_merge($catalog->properties($twoBelow), ['leaves' => 'none'])));
+                }
+            }
+        }
+        $age = $p['age'] !== '1' && !$isBamboo($twoBelow) ? 0 : 1;
+        $stage = ($height < 11 || !(self::randomUnit() < 0.25)) && $height !== 15 ? 0 : 1;
+        $this->setBlock($x, $y + 1, $z, $catalog->state('bamboo', ['age' => (string) $age, 'leaves' => $leaves, 'stage' => (string) $stage]));
+        // BambooStalkBlock.updateShape: a stalk under older bamboo ages too, down the stalk.
+        for ($b = $y; $isBamboo($this->world->get($x, $b, $z)); --$b) {
+            $state = $this->world->get($x, $b, $z);
+            if ((int) $catalog->properties($this->world->get($x, $b + 1, $z))['age'] <= (int) $catalog->properties($state)['age']) {
+                break;
+            }
+            $this->setBlock($x, $b, $z, $catalog->state('bamboo', array_merge($catalog->properties($state), ['age' => '1'])));
+        }
+    }
+
+    /** BuddingAmethystBlock.randomTick: a bud on a random face grows a stage. */
+    private function growAmethyst(int $x, int $y, int $z): void
+    {
+        if (random_int(0, 4) !== 0) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        [$face, $dx, $dy, $dz] = [['down', 0, -1, 0], ['up', 0, 1, 0], ['north', 0, 0, -1], ['south', 0, 0, 1], ['west', -1, 0, 0], ['east', 1, 0, 0]][random_int(0, 5)];
+        $target = $this->world->get($x + $dx, $y + $dy, $z + $dz);
+        $name = $catalog->blockName($target);
+        $water = $name === 'water' && $catalog->properties($target)['level'] === '0';
+        $stages = ['small_amethyst_bud' => 'medium_amethyst_bud', 'medium_amethyst_bud' => 'large_amethyst_bud', 'large_amethyst_bud' => 'amethyst_cluster'];
+        $next = null;
+        if ($catalog->air($target) || $water) {
+            $next = 'small_amethyst_bud';
+        } elseif (isset($stages[$name]) && $catalog->properties($target)['facing'] === $face) {
+            $next = $stages[$name];
+            $water = ($catalog->properties($target)['waterlogged'] ?? 'false') === 'true';
+        }
+        if ($next !== null) {
+            $this->setBlock($x + $dx, $y + $dy, $z + $dz, $catalog->state($next, ['facing' => $face, 'waterlogged' => $water ? 'true' : 'false']));
+        }
+    }
+
+    /** MushroomBlock.randomTick: one in 25, a mushroom with few like it near spreads a short walk away. */
+    private function spreadMushroom(int $x, int $y, int $z, string $name): void
+    {
+        if (random_int(0, 24) !== 0) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $count = 0;
+        for ($dx = -4; $dx <= 4; ++$dx) {
+            for ($dy = -1; $dy <= 1; ++$dy) {
+                for ($dz = -4; $dz <= 4; ++$dz) {
+                    if ($catalog->blockName($this->world->get($x + $dx, $y + $dy, $z + $dz)) === $name && ++$count > 4) {
+                        return;
+                    }
+                }
+            }
+        }
+        $survives = function (int $a, int $b, int $c): bool {
+            $below = $this->world->get($a, $b - 1, $c);
+            if ($this->fireBlocks()->inTag($below, 'overrides_mushroom_light_requirement')) {
+                return true;
+            }
+            return $this->world->rawBrightness($a, $b, $c) < 13 && $this->fireBlocks()->flag($below, \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::SOLID_RENDER);
+        };
+        $step = static fn (array $from): array => [$from[0] + random_int(0, 2) - 1, $from[1] + random_int(0, 1) - random_int(0, 1), $from[2] + random_int(0, 2) - 1];
+        $position = [$x, $y, $z];
+        $offset = $step($position);
+        for ($i = 0; $i < 4; ++$i) {
+            if ($catalog->air($this->world->get(...$offset)) && $survives(...$offset)) {
+                $position = $offset;
+            }
+            $offset = $step($position);
+        }
+        if ($catalog->air($this->world->get(...$offset)) && $survives(...$offset)) {
+            $this->setBlock($offset[0], $offset[1], $offset[2], $catalog->state($name));
         }
     }
 
