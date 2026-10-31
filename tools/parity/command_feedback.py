@@ -373,10 +373,11 @@ SCRIPT = [
     ('!quiet gamemode spectator @s', False), ('spectate Witness', False), ('tp @s 3 200 3', False), ('spectate Witness', False),
     ('!quiet kill @e[type=pig]', False), ('!quiet gamemode creative @s', False),
     # Swings on a platform both players stand on, with their swing_animation packets.
+    # The item lands out of the players' pickup reach, so it is still there for the next line.
     ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0', False), ('swing', False), ('swing @s offhand', False),
     ('swing Witness mainhand stab', False), ('swing @a offhand whack 20', False), ('swing @a mainhand none 1s', False),
     ('swing @a mainhand wobble', False), ('swing @a mainhand whack 0', False), ('!quiet summon pig 1 200 1 {NoAI:1b}', False),
-    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 1 201 1 {Item:{id:"stone"}}', False),
+    ('swing @e[type=pig]', False), ('!quiet kill @e[type=pig]', False), ('!quiet summon item 2.5 201 2.5 {Item:{id:"stone"}}', False),
     ('swing @e[type=item]', False), ('!quiet kill @e[type=item]', False), ('!witness swing', False),
     # Stopwatches, without querying a running one, whose elapsed time depends on the wall clock.
     ('stopwatch query lap', False), ('stopwatch create lap', False), ('stopwatch create minecraft:lap', False),
