@@ -187,6 +187,9 @@ def main():
                 time.sleep(.6)
                 a.send('attack', net.vi(cow_id))
                 a.until('entity_event', lambda p: struct.unpack_from('>i', p)[0] == cow_id and p[4] == 3)
+                # The idle second player stands beside the spawn and could pick up the drops brought
+                # there (it also stops the cow's knockback, so it only leaves once the cow is dead).
+                command(a, 'tp Visitor 0.5 120 24.5', 'commands.teleport.success.location.single')
                 # Knockback can carry the cow out of pickup reach before it dies, so bring any drops over,
                 # again until the beef arrives: on a slow runner the drops may not exist yet.
                 for _ in range(30):
