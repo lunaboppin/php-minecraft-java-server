@@ -14,7 +14,7 @@ class World
     private array $lightCache=[];
     /** @var array<string, array> decoded light of recent chunks, by "cx:cz" */
     private array $lightLevels=[];
-    /** @var array<string, array{0: string, 1: string, 2: string}> each chunk's dampening and own sky and block levels */
+    /** @var array<string, array{0: string, 1: string, 2: string, 3: array<int, int>}> each chunk's dampening, own sky and block levels and shaped cells */
     private array $ownLight=[];
     /** @var array<string, list<string>> chunks whose light was built while these neighbours were not generated */
     private array $builtWithout=[];
@@ -331,7 +331,7 @@ class World
         }}
         $this->builtWithout[$cx.':'.$cz]=$missing;
         if(count($this->builtWithout)>1024){array_shift($this->builtWithout);}
-        return Lighting::buildArea($area,count($sections),$hasSky);
+        return Lighting::buildArea($area,count($sections),$hasSky,$this->version->directory);
     }
     /** @return array{0: string, 1: string, 2: string}|null a generated chunk's dampening and own levels */
     private function ownLight(int $cx,int $cz,?array $sections=null):?array {
@@ -343,7 +343,7 @@ class World
         }
         if(count($this->ownLight)>=320){array_shift($this->ownLight);}
         [$sky,$block]=Lighting::levels($sections,$this->version->catalog,$this->dimension==='overworld',$this->version->directory);
-        return $this->ownLight[$key]=[Lighting::dampening($sections,$this->version->catalog,$this->version->directory),$sky,$block];
+        return $this->ownLight[$key]=[Lighting::dampening($sections,$this->version->catalog,$this->version->directory),$sky,$block,Lighting::shapes($sections,$this->version->directory)];
     }
     /** Settle the own light of a chunk and its generated neighbours ahead of building its packet. */
     public function warmLight(int $cx,int $cz):void {

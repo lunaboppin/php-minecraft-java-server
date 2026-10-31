@@ -9,7 +9,7 @@ use PhpMinecraftJavaServer\World\World;
 
 // Chunk packets (sections, palettes, heightmaps, block entities and light) are built on every
 // chunk send. This hash was recorded before the packet builder was optimized and again for light
-// propagation, then for light crossing chunk borders; any change means different bytes reach clients. It is computed without the JIT:
+// propagation, then for light crossing chunk borders and shape occlusion; any change means different bytes reach clients. It is computed without the JIT:
 // PHP 8.5.12's tracing JIT changes the legacy terrain and End generators' output.
 $chunkVersion = new Version();
 $chunkDirectory = sys_get_temp_dir() . '/php-chunk-packets-' . bin2hex(random_bytes(8));

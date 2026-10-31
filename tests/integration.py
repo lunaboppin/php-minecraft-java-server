@@ -221,7 +221,8 @@ class Client:
             check(off == len(payload), 'inventory payload consumed')
         return name, payload
 
-    def until(self, target, predicate=lambda payload: True, limit=300, timeout=60):
+    def until(self, target, predicate=lambda payload: True, limit=20000, timeout=60):
+        # Idle clients queue world updates (random ticks, fluids, mobs), so the timeout bounds the wait.
         deadline = time.monotonic() + timeout
         for _ in range(limit):
             if time.monotonic() > deadline:

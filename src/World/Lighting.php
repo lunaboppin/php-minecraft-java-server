@@ -14,6 +14,32 @@ final class Lighting
     }
     /** @var array<string, list<int>> per directory: light dampening | emission << 8, by state */
     private static array $light=[];
+    /** @var array<string, array<int, list<string>>> per directory: face occlusion masks by state, for shaped states */
+    private static array $faces=[];
+    /** Direction index (down, up, north, south, west, east) of each step in the spread order. */
+    private const STEP_FACES=[4,5,2,3,0,1];
+    /**
+     * LightEngine.getOcclusionShape masks of the states that use their shape for light occlusion:
+     * six 32-byte coverage masks (down, up, north, south, west, east).
+     *
+     * @return array<int, list<string>>
+     */
+    public static function faces(?string $directory):array {
+        if($directory===null){return [];}
+        if(!isset(self::$faces[$directory])){
+            $data=json_decode((string)file_get_contents($directory.'/worldgen/block-behaviour.json'),true,512,JSON_THROW_ON_ERROR)['light_faces']??['masks'=>[],'states'=>[]];
+            $masks=array_map('base64_decode',$data['masks']);$out=[];
+            foreach($data['states'] as $state=>$indexes){$out[(int)$state]=array_map(static fn(int $i):string=>$masks[$i],$indexes);}
+            self::$faces[$directory]=$out;
+        }
+        return self::$faces[$directory];
+    }
+    /** Shapes.faceShapeOccludes: the two touching faces together cover the whole face (face: from's side). */
+    private static function occludes(array $faces,int $from,int $to,int $face):bool {
+        $a=$faces[$from][$face]??null;$b=$faces[$to][$face^1]??null;
+        if($a===null && $b===null){return false;}
+        return (($a??str_repeat("\0",32))|($b??str_repeat("\0",32)))===str_repeat("\xff",32);
+    }
     /**
      * Light for a chunk's sections as the official light engine propagates it inside the chunk:
      * sky light enters from above at 15 and passes down undimmed through blocks with no light
@@ -24,19 +50,31 @@ final class Lighting
     public static function build(array $sections,array $surface,Catalog $catalog,bool $hasSkylight=true,?string $directory=null,?array $neighbours=null): string {
         [$skyLevels,$blockLevels]=self::levels($sections,$catalog,$hasSkylight,$directory);
         if($neighbours!==null){
-            $neighbours[4]=[self::dampening($sections,$catalog,$directory),$skyLevels,$blockLevels];
-            return self::buildArea($neighbours,count($sections),$hasSkylight);
+            $neighbours[4]=[self::dampening($sections,$catalog,$directory),$skyLevels,$blockLevels,self::shapes($sections,$directory)];
+            return self::buildArea($neighbours,count($sections),$hasSkylight,$directory);
         }
         return self::encodeLevels($skyLevels,$blockLevels,count($sections),$hasSkylight);
     }
     /**
      * The middle chunk's light packet data from its 3×3 area of dampening and own levels.
      *
-     * @param array<int, array{0: string, 1: string, 2: string}|null> $area
+     * @param array<int, array{0: string, 1: string, 2: string, 3: array<int, int>}|null> $area
      */
-    public static function buildArea(array $area,int $count,bool $hasSkylight=true):string {
-        self::crossBorders($area,$count,$hasSkylight);
+    public static function buildArea(array $area,int $count,bool $hasSkylight=true,?string $directory=null):string {
+        self::crossBorders($area,$count,$hasSkylight,self::faces($directory));
         return self::encodeLevels($area[4][1],$area[4][2],$count,$hasSkylight);
+    }
+    /** @return array<int, int> the cells holding states that occlude light by their shape, by cell index */
+    public static function shapes(array $sections,?string $directory):array {
+        $faces=self::faces($directory);$out=[];
+        if($faces===[]){return $out;}
+        foreach($sections as $section=>$states){
+            foreach(array_keys(array_count_values($states)) as $state){
+                if(!isset($faces[$state])){continue;}
+                foreach(array_keys($states,$state,true) as $index){$out[$section*4096+$index]=$state;}
+            }
+        }
+        return $out;
     }
     /** Each cell's light dampening as a byte, in section, y, z, x order. */
     public static function dampening(array $sections,Catalog $catalog,?string $directory=null):string {
@@ -71,18 +109,20 @@ final class Lighting
         $table=$directory===null?null:(self::$light[$directory]??=self::table($directory));
         $damp=self::damper($catalog,$directory);
         $emit=static fn(int $state):int=>$table===null?(($catalog->flags[$state]??0)>>4&15):$table[$state]>>8&15;
-        $dampening=[];
+        $dampening=[];$faces=self::faces($directory);
         $cellDamp=function(int $global) use (&$dampening,$sections,$damp):int{
             return $dampening[$global]??=$damp($sections[$global>>12][$global&4095]);
         };
-        $spread=function(string &$levels,\SplQueue $queue) use ($cellDamp,$height):void{
+        $stateAt=static fn(int $global):int=>$sections[$global>>12][$global&4095];
+        $spread=function(string &$levels,\SplQueue $queue) use ($cellDamp,$height,$faces,$stateAt):void{
             while(!$queue->isEmpty()){
                 $global=$queue->dequeue();$value=ord($levels[$global]);
                 $x=$global&15;$z=($global>>4)&15;$y=$global>>8;
-                foreach([[$x>0,-1],[$x<15,1],[$z>0,-16],[$z<15,16],[$y>0,-256],[$y<$height-1,256]] as [$inside,$delta]){
+                foreach([[$x>0,-1],[$x<15,1],[$z>0,-16],[$z<15,16],[$y>0,-256],[$y<$height-1,256]] as $step=>[$inside,$delta]){
                     if(!$inside){continue;}$next=$global+$delta;
                     $light=$value-max(1,$cellDamp($next));
                     if($light<=0 || ord($levels[$next])>=$light){continue;}
+                    if($faces!==[] && self::occludes($faces,$stateAt($global),$stateAt($next),self::STEP_FACES[$step])){continue;}
                     $levels[$next]=chr($light);$queue->enqueue($next);
                 }
             }
@@ -106,11 +146,17 @@ final class Lighting
             $levels=str_repeat("\0",$count*4096);$floor=[];
             // Sections whose blocks all pass light freely are skipped whole on the way down.
             $clear=[];
-            foreach($sections as $section=>$states){$clear[$section]=true;foreach(array_keys(array_count_values($states)) as $state){if($damp($state)!==0){$clear[$section]=false;break;}}}
+            foreach($sections as $section=>$states){$clear[$section]=true;foreach(array_keys(array_count_values($states)) as $kind){if($damp($kind)!==0 || isset($faces[$kind])){$clear[$section]=false;break;}}}
             $top=$count;while($top>0 && $clear[$top-1]){--$top;}
             for($column=0;$column<256;++$column){
-                $y=$top*16;
-                while($y>0 && $cellDamp((($y-1)<<8)|$column)===0){--$y;}
+                // ChunkSkyLightSources: the column's light source ends at a block with dampening or
+                // where the faces of two shaped blocks close the edge between them.
+                $y=$top*16;$above=0;
+                while($y>0 && $cellDamp((($y-1)<<8)|$column)===0){
+                    $below=$stateAt((($y-1)<<8)|$column);
+                    if($faces!==[] && (isset($faces[$above]) || isset($faces[$below])) && self::occludes($faces,$above,$below,0)){break;}
+                    $above=$below;--$y;
+                }
                 $floor[$column]=$y;
             }
             // Sections from the highest floor up are fully lit; only those below need the spread.
@@ -145,10 +191,17 @@ final class Lighting
      * the area as inside a chunk. Light travels at most 15 blocks, so cells further out cannot
      * reach the middle chunk.
      *
-     * @param array<int, array{0: string, 1: string, 2: string}|null> $area dampening, sky and block levels
+     * @param array<int, array{0: string, 1: string, 2: string, 3: array<int, int>}|null> $area dampening, sky and block levels, shaped cells
+     * @param array<int, list<string>> $faces
      */
-    private static function crossBorders(array &$area,int $count,bool $hasSkylight):void {
+    private static function crossBorders(array &$area,int $count,bool $hasSkylight,array $faces=[]):void {
         $height=$count*16;
+        $shapes=array_map(static fn(?array $entry):array=>$entry[3]??[],$area);
+        // A step between two cells is blocked where shaped blocks' faces close it (face: the step's side of $k).
+        $closed=static function(int $k,int $index,int $nk,int $next,int $face) use ($faces,$shapes):bool{
+            $a=$shapes[$k][$index]??null;$b=$shapes[$nk][$next]??null;
+            return ($a!==null || $b!==null) && self::occludes($faces,$a??0,$b??0,$face);
+        };
         $damps=array_map(static fn(?array $entry):?string=>$entry[0]??null,$area);
         $cellDamp=static fn(int $k,int $index):int=>ord($damps[$k][$index]);
         foreach($hasSkylight?[1,2]:[2] as $layer){
@@ -166,8 +219,10 @@ final class Lighting
                         // a's cell on its +x (or +z) face against b's cell on its -x (or -z) face.
                         if($axis==='x'){$ia=$offset|($y<<8)|($i<<4)|15;$ib=$ia-15;}else{$ia=$offset|($y<<8)|240|$i;$ib=$ia-240;}
                         $va=ord($la[$ia]);$vb=ord($lb[$ib]);
-                        if($va>$vb+1){$light=$va-max(1,ord($db[$ib]));if($light>$vb){$lb[$ib]=chr($light);$queue->enqueue([$b,$ib]);}}
-                        elseif($vb>$va+1){$light=$vb-max(1,ord($da[$ia]));if($light>$va){$la[$ia]=chr($light);$queue->enqueue([$a,$ia]);}}
+                        // a's +x (east) or +z (south) face meets b's opposite face.
+                        $face=$axis==='x'?5:3;
+                        if($va>$vb+1){$light=$va-max(1,ord($db[$ib]));if($light>$vb && !$closed($a,$ia,$b,$ib,$face)){$lb[$ib]=chr($light);$queue->enqueue([$b,$ib]);}}
+                        elseif($vb>$va+1){$light=$vb-max(1,ord($da[$ia]));if($light>$va && !$closed($b,$ib,$a,$ia,$face^1)){$la[$ia]=chr($light);$queue->enqueue([$a,$ia]);}}
                     }}
                 }
                 unset($la,$lb);
@@ -176,7 +231,7 @@ final class Lighting
                 [$k,$index]=$queue->dequeue();$value=ord($area[$k][$layer][$index]);
                 if($value<=1){continue;}
                 $x=$index&15;$z=($index>>4)&15;$y=$index>>8;
-                foreach([[-1,0,0],[1,0,0],[0,0,-1],[0,0,1],[0,-1,0],[0,1,0]] as [$dx,$dy,$dz]){
+                foreach([[-1,0,0,4],[1,0,0,5],[0,0,-1,2],[0,0,1,3],[0,-1,0,0],[0,1,0,1]] as [$dx,$dy,$dz,$face]){
                     $ny=$y+$dy;if($ny<0 || $ny>=$height){continue;}
                     $nx=$x+$dx;$nz=$z+$dz;$nk=$k;
                     if($nx<0 || $nx>15){$nk+=$nx<0?-1:1;if(intdiv($k,3)!==intdiv($nk,3) || $nk<0 || $nk>8){continue;}$nx&=15;}
@@ -184,7 +239,7 @@ final class Lighting
                     if($area[$nk]===null){continue;}
                     $next=($ny<<8)|($nz<<4)|$nx;
                     $light=$value-max(1,$cellDamp($nk,$next));
-                    if($light<=ord($area[$nk][$layer][$next])){continue;}
+                    if($light<=ord($area[$nk][$layer][$next]) || $closed($k,$index,$nk,$next,$face)){continue;}
                     $area[$nk][$layer][$next]=chr($light);$queue->enqueue([$nk,$next]);
                 }
             }

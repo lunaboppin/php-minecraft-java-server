@@ -38,10 +38,10 @@ for ($dz = -1; $dz <= 1; ++$dz) {
         if ($chunk === null) { $area[($dz + 1) * 3 + $dx + 1] = null; continue; }
         $sections = $sectionsOf($chunk);
         [$skyLevels, $blockLevels] = Lighting::levels($sections, $c, $sky, $v->directory);
-        $area[($dz + 1) * 3 + $dx + 1] = [Lighting::dampening($sections, $c, $v->directory), $skyLevels, $blockLevels];
+        $area[($dz + 1) * 3 + $dx + 1] = [Lighting::dampening($sections, $c, $v->directory), $skyLevels, $blockLevels, Lighting::shapes($sections, $v->directory)];
     }
 }
-$payload = Lighting::buildArea($area, count($sectionsOf($ch)), $sky);
+$payload = Lighting::buildArea($area, count($sectionsOf($ch)), $sky, $v->directory);
 // decode: 4 bitsets then sky arrays then block arrays
 $o = 0; $masks = [];
 for ($i = 0; $i < 4; ++$i) { [$len, $o] = vi($payload, $o); $masks[] = unpack('P', str_pad(substr($payload, $o, $len), 8, "\0"))[1]; $o += $len; }
