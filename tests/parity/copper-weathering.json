@@ -1,0 +1,102 @@
+{
+  "name": "copper-weathering",
+  "normalizations": [
+    "Compare copper after random ticks at random_tick_speed 4096, once every piece has oxidized; the area's grass is replaced with stone.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers ChangeOverTimeBlock ageing of copper blocks, cut copper stairs (keeping their properties), copper beside older copper and a copper door's two halves; waxed copper stays."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -32 63 -32 47 63 47 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -10 64 -10 40 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:copper_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 64 0 minecraft:cut_copper_stairs[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 64 0 minecraft:copper_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 21 64 0 minecraft:exposed_copper"
+    },
+    {
+      "action": "command",
+      "text": "setblock 30 64 0 minecraft:copper_door[half=lower,facing=south]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 30 65 0 minecraft:copper_door[half=upper,facing=south]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 8 minecraft:waxed_copper_block"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 4096"
+    },
+    {
+      "action": "wait",
+      "seconds": 40
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 3"
+    },
+    {
+      "action": "snapshot",
+      "name": "weathered",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          10,
+          64,
+          0
+        ],
+        [
+          20,
+          64,
+          0
+        ],
+        [
+          21,
+          64,
+          0
+        ],
+        [
+          30,
+          64,
+          0
+        ],
+        [
+          30,
+          65,
+          0
+        ],
+        [
+          0,
+          64,
+          8
+        ]
+      ]
+    }
+  ]
+}
