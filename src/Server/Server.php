@@ -67,6 +67,8 @@ final class Server
 
     use WeatherCycle;
 
+    use Lightning;
+
     use SignAndPick;
 
     use EntityTracking;

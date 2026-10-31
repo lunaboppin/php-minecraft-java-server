@@ -20,6 +20,16 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
+        if ($kind === 'lightning_bolt' || $kind === 'tnt') {
+            $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
+            $id = $kind === 'tnt' ? $this->addTnt(...[...$position, [0.0, 0.0, 0.0]]) : $this->spawnLightning(...$position);
+            if ($kind === 'tnt') {
+                $this->synchronizeTnt($id);
+            }
+            $uuid = $kind === 'tnt' ? $this->tntEntities[$id]['uuid'] : $this->lightningBolts[$id]['uuid'];
+            $this->sendSuccess($sender, ['translate' => 'commands.summon.success', 'with' => [$this->entityComponent($kind, $uuid, null)]], true);
+            return;
+        }
         if (!isset($info['attributes']['max_health'])) {
             throw new \InvalidArgumentException('Unknown living entity type');
         }

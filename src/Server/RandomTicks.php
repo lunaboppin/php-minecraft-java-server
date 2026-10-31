@@ -109,6 +109,7 @@ trait RandomTicks
                 }
                 $this->indexRandomTicks($cx, $cz);
             }
+            $this->tickThunder($cx, $cz);
             foreach ($this->randomTickIndex[$key] as $section => $cells) {
                 if ($cells === []) {
                     continue;
