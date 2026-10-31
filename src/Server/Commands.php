@@ -44,6 +44,16 @@ trait Commands
 
     use CommandModules\SeedCommand;
 
+    use CommandModules\FunctionCommand;
+
+    use CommandModules\ScheduleCommand;
+
+    use CommandModules\ReturnCommand;
+
+    use CommandModules\ReloadCommand;
+
+    use CommandModules\DebugCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

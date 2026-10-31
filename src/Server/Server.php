@@ -1669,6 +1669,8 @@ final class Server
         // ServerLevel.tick: game time and clocks stand still while the game is frozen.
         if ($this->runGameElements) {
             $this->tickTime();
+            // ServerLevel.tickTime: the overworld's scheduled events come due with game time.
+            $this->tickScheduledFunctions();
         }
         $this->tickSwings();
         $this->tickDimensions();
