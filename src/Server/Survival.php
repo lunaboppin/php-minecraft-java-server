@@ -297,6 +297,8 @@ trait Survival
         if ($c->health <= 0) {
             $c->dead = true;
             $this->leaveVehicle($c);
+            // LivingEntity.die stops the player sleeping.
+            $this->stopSleeping($c, true, true);
             // The respawned player starts without effects or absorption.
             [$c->effects, $c->absorption] = [[], 0.0];
             // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.

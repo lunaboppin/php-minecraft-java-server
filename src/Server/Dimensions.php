@@ -60,6 +60,7 @@ trait Dimensions
                     $this->runBlockEvents();
                     $this->tickItems();
                     $this->tickTnt();
+                    $this->tickSleep();
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();
                     $this->tickAnimals();
@@ -86,6 +87,10 @@ trait Dimensions
     {
         if (!isset($this->worlds[$dimension])) {
             throw new \InvalidArgumentException('Choose overworld, the_nether or the_end');
+        }
+        // ServerPlayer.teleport wakes a sleeping player.
+        if ($c->sleepingPos !== null) {
+            $this->withDimension($c->dimension, fn () => $this->stopSleeping($c, true, true));
         }
         if ($c->dimension === $dimension && !$force) {
             $this->teleport($c, $position);

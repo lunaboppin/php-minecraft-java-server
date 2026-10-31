@@ -195,7 +195,7 @@ trait Explosions
      * ServerLevel.explode for TNT: ServerExplosion.explode, then the explode packet to players
      * within 64 blocks, carrying the knockback of a player it pushed.
      */
-    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null): void
+    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null, bool $fire = false, ?string $damageType = null): void
     {
         $catalog = $this->version->catalog;
         $f = Float32::round(...);
@@ -233,7 +233,9 @@ trait Explosions
                 }
             }
         }
-        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner);
+        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType);
+        // Level.getDestroyType: TNT and block explosions keep every drop unless their decay rule is on.
+        $decay = $this->gameRule($sourceTnt !== null ? 'tnt_explosion_drop_decay' : 'block_explosion_drop_decay') === 'true';
         // ServerExplosion.interactWithBlocks: in shuffled order, each block drops its loot (merged
         // into stacks of up to 16 at the first block's position) and is replaced by air.
         $positions = array_values($blown);
@@ -252,7 +254,7 @@ trait Explosions
                 continue;
             }
             if ($this->gameRule('block_drops') === 'true') {
-                foreach ($this->explodedDrops($x, $y, $z, $state) as $stack) {
+                foreach ($this->explodedDrops($x, $y, $z, $state, $decay ? $radius : null) as $stack) {
                     foreach ($stacks as &$collected) {
                         $room = min(16, $this->maxStackSize($stack)) - $collected[1]['count'];
                         if ($room > 0 && $collected[1]['item'] === $stack['item'] && ($collected[1]['components'] ?? null) === ($stack['components'] ?? null)) {
@@ -279,6 +281,14 @@ trait Explosions
         foreach ($stacks as [[$x, $y, $z], $stack]) {
             $this->popResource($x, $y, $z, $stack);
         }
+        if ($fire) {
+            // ServerExplosion.createFire: a third of the blown air spaces over solid blocks catch fire.
+            foreach ($positions as [$x, $y, $z]) {
+                if (random_int(0, 2) === 0 && $catalog->air($this->world->get($x, $y, $z)) && $this->fireBlocks()->flag($this->world->get($x, $y - 1, $z), \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::SOLID_RENDER)) {
+                    $this->setBlock($x, $y, $z, $this->fireWithAge($x, $y, $z, 0));
+                }
+            }
+        }
         $tail = (string) hex2bin(self::LARGE_EXPLOSION_TAIL);
         foreach ($this->localPlayers() as $player) {
             if (($player->x - $cx) ** 2 + ($player->y - $cy) ** 2 + ($player->z - $cz) ** 2 < 4096.0) {
@@ -290,7 +300,7 @@ trait Explosions
     }
 
     /** Block.dropResources with an explosion: the block's loot without a tool. */
-    private function explodedDrops(int $x, int $y, int $z, int $state): array
+    private function explodedDrops(int $x, int $y, int $z, int $state, ?float $radius): array
     {
         $catalog = $this->version->catalog;
         $name = $catalog->blockName($state);
@@ -299,6 +309,9 @@ trait Explosions
             return ['minecraft:' . $this->version->catalog->blockName($above), array_map('strval', $this->version->catalog->properties($above))];
         };
         $context = ['block' => 'minecraft:' . $name, 'state' => array_map('strval', $catalog->properties($state)), 'tool' => null, 'blockAt' => $blockAt];
+        if ($radius !== null) {
+            $context['explosionRadius'] = $radius;
+        }
         $out = [];
         foreach ($this->loot()->drops('minecraft:blocks/' . $name, $context) as [$drop, $count]) {
             $item = $this->version->blocks['items'][substr($drop, 10)] ?? null;
@@ -321,7 +334,7 @@ trait Explosions
      *
      * @return array<string, array{0: float, 1: float, 2: float}>
      */
-    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner): array
+    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner, ?string $damageType = null): array
     {
         $double = $radius * 2.0;
         $knockbacks = [];
@@ -352,7 +365,7 @@ trait Explosions
             }
             [$dist, $exposure, $direction, $damage] = $result;
             // DamageSources.explosion: TNT lit by a player is that player's explosion.
-            $this->damage($player, $damage, $owner !== null ? 'minecraft:player_explosion' : 'minecraft:explosion');
+            $this->damage($player, $damage, $damageType ?? ($owner !== null ? 'minecraft:player_explosion' : 'minecraft:explosion'));
             $power = (1.0 - $dist) * $exposure;
             $push = [$direction[0] * $power, $direction[1] * $power, $direction[2] * $power];
             if (!($player->gameMode === 1 && $player->flying)) {
@@ -372,7 +385,7 @@ trait Explosions
                 continue;
             }
             [$dist, $exposure, $direction, $damage] = $result;
-            $this->hurtMob($id, $damage, 'minecraft:explosion');
+            $this->hurtMob($id, $damage, $damageType ?? 'minecraft:explosion');
             if (isset($this->animals[$id])) {
                 $power = (1.0 - $dist) * $exposure;
                 $velocity = $this->animals[$id]['velocity'] ?? [0.0, 0.0, 0.0];

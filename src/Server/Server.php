@@ -63,6 +63,8 @@ final class Server
 
     use Explosions;
 
+    use Sleeping;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -1066,7 +1068,12 @@ final class Server
                 }
                 if ($c->playerLoaded && in_array($action, [1, 2], true)) {
                     $c->sprinting = $action === 1;
-                }return;
+                }
+                // ServerboundPlayerCommandPacket.Action.STOP_SLEEPING: leaving the bed.
+                if ($action === 0 && $c->sleepingPos !== null) {
+                    $this->withDimension($c->dimension, fn () => $this->stopSleeping($c, false, true));
+                }
+                return;
             case 'attack': $id = $r->varInt();
                 $r->end();
                 $this->attackEntity($c, $id);
@@ -1335,12 +1342,10 @@ final class Server
                 $this->acknowledge($c, $sequence);
                 return;
             }
-            if (str_ends_with($name, '_bed') && $c->dimension === 'overworld') {
-                $c->personalSpawn = [$x + 0.5, (float) $y + 1, $z + 0.5];
+            // Sneaking with an item in hand skips the block's own use.
+            if (str_ends_with($name, '_bed') && !($c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]))) && $this->useBed($c, $x, $y, $z)) {
                 // BedBlock answers SUCCESS_SERVER, which the sleeper sees too.
                 $this->useSwing($c, $hand, true);
-                $this->savePlayer($c);
-                $this->tell($c, 'Respawn point set');
                 $this->acknowledge($c, $sequence);
                 return;
             }
@@ -1816,7 +1821,14 @@ final class Server
         $this->sessionVerifier?->cancel($id);
         $this->forgetPushingEntity($c->entityId, $c->dimension);
         $this->leaveVehicle($c);
+        // ServerPlayer.disconnect leaves the bed; the level then recounts its sleepers.
+        if ($c->state === 'play' && $c->sleepingPos !== null) {
+            $this->withDimension($c->dimension, fn () => $this->stopSleeping($c, true, false));
+        }
         unset($this->clients[$id]);
+        if ($c->state === 'play') {
+            $this->withDimension($c->dimension, fn () => $this->updateSleepingPlayers());
+        }
         if ($c->state === 'play') {
             $this->closeWindow($c);
             $this->savePlayer($c);
