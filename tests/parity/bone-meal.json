@@ -1,0 +1,246 @@
+{
+  "name": "bone-meal",
+  "normalizations": [
+    "Compare block states after bone meal, at targets whose outcome is certain whatever the random growth.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers wheat grown fully by four uses, a sweet berry bush by three, and short grass and a fern grown tall. Bone meal on grass and an oak sapling also runs, but its random outcome is not compared."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -3 63 -3 6 66 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 62 -3 6 62 6 minecraft:grass_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 0 minecraft:farmland[moisture=7]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 0 minecraft:wheat"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 63 0 minecraft:sweet_berry_bush"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 0 minecraft:short_grass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 2 minecraft:fern"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bone_meal 64"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2 63 -2"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        2
+      ],
+      "face": 1
+    },
+    {
+      "action": "command",
+      "text": "setblock -2 63 4 minecraft:oak_sapling"
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        62,
+        -2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        -2,
+        62,
+        -2
+      ],
+      "face": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "grown",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          0
+        ],
+        [
+          2,
+          63,
+          0
+        ],
+        [
+          4,
+          63,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          4,
+          63,
+          2
+        ],
+        [
+          4,
+          64,
+          2
+        ]
+      ]
+    }
+  ]
+}
