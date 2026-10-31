@@ -280,6 +280,12 @@ final class ArgumentReader
                     throw $reader->error('argument.enum.invalid', [$name]);
                 }
                 return;
+            case 'minecraft:nbt_path':
+                NbtPath::read($reader);
+                return;
+            case 'minecraft:nbt_tag':
+                Snbt::read($reader);
+                return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
                 if (Snbt::read($reader)['type'] !== 'compound') {
