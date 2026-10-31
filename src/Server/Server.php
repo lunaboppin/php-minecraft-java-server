@@ -612,6 +612,11 @@ final class Server
         if ($batch === []) {
             return;
         }
+        // The light engine settles light apart from chunk sending, so the light the batch's chunks
+        // need is worked out before the batch's time budget starts.
+        foreach ($batch as [$x, $z]) {
+            $this->world->warmLight($x, $z);
+        }
         $c->send($this->version, 'chunk_batch_start');
         ++$c->unacknowledgedBatches;
         $count = 0;

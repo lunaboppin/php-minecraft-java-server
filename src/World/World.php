@@ -165,7 +165,7 @@ class World
         try{$action();$this->db->commit();}
         catch(\Throwable $e){
             try{if($this->db->inTransaction()){$this->db->rollBack();}}
-            finally{$this->cache=[];$this->baseCache=[];$this->editCache=[];$this->lightCache=[];$this->generationCache=[];$this->containerPositions=$containers;}
+            finally{$this->cache=[];$this->baseCache=[];$this->editCache=[];$this->lightCache=[];$this->lightLevels=[];$this->ownLight=[];$this->staleLight=[];$this->builtWithout=[];$this->generationCache=[];$this->containerPositions=$containers;}
             throw $e;
         }
     }
@@ -339,6 +339,10 @@ class World
         if(count($this->ownLight)>=320){array_shift($this->ownLight);}
         [$sky,$block]=Lighting::levels($sections,$this->version->catalog,$this->dimension==='overworld',$this->version->directory);
         return $this->ownLight[$key]=[Lighting::dampening($sections,$this->version->catalog,$this->version->directory),$sky,$block];
+    }
+    /** Settle the own light of a chunk and its generated neighbours ahead of building its packet. */
+    public function warmLight(int $cx,int $cz):void {
+        for($dz=-1;$dz<=1;++$dz){for($dx=-1;$dx<=1;++$dx){$this->ownLight($cx+$dx,$cz+$dz);}}
     }
     /** Drop a chunk's built light, keeping what it was to compare with once rebuilt. */
     private function relight(int $cx,int $cz):void {
