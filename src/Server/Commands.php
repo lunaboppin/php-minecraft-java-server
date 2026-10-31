@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\DebugCommand;
 
+    use CommandModules\LootCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

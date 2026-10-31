@@ -31,6 +31,12 @@ final class Loot
         $this->random = $random ?? static fn (): float => mt_rand() / (mt_getrandmax() + 1);
     }
 
+    /** Whether the reference holds the table. */
+    public function has(string $table): bool
+    {
+        return isset($this->data['tables'][$table]);
+    }
+
     /**
      * The stacks a table drops, as item ids and counts.
      *

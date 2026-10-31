@@ -47,6 +47,8 @@ final class ArgumentReader
             'minecraft:world_clock' => $ids($clocks),
             'minecraft:mob_effect' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/mob-effects.json'), true, 512, JSON_THROW_ON_ERROR)['effects'])),
             'minecraft:attribute' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/attributes.json'), true, 512, JSON_THROW_ON_ERROR)['attributes'])),
+            // The exported block and entity loot tables.
+            'minecraft:loot_table' => array_fill_keys(array_keys(json_decode((string) file_get_contents($version->directory . '/loot.json'), true, 512, JSON_THROW_ON_ERROR)['tables']), true),
             'minecraft:enchantment' => $ids(array_keys(json_decode((string) file_get_contents($version->directory . '/enchantments.json'), true, 512, JSON_THROW_ON_ERROR))),
             // Items with a default maximum damage.
             'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),
@@ -269,6 +271,18 @@ final class ArgumentReader
                 }
                 $reader->cursor = $start;
                 $this->resourceOrId($reader, 'minecraft:slot_source');
+                return;
+            case 'minecraft:loot_table':
+                // ResourceOrIdArgument: an inline table, or a table's ID. Tables beyond the exported
+                // block and entity ones exist in vanilla but not here, so only those are reported.
+                if ($reader->canRead() && in_array($reader->peek(), ['{', '['], true)) {
+                    Snbt::read($reader);
+                    return;
+                }
+                $id = $reader->readIdentifier();
+                if (!isset($this->registries['minecraft:loot_table'][$id]) && preg_match('#\Aminecraft:(blocks|entities)/#', $id) === 1) {
+                    throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:loot_table']);
+                }
                 return;
             case 'minecraft:loot_modifier':
                 // An inline modifier is decoded as it is read; DataResult's message reports a bad one.
