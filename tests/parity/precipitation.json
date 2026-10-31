@@ -1,0 +1,76 @@
+{
+  "name": "precipitation",
+  "normalizations": [
+    "Compare cauldrons after rain at a raised random_tick_speed, when every one has caught rain to the brim; the loaded area's grass is replaced with stone so only precipitation ticks.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers ServerLevel.tickPrecipitation's column picks and CauldronBlock/LayeredCauldronBlock filling with rain; freezing and snow need a cold biome and are not compared."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule advance_weather true"
+    },
+    {
+      "action": "command",
+      "text": "fill 16 64 16 31 70 31 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -32 63 -32 47 63 47 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 16 63 16 31 63 31 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 1024"
+    },
+    {
+      "action": "command",
+      "text": "weather rain 6000"
+    },
+    {
+      "action": "wait",
+      "seconds": 150
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 3"
+    },
+    {
+      "action": "snapshot",
+      "name": "filled",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          16,
+          63,
+          16
+        ],
+        [
+          20,
+          63,
+          25
+        ],
+        [
+          31,
+          63,
+          31
+        ],
+        [
+          24,
+          63,
+          17
+        ],
+        [
+          28,
+          63,
+          29
+        ]
+      ]
+    }
+  ]
+}

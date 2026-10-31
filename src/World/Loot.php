@@ -226,7 +226,8 @@ final class Loot
         }
         switch ($condition['type']) {
             case 'minecraft:survives_explosion':
-                return true;
+                // ExplosionCondition: with an explosion radius, one chance in the radius.
+                return !isset($context['explosionRadius']) || ($this->random)() <= 1.0 / $context['explosionRadius'];
             case 'minecraft:all_of':
                 return $this->conditions($condition['terms'], $context);
             case 'minecraft:any_of':

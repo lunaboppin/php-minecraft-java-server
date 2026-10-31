@@ -141,7 +141,7 @@ trait FireSimulation
             default => 'infiniburn_overworld',
         });
         $age = (int) $catalog->properties($state)['age'];
-        $raining = $this->world->dimension === 'overworld' && $this->weather !== 'clear';
+        $raining = $this->world->dimension === 'overworld' && $this->raining();
         if (!$infiniburn && $raining && $this->nearRain($x, $y, $z) && self::randomUnit() < 0.2 + $age * 0.03) {
             $this->setBlock($x, $y, $z, $air);
             return;
@@ -217,6 +217,10 @@ trait FireSimulation
         } else {
             $this->setBlock($x, $y, $z, $this->version->catalog->state('air'));
         }
+        // A burnt TNT block primes.
+        if ($this->version->catalog->blockName($state) === 'tnt') {
+            $this->primeTnt($x, $y, $z);
+        }
     }
 
     /** ServerLevel.canSpreadFireAround: a non-spectator within fire_spread_radius_around_player blocks. */
@@ -251,7 +255,7 @@ trait FireSimulation
      */
     private function rainingAt(int $x, int $y, int $z): bool
     {
-        if ($this->world->dimension !== 'overworld' || $this->weather === 'clear') {
+        if ($this->world->dimension !== 'overworld' || !$this->raining()) {
             return false;
         }
         $blocks = $this->fireBlocks();

@@ -1,0 +1,126 @@
+{
+  "name": "sleep",
+  "normalizations": [
+    "Compare a bed's state and the sleeper's position as the client sees them while sleeping, after the night is skipped and when trying to sleep by day.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers using a bed at night, the 100-tick sleep, the skip to morning, standing up beside the bed and the daytime refusal."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "time set midnight"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 4 66 2 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:red_bed[facing=east,part=foot]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 0 minecraft:red_bed[facing=east,part=head]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 64 1.5 90 0"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "asleep",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "snapshot",
+      "name": "morning",
+      "fields": [
+        "blocks",
+        "position"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set noon"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "day",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

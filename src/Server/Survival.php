@@ -115,9 +115,10 @@ trait Survival
         foreach ($this->players() as $player) {
             $this->savePlayer($player);
         }
-        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
+        foreach (['worldAge', 'dayTime', 'daylightCycle', 'weather', 'rainLevel', 'thunderLevel', 'keepInventory', 'naturalRegeneration', 'spawnMobs', 'clockPaused', 'clockRate', 'clockPartial', 'endClockTicks', 'endClockPaused', 'endClockRate', 'endClockPartial'] as $key) {
             $this->worlds['overworld']->setting($key, $this->$key);
         }
+        $this->worlds['overworld']->setting('weatherData', $this->weatherData);
         $this->saveStopwatches();
         foreach (array_keys($this->worlds) as $dimension) {
             $this->withDimension($dimension, function (): void {
@@ -127,6 +128,9 @@ trait Survival
                 $this->world->setting('experienceOrbs', array_values(array_map(static fn (array $orb): array => ['uuid' => bin2hex($orb['uuid'])]
                     + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
                 $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
+                // PrimedTnt.addAdditionalSaveData: the fuse, motion and owner keep.
+                $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid'])]
+                    + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -297,6 +301,8 @@ trait Survival
         if ($c->health <= 0) {
             $c->dead = true;
             $this->leaveVehicle($c);
+            // LivingEntity.die stops the player sleeping.
+            $this->stopSleeping($c, true, true);
             // The respawned player starts without effects or absorption.
             [$c->effects, $c->absorption] = [[], 0.0];
             // ServerPlayer.restoreFrom keeps base values and permanent modifiers only.

@@ -1,0 +1,58 @@
+{
+  "name": "tnt-restart",
+  "normalizations": [
+    "Compare the blocks under primed TNT that was saved by a restart partway through its fuse, after it explodes.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers PrimedTnt saving its fuse with the level; only blocks every ray is certain to destroy or spare are compared."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 60 6 4 64 14 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 64 9 1 66 11 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 0 64 10"
+    },
+    {
+      "action": "restart"
+    },
+    {
+      "action": "wait",
+      "seconds": 8
+    },
+    {
+      "action": "snapshot",
+      "name": "after",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          10
+        ],
+        [
+          0,
+          62,
+          10
+        ],
+        [
+          0,
+          60,
+          10
+        ],
+        [
+          -4,
+          60,
+          6
+        ]
+      ]
+    }
+  ]
+}
