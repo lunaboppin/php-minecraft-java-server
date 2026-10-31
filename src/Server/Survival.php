@@ -806,6 +806,13 @@ trait Survival
         if ($this->useSpawnEggInAir($c, $slot)) {
             return;
         }
+        // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.
+        if ($this->version->catalog->itemName($stack['item']) === 'carrot_on_a_stick') {
+            if ($this->boostVehicle($c, $slot)) {
+                $this->useSwing($c, $hand, true);
+            }
+            return;
+        }
         $info = $this->version->catalog->item($stack['item']);
         // Foods with canAlwaysEat are eaten at full hunger; Consumable.consumeTicks sets the time.
         $name = 'minecraft:' . $this->version->catalog->itemName($stack['item']);

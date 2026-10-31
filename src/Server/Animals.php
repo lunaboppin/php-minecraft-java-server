@@ -597,6 +597,9 @@ trait Animals
             if (!isset($tracked['deadAt']) && $this->mobIsTicking($tracked) && $this->ordinaryMobTravel($tracked)) {
                 $this->synchronizeMobMotion($tracked);
             }
+            if (!isset($tracked['deadAt'])) {
+                $this->synchronizeBoost($tracked);
+            }
         }
         unset($tracked);
         $noise = new Noise($this->world->seed);
@@ -629,6 +632,12 @@ trait Animals
                 if (($p->x - $animal['x']) ** 2 + ($p->z - $animal['z']) ** 2 < 80 ** 2) {
                     $near = true;
                 }
+            }
+            // LivingEntity.aiStep: a pig steered by its rider travels as the rider's client says, NoAI or not.
+            $controller = $this->controllingPlayer($id);
+            if ($controller !== null) {
+                $this->tickRiddenPig($animal, $controller);
+                continue;
             }
             // Mob.isNoAi: no goals and no travel, so a NoAI mob stays where it is; a passenger's
             // vehicle places it.

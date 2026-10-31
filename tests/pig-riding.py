@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Riding a saddled pig: using it mounts the player, and sneaking gets them off.
+"""Riding a saddled pig: using it mounts the player, steering it takes a carrot on a stick, and sneaking gets them off.
 
 The mount teleports the rider into the seat and names the pig's passengers; the dismount puts
 the rider beside the pig, who may mount again at once (Player.removeVehicle clears the
-boarding cooldown). Sneak-using the pig does not mount. With --eula-file (and the pinned JAR), the same
+boarding cooldown). Sneak-using the pig does not mount. Holding a carrot on a stick, the rider's
+move_vehicle moves the pig unless it goes too far or into a block, which sends the pig's position
+back; the pig turns with its rider, and using the stick boosts it once. Without the stick, the
+client is told where the pig is. With --eula-file (and the pinned JAR), the same
 steps run against the official 26.3 server and the packets each player receives must match,
 with entity and teleport IDs zeroed.
 """
@@ -12,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import struct
 import sys
 import time
 
@@ -20,7 +24,10 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 from run import Server
 
-WATCHED = ('set_passengers', 'player_position', 'swing_animation', 'entity_position_sync')
+WATCHED = ('set_passengers', 'player_position', 'swing_animation', 'entity_position_sync', 'move_vehicle', 'move_entity_pos',
+           'move_entity_pos_rot', 'move_entity_rot', 'rotate_head', 'set_entity_data')
+# Packets that name an entity, compared for the pig only.
+PIG_ONLY = ('entity_position_sync', 'move_entity_pos', 'move_entity_pos_rot', 'move_entity_rot', 'rotate_head', 'set_entity_data')
 
 
 def varint(data, at=0):
@@ -40,7 +47,12 @@ def normalized(name, payload):
         _, at = varint(payload)
         count, at = varint(payload, at)
         return '00' + bytes([count]).hex() + '00' * count
+    if name == 'move_vehicle':
+        return payload.hex()
     _, at = varint(payload)
+    if name == 'set_entity_data':
+        # The boost lasts a random 140 to 980 ticks; the entry's index and type are compared.
+        return '00' + payload[at:at + 2].hex()
     return '00' + payload[at:].hex()
 
 
@@ -53,7 +65,7 @@ def collect(client, who, pig):
         name, payload = client.receive()
         if name in WATCHED:
             # A player's own syncs follow its teleport confirmations and ground changes, not riding.
-            if name == 'entity_position_sync' and varint(payload)[0] != pig[0]:
+            if name in PIG_ONLY and varint(payload)[0] != pig[0]:
                 continue
             seen.append([who, name, normalized(name, payload)])
         if name == 'pong_response' and payload == token:
@@ -95,8 +107,18 @@ def record(kind, output, java, jar, eula, pig_type):
         find_pig(operator, pig)
         assert pig[0] is not None, 'the pig was not seen'
         interact = lambda secondary: operator.send('interact', wire.vi(pig[0]) + wire.vi(0) + b'\0' + (b'\1' if secondary else b'\0'))
-        # Sneak-using the pig does nothing; using it mounts.
+        command = lambda text: operator.send('chat_command', wire.string(text))
+        vehicle = lambda x, y, z, yaw=0.0: operator.send('move_vehicle', struct.pack('>dddff?', x, y, z, yaw, 0.0, True))
+        # Sneak-using the pig does nothing; using it mounts. With a carrot on a stick the rider moves
+        # the pig: a step, then too far, then into a block. It turns with the rider and boosts once.
+        # Without the stick the client is corrected. Sneaking gets off, and using the pig mounts again.
         for action in (lambda: interact(True), lambda: interact(False),
+                       lambda: command('item replace entity @s weapon.mainhand with carrot_on_a_stick'),
+                       lambda: vehicle(1.0, 200.0, 1.25), lambda: vehicle(1.0, 200.0, 13.0), lambda: command('setblock 1 200 3 stone'),
+                       lambda: vehicle(1.0, 200.0, 2.6), lambda: operator.send('move_player_rot', struct.pack('>ff', 90.0, 30.0) + b'\1'),
+                       lambda: operator.send('use_item', wire.vi(0) + wire.vi(1) + struct.pack('>ff', 90.0, 30.0)),
+                       lambda: operator.send('use_item', wire.vi(0) + wire.vi(2) + struct.pack('>ff', 90.0, 30.0)),
+                       lambda: operator.send('set_carried_item', struct.pack('>h', 1)), lambda: vehicle(1.0, 200.0, 1.5),
                        lambda: operator.send('player_input', b'\x20'), lambda: operator.send('player_input', b'\0'),
                        lambda: interact(False)):
             action()
@@ -125,9 +147,9 @@ def main():
     if args.eula_file is not None:
         java = record('java', args.output, args.java, args.jar.resolve(), args.eula_file.resolve(), pig_type)
         assert php == java, json.dumps({'php': php, 'java': java}, indent=1)
-        print('PASS: pig mounting and sneaking off identical to the official server')
+        print('PASS: pig mounting, carrot-on-a-stick steering and sneaking off identical to the official server')
     else:
-        print('PASS: a saddled pig mounts its user, who sneaks off beside it')
+        print('PASS: a saddled pig mounts its user, who steers it with a carrot on a stick and sneaks off beside it')
 
 
 if __name__ == '__main__':

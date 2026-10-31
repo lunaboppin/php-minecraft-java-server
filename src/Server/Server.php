@@ -83,6 +83,8 @@ final class Server
 
     use ContainerOpeners;
 
+    use VehicleSteering;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -1036,6 +1038,8 @@ final class Server
                     $this->swing($c->entityId, 0, $type, $duration, $c);
                 }
                 return;
+            case 'move_vehicle': $this->moveVehicle($c, $r);
+                return;
             case 'player_input': $flags = $r->byte();
                 $r->end();
                 if ($c->playerLoaded) {
@@ -1696,6 +1700,7 @@ final class Server
                     if ($c->dimension !== $this->world->dimension) {
                         return;
                     }
+                    $this->tickControlledVehicle($c);
                     $this->tickSurvival($c);
                     $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
