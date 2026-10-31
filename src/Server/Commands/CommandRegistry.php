@@ -89,6 +89,7 @@ final class CommandRegistry
             new CommandDefinition('reload', 'executeReload', true),
             new CommandDefinition('debug', 'executeDebug', true),
             new CommandDefinition('loot', 'executeLoot', true),
+            new CommandDefinition('spreadplayers', 'executeSpreadPlayers', true),
         ];
     }
 
