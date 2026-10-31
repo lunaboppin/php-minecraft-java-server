@@ -1,0 +1,63 @@
+{
+  "name": "lightning",
+  "normalizations": [
+    "Compare the fire a summoned lightning bolt lights on bare ground in peaceful, where only its re-flash sets fire, at the bolt.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
+    "Covers /summon lightning_bolt and /summon tnt; the TNT's crater is not compared."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 10 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:lightning_bolt 5 64 5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "struck",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          5,
+          64,
+          5
+        ],
+        [
+          5,
+          63,
+          5
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 0 64 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 6
+    },
+    {
+      "action": "snapshot",
+      "name": "after",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          10
+        ]
+      ]
+    }
+  ]
+}

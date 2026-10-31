@@ -41,17 +41,12 @@ trait Explosions
             return;
         }
         $rotation = self::randomUnit() * Float32::round(M_PI * 2);
-        $id = $this->nextEntity++;
         $fuse = 80;
         if ($shortFuse) {
             // PrimedTnt.getRandomShortFuse for TNT set off by an explosion.
             $fuse = random_int(0, max(1, intdiv($fuse, 4)) - 1) + intdiv($fuse, 8);
         }
-        $this->tntEntities[$id] = [
-            'id' => $id, 'uuid' => random_bytes(16), 'x' => $x + 0.5, 'y' => (float) $y, 'z' => $z + 0.5,
-            'velocity' => [-sin($rotation) * 0.02, Float32::round(0.2), -cos($rotation) * 0.02], 'fuse' => $fuse, 'ground' => false,
-            'owner' => $source?->uuid, 'dirty' => $fuse !== 80,
-        ];
+        $id = $this->addTnt($x + 0.5, (float) $y, $z + 0.5, [-sin($rotation) * 0.02, Float32::round(0.2), -cos($rotation) * 0.02], $fuse, $source?->uuid);
         if (!$shortFuse) {
             $payload = Packets::sound($this->version->blocks['sounds']['entity.tnt.primed'], 4, $x + 0.5, (float) $y, $z + 0.5, 1.0, 1.0, unpack('J', random_bytes(8))[1]);
             foreach ($this->localPlayers() as $player) {
@@ -61,6 +56,15 @@ trait Explosions
             }
         }
         $this->synchronizeTnt($id);
+    }
+
+    /** A PrimedTnt entity; /summon makes one with no push and the default fuse. */
+    private function addTnt(float $x, float $y, float $z, array $velocity, int $fuse = 80, ?string $owner = null): int
+    {
+        $id = $this->nextEntity++;
+        $this->tntEntities[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'velocity' => $velocity, 'fuse' => $fuse,
+            'ground' => false, 'owner' => $owner, 'dirty' => $fuse !== 80];
+        return $id;
     }
 
     /** TntBlock.onPlace and neighborChanged: TNT with a redstone signal beside it primes. */
