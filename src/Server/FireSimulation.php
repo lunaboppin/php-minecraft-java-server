@@ -141,7 +141,7 @@ trait FireSimulation
             default => 'infiniburn_overworld',
         });
         $age = (int) $catalog->properties($state)['age'];
-        $raining = $this->world->dimension === 'overworld' && $this->weather !== 'clear';
+        $raining = $this->world->dimension === 'overworld' && $this->raining();
         if (!$infiniburn && $raining && $this->nearRain($x, $y, $z) && self::randomUnit() < 0.2 + $age * 0.03) {
             $this->setBlock($x, $y, $z, $air);
             return;
@@ -255,7 +255,7 @@ trait FireSimulation
      */
     private function rainingAt(int $x, int $y, int $z): bool
     {
-        if ($this->world->dimension !== 'overworld' || $this->weather === 'clear') {
+        if ($this->world->dimension !== 'overworld' || !$this->raining()) {
             return false;
         }
         $blocks = $this->fireBlocks();
