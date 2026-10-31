@@ -71,6 +71,8 @@ final class Server
 
     use Precipitation;
 
+    use BoneMeal;
+
     use SignAndPick;
 
     use EntityTracking;
@@ -1371,6 +1373,14 @@ final class Server
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        // BoneMealItem.useOn: a valid target grows, and the bone meal is used.
+        if ($within && $itemName === 'bone_meal' && $this->editable($c, $x, $y, $z) && $this->useBoneMeal($c, $x, $y, $z, $slot)) {
+            $this->useSwing($c, $hand);
+            $this->blockUpdate($c, $x, $y, $z);
+            $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         // TntBlock.useItemOn: flint and steel or a fire charge primes TNT, wearing or using up the item.
         if ($within && in_array($itemName, ['flint_and_steel', 'fire_charge'], true) && $name === 'tnt' && $this->editable($c, $x, $y, $z) && $this->gameRule('tnt_explodes') === 'true') {
             $this->primeTnt($x, $y, $z, $c);

@@ -61,7 +61,7 @@ def worldgen_resources(inner, out):
                'placed_feature', 'feature', 'block_state_provider', 'processor_list', 'structure', 'structure_set',
                'template_pool')
     target = out / 'worldgen'
-    for folder in (*folders, 'tags/biome', 'tags/structure'):
+    for folder in (*folders, 'tags/biome', 'tags/structure', 'tags/feature'):
         shutil.rmtree(target / folder, ignore_errors=True)
     with zipfile.ZipFile(inner) as archive:
         for name in sorted(archive.namelist()):
@@ -70,9 +70,9 @@ def worldgen_resources(inner, out):
                 destination = target / name[len(prefix):]
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(archive.read(name))
-            # Biome tags, which structures use to choose where they can start, and structure tags,
-            # which /locate structure accepts.
-            for kind in ('biome', 'structure'):
+            # Biome tags, which structures use to choose where they can start, structure tags,
+            # which /locate structure accepts, and feature tags (bone meal's flowers).
+            for kind in ('biome', 'structure', 'feature'):
                 tags = f'data/minecraft/tags/worldgen/{kind}/'
                 if name.startswith(tags) and name.endswith('.json'):
                     destination = target / 'tags' / kind / name[len(tags):]
