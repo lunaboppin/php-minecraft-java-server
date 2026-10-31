@@ -69,6 +69,8 @@ final class Server
 
     use Lightning;
 
+    use Precipitation;
+
     use SignAndPick;
 
     use EntityTracking;
