@@ -14,6 +14,12 @@ class World
     private array $lightCache=[];
     /** @var array<string, array> decoded light of recent chunks, by "cx:cz" */
     private array $lightLevels=[];
+    /** @var array<string, array{0: string, 1: string, 2: string}> each chunk's dampening and own sky and block levels */
+    private array $ownLight=[];
+    /** @var array<string, list<string>> chunks whose light was built while these neighbours were not generated */
+    private array $builtWithout=[];
+    /** @var array<string, string> light data last built for chunks being relit, to tell whether it changed */
+    private array $staleLight=[];
     private array $blockEntityMap=[];
     private array $containerPositions=[];
     private readonly TerrainGenerator|DimensionGenerator|null $terrain;
@@ -214,7 +220,9 @@ class World
         $base=$this->terrain===null?$this->base($y):$this->baseSections($x>>4,$z>>4)[($y-$this->minY)>>4][(($y&15)<<8)|(($z&15)<<4)|($x&15)];
         if($state===$base){$q=$this->db->prepare('DELETE FROM blocks WHERE x=? AND y=? AND z=?');$q->execute([$x,$y,$z]);}
         else{$q=$this->db->prepare('INSERT INTO blocks(x,y,z,state) VALUES(?,?,?,?) ON CONFLICT(x,y,z) DO UPDATE SET state=excluded.state');$q->execute([$x,$y,$z,$state]);}
-        $key=($x>>4).':'.($z>>4);unset($this->cache[$key],$this->lightCache[$key]);
+        $key=($x>>4).':'.($z>>4);unset($this->cache[$key],$this->ownLight[$key]);
+        // Light crosses chunk borders, so the neighbours' light is built again too.
+        for($dx=-1;$dx<=1;++$dx){for($dz=-1;$dz<=1;++$dz){$this->relight(($x>>4)+$dx,($z>>4)+$dz);}}
         if(isset($this->editCache[$key])){$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);if($state===$base){unset($this->editCache[$key][$index]);}else{$this->editCache[$key][$index]=$state;}}
     }
     public function sections(int $cx,int $cz):array {
@@ -263,7 +271,7 @@ class World
         }
         $heightmaps="\2";
         foreach([1=>$surface,4=>$motion] as $type=>$values){$packed=Palette::pack($values,9);$heightmaps.=Binary::writeVarInt($type).Binary::writeVarInt(intdiv(strlen($packed),8)).$packed;}
-        $light=Lighting::build($sections,$surface,$catalog,$this->dimension==='overworld',$this->version->directory);
+        $light=$this->areaLight($cx,$cz,$sections);
         $payload=pack('NN',$cx,$cz).$heightmaps.Binary::writeVarInt(strlen($bytes)).$bytes.Binary::writeVarInt(count($entities)).implode('',$entities).$light;
         if(count($this->cache)>=64){$first=array_key_first($this->cache);unset($this->cache[$first],$this->lightCache[$first]);}
         $this->lightCache[$key]=$light;return $this->cache[$key]=$payload;
@@ -303,6 +311,57 @@ class World
             [,$offset]=self::varIntAt($light,$offset);
             for($i=0;$i<64;++$i){if(($masks[$kind]>>$i)&1){[$length,$offset]=self::varIntAt($light,$offset);$out[$kind][$i]=substr($light,$offset,$length);$offset+=$length;}}
         }
+        return $out;
+    }
+    /**
+     * A chunk's light as the light engine settles it across loaded chunks: its own levels, then
+     * light crossing in from the eight neighbours that have been generated.
+     */
+    private function areaLight(int $cx,int $cz,array $sections):string {
+        $hasSky=$this->dimension==='overworld';$area=[];$missing=[];
+        for($dz=-1;$dz<=1;++$dz){for($dx=-1;$dx<=1;++$dx){
+            $k=($dz+1)*3+$dx+1;
+            $area[$k]=$k===4?$this->ownLight($cx,$cz,$sections):$this->ownLight($cx+$dx,$cz+$dz);
+            if($area[$k]===null){$missing[]=($cx+$dx).':'.($cz+$dz);}
+        }}
+        $this->builtWithout[$cx.':'.$cz]=$missing;
+        if(count($this->builtWithout)>1024){array_shift($this->builtWithout);}
+        return Lighting::buildArea($area,count($sections),$hasSky);
+    }
+    /** @return array{0: string, 1: string, 2: string}|null a generated chunk's dampening and own levels */
+    private function ownLight(int $cx,int $cz,?array $sections=null):?array {
+        $key=$cx.':'.$cz;
+        if(isset($this->ownLight[$key])){$value=$this->ownLight[$key];unset($this->ownLight[$key]);return $this->ownLight[$key]=$value;}
+        if($sections===null){
+            if(!$this->ready($cx,$cz)){return null;}
+            $sections=$this->sections($cx,$cz);
+        }
+        if(count($this->ownLight)>=320){array_shift($this->ownLight);}
+        [$sky,$block]=Lighting::levels($sections,$this->version->catalog,$this->dimension==='overworld',$this->version->directory);
+        return $this->ownLight[$key]=[Lighting::dampening($sections,$this->version->catalog,$this->version->directory),$sky,$block];
+    }
+    /** Drop a chunk's built light, keeping what it was to compare with once rebuilt. */
+    private function relight(int $cx,int $cz):void {
+        $key=$cx.':'.$cz;
+        if(isset($this->lightCache[$key])){$this->staleLight[$key]??=$this->lightCache[$key];}
+        unset($this->cache[$key],$this->lightCache[$key]);
+    }
+    /** Whether a relit chunk's light differs from what it had before the change. */
+    public function lightChanged(int $cx,int $cz):bool {
+        $key=$cx.':'.$cz;$before=$this->staleLight[$key]??null;unset($this->staleLight[$key]);
+        return $before===null || $before!==$this->chunkLight($cx,$cz);
+    }
+    /**
+     * A chunk was generated or sent: neighbours lit before it existed take its light in.
+     *
+     * @return list<array{0: int, 1: int}> the neighbours to relight
+     */
+    public function neighbourArrived(int $cx,int $cz):array {
+        $key=$cx.':'.$cz;$out=[];
+        for($dz=-1;$dz<=1;++$dz){for($dx=-1;$dx<=1;++$dx){
+            $other=($cx+$dx).':'.($cz+$dz);
+            if(in_array($key,$this->builtWithout[$other]??[],true)){$this->relight($cx+$dx,$cz+$dz);$out[]=[$cx+$dx,$cz+$dz];unset($this->builtWithout[$other]);}
+        }}
         return $out;
     }
     public function chunkLight(int $cx,int $cz):string {$key=$cx.':'.$cz;if(!isset($this->lightCache[$key])){$this->chunk($cx,$cz);}return $this->lightCache[$key];}

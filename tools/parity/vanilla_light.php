@@ -5,8 +5,8 @@ declare(strict_types=1);
 /*
  * Compare the light PHP computes for a chunk with the light the official server saved
  * (tools/parity/worldgen_regions.py --light output), lighting the official blocks so only the
- * light engine differs. Cells within 3 blocks of the chunk's sides count as edge cells: light
- * from neighbouring chunks is not modelled yet.
+ * light engine differs. The neighbouring chunks in the file light across the borders as they do
+ * in the world; cells within 3 blocks of the chunk's sides are counted apart as edge cells.
  *
  * Usage: php tools/parity/vanilla_light.php REGIONS.json CX CZ
  */
@@ -18,16 +18,30 @@ function vi(string $d, int $o): array { $v = 0; $sh = 0; do { $b = ord($d[$o++])
 [$file, $cx, $cz] = [$argv[1], (int) $argv[2], (int) $argv[3]];
 $v = new Version(); $c = $v->catalog;
 $ref = json_decode(file_get_contents($file), true);
-foreach ($ref['chunks'] as $ch) { if ($ch['x'] === $cx && $ch['z'] === $cz) break; }
-$names = explode("\n", zlib_decode(base64_decode($ch['blocks'])));
-$states = [];
-foreach ($names as $n) {
-    $props = [];
-    if (preg_match('/^([a-z_0-9]+)(?:\[(.*)\])?$/', $n, $m)) { foreach (array_filter(explode(',', $m[2] ?? '')) as $kv) { [$k, $val] = explode('=', $kv); $props[$k] = $val; } $states[] = $c->state($m[1], $props); } else { $states[] = 0; }
+$sectionsOf = static function (array $chunk) use ($c): array {
+    $states = [];
+    foreach (explode("\n", zlib_decode(base64_decode($chunk['blocks']))) as $n) {
+        $props = [];
+        if (preg_match('/^([a-z_0-9]+)(?:\[(.*)\])?$/', $n, $m)) { foreach (array_filter(explode(',', $m[2] ?? '')) as $kv) { [$k, $val] = explode('=', $kv); $props[$k] = $val; } $states[] = $c->state($m[1], $props); } else { $states[] = 0; }
+    }
+    // official order y, z, x like PHP sections
+    return array_chunk($states, 4096);
+};
+$byPos = [];
+foreach ($ref['chunks'] as $chunk) { $byPos[$chunk['x'] . ':' . $chunk['z']] = $chunk; }
+$ch = $byPos[$cx . ':' . $cz];
+$sky = ($ref['dimension'] ?? 'overworld') === 'overworld';
+$area = [];
+for ($dz = -1; $dz <= 1; ++$dz) {
+    for ($dx = -1; $dx <= 1; ++$dx) {
+        $chunk = $byPos[($cx + $dx) . ':' . ($cz + $dz)] ?? null;
+        if ($chunk === null) { $area[($dz + 1) * 3 + $dx + 1] = null; continue; }
+        $sections = $sectionsOf($chunk);
+        [$skyLevels, $blockLevels] = Lighting::levels($sections, $c, $sky, $v->directory);
+        $area[($dz + 1) * 3 + $dx + 1] = [Lighting::dampening($sections, $c, $v->directory), $skyLevels, $blockLevels];
+    }
 }
-// official order y, z, x like PHP sections
-$sections = array_chunk($states, 4096);
-$payload = Lighting::build($sections, array_fill(0, 256, 0), $c, ($ref['dimension'] ?? 'overworld') === 'overworld', $v->directory);
+$payload = Lighting::buildArea($area, count($sectionsOf($ch)), $sky);
 // decode: 4 bitsets then sky arrays then block arrays
 $o = 0; $masks = [];
 for ($i = 0; $i < 4; ++$i) { [$len, $o] = vi($payload, $o); $masks[] = unpack('P', str_pad(substr($payload, $o, $len), 8, "\0"))[1]; $o += $len; }
