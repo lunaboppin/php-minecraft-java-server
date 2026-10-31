@@ -284,10 +284,11 @@ SCRIPT = [
     ('damage @e[type=giant,limit=1] 1', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 0 101 0 minecraft:stone', False),
     ('damage @e[type=giant,limit=1] 1', False), ('damage @e[type=giant,limit=1] 1', False), ('!quiet setblock 0 101 0 minecraft:air', False),
     ('!quiet gamemode creative @s', False),
-    # A dropped item has 5 health, truncated after each hit, and goes at 0; the operator stands clear of it.
-    ('!quiet tp @s 0 110 6', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
+    # A dropped item has 5 health, truncated after each hit, and goes at 0; both players stand clear of
+    # it, the witness on the box's roof instead of beside where it lands.
+    ('!quiet tp @s 0 110 6', False), ('!quiet tp Witness 0 109 0', False), ('!quiet setblock 1 104 1 minecraft:dirt', False), ('!quiet setblock 1 104 1 minecraft:air destroy', False),
     ('damage @e[type=item,limit=1] 2', False), ('damage @e[type=item,limit=1] 2.9 in_fire', False), ('damage @e[type=item,limit=1] 1', False),
-    ('damage @e[type=item,limit=1] 1', False),
+    ('damage @e[type=item,limit=1] 1', False), ('!quiet tp Witness 1 100 0', False),
     # Command chat reaches unsigned clients as disguised chat with the bound chat type.
     ('say hello there', False), ('say spaced   out  text', False), ('say @a', False), ('say @e[type=pig]', False), ('!witness say no permission', False),
     ('me waves', False), ('me @e[type=player,limit=1] waves', False), ('!witness me @a stays literal', False),
