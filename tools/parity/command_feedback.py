@@ -499,6 +499,12 @@ SCRIPT = [
     ('item replace entity @s foo with stone', False), ('item modify entity @s weapon foo:bar', False), ('!witness item replace entity @s weapon with stone', False),
     ('item replace entity @s enderchest.3 with stone 7', False), ('item replace entity @s weapon from entity @s enderchest.3', False),
     ('item replace entity @s player.cursor with stone', False), ('item replace entity @s player.crafting.0 with stone', False),
+    # An item entity's stack is its one slot; emptied, it is gone the next tick.
+    ('!quiet summon item 2.5 201 2.5 {Item:{id:"stone"}}', False), ('item replace entity @e[type=item] contents with diamond 3', False),
+    ('item replace entity @e[type=item] container.0 with emerald 2', False), ('item replace entity @e[type=item] container.1 with stone', False),
+    ('item replace entity @s weapon from entity @e[type=item,limit=1] contents', False), ('item replace entity @e[type=item] contents with air', False),
+    ('item replace entity @e[type=item] contents with stone', False), ('item replace entity @s weapon with air', False),
+    ('item replace entity @s weapon with air 5', False),
     ('!quiet clear @a', False), ('!quiet kill @e[type=!player]', False), ('!quiet setblock 1 200 -1 air', False),
     ('list', False),
 ]

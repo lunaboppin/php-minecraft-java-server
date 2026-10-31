@@ -46,7 +46,8 @@ trait ItemCommand
                 'storedEnchantments' => $parsed['components']['minecraft:stored_enchantments'] ?? null,
                 'removedComponents' => $parsed['removed'] === [] ? null : $parsed['removed'],
             ], static fn (mixed $value): bool => $value !== null);
-            $items = [$stack];
+            // ItemStack.isEmpty: an air stack empties the slot.
+            $items = [$itemName === 'air' ? null : $stack];
             $known = $this->itemComponent($itemName, $parsed['components'], $parsed['removed'], $count);
             // ERROR_TARGET_NO_CHANGES_KNOWN_ITEM escapes the stack itself: its toString, count then ID.
             $knownText = ['text' => $count . ' ' . $parsed['item']];
@@ -132,6 +133,10 @@ trait ItemCommand
         if (isset($holder['client'])) {
             return $slot === 499 || ($slot >= 500 && $slot < 504) || ($slot >= 0 && $slot < 36) || ($slot >= 200 && $slot < 227) || isset(self::ITEM_EQUIPMENT_SLOTS[$slot]);
         }
+        // ItemEntity.getSlot: an item entity's stack is its slot 0 (contents).
+        if (isset($holder['item'])) {
+            return $slot === 0 && isset($this->itemEntities[$holder['item']]);
+        }
         return isset($holder['mob']) && isset(self::ITEM_EQUIPMENT_SLOTS[$slot]);
     }
 
@@ -151,6 +156,9 @@ trait ItemCommand
     {
         if (isset($holder['block'])) {
             return $this->worlds[$holder['dimension']]->container($holder['block'])['slots'][$slot] ?? null;
+        }
+        if (isset($holder['item'])) {
+            return $this->itemEntities[$holder['item']]['stack'];
         }
         if (isset($holder['client'])) {
             if ($slot === 105 || $slot === 106) {
@@ -176,6 +184,16 @@ trait ItemCommand
             }
             $world->container($holder['block'], $data);
             $this->syncContainer($holder['block']);
+            return true;
+        }
+        if (isset($holder['item'])) {
+            // ItemEntity.setItem: trackers see the new stack; an emptied item is discarded on its next tick.
+            if ($stack === null) {
+                $this->itemEntities[$holder['item']]['discard'] = true;
+            } else {
+                $this->itemEntities[$holder['item']]['stack'] = $stack;
+                $this->itemEntities[$holder['item']]['dirty'] = true;
+            }
             return true;
         }
         if (isset(self::ITEM_EQUIPMENT_SLOTS[$slot]) && !in_array($slot, [98, 99, 103], true) && $stack !== null
