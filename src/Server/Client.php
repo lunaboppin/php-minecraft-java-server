@@ -249,6 +249,15 @@ final class Client
     /** The mob this player rides, by entity ID. */
     public ?int $vehicle = null;
 
+    /** ServerGamePacketListenerImpl.lastVehicle: the vehicle this player controlled when the tick began, and its positions. */
+    public ?int $lastVehicle = null;
+
+    public array $vehicleFirstGood = [0.0, 0.0, 0.0];
+
+    public array $vehicleLastGood = [0.0, 0.0, 0.0];
+
+    public int $vehiclePositionLastResetAt = 0;
+
     public int $teleportTick = 0;
 
     public int $chunkX = 0;
