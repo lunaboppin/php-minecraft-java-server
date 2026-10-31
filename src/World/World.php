@@ -273,9 +273,9 @@ class World
         return str_ends_with($name,'_sign')?Nbt::sign($this->container([$x,$y,$z])):"\x0a\0";
     }
     public function blockEntityType(int $state):?int {return $this->blockEntityMap[$state]??null;}
-    /** BlockAndLightGetter.getRawBrightness with no darkening: the larger of the chunk's sky and block light, or block light alone. */
-    public function rawBrightness(int $x,int $y,int $z,bool $blockOnly=false):int {
-        if($y<$this->minY || $y>=$this->minY+$this->height){return !$blockOnly && $y>=$this->minY+$this->height && $this->dimension==='overworld'?15:0;}
+    /** BlockAndLightGetter.getRawBrightness: the larger of the chunk's sky light less the sky's darkening and its block light, or block light alone. */
+    public function rawBrightness(int $x,int $y,int $z,bool $blockOnly=false,int $skyDarken=0):int {
+        if($y<$this->minY || $y>=$this->minY+$this->height){return !$blockOnly && $y>=$this->minY+$this->height && $this->dimension==='overworld'?max(0,15-$skyDarken):0;}
         $key=($x>>4).':'.($z>>4);
         if(!isset($this->lightLevels[$key]) || !isset($this->lightCache[$key])){
             if(count($this->lightLevels)>=64){array_shift($this->lightLevels);}
@@ -283,8 +283,8 @@ class World
         }
         $section=(($y-$this->minY)>>4)+1;$index=(($y&15)<<8)|(($z&15)<<4)|($x&15);
         $value=0;
-        foreach($blockOnly?[$this->lightLevels[$key][1]]:$this->lightLevels[$key] as $arrays){
-            if(isset($arrays[$section])){$value=max($value,ord($arrays[$section][$index>>1])>>(($index&1)*4)&15);}
+        foreach($blockOnly?[1=>$this->lightLevels[$key][1]]:$this->lightLevels[$key] as $layer=>$arrays){
+            if(isset($arrays[$section])){$value=max($value,(ord($arrays[$section][$index>>1])>>(($index&1)*4)&15)-($layer===0?$skyDarken:0));}
         }
         return $value;
     }

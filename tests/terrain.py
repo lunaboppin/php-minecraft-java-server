@@ -161,7 +161,8 @@ def main():
                 net.check(a.inventory[44].get('damage') == 1, 'tool wear and dropped-block pickup')
                 # Player combat follows the server's health state.
                 a.send('attack', net.vi(b.entity_id))
-                health = b.until('set_health', lambda p: struct.unpack_from('>f', p)[0] < 20)
+                # The idle second client has queued block updates from random ticks since it joined.
+                health = b.until('set_health', lambda p: struct.unpack_from('>f', p)[0] < 20, limit=100000)
                 net.check(struct.unpack_from('>f', health)[0] == 19, 'player combat applies health damage')
                 # Summoned passive animals use the same validated entity protocol and drop food.
                 command(a, 'give @s iron_sword 1', 'commands.give.success.single')

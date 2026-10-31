@@ -3,7 +3,7 @@
   "normalizations": [
     "Compare block states after random ticks at a raised random_tick_speed, once outcomes have settled.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
-    "Covers crop growth, farmland drying, leaf distance and decay, grass spread, sugar cane growth and ice melting; not the random tick order or timing."
+    "Covers crop growth, farmland drying, leaf distance and decay, grass spread, sugar cane growth, ice melting, sapling growth in light and darkness and hanging propagule ageing; not the random tick order or timing."
   ],
   "steps": [
     {
@@ -69,6 +69,42 @@
     {
       "action": "command",
       "text": "setblock -13 64 0 minecraft:glowstone"
+    },
+    {
+      "action": "command",
+      "text": "time set noon"
+    },
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 63 -20 minecraft:dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 64 -20 minecraft:birch_sapling"
+    },
+    {
+      "action": "command",
+      "text": "fill 24 63 -24 26 66 -22 minecraft:stone hollow"
+    },
+    {
+      "action": "command",
+      "text": "setblock 25 63 -23 minecraft:dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 25 64 -23 minecraft:oak_sapling"
+    },
+    {
+      "action": "command",
+      "text": "setblock 30 70 -20 minecraft:mangrove_leaves[persistent=true]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 30 69 -20 minecraft:mangrove_propagule[hanging=true]"
     },
     {
       "action": "wait",
@@ -177,6 +213,31 @@
           -12,
           64,
           0
+        ],
+        [
+          20,
+          64,
+          -20
+        ],
+        [
+          20,
+          65,
+          -20
+        ],
+        [
+          20,
+          66,
+          -20
+        ],
+        [
+          25,
+          64,
+          -23
+        ],
+        [
+          30,
+          69,
+          -20
         ]
       ]
     }
