@@ -271,6 +271,16 @@ final class ArgumentReader
                 $this->resourceOrId($reader, 'minecraft:slot_source');
                 return;
             case 'minecraft:loot_modifier':
+                // An inline modifier is decoded as it is read; DataResult's message reports a bad one.
+                if ($reader->canRead() && in_array($reader->peek(), ['{', '['], true)) {
+                    $tag = Snbt::read($reader);
+                    try {
+                        ItemModifier::decode($tag, $this->registries);
+                    } catch (\UnexpectedValueException $error) {
+                        throw $reader->error('argument.resource_or_id.failed_to_parse', [$error->getMessage()]);
+                    }
+                    return;
+                }
                 $this->resourceOrId($reader, 'minecraft:item_modifier');
                 return;
             case 'minecraft:heightmap':

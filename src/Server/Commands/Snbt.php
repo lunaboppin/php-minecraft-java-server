@@ -129,9 +129,16 @@ final class Snbt
             'double' => self::decimal($tag['value']) . 'd',
             'int' => (string) $tag['value'],
             'list' => '[' . implode(',', array_map(self::toText(...), $tag['value'])) . ']',
-            'compound' => '{' . implode(',', array_map(static fn (string $key, array $value): string => (preg_match('/\A[0-9A-Za-z_\-.+]+\z/D', $key) === 1 ? $key : '"' . addcslashes($key, '"\\') . '"') . ':' . self::toText($value), array_keys($tag['value']), $tag['value'])) . '}',
+            // StringTagVisitor writes a compound's keys sorted.
+            'compound' => '{' . implode(',', array_map(static fn (string $key, array $value): string => (preg_match('/\A[0-9A-Za-z_\-.+]+\z/D', $key) === 1 ? $key : '"' . addcslashes($key, '"\\') . '"') . ':' . self::toText($value), array_keys(self::sorted($tag['value'])), self::sorted($tag['value']))) . '}',
             default => '[' . strtoupper($tag['type'][0]) . ';' . implode(',', $tag['value']) . ']',
         };
+    }
+
+    private static function sorted(array $entries): array
+    {
+        ksort($entries, SORT_STRING);
+        return $entries;
     }
 
     private static function decimal(float $value): string

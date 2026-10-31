@@ -415,9 +415,10 @@ trait Commands
             return $this->entityComponent('experience_orb', $entity['uuid'], null);
         }
         if (isset($entity['item'])) {
-            // ItemEntity.getName: the item's name.
-            $stack = $this->itemEntities[$entity['item']]['stack'];
-            return $this->entityComponent('item', $entity['uuid'], $this->version->catalog->displayNames['items']['minecraft:' . $this->version->catalog->itemName($stack['item'])]['name']);
+            // ItemEntity.getName: the item's name, air once emptied.
+            $item = $this->itemEntities[$entity['item']];
+            $name = ($item['discard'] ?? false) ? ['translate' => 'block.minecraft.air'] : $this->version->catalog->displayNames['items']['minecraft:' . $this->version->catalog->itemName($item['stack']['item'])]['name'];
+            return $this->entityComponent('item', $entity['uuid'], $name);
         }
         return isset($entity['client']) ? $this->displayName($entity['client']) : $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], $this->animals[$entity['mob']]['customName'] ?? null);
     }
@@ -732,6 +733,10 @@ trait Commands
      */
     private function itemComponent(string $item, array $components = [], array $removed = [], int $count = 1): array
     {
+        // The empty stack is plain "[Air]", without a colour or hover.
+        if ($item === 'air') {
+            return ['translate' => 'chat.square_brackets', 'with' => [['text' => '', 'extra' => [['translate' => 'block.minecraft.air']]]]];
+        }
         $display = $this->version->catalog->displayNames['items']['minecraft:' . $item];
         $color = ($components['minecraft:enchantments'] ?? []) === [] ? $display['color'] : match ($display['color']) {
             'white', 'yellow' => 'aqua',
