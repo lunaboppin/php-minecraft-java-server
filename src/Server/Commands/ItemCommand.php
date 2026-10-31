@@ -19,7 +19,8 @@ trait ItemCommand
 
     /**
      * ItemCommands replace, fill and override: copies of one item, or of a source's slots, into
-     * each target's slots. Loot modifiers and slot sources other than slot names are not supported.
+     * each target's slots, or modify takes the slots' items through an inline modifier. Modifiers by ID
+     * and slot sources other than slot names are not supported.
      */
     private function executeItem(Client $sender, array $arguments): void
     {
@@ -28,7 +29,8 @@ trait ItemCommand
         $slotName = array_shift($arguments);
         $slots = ItemSlots::range($slotName) ?? throw new \InvalidArgumentException('Only slot names are supported as slot sources');
         if ($action === 'modify') {
-            throw new \InvalidArgumentException('Item modifiers are not supported');
+            $this->modifyItems($sender, $target, $slots, $slotName, $this->itemModifier($arguments));
+            return;
         }
         $known = null;
         if (array_shift($arguments) === 'with') {
@@ -54,15 +56,14 @@ trait ItemCommand
         } else {
             $source = $this->itemHolder($sender, $arguments);
             $sourceName = array_shift($arguments);
-            if ($arguments !== []) {
-                throw new \InvalidArgumentException('Item modifiers are not supported');
-            }
+            $modifier = $arguments === [] ? null : $this->itemModifier($arguments);
             $sourceSlots = ItemSlots::range($sourceName) ?? throw new \InvalidArgumentException('Only slot names are supported as slot sources');
             $items = [];
             foreach ($this->itemTargets($source, false) as $holder) {
                 foreach ($sourceSlots as $slot) {
                     if ($this->slotExists($holder, $slot)) {
-                        $items[] = $this->slotItem($holder, $slot);
+                        $item = $this->slotItem($holder, $slot);
+                        $items[] = $modifier === null ? $item : ItemModifier::apply($modifier, $item, $this->version);
                     }
                 }
             }
@@ -99,6 +100,51 @@ trait ItemCommand
             throw new CommandFailure(['translate' => 'commands.item.target.no_such_slot', 'with' => [['text' => $slotName]]]);
         }
         $this->itemReplaceFeedback($sender, $target, $changed, $known, $knownText ?? null);
+    }
+
+    /** The inline modifier the remaining arguments spell, already checked by the argument reader. */
+    private function itemModifier(array $arguments): array
+    {
+        return ItemModifier::decode(Snbt::read(new StringReader(implode(' ', $arguments))), ArgumentReader::registries($this->version, array_keys(self::CLOCKS)));
+    }
+
+    /**
+     * ItemCommands.modifyItem: each target's filled slots in the range take the modifier's result,
+     * counted per target; empty slots are not selected.
+     */
+    private function modifyItems(Client $sender, array $target, array $slots, string $slotName, array $modifier): void
+    {
+        $selected = 0;
+        $changed = [];
+        foreach ($this->itemTargets($target, true) as $holder) {
+            $count = 0;
+            foreach ($slots as $slot) {
+                if (!$this->slotExists($holder, $slot) || ($item = $this->slotItem($holder, $slot)) === null) {
+                    continue;
+                }
+                ++$selected;
+                $count += (int) $this->setSlotItem($holder, $slot, ItemModifier::apply($modifier, $item, $this->version));
+            }
+            if ($count > 0) {
+                $changed[] = [$holder, $count];
+                if (isset($holder['client'])) {
+                    $this->syncInventory($holder['client']);
+                }
+            }
+        }
+        if ($selected === 0) {
+            throw new CommandFailure(['translate' => 'commands.item.target.no_such_slot', 'with' => [['text' => $slotName]]]);
+        }
+        if ($changed === []) {
+            throw new CommandFailure(['translate' => 'commands.item.target.failed']);
+        }
+        if (isset($target['block'])) {
+            $this->sendSuccess($sender, ['translate' => 'commands.item.block.modify.success', 'with' => [$changed[0][1], ...$target['block']]], true);
+        } elseif (count($changed) === 1) {
+            $this->sendSuccess($sender, ['translate' => 'commands.item.entity.modify.success.single', 'with' => [$changed[0][1], $this->entityName($changed[0][0])]], true);
+        } else {
+            $this->sendSuccess($sender, ['translate' => 'commands.item.entity.modify.success.multiple', 'with' => [count($changed)]], true);
+        }
     }
 
     /** The entities or block an item accessor names, taking its arguments. */
