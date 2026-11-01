@@ -111,6 +111,12 @@ public class ExportBlockBehaviour {
             }
         }
         root.add("flammable", flammable);
+        // BlockBehaviour.Properties.ignitedByLava: blocks lava sets fire beside.
+        var lava = new JsonArray();
+        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            if (block.defaultBlockState().ignitedByLava()) lava.add(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath());
+        }
+        root.add("ignited_by_lava", lava);
         // Block.getExplosionResistance, which explosion rays lose power to.
         var resistance = new JsonObject();
         for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {

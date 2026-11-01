@@ -310,6 +310,15 @@ final class ArgumentReader
                     throw $reader->error('argument.enum.invalid', [$name]);
                 }
                 return;
+            case 'minecraft:uuid':
+                self::uuid($reader);
+                return;
+            case 'minecraft:nbt_path':
+                NbtPath::read($reader);
+                return;
+            case 'minecraft:nbt_tag':
+                Snbt::read($reader);
+                return;
             case 'minecraft:nbt_compound_tag':
                 $start = $reader->cursor;
                 if (Snbt::read($reader)['type'] !== 'compound') {
@@ -321,6 +330,25 @@ final class ArgumentReader
                 // Other structured values: one balanced token.
                 self::balanced($reader);
         }
+    }
+
+    /**
+     * UuidArgument: hex digits and dashes, read as UUID.fromString does, as 32 hex digits. Each
+     * part is masked to its field's width, so short parts are padded and long ones cut.
+     */
+    public static function uuid(StringReader $reader): string
+    {
+        preg_match('/\A[-A-Fa-f0-9]*/', substr($reader->string, $reader->cursor), $match);
+        $parts = explode('-', $match[0]);
+        if (count($parts) !== 5 || strlen($match[0]) > 36 || in_array('', $parts, true) || max(array_map('strlen', $parts)) > 16) {
+            throw $reader->error('argument.uuid.invalid');
+        }
+        $reader->cursor += strlen($match[0]);
+        $hex = '';
+        foreach ([8, 4, 4, 4, 12] as $index => $width) {
+            $hex .= substr(str_pad($parts[$index], $width, '0', STR_PAD_LEFT), -$width);
+        }
+        return strtolower($hex);
     }
 
     /**

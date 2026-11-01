@@ -3,7 +3,7 @@
   "normalizations": [
     "Compare the fire a summoned lightning bolt lights on bare ground in peaceful, where only its re-flash sets fire, at the bolt.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
-    "Covers /summon lightning_bolt and /summon tnt; the TNT's crater is not compared."
+    "Covers /summon lightning_bolt and /summon tnt; the TNT's crater is not compared. A bolt on an exposed lightning rod and one on oxidized copper clear their oxidation, and the rod is unpowered again once its 8 ticks pass."
   ],
   "steps": [
     {
@@ -34,6 +34,45 @@
           5,
           63,
           5
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 64 0 minecraft:exposed_lightning_rod"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:oxidized_copper"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:lightning_bolt 8.5 65 0.5"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:lightning_bolt 2.5 65 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "copper",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          8,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
         ]
       ]
     },

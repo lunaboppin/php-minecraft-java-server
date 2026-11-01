@@ -97,6 +97,8 @@ final class Server
 
     use VehicleSteering;
 
+    use Waypoints;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -345,6 +347,7 @@ final class Server
                     }
                 }
                 $this->pollAuthentication();
+                $this->pollProfileFetches();
                 $now = self::now();
                 if ($now >= $nextTick) {
                     // MinecraftServer.runServer: a sprint runs the next tick at once.
@@ -352,6 +355,7 @@ final class Server
                     $started = hrtime(true);
                     $this->tick($now);
                     $this->tickTimes[] = hrtime(true) - $started;
+                    $this->recordPerfTick(end($this->tickTimes));
                     if (count($this->tickTimes) > 100) {
                         array_shift($this->tickTimes);
                     }
@@ -1707,6 +1711,7 @@ final class Server
             $this->pollLocates();
         }
         $this->tickClients($now);
+        $this->tickWaypoints();
     }
 
     private function tickTime(): void

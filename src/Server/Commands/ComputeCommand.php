@@ -49,8 +49,7 @@ trait ComputeCommand
             'random' => static fn (): float => mt_rand() / (mt_getrandmax() + 1),
             'randomInt' => static fn (int $bound): int => mt_rand(0, $bound - 1),
             'score' => fn (string $holder, string $objective): ?int => isset($this->scoreboard()->objectives[$objective]) ? ($this->scoreboard()->scores[$holder][$objective]['value'] ?? null) : null,
-            // Command storage is not kept here, so a stored number is never found.
-            'storage' => static fn (string $id, string $path): int|float|null => null,
+            'storage' => fn (string $id, string $path): int|float|null => $this->storedNumber($id, $path),
             'condition' => fn (mixed $condition): bool => $this->loot()->test($condition, $loot),
         ];
         $prefix = $name === null ? 'command.compute.result.unnamed' : 'command.compute.result.named';
@@ -72,5 +71,19 @@ trait ComputeCommand
         $this->sendSuccess($sender, (float) $result === $value
             ? ['translate' => $prefix . '.exact', 'with' => [...$with, $result]]
             : ['translate' => $prefix . '.rounded', 'with' => [...$with, $value, $result]], false);
+    }
+
+    /** StoredNumberAccess.getNumericTag: the one numeric tag the path selects in the storage, if any. */
+    private function storedNumber(string $id, string $path): int|float|null
+    {
+        try {
+            $tags = NbtPath::read(new StringReader($path))->get($this->storageData(str_contains($id, ':') ? $id : 'minecraft:' . $id));
+        } catch (CommandFailure) {
+            return null;
+        }
+        if (count($tags) !== 1 || !$tags[0]->isNumeric()) {
+            return null;
+        }
+        return in_array($tags[0]->type, ['float', 'double'], true) ? (float) $tags[0]->value : (int) $tags[0]->value;
     }
 }

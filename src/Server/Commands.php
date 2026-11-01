@@ -44,6 +44,10 @@ trait Commands
 
     use CommandModules\SeedCommand;
 
+    use CommandModules\DataCommand;
+
+    use CommandModules\DataAccessors;
+
     use CommandModules\FunctionCommand;
 
     use CommandModules\ScheduleCommand;
@@ -59,6 +63,16 @@ trait Commands
     use CommandModules\SpreadPlayersCommand;
 
     use CommandModules\FillBiomeCommand;
+
+    use CommandModules\WaypointCommand;
+
+    use CommandModules\DatapackCommand;
+
+    use CommandModules\FetchProfileCommand;
+
+    use CommandModules\PerfCommand;
+
+    use CommandModules\JfrCommand;
 
     use CommandModules\ComputeCommand;
 

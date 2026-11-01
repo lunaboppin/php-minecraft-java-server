@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **82** have an existing PHP handler; **10** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **88** have an existing PHP handler; **4** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -25,8 +25,8 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/clone` | [CloneCommand.php](../src/Server/Commands/CloneCommand.php) | Partial handler; native behavior incomplete | — |
 | `/compute` | [ComputeCommand.php](../src/Server/Commands/ComputeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/damage` | [DamageCommand.php](../src/Server/Commands/DamageCommand.php) | Partial handler; native behavior incomplete | — |
-| `/data` | — | Unimplemented | — |
-| `/datapack` | — | Unimplemented | — |
+| `/data` | [DataCommand.php](../src/Server/Commands/DataCommand.php) | Partial handler; native behavior incomplete | — |
+| `/datapack` | [DatapackCommand.php](../src/Server/Commands/DatapackCommand.php) | Partial handler; native behavior incomplete | — |
 | `/debug` | [DebugCommand.php](../src/Server/Commands/DebugCommand.php) | Partial handler; native behavior incomplete | — |
 | `/defaultgamemode` | [DefaultGameModeCommand.php](../src/Server/Commands/DefaultGameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/deop` | [DeOpCommand.php](../src/Server/Commands/DeOpCommand.php) | Partial handler; native behavior incomplete | — |
@@ -36,7 +36,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/enchant` | [EnchantCommand.php](../src/Server/Commands/EnchantCommand.php) | Partial handler; native behavior incomplete | — |
 | `/execute` | [ExecuteCommand.php](../src/Server/Commands/ExecuteCommand.php) | Partial handler; native behavior incomplete | — |
 | `/experience` | [ExperienceCommand.php](../src/Server/Commands/ExperienceCommand.php) | Partial handler; native behavior incomplete | — |
-| `/fetchprofile` | — | Unimplemented | — |
+| `/fetchprofile` | [FetchProfileCommand.php](../src/Server/Commands/FetchProfileCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fill` | [FillCommand.php](../src/Server/Commands/FillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fillbiome` | [FillBiomeCommand.php](../src/Server/Commands/FillBiomeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/forceload` | [ForceLoadCommand.php](../src/Server/Commands/ForceLoadCommand.php) | Partial handler; native behavior incomplete | — |
@@ -46,7 +46,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/give` | [GiveCommand.php](../src/Server/Commands/GiveCommand.php) | Partial handler; native behavior incomplete | — |
 | `/help` | [HelpCommand.php](../src/Server/Commands/HelpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/item` | [ItemCommand.php](../src/Server/Commands/ItemCommand.php) | Partial handler; native behavior incomplete | — |
-| `/jfr` | — | Unimplemented | — |
+| `/jfr` | [JfrCommand.php](../src/Server/Commands/JfrCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kick` | [KickCommand.php](../src/Server/Commands/KickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kill` | [KillCommand.php](../src/Server/Commands/KillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/list` | [ListCommand.php](../src/Server/Commands/ListCommand.php) | Partial handler; native behavior incomplete | — |
@@ -58,7 +58,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/pardon` | [PardonCommand.php](../src/Server/Commands/PardonCommand.php) | Partial handler; native behavior incomplete | — |
 | `/pardon-ip` | [PardonIpCommand.php](../src/Server/Commands/PardonIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/particle` | [ParticleCommand.php](../src/Server/Commands/ParticleCommand.php) | Partial handler; native behavior incomplete | — |
-| `/perf` | — | Unimplemented | — |
+| `/perf` | [PerfCommand.php](../src/Server/Commands/PerfCommand.php) | Partial handler; native behavior incomplete | — |
 | `/place` | — | Unimplemented | — |
 | `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/posteffect` | [PostEffectCommand.php](../src/Server/Commands/PostEffectCommand.php) | Partial handler; native behavior incomplete | — |
@@ -102,7 +102,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/trigger` | [TriggerCommand.php](../src/Server/Commands/TriggerCommand.php) | Partial handler; native behavior incomplete | — |
 | `/version` | [VersionCommand.php](../src/Server/Commands/VersionCommand.php) | Partial handler; native behavior incomplete | — |
 | `/w` | [MessageCommand.php](../src/Server/Commands/MessageCommand.php) | Partial handler; native behavior incomplete | `/msg` |
-| `/waypoint` | — | Unimplemented | — |
+| `/waypoint` | [WaypointCommand.php](../src/Server/Commands/WaypointCommand.php) | Partial handler; native behavior incomplete | — |
 | `/weather` | [WeatherCommand.php](../src/Server/Commands/WeatherCommand.php) | Partial handler; native behavior incomplete | — |
 | `/whitelist` | [WhitelistCommand.php](../src/Server/Commands/WhitelistCommand.php) | Partial handler; native behavior incomplete | — |
 | `/worldborder` | [WorldBorderCommand.php](../src/Server/Commands/WorldBorderCommand.php) | Partial handler; native behavior incomplete | — |

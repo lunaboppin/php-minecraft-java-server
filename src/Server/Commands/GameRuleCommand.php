@@ -65,6 +65,9 @@ trait GameRuleCommand
     private function gameRuleChanged(string $id, string $value): void
     {
         $enabled = $value === 'true';
+        if ($id === 'locator_bar') {
+            $this->locatorBarChanged($enabled);
+        }
         foreach ($this->players() as $player) {
             match ($id) {
                 'immediate_respawn' => $player->send($this->version, 'game_event', "\x0b" . pack('G', $enabled ? 1.0 : 0.0)),
