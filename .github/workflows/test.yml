@@ -162,6 +162,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/random-ticks.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-random
           python3 tools/parity/run.py --scenario tests/parity/random-ticks-plants.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-plants
           python3 tools/parity/run.py --scenario tests/parity/copper-weathering.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-copper
+          python3 tools/parity/run.py --scenario tests/parity/powered-rails.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-powered-rails
           python3 tools/parity/run.py --scenario tests/parity/fire.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-fire
           python3 tools/parity/run.py --scenario tests/parity/bone-meal-fungi.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bone-meal-fungi
           python3 tools/parity/run.py --scenario tests/parity/explosion.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-explosion
@@ -193,6 +194,7 @@ jobs:
             tools/.cache/parity-random/
             tools/.cache/parity-plants/
             tools/.cache/parity-copper/
+            tools/.cache/parity-powered-rails/
             tools/.cache/parity-fire/
             tools/.cache/parity-bone-meal-fungi/
             tools/.cache/parity-explosion/
