@@ -1,0 +1,45 @@
+{
+  "name": "summoned-entities",
+  "normalizations": [
+    "Compare the distinct packets sent about a summoned primed TNT with a long fuse and an experience orb as they fall and rest, by entity type and without entity IDs or UUIDs.",
+    "The player stands out of the orb's reach so it does not follow; TNT does not explode.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule tnt_explodes false"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 8 75 24 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 59 -8 8 60 24 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 61 20.5"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 2.5 64.0 0.5 {fuse:2000}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb -2.5 64.0 0.5 {Value:5}"
+    },
+    {
+      "action": "wait",
+      "seconds": 4
+    },
+    {
+      "action": "snapshot",
+      "name": "resting",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

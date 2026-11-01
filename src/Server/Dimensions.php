@@ -253,16 +253,25 @@ trait Dimensions
         }
         if ($name === 'end_portal') {
             $target = $c->dimension === 'the_end' ? 'overworld' : 'the_end';
-            $this->changeDimension($c, $target, $target === 'overworld' ? ($c->personalSpawn ?? $this->sharedSpawn()) : null);
+            $respawn = $target === 'overworld' ? $this->respawnTarget($c, false) : null;
+            $this->changeDimension($c, $respawn[0] ?? $target, $target === 'overworld' ? ($respawn[1] ?? $this->sharedSpawn()) : null);
             return;
         }
         if ($c->dimension === 'the_end') {
             return;
         }
-        if (++$c->portalTicks < ($c->gameMode === 1 ? 1 : 80)) {
+        // NetherPortalBlock.getPortalTransitionTime: the creative or the default delay gamerule.
+        $delay = (int) $this->gameRule($c->gameMode === 1 ? 'players_nether_portal_creative_delay' : 'players_nether_portal_default_delay');
+        if (++$c->portalTicks < max(1, $delay)) {
             return;
         }
         $target = $c->dimension === 'overworld' ? 'the_nether' : 'overworld';
+        // ServerLevel.isAllowedToEnterPortal: the time is up, but no one enters the Nether.
+        if ($target === 'the_nether' && $this->gameRule('allow_entering_nether_using_portals') !== 'true') {
+            $c->portalTicks = 0;
+            $c->portalCooldown = $this->ticks + 10;
+            return;
+        }
         $scale = $target === 'the_nether' ? 1 / 8 : 8;
         $position = [max(-29999872, min(29999872, $c->x * $scale)), $c->y, max(-29999872, min(29999872, $c->z * $scale))];
         $arrival = $this->withDimension($target, function () use ($position): array {
