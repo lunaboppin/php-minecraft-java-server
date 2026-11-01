@@ -93,6 +93,7 @@ final class CommandRegistry
             new CommandDefinition('fillbiome', 'executeFillBiome', true),
             new CommandDefinition('waypoint', 'executeWaypoint', true),
             new CommandDefinition('datapack', 'executeDatapack', true),
+            new CommandDefinition('fetchprofile', 'executeFetchProfile', true),
         ];
     }
 

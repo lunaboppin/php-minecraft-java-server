@@ -668,6 +668,13 @@ SCRIPT = [
     ('datapack disable vanilla', False), ('datapack enable vanilla', False), ('datapack list enabled', False),
     ('datapack disable "file/bar"', False), ('datapack disable "file/foo"', False), ('datapack enable file/foo', False),
     ('!witness datapack list', False), ('datapack list', False),
+    # /fetchprofile: players' own profiles with their copy, head, mannequin and sprite links, and
+    # failures. Name and UUID lookups reply off the tick once the services answer, so only their
+    # syntax is compared.
+    ('fetchprofile entity @s', False), ('fetchprofile entity Witness', False),
+    ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["fp"],CustomName:"Bob"}', False), ('fetchprofile entity @e[tag=fp,limit=1]', False),
+    ('!quiet kill @e[tag=fp]', False), ('fetchprofile entity @e[type=pig]', False), ('fetchprofile id nope', False),
+    ('fetchprofile id 1-2-3', False), ('fetchprofile name', False), ('fetchprofile entity', False), ('!witness fetchprofile entity @s', False),
     ('list', False),
 ]
 

@@ -64,6 +64,8 @@ trait Commands
 
     use CommandModules\DatapackCommand;
 
+    use CommandModules\FetchProfileCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
