@@ -1,9 +1,9 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls.",
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls. Hanging signs go under a block, beside a wall, or nowhere (HangingSignItem).",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Scaffolding distance and hanging signs are not covered yet."
+    "Scaffolding distance is not covered yet."
   ],
   "steps": [
     {
@@ -6233,6 +6233,96 @@
         ],
         [
           45,
+          64,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 58 63 14 72 63 26 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 58 64 14 72 70 26 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 60.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_hanging_sign"
+    },
+    {
+      "action": "command",
+      "text": "setblock 60 66 20 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        60,
+        66,
+        20
+      ],
+      "face": 0,
+      "cursor": [
+        0.5,
+        0,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 63 64 23 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        63,
+        64,
+        23
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        66,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "hanging-signs",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          60,
+          65,
+          20
+        ],
+        [
+          63,
+          64,
+          22
+        ],
+        [
+          66,
           64,
           20
         ]
