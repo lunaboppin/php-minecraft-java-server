@@ -36,6 +36,7 @@ trait BlockSimulation
         $this->heightChanged($x,$z);
         $this->tntChanged($x,$y,$z);
         $this->bellsChanged($x,$y,$z);
+        $this->tripwiresChanged($x,$y,$z);
         $this->coralsChanged($x,$y,$z);
         $this->turtleEggPlaced($x,$y,$z);
         $this->pistonsChanged($x,$y,$z);
@@ -63,6 +64,7 @@ trait BlockSimulation
             elseif($kind==='water_block' || $kind==='bubble_column'){$this->tickColumn($kind,$x,$y,$z);}
             elseif($kind==='leaves'){$this->tickLeaves($x,$y,$z);}
             elseif($kind==='fire'){$this->tickFire($x,$y,$z);}
+            elseif($kind==='tripwire' || $kind==='tripwire_hook'){$this->tickTripwire($kind,$x,$y,$z);}
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
             elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
             elseif($kind==='plate'){$this->tickPressurePlate($x,$y,$z);}
@@ -133,6 +135,7 @@ trait BlockSimulation
         if($name==='redstone_block'){return 15;}
         if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
         if($name==='daylight_detector'){return (int)$p['power'];}
+        if($name==='tripwire_hook'){return $this->hookSignal($state);}
         if($this->isPressurePlate($name)){return $this->plateSignal($state);}
         if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
@@ -162,6 +165,8 @@ trait BlockSimulation
                     // LightningRodBlock.getDirectSignal: a struck rod strongly powers the block it is on.
                     // BasePressurePlateBlock.getDirectSignal: a pressed plate strongly powers the block it is on.
                     elseif($this->isPressurePlate($source) && [$ex,$ey,$ez]===[0,1,0]){$power=max($power,$this->plateSignal($this->world->get($a,$b+1,$d)));}
+                    // TripWireHookBlock.getDirectSignal: a powered hook strongly powers the block it hangs on.
+                    elseif($source==='tripwire_hook' && $this->hookSignal($this->world->get($a+$ex,$b+$ey,$d+$ez))>0 && self::TRIPWIRE_SIDES[$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez))['facing']]===[$ex,$ey,$ez]){$power=15;}
                     elseif($this->lightningRod($source)){$rod=$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez));if($rod['powered']==='true' && self::ROD_FACES[$rod['facing']]===[$ex,$ey,$ez]){$power=15;}}
                 }
             }
@@ -187,6 +192,7 @@ trait BlockSimulation
                 $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
                 if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
                 $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector' || $this->isPressurePlate($kind);
+                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $this->isPressurePlate($kind) || $kind==='tripwire_hook';
             }
             if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
             if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}

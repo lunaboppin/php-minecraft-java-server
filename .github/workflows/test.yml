@@ -170,6 +170,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/observers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-observers
           python3 tools/parity/run.py --scenario tests/parity/sleep.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-sleep
           python3 tools/parity/run.py --scenario tests/parity/pressure-plates.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-pressure-plates
+          python3 tools/parity/run.py --scenario tests/parity/tripwires.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tripwires
           python3 tools/parity/run.py --scenario tests/parity/weather.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-weather
           python3 tools/parity/run.py --scenario tests/parity/lightning.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lightning
           python3 tools/parity/run.py --scenario tests/parity/daylight-detectors.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-daylight-detectors
@@ -199,6 +200,7 @@ jobs:
             tools/.cache/parity-observers/
             tools/.cache/parity-sleep/
             tools/.cache/parity-pressure-plates/
+            tools/.cache/parity-tripwires/
             tools/.cache/parity-weather/
             tools/.cache/parity-lightning/
             tools/.cache/parity-daylight-detectors/

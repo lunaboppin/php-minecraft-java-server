@@ -62,6 +62,9 @@ trait BlockPlacement
     private function connectedState(int $state, int $x, int $y, int $z): int
     {
         $catalog = $this->version->catalog;
+        if ($catalog->blockName($state) === 'tripwire') {
+            return $this->tripwireConnected($state, $x, $y, $z);
+        }
         $classes = $this->placementClasses($catalog->blockName($state));
         if (in_array('FenceGateBlock', $classes, true)) {
             // FenceGateBlock: lowered when a wall is beside it across its opening.
