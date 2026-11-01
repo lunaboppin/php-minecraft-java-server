@@ -69,6 +69,8 @@ final class Server
 
     use Lightning;
 
+    use RespawnPoints;
+
     use BlockPlacement;
 
     use Rails;
@@ -1387,6 +1389,12 @@ final class Server
                 return;
             }
             // Sneaking with an item in hand skips the block's own use.
+            $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
+            if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
+                $this->useSwing($c, $hand, true);
+                $this->acknowledge($c, $sequence);
+                return;
+            }
             if (str_ends_with($name, '_bed') && !($c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]))) && $this->useBed($c, $x, $y, $z)) {
                 // BedBlock answers SUCCESS_SERVER, which the sleeper sees too.
                 $this->useSwing($c, $hand, true);

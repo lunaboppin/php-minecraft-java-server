@@ -504,7 +504,20 @@ trait Survival
         // The respawned player applies its equipment's attribute modifiers afresh.
         $c->equipmentModifierStacks = [];
         $this->applyEquipmentAttributes($c, $this->playerEquipment($c));
-        $this->changeDimension($c, 'overworld', $c->personalSpawn ?? $this->sharedSpawn(), true);
+        // PlayerList.respawn: beside the respawn block, or the world spawn if it is gone.
+        $target = $this->respawnTarget($c);
+        $missing = $target === null && $c->personalSpawn !== null;
+        if ($missing) {
+            $this->setRespawnPoint($c, null, false);
+        }
+        if ($target !== null) {
+            [$c->yaw, $c->pitch] = [$target[2], $target[3]];
+        }
+        $this->changeDimension($c, $target[0] ?? 'overworld', $target[1] ?? $this->sharedSpawn(), true);
+        if ($missing) {
+            // ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE
+            $c->send($this->version, 'game_event', "\0" . pack('G', 0.0));
+        }
     }
 
     private function loot(): \PhpMinecraftJavaServer\World\Loot
