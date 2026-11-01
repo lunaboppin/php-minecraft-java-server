@@ -40,6 +40,7 @@ trait BlockSimulation
         $this->turtleEggPlaced($x,$y,$z);
         $this->pistonsChanged($x,$y,$z);
         $this->observersChanged($x,$y,$z);
+        $this->daylightDetectorChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -89,6 +90,7 @@ trait BlockSimulation
     private function useSpecialBlock(Client $c,int $x,int $y,int $z,int $slot):bool {
         if(!$this->editable($c,$x,$y,$z)){return false;}$catalog=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$catalog->blockName($state);$props=$catalog->properties($state);
         if(str_ends_with($name,'_sign')){return $this->openSign($c,$x,$y,$z,$this->signSide($c,$x,$y,$z));}
+        if($name==='daylight_detector'){return $this->useDaylightDetector($c,$x,$y,$z);}
         if($name==='jukebox'){
             $position=[$x,$y,$z];$data=$this->world->container($position);
             if(isset($data['slots'][0])){$this->ejectJukebox($position);return true;}
@@ -129,6 +131,7 @@ trait BlockSimulation
         $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);
         if($name==='redstone_block'){return 15;}
         if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
+        if($name==='daylight_detector'){return (int)$p['power'];}
         if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
         if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
@@ -179,7 +182,7 @@ trait BlockSimulation
             foreach(array_combine(['north','east','south','west'],self::SIDES) as $direction=>[$dx,$dy,$dz]){
                 $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
                 if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
-                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind);
+                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector';
             }
             if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
             if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}

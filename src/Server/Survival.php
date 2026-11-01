@@ -133,6 +133,7 @@ trait Survival
                 $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid'])]
                     + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
                 $this->saveMovingPistons();
+                $this->saveDaylightDetectors();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
