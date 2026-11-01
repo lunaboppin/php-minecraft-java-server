@@ -655,19 +655,126 @@ trait Survival
 
     private function survivalMovement(Client $c, float $oldY, float $distance): void
     {
-        if ($c->gameMode !== 0 || $c->dead) {
+        if ($c->dead || $c->gameMode === 3) {
             return;
-        }$c->exhaustion += $distance * ($c->sprinting ? 0.1 : 0.01);
+        }
+        // Player.causeFoodExhaustion: only players who can be hurt tire.
+        if ($c->gameMode !== 1) {
+            $c->exhaustion += $distance * ($c->sprinting ? 0.1 : 0.01);
+        }
         $feet = $this->world->get((int) floor($c->x), (int) floor($c->y), (int) floor($c->z));
-        if ($this->version->catalog->fluid($feet)) {
+        // Being in a fluid, climbing or flying keeps a player from building up a fall.
+        if ($this->version->catalog->fluid($feet) || $c->flying || $this->fireBlocks()->inTag($feet, 'climbable')) {
             $c->fallDistance = 0;
-        } else {
-            if ($c->y < $oldY) {
-                $c->fallDistance += $oldY - $c->y;
-            }if ($c->ground) {
-                if ($c->fallDistance > 3) {
-                    $this->damage($c, floor($c->fallDistance - 3), 'fall');
-                }$c->fallDistance = 0;
+            return;
+        }
+        // Entity.checkFallDamage from ServerPlayer.doCheckFallDamage: falling adds up as a float.
+        if ($c->y < $oldY) {
+            $c->fallDistance -= Float32::round($c->y - $oldY);
+        }
+        if ($c->ground) {
+            $fall = $c->fallDistance;
+            $c->fallDistance = 0;
+            if ($fall > 0.0) {
+                $this->playerFallOn($c, $fall);
+            }
+        }
+    }
+
+    /**
+     * Block.fallOn for the block 0.2 below a landing player's feet: hay, beds, slime and honey
+     * soften the fall, powder snow only sounds, a stalagmite's tip makes it worse and farmland may
+     * be trampled; then Player.causeFallDamage.
+     */
+    private function playerFallOn(Client $c, float $fall): void
+    {
+        $catalog = $this->version->catalog;
+        $position = [(int) floor($c->x), (int) floor($c->y - Float32::round(0.2)), (int) floor($c->z)];
+        $state = $this->world->get(...$position);
+        $name = $catalog->blockName($state);
+        $p = $catalog->properties($state);
+        switch (true) {
+            case $name === 'hay_block':
+                $this->playerFallDamage($c, $fall, Float32::round(0.2));
+                return;
+            case str_ends_with($name, '_bed'):
+                $this->playerFallDamage($c, $fall, 0.5);
+                return;
+            case $name === 'slime_block':
+                // SlimeBlock.fallOn: only a sneaking player, who does not bounce, is hurt.
+                $this->playerFallDamage($c, $fall, $c->sneaking ? 1.0 : 0.0);
+                return;
+            case $name === 'honey_block':
+                $this->playerSound($c, $catalog->mobSounds['honey_block_slide'], 1.0, 1.0);
+                foreach ($this->localPlayers() as $viewer) {
+                    if ($viewer !== $c && isset($viewer->entities[$c->entityId])) {
+                        $viewer->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x36");
+                    }
+                }
+                $this->playerFallDamage($c, $fall, Float32::round(0.2));
+                return;
+            case $name === 'powder_snow':
+                // PowderSnowBlock.fallOn: a fall of four or more only sounds.
+                if ($fall >= 4.0) {
+                    $this->playerSound($c, $this->playerFallSound($fall < 7.0 ? 'small_fall' : 'big_fall'), 1.0, 1.0);
+                }
+                return;
+            case $name === 'pointed_dripstone' && ($p['vertical_direction'] ?? '') === 'up' && ($p['thickness'] ?? '') === 'tip':
+                $this->playerFallDamage($c, $fall + 2.5, 2.0, 'minecraft:stalagmite');
+                return;
+            case $name === 'farmland':
+                // FarmlandBlock.fallOn: a player tramples it by chance as the fall grows.
+                if (self::randomUnit() < $fall - 0.5) {
+                    $this->setBlock(...[...$position, $catalog->state('dirt')]);
+                }
+                break;
+        }
+        $this->playerFallDamage($c, $fall, 1.0);
+    }
+
+    /** The player's fall sound, as LivingEntity.getFallSounds names it. */
+    private function playerFallSound(string $size): array
+    {
+        $id = $this->version->blocks['sounds']['entity.player.' . $size];
+        return ['id' => $id, 'fixed_range' => null, 'ranges' => [['volume' => 1.0, 'range' => 16.0]]];
+    }
+
+    /**
+     * Player.causeFallDamage: none for a player who may fly; otherwise LivingEntity's, the fall
+     * past the safe distance times the modifier and fall_damage_multiplier, with its sounds.
+     */
+    private function playerFallDamage(Client $c, float $fall, float $multiplier, string $type = 'minecraft:fall'): void
+    {
+        if ($c->gameMode === 1 || $c->gameMode === 3) {
+            return;
+        }
+        $damage = (int) floor(($fall + 1.0E-6 - $this->playerAttribute($c, 'safe_fall_distance')) * $multiplier * $this->playerAttribute($c, 'fall_damage_multiplier'));
+        if ($damage <= 0) {
+            return;
+        }
+        $this->playerSound($c, $this->playerFallSound($damage > 4 ? 'big_fall' : 'small_fall'), 1.0, 1.0);
+        // LivingEntity.playBlockFallSound: the block below's fall sound, quieter and lower.
+        $below = $this->world->get((int) floor($c->x), (int) floor($c->y - Float32::round(0.2)), (int) floor($c->z));
+        $sound = $this->version->catalog->mobSounds['block_falls']['minecraft:' . $this->version->catalog->blockName($below)] ?? null;
+        if (!$this->version->catalog->air($below) && $sound !== null) {
+            $this->playerSound(
+                $c,
+                ['id' => $sound['id'], 'fixed_range' => null, 'ranges' => [['volume' => 1.0, 'range' => 16.0]]],
+                Float32::round(Float32::round($sound['volume']) * Float32::round(0.5)),
+                Float32::round(Float32::round($sound['pitch']) * Float32::round(0.75))
+            );
+        }
+        $this->damage($c, (float) $damage, $type);
+    }
+
+    /** Player.playSound: heard by the players around, not the player, whose client plays it already. */
+    private function playerSound(Client $c, array $sound, float $volume, float $pitch): void
+    {
+        $radius = \PhpMinecraftJavaServer\World\MobAudio::range($sound, $volume);
+        $payload = Packets::sound($sound['id'], 7, $c->x, $c->y, $c->z, $volume, $pitch, unpack('J', random_bytes(8))[1]);
+        foreach ($this->localPlayers() as $viewer) {
+            if ($viewer !== $c && ($viewer->x - $c->x) ** 2 + ($viewer->y - $c->y) ** 2 + ($viewer->z - $c->z) ** 2 < $radius ** 2) {
+                $viewer->send($this->version, 'sound', $payload);
             }
         }
     }
