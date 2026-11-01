@@ -299,7 +299,8 @@ trait Animals
         $before = $animal['health'];
         $animal['health'] = max(0.0, Float32::round($animal['health'] - $applied));
         // Player.damageStatsAndHearts: tenths of a heart dealt.
-        $this->awardStat($c, 'custom', 'damage_dealt', (int) round(($before - $animal['health']) * 10.0));
+        // Math.round of a float saturates at the int range.
+        $this->awardStat($c, 'custom', 'damage_dealt', (int) min(2147483647.0, round(($before - $animal['health']) * 10.0)));
         if ($newWindow) {
             $this->knockbackMob($animal, $c);
             $this->mobDamageSound($animal, $animal['health'] <= 0);

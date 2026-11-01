@@ -264,7 +264,7 @@ trait Survival
             $this->setAbsorption($c, $c->absorption - $absorbed);
             $amount -= $absorbed;
             // Player.actuallyHurt: tenths of a heart absorbed and taken.
-            if ($absorbed > 0.0) {
+            if ($absorbed > 0.0 && $absorbed < 3.4028235E37) {
                 $this->awardStat($c, 'custom', 'damage_absorbed', (int) round($absorbed * 10.0));
             }
         }
@@ -279,7 +279,8 @@ trait Survival
             }
         }
         $c->health = max(0, $c->health - $amount);
-        if ($amount != 0.0) {
+        // Below 3.4E37 only, as /kill's damage is not counted.
+        if ($amount != 0.0 && $amount < 3.4028235E37) {
             $this->awardStat($c, 'custom', 'damage_taken', (int) round($amount * 10.0));
         }
         $this->health($c);
