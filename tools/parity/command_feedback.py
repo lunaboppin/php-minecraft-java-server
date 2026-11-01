@@ -635,6 +635,11 @@ SCRIPT = [
     ('fillbiome 1000 200 1000 1003 203 1003 desert', False),
     ('fillbiome 0 200 0 3 203 3 plains', False),
     ('!witness fillbiome 0 200 0 3 203 3 plains', False),
+    # /perf and /jfr: starting and stopping, and failures. A recording's timings and report name
+    # vary, so a stopped recording is not compared; Flight Recorder needs a JVM, so /jfr fails as
+    # vanilla does when no recording can start.
+    ('perf stop', False), ('!quiet perf start', False), ('perf start', False), ('!quiet perf stop', False), ('perf stop', False),
+    ('jfr stop', False), ('perf', False), ('!witness perf start', False), ('!witness jfr start', False),
     ('list', False),
 ]
 

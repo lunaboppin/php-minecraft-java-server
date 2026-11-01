@@ -352,6 +352,7 @@ final class Server
                     $started = hrtime(true);
                     $this->tick($now);
                     $this->tickTimes[] = hrtime(true) - $started;
+                    $this->recordPerfTick(end($this->tickTimes));
                     if (count($this->tickTimes) > 100) {
                         array_shift($this->tickTimes);
                     }

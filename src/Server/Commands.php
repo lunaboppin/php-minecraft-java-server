@@ -60,6 +60,10 @@ trait Commands
 
     use CommandModules\FillBiomeCommand;
 
+    use CommandModules\PerfCommand;
+
+    use CommandModules\JfrCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
