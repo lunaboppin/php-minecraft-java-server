@@ -355,6 +355,7 @@ trait Animals
             return false;
         }
         $amount = max(0.0, $amount);
+        $mob['noActionTime'] = 0;
         $full = $this->ticks - ($mob['lastHurtTick'] ?? -100) >= 10 || $is('minecraft:bypasses_cooldown');
         if (!$full) {
             if ($amount <= ($mob['lastHurtAmount'] ?? 0)) {
@@ -628,6 +629,10 @@ trait Animals
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {
+                // Mob.checkDespawn: a player who is not a spectator within 32 blocks resets noActionTime.
+                if ($p->gameMode !== 3 && ($p->x - $animal['x']) ** 2 + ($p->y - $animal['y']) ** 2 + ($p->z - $animal['z']) ** 2 < 32 ** 2) {
+                    $animal['noActionTime'] = 0;
+                }
                 if ($this->ticks % 4 === 0) {
                     $this->showAnimal($p, $animal);
                 }
