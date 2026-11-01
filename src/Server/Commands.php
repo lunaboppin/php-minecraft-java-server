@@ -60,6 +60,8 @@ trait Commands
 
     use CommandModules\FillBiomeCommand;
 
+    use CommandModules\WaypointCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

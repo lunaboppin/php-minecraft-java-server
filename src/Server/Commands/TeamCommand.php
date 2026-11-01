@@ -42,8 +42,10 @@ trait TeamCommand
             case 'remove':
                 $team = $this->team($arguments[1]);
                 $message = ['translate' => 'commands.team.remove.success', 'with' => [$this->teamComponent($team)]];
+                $members = $scoreboard->teams[$team]['players'];
                 $scoreboard->removeTeam($team);
                 $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 1));
+                $this->remakeWaypoints($members);
                 $this->sendSuccess($sender, $message, true);
                 break;
             case 'empty':
@@ -55,6 +57,7 @@ trait TeamCommand
                 foreach ($members as $member) {
                     $scoreboard->leaveTeam($member);
                     $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 4, [$member]));
+                    $this->remakeWaypoints([$member]);
                 }
                 $this->sendSuccess($sender, ['translate' => 'commands.team.empty.success', 'with' => [count($members), $this->teamComponent($team)]], true);
                 break;
@@ -66,8 +69,10 @@ trait TeamCommand
                     if ($scoreboard->joinTeam($holder, $team)) {
                         if ($previous !== null) {
                             $this->broadcastScoreboard('set_player_team', $this->teamPacket($previous, 4, [$holder]));
+                            $this->remakeWaypoints([$holder]);
                         }
                         $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 3, [$holder]));
+                        $this->remakeWaypoints([$holder]);
                     }
                 }
                 $this->sendSuccess($sender, count($holders) === 1
@@ -81,6 +86,7 @@ trait TeamCommand
                     $team = $scoreboard->leaveTeam($holder);
                     if ($team !== null) {
                         $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 4, [$holder]));
+                        $this->remakeWaypoints([$holder]);
                         $left[] = $holder;
                     }
                 }
@@ -141,6 +147,7 @@ trait TeamCommand
                 throw new \InvalidArgumentException('Unknown team option');
         }
         $this->broadcastScoreboard('set_player_team', $this->teamPacket($team, 2));
+        $this->remakeWaypoints($this->scoreboard()->teams[$team]['players']);
         $this->sendSuccess($sender, $message, true);
     }
 
