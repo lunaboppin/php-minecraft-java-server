@@ -71,6 +71,8 @@ final class Server
 
     use RespawnPoints;
 
+    use Bells;
+
     use Corals;
 
     use BlockPlacement;
@@ -1344,11 +1346,22 @@ final class Server
         }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
             $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        if ($within && !$c->sneaking && $name === 'bell' && $c->gameMode !== 3 && $this->useBell($x, $y, $z, $face, $cursor[1])) {
+            $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
             $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && !$c->sneaking && $this->useSpecialBlock($c, $x, $y, $z, $slot)) {
             $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
             $this->acknowledge($c, $sequence);
             return;
         }
