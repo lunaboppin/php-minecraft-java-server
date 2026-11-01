@@ -1,0 +1,37 @@
+{
+  "name": "resting-items",
+  "normalizations": [
+    "Compare the distinct packets sent about item entities as they spawn, fall and rest, by entity type and without entity IDs or UUIDs.",
+    "Resting items move every fourth tick, and their motion is sent on the tracking interval or when it changes sharply, as a straight-line path.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 8 75 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 59 -8 8 60 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 2.5 61.0 0.5 {Item:{id:\"minecraft:gravel\",count:1}}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item -2.5 64.0 0.5 {Item:{id:\"minecraft:sand\",count:3}}"
+    },
+    {
+      "action": "wait",
+      "seconds": 4
+    },
+    {
+      "action": "snapshot",
+      "name": "resting",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

@@ -104,6 +104,9 @@ def block_pos(value):
     return x,y-4096 if y>=2048 else y,z-0x4000000 if z>=0x2000000 else z
 
 
+ENTITY_PACKETS={'add_entity','set_entity_data','set_entity_motion','move_entity_pos','move_entity_pos_rot','move_entity_rot','entity_position_sync','remove_entities'}
+
+
 class Probe(wire.Client):
     def __init__(self,port,label):
         super().__init__(port,terrain=True)
@@ -113,6 +116,7 @@ class Probe(wire.Client):
         self.equipment={}
         self.player_metadata={}
         self.entity_spawns=[]
+        self.entity_packets=set()
         self.spawned_profiles=set()
 
     def observe_spawn(self,payload):
@@ -122,6 +126,21 @@ class Probe(wire.Client):
         if key not in self.spawned_profiles:
             self.spawned_profiles.add(key)
             self.entity_spawns.append({'type':kind,'position':list(struct.unpack_from('>ddd',payload,off))})
+
+    def observe_entity_packet(self,name,payload):
+        # Distinct packets about other entities, by entity type and without IDs or UUIDs, so two
+        # servers running a few ticks apart still compare equal.
+        if name=='remove_entities':
+            count,off=wire.read_vi(payload)
+            for _ in range(count):
+                entity,off=wire.read_vi(payload,off)
+                if entity!=getattr(self,'entity_id',None):self.entity_packets.add(f'remove_entities {self.entities.get(entity)}')
+            return
+        entity,off=wire.read_vi(payload)
+        if entity==getattr(self,'entity_id',None):return
+        if name=='add_entity':kind,_=wire.read_vi(payload,off+16);rest=payload[off+16:]
+        else:kind=self.entities.get(entity);rest=payload[off:]
+        self.entity_packets.add(f'{name} {kind} {rest.hex()}')
 
     def until(self,target,predicate=lambda payload:True,limit=100000,timeout=60):
         return super().until(target,predicate,limit,timeout)
@@ -146,6 +165,7 @@ class Probe(wire.Client):
         if self.state=='configuration' and name=='keep_alive':self.send('keep_alive',p)
         if self.state=='play':
             self.observed.append(name)
+            if name in ENTITY_PACKETS:self.observe_entity_packet(name,p)
             if name=='login':
                 self.entity_id=struct.unpack_from('>i',p)[0]
                 count,off=wire.read_vi(p,5)
@@ -303,6 +323,7 @@ class Probe(wire.Client):
             elif field=='light':output[field]={','.join(map(str,p)):self.light_at(p) for p in positions}
             elif field=='inventory':output[field]=[None if s is None else {k:v for k,v in sorted(s.items()) if k!='damage' or v!=0} for s in self.inventory]
             elif field=='entities':output[field]=sorted(self.entities.values())
+            elif field=='entity_packets':output[field]=sorted(self.entity_packets);self.entity_packets=set()
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
             elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns','weather'):output[field]=getattr(self,field)
