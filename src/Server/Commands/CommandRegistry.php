@@ -97,6 +97,7 @@ final class CommandRegistry
             new CommandDefinition('fetchprofile', 'executeFetchProfile', true),
             new CommandDefinition('perf', 'executePerf', true),
             new CommandDefinition('jfr', 'executeJfr', true),
+            new CommandDefinition('compute', 'executeCompute', true),
         ];
     }
 
