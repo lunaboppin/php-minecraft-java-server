@@ -1,18 +1,18 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem: on top of stone, against the north face of a stone block, and beside the first one.",
-    "Use matching flat terrain in creative mode, looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Fence, wall, pane and rail connections, scaffolding distance, plant survival and hanging signs are not covered yet."
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, and the neighbour shape updates that follow: on top of stone, against the north face of a stone block, and beside the first one.",
+    "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
+    "Rail connections, scaffolding distance, plant survival and hanging signs are not covered yet."
   ],
   "steps": [
     {
       "action": "command",
-      "text": "fill -2 63 -6 142 63 6 minecraft:stone"
+      "text": "fill -2 63 -6 157 63 6 minecraft:stone"
     },
     {
       "action": "command",
-      "text": "fill -2 64 -6 142 70 6 minecraft:air"
+      "text": "fill -2 64 -6 157 70 6 minecraft:air"
     },
     {
       "action": "command",
@@ -20,7 +20,7 @@
     },
     {
       "action": "command",
-      "text": "tp @s 0.5 64 -2.5 0 30"
+      "text": "tp @s 0.5 64 -1.5 0 30"
     },
     {
       "action": "command",
@@ -113,11 +113,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 3.5 64 -2.5 0 30"
+      "text": "tp @s 3.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_log"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_fence"
     },
     {
       "action": "place",
@@ -167,7 +167,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_log",
+      "name": "oak_fence",
       "fields": [
         "blocks"
       ],
@@ -206,11 +206,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 6.5 64 -2.5 0 30"
+      "text": "tp @s 6.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_slab"
+      "text": "item replace entity @s weapon.mainhand with minecraft:cobblestone_wall"
     },
     {
       "action": "place",
@@ -260,7 +260,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_slab",
+      "name": "cobblestone_wall",
       "fields": [
         "blocks"
       ],
@@ -299,11 +299,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 9.5 64 -2.5 0 30"
+      "text": "tp @s 9.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_door"
+      "text": "item replace entity @s weapon.mainhand with minecraft:glass_pane"
     },
     {
       "action": "place",
@@ -353,7 +353,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_door",
+      "name": "glass_pane",
       "fields": [
         "blocks"
       ],
@@ -392,11 +392,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 12.5 64 -2.5 0 30"
+      "text": "tp @s 12.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_trapdoor"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_log"
     },
     {
       "action": "place",
@@ -446,7 +446,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_trapdoor",
+      "name": "oak_log",
       "fields": [
         "blocks"
       ],
@@ -485,11 +485,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 15.5 64 -2.5 0 30"
+      "text": "tp @s 15.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:stone_button"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_slab"
     },
     {
       "action": "place",
@@ -539,7 +539,7 @@
     },
     {
       "action": "snapshot",
-      "name": "stone_button",
+      "name": "oak_slab",
       "fields": [
         "blocks"
       ],
@@ -578,11 +578,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 18.5 64 -2.5 0 30"
+      "text": "tp @s 18.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:lever"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_door"
     },
     {
       "action": "place",
@@ -632,7 +632,7 @@
     },
     {
       "action": "snapshot",
-      "name": "lever",
+      "name": "oak_door",
       "fields": [
         "blocks"
       ],
@@ -671,11 +671,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 21.5 64 -2.5 0 30"
+      "text": "tp @s 21.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:torch"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_trapdoor"
     },
     {
       "action": "place",
@@ -725,7 +725,7 @@
     },
     {
       "action": "snapshot",
-      "name": "torch",
+      "name": "oak_trapdoor",
       "fields": [
         "blocks"
       ],
@@ -764,11 +764,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 24.5 64 -2.5 0 30"
+      "text": "tp @s 24.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:lantern"
+      "text": "item replace entity @s weapon.mainhand with minecraft:stone_button"
     },
     {
       "action": "place",
@@ -818,7 +818,7 @@
     },
     {
       "action": "snapshot",
-      "name": "lantern",
+      "name": "stone_button",
       "fields": [
         "blocks"
       ],
@@ -857,11 +857,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 27.5 64 -2.5 0 30"
+      "text": "tp @s 27.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:iron_chain"
+      "text": "item replace entity @s weapon.mainhand with minecraft:lever"
     },
     {
       "action": "place",
@@ -911,7 +911,7 @@
     },
     {
       "action": "snapshot",
-      "name": "iron_chain",
+      "name": "lever",
       "fields": [
         "blocks"
       ],
@@ -950,11 +950,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 30.5 64 -2.5 0 30"
+      "text": "tp @s 30.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:redstone"
+      "text": "item replace entity @s weapon.mainhand with minecraft:torch"
     },
     {
       "action": "place",
@@ -1004,7 +1004,7 @@
     },
     {
       "action": "snapshot",
-      "name": "redstone",
+      "name": "torch",
       "fields": [
         "blocks"
       ],
@@ -1043,11 +1043,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 33.5 64 -2.5 0 30"
+      "text": "tp @s 33.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:repeater"
+      "text": "item replace entity @s weapon.mainhand with minecraft:lantern"
     },
     {
       "action": "place",
@@ -1097,7 +1097,7 @@
     },
     {
       "action": "snapshot",
-      "name": "repeater",
+      "name": "lantern",
       "fields": [
         "blocks"
       ],
@@ -1136,11 +1136,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 36.5 64 -2.5 0 30"
+      "text": "tp @s 36.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:comparator"
+      "text": "item replace entity @s weapon.mainhand with minecraft:iron_chain"
     },
     {
       "action": "place",
@@ -1190,7 +1190,7 @@
     },
     {
       "action": "snapshot",
-      "name": "comparator",
+      "name": "iron_chain",
       "fields": [
         "blocks"
       ],
@@ -1229,11 +1229,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 39.5 64 -2.5 0 30"
+      "text": "tp @s 39.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:observer"
+      "text": "item replace entity @s weapon.mainhand with minecraft:redstone"
     },
     {
       "action": "place",
@@ -1283,7 +1283,7 @@
     },
     {
       "action": "snapshot",
-      "name": "observer",
+      "name": "redstone",
       "fields": [
         "blocks"
       ],
@@ -1322,11 +1322,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 42.5 64 -2.5 0 30"
+      "text": "tp @s 42.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:piston"
+      "text": "item replace entity @s weapon.mainhand with minecraft:repeater"
     },
     {
       "action": "place",
@@ -1376,7 +1376,7 @@
     },
     {
       "action": "snapshot",
-      "name": "piston",
+      "name": "repeater",
       "fields": [
         "blocks"
       ],
@@ -1415,11 +1415,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 45.5 64 -2.5 0 30"
+      "text": "tp @s 45.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:hopper"
+      "text": "item replace entity @s weapon.mainhand with minecraft:comparator"
     },
     {
       "action": "place",
@@ -1469,7 +1469,7 @@
     },
     {
       "action": "snapshot",
-      "name": "hopper",
+      "name": "comparator",
       "fields": [
         "blocks"
       ],
@@ -1508,11 +1508,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 48.5 64 -2.5 0 30"
+      "text": "tp @s 48.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:furnace"
+      "text": "item replace entity @s weapon.mainhand with minecraft:observer"
     },
     {
       "action": "place",
@@ -1562,7 +1562,7 @@
     },
     {
       "action": "snapshot",
-      "name": "furnace",
+      "name": "observer",
       "fields": [
         "blocks"
       ],
@@ -1601,11 +1601,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 51.5 64 -2.5 0 30"
+      "text": "tp @s 51.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:chest"
+      "text": "item replace entity @s weapon.mainhand with minecraft:piston"
     },
     {
       "action": "place",
@@ -1655,7 +1655,7 @@
     },
     {
       "action": "snapshot",
-      "name": "chest",
+      "name": "piston",
       "fields": [
         "blocks"
       ],
@@ -1694,11 +1694,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 54.5 64 -2.5 0 30"
+      "text": "tp @s 54.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:red_bed"
+      "text": "item replace entity @s weapon.mainhand with minecraft:hopper"
     },
     {
       "action": "place",
@@ -1748,7 +1748,7 @@
     },
     {
       "action": "snapshot",
-      "name": "red_bed",
+      "name": "hopper",
       "fields": [
         "blocks"
       ],
@@ -1787,11 +1787,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 57.5 64 -2.5 0 30"
+      "text": "tp @s 57.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:candle"
+      "text": "item replace entity @s weapon.mainhand with minecraft:furnace"
     },
     {
       "action": "place",
@@ -1841,7 +1841,7 @@
     },
     {
       "action": "snapshot",
-      "name": "candle",
+      "name": "furnace",
       "fields": [
         "blocks"
       ],
@@ -1880,11 +1880,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 60.5 64 -2.5 0 30"
+      "text": "tp @s 60.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:white_carpet"
+      "text": "item replace entity @s weapon.mainhand with minecraft:chest"
     },
     {
       "action": "place",
@@ -1934,7 +1934,7 @@
     },
     {
       "action": "snapshot",
-      "name": "white_carpet",
+      "name": "chest",
       "fields": [
         "blocks"
       ],
@@ -1973,11 +1973,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 63.5 64 -2.5 0 30"
+      "text": "tp @s 63.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:snow"
+      "text": "item replace entity @s weapon.mainhand with minecraft:red_bed"
     },
     {
       "action": "place",
@@ -2027,7 +2027,7 @@
     },
     {
       "action": "snapshot",
-      "name": "snow",
+      "name": "red_bed",
       "fields": [
         "blocks"
       ],
@@ -2066,11 +2066,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 66.5 64 -2.5 0 30"
+      "text": "tp @s 66.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:pointed_dripstone"
+      "text": "item replace entity @s weapon.mainhand with minecraft:candle"
     },
     {
       "action": "place",
@@ -2120,7 +2120,7 @@
     },
     {
       "action": "snapshot",
-      "name": "pointed_dripstone",
+      "name": "candle",
       "fields": [
         "blocks"
       ],
@@ -2159,11 +2159,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 69.5 64 -2.5 0 30"
+      "text": "tp @s 69.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:ladder"
+      "text": "item replace entity @s weapon.mainhand with minecraft:white_carpet"
     },
     {
       "action": "place",
@@ -2213,7 +2213,7 @@
     },
     {
       "action": "snapshot",
-      "name": "ladder",
+      "name": "white_carpet",
       "fields": [
         "blocks"
       ],
@@ -2252,11 +2252,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 72.5 64 -2.5 0 30"
+      "text": "tp @s 72.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:end_rod"
+      "text": "item replace entity @s weapon.mainhand with minecraft:snow"
     },
     {
       "action": "place",
@@ -2306,7 +2306,7 @@
     },
     {
       "action": "snapshot",
-      "name": "end_rod",
+      "name": "snow",
       "fields": [
         "blocks"
       ],
@@ -2345,11 +2345,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 75.5 64 -2.5 0 30"
+      "text": "tp @s 75.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:lightning_rod"
+      "text": "item replace entity @s weapon.mainhand with minecraft:pointed_dripstone"
     },
     {
       "action": "place",
@@ -2399,7 +2399,7 @@
     },
     {
       "action": "snapshot",
-      "name": "lightning_rod",
+      "name": "pointed_dripstone",
       "fields": [
         "blocks"
       ],
@@ -2438,11 +2438,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 78.5 64 -2.5 0 30"
+      "text": "tp @s 78.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:white_banner"
+      "text": "item replace entity @s weapon.mainhand with minecraft:ladder"
     },
     {
       "action": "place",
@@ -2492,7 +2492,7 @@
     },
     {
       "action": "snapshot",
-      "name": "white_banner",
+      "name": "ladder",
       "fields": [
         "blocks"
       ],
@@ -2531,11 +2531,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 81.5 64 -2.5 0 30"
+      "text": "tp @s 81.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:skeleton_skull"
+      "text": "item replace entity @s weapon.mainhand with minecraft:end_rod"
     },
     {
       "action": "place",
@@ -2585,7 +2585,7 @@
     },
     {
       "action": "snapshot",
-      "name": "skeleton_skull",
+      "name": "end_rod",
       "fields": [
         "blocks"
       ],
@@ -2624,11 +2624,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 84.5 64 -2.5 0 30"
+      "text": "tp @s 84.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_sign"
+      "text": "item replace entity @s weapon.mainhand with minecraft:lightning_rod"
     },
     {
       "action": "place",
@@ -2678,7 +2678,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_sign",
+      "name": "lightning_rod",
       "fields": [
         "blocks"
       ],
@@ -2717,11 +2717,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 87.5 64 -2.5 0 30"
+      "text": "tp @s 87.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_fence_gate"
+      "text": "item replace entity @s weapon.mainhand with minecraft:white_banner"
     },
     {
       "action": "place",
@@ -2771,7 +2771,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_fence_gate",
+      "name": "white_banner",
       "fields": [
         "blocks"
       ],
@@ -2810,11 +2810,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 90.5 64 -2.5 0 30"
+      "text": "tp @s 90.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:anvil"
+      "text": "item replace entity @s weapon.mainhand with minecraft:skeleton_skull"
     },
     {
       "action": "place",
@@ -2864,7 +2864,7 @@
     },
     {
       "action": "snapshot",
-      "name": "anvil",
+      "name": "skeleton_skull",
       "fields": [
         "blocks"
       ],
@@ -2903,11 +2903,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 93.5 64 -2.5 0 30"
+      "text": "tp @s 93.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:grindstone"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_sign"
     },
     {
       "action": "place",
@@ -2957,7 +2957,7 @@
     },
     {
       "action": "snapshot",
-      "name": "grindstone",
+      "name": "oak_sign",
       "fields": [
         "blocks"
       ],
@@ -2996,11 +2996,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 96.5 64 -2.5 0 30"
+      "text": "tp @s 96.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:bell"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_fence_gate"
     },
     {
       "action": "place",
@@ -3050,7 +3050,7 @@
     },
     {
       "action": "snapshot",
-      "name": "bell",
+      "name": "oak_fence_gate",
       "fields": [
         "blocks"
       ],
@@ -3089,11 +3089,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 99.5 64 -2.5 0 30"
+      "text": "tp @s 99.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:lectern"
+      "text": "item replace entity @s weapon.mainhand with minecraft:anvil"
     },
     {
       "action": "place",
@@ -3143,7 +3143,7 @@
     },
     {
       "action": "snapshot",
-      "name": "lectern",
+      "name": "anvil",
       "fields": [
         "blocks"
       ],
@@ -3182,11 +3182,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 102.5 64 -2.5 0 30"
+      "text": "tp @s 102.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:barrel"
+      "text": "item replace entity @s weapon.mainhand with minecraft:grindstone"
     },
     {
       "action": "place",
@@ -3236,7 +3236,7 @@
     },
     {
       "action": "snapshot",
-      "name": "barrel",
+      "name": "grindstone",
       "fields": [
         "blocks"
       ],
@@ -3275,11 +3275,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 105.5 64 -2.5 0 30"
+      "text": "tp @s 105.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:dispenser"
+      "text": "item replace entity @s weapon.mainhand with minecraft:bell"
     },
     {
       "action": "place",
@@ -3329,7 +3329,7 @@
     },
     {
       "action": "snapshot",
-      "name": "dispenser",
+      "name": "bell",
       "fields": [
         "blocks"
       ],
@@ -3368,11 +3368,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 108.5 64 -2.5 0 30"
+      "text": "tp @s 108.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:oak_leaves"
+      "text": "item replace entity @s weapon.mainhand with minecraft:lectern"
     },
     {
       "action": "place",
@@ -3422,7 +3422,7 @@
     },
     {
       "action": "snapshot",
-      "name": "oak_leaves",
+      "name": "lectern",
       "fields": [
         "blocks"
       ],
@@ -3461,11 +3461,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 111.5 64 -2.5 0 30"
+      "text": "tp @s 111.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:tripwire_hook"
+      "text": "item replace entity @s weapon.mainhand with minecraft:barrel"
     },
     {
       "action": "place",
@@ -3515,7 +3515,7 @@
     },
     {
       "action": "snapshot",
-      "name": "tripwire_hook",
+      "name": "barrel",
       "fields": [
         "blocks"
       ],
@@ -3554,11 +3554,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 114.5 64 -2.5 0 30"
+      "text": "tp @s 114.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:vine"
+      "text": "item replace entity @s weapon.mainhand with minecraft:dispenser"
     },
     {
       "action": "place",
@@ -3608,7 +3608,7 @@
     },
     {
       "action": "snapshot",
-      "name": "vine",
+      "name": "dispenser",
       "fields": [
         "blocks"
       ],
@@ -3647,11 +3647,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 117.5 64 -2.5 0 30"
+      "text": "tp @s 117.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:glow_lichen"
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_leaves"
     },
     {
       "action": "place",
@@ -3701,7 +3701,7 @@
     },
     {
       "action": "snapshot",
-      "name": "glow_lichen",
+      "name": "oak_leaves",
       "fields": [
         "blocks"
       ],
@@ -3740,11 +3740,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 120.5 64 -2.5 0 30"
+      "text": "tp @s 120.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:amethyst_cluster"
+      "text": "item replace entity @s weapon.mainhand with minecraft:tripwire_hook"
     },
     {
       "action": "place",
@@ -3794,7 +3794,7 @@
     },
     {
       "action": "snapshot",
-      "name": "amethyst_cluster",
+      "name": "tripwire_hook",
       "fields": [
         "blocks"
       ],
@@ -3833,11 +3833,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 123.5 64 -2.5 0 30"
+      "text": "tp @s 123.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:big_dripleaf"
+      "text": "item replace entity @s weapon.mainhand with minecraft:vine"
     },
     {
       "action": "place",
@@ -3887,7 +3887,7 @@
     },
     {
       "action": "snapshot",
-      "name": "big_dripleaf",
+      "name": "vine",
       "fields": [
         "blocks"
       ],
@@ -3926,11 +3926,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 126.5 64 -2.5 0 30"
+      "text": "tp @s 126.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:crafter"
+      "text": "item replace entity @s weapon.mainhand with minecraft:glow_lichen"
     },
     {
       "action": "place",
@@ -3980,7 +3980,7 @@
     },
     {
       "action": "snapshot",
-      "name": "crafter",
+      "name": "glow_lichen",
       "fields": [
         "blocks"
       ],
@@ -4019,11 +4019,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 129.5 64 -2.5 0 30"
+      "text": "tp @s 129.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:decorated_pot"
+      "text": "item replace entity @s weapon.mainhand with minecraft:amethyst_cluster"
     },
     {
       "action": "place",
@@ -4073,7 +4073,7 @@
     },
     {
       "action": "snapshot",
-      "name": "decorated_pot",
+      "name": "amethyst_cluster",
       "fields": [
         "blocks"
       ],
@@ -4112,11 +4112,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 132.5 64 -2.5 0 30"
+      "text": "tp @s 132.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:heavy_core"
+      "text": "item replace entity @s weapon.mainhand with minecraft:big_dripleaf"
     },
     {
       "action": "place",
@@ -4166,7 +4166,7 @@
     },
     {
       "action": "snapshot",
-      "name": "heavy_core",
+      "name": "big_dripleaf",
       "fields": [
         "blocks"
       ],
@@ -4205,11 +4205,11 @@
     },
     {
       "action": "command",
-      "text": "tp @s 135.5 64 -2.5 0 30"
+      "text": "tp @s 135.5 64 -1.5 0 30"
     },
     {
       "action": "command",
-      "text": "item replace entity @s weapon.mainhand with minecraft:copper_bulb"
+      "text": "item replace entity @s weapon.mainhand with minecraft:crafter"
     },
     {
       "action": "place",
@@ -4259,7 +4259,7 @@
     },
     {
       "action": "snapshot",
-      "name": "copper_bulb",
+      "name": "crafter",
       "fields": [
         "blocks"
       ],
@@ -4291,6 +4291,471 @@
         ],
         [
           136,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 138.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:decorated_pot"
+    },
+    {
+      "action": "place",
+      "position": [
+        138,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 138 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        138,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        139,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "decorated_pot",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          138,
+          64,
+          0
+        ],
+        [
+          138,
+          65,
+          0
+        ],
+        [
+          138,
+          64,
+          2
+        ],
+        [
+          138,
+          65,
+          2
+        ],
+        [
+          139,
+          64,
+          0
+        ],
+        [
+          139,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 141.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:heavy_core"
+    },
+    {
+      "action": "place",
+      "position": [
+        141,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 141 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        141,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        142,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "heavy_core",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          141,
+          64,
+          0
+        ],
+        [
+          141,
+          65,
+          0
+        ],
+        [
+          141,
+          64,
+          2
+        ],
+        [
+          141,
+          65,
+          2
+        ],
+        [
+          142,
+          64,
+          0
+        ],
+        [
+          142,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 144.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:copper_bulb"
+    },
+    {
+      "action": "place",
+      "position": [
+        144,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 144 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        144,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        145,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "copper_bulb",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          144,
+          64,
+          0
+        ],
+        [
+          144,
+          65,
+          0
+        ],
+        [
+          144,
+          64,
+          2
+        ],
+        [
+          144,
+          65,
+          2
+        ],
+        [
+          145,
+          64,
+          0
+        ],
+        [
+          145,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 147.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:iron_bars"
+    },
+    {
+      "action": "place",
+      "position": [
+        147,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 147 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        147,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        148,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "iron_bars",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          147,
+          64,
+          0
+        ],
+        [
+          147,
+          65,
+          0
+        ],
+        [
+          147,
+          64,
+          2
+        ],
+        [
+          147,
+          65,
+          2
+        ],
+        [
+          148,
+          64,
+          0
+        ],
+        [
+          148,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 150.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:nether_brick_fence"
+    },
+    {
+      "action": "place",
+      "position": [
+        150,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 150 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        150,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        151,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "nether_brick_fence",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          150,
+          64,
+          0
+        ],
+        [
+          150,
+          65,
+          0
+        ],
+        [
+          150,
+          64,
+          2
+        ],
+        [
+          150,
+          65,
+          2
+        ],
+        [
+          151,
+          64,
+          0
+        ],
+        [
+          151,
           65,
           0
         ]

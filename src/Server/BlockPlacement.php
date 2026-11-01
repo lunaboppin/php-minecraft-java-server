@@ -14,6 +14,44 @@ trait BlockPlacement
     /** @var array<string, list<string>>|null Java class chains by block name */
     private ?array $placementClasses = null;
 
+    private ?\PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater $shapeUpdater = null;
+
+    /** The connection blocks whose shapes follow their neighbours: fences, panes and bars, walls and stairs. */
+    private const CONNECTING = ['FenceBlock', 'IronBarsBlock', 'WallBlock', 'StairBlock'];
+
+    private function shapeUpdater(): \PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater
+    {
+        return $this->shapeUpdater ??= new \PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater(
+            $this->fireBlocks(),
+            new \PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival($this->fireBlocks(), $this->version->directory . '/worldgen/block-behaviour.json')
+        );
+    }
+
+    /** The connection block's state with its sides joined to its neighbours, as placed. */
+    private function connectedState(int $state, int $x, int $y, int $z): int
+    {
+        if (array_intersect(self::CONNECTING, $this->placementClasses($this->version->catalog->blockName($state))) === []) {
+            return $state;
+        }
+        return $this->shapeUpdater()->update($state, $x, $y, $z, fn (int $a, int $b, int $c): int => $this->world->get($a, $b, $c)) ?? $state;
+    }
+
+    /**
+     * Level.setBlock's neighbour shape updates (BlockState.updateShape) after a player places or
+     * breaks a block: the connection blocks beside, above and below take their new shapes.
+     */
+    private function updateNeighbourShapes(int $x, int $y, int $z): void
+    {
+        foreach (self::PLACEMENT_DIRECTIONS as [$dx, $dy, $dz]) {
+            [$a, $b, $c] = [$x + $dx, $y + $dy, $z + $dz];
+            $state = $this->world->get($a, $b, $c);
+            $updated = $this->connectedState($state, $a, $b, $c);
+            if ($updated !== $state) {
+                $this->setBlock($a, $b, $c, $updated);
+            }
+        }
+    }
+
     /** Direction.values(): offset and opposite by name. */
     private const PLACEMENT_DIRECTIONS = [
         'down' => [0, -1, 0, 'up'], 'up' => [0, 1, 0, 'down'], 'north' => [0, 0, -1, 'south'],
