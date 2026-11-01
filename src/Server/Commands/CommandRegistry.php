@@ -92,6 +92,7 @@ final class CommandRegistry
             new CommandDefinition('spreadplayers', 'executeSpreadPlayers', true),
             new CommandDefinition('fillbiome', 'executeFillBiome', true),
             new CommandDefinition('waypoint', 'executeWaypoint', true),
+            new CommandDefinition('datapack', 'executeDatapack', true),
         ];
     }
 

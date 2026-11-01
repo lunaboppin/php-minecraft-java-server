@@ -62,6 +62,8 @@ trait Commands
 
     use CommandModules\WaypointCommand;
 
+    use CommandModules\DatapackCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

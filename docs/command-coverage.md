@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **82** have an existing PHP handler; **10** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **83** have an existing PHP handler; **9** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -26,7 +26,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/compute` | — | Unimplemented | — |
 | `/damage` | [DamageCommand.php](../src/Server/Commands/DamageCommand.php) | Partial handler; native behavior incomplete | — |
 | `/data` | — | Unimplemented | — |
-| `/datapack` | — | Unimplemented | — |
+| `/datapack` | [DatapackCommand.php](../src/Server/Commands/DatapackCommand.php) | Partial handler; native behavior incomplete | — |
 | `/debug` | [DebugCommand.php](../src/Server/Commands/DebugCommand.php) | Partial handler; native behavior incomplete | — |
 | `/defaultgamemode` | [DefaultGameModeCommand.php](../src/Server/Commands/DefaultGameModeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/deop` | [DeOpCommand.php](../src/Server/Commands/DeOpCommand.php) | Partial handler; native behavior incomplete | — |
