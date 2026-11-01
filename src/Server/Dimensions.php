@@ -66,6 +66,8 @@ trait Dimensions
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();
                     $this->tickAnimals();
+                    // Level.tickBlockEntities runs after the entities.
+                    $this->tickMovingPistons();
                 }
                 foreach (array_slice($this->pendingLight, 0, 9, true) as $key => [$cx,$cz]) {
                     // ChunkHolder.broadcastChanges sends light only to players for whom the chunk is on

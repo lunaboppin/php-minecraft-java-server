@@ -3326,7 +3326,9 @@
     "entity.player.big_fall": 1312,
     "entity.turtle.egg_break": 1663,
     "entity.turtle.egg_crack": 1664,
-    "entity.turtle.egg_hatch": 1665
+    "entity.turtle.egg_hatch": 1665,
+    "block.piston.contract": 1304,
+    "block.piston.extend": 1305
   },
   "particle_types": {
     "angry_villager": 0,
