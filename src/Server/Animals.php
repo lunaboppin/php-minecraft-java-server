@@ -610,10 +610,12 @@ trait Animals
                 }
                 continue;
             }
-            // Entity.checkBelowWorld: a mob 64 blocks below the world is discarded, without loot.
+            // Entity.checkBelowWorld: LivingEntity.onBelowWorld hurts a mob 64 blocks below the world.
             if ($animal['y'] < $this->world->minY - 64) {
-                $this->removeAnimal($id);
-                continue;
+                $this->hurtMob($id, 4.0, 'minecraft:out_of_world');
+                if (isset($animal['deadAt'])) {
+                    continue;
+                }
             }
             // LivingEntity.baseTick: a ticking mob whose eyes are in a wall suffocates.
             $size = $this->version->catalog->mobs['entities'][$animal['kind']];
