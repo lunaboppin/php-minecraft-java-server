@@ -241,7 +241,7 @@ trait TreeGrowth
                 }
                 $player->send($this->version, 'section_blocks_update', $payload);
                 foreach ($positions as [$x, $y, $z]) {
-                    $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+                    $type = $this->world->blockEntityUpdateType($this->world->get($x, $y, $z));
                     if ($type !== null) {
                         $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
                     }

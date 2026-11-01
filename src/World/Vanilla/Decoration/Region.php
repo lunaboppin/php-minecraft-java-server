@@ -42,6 +42,9 @@ final class Region implements BlockReader
      */
     public array $postProcessing = [];
 
+    /** @var array<string, array{0: int, 1: int, 2: int}>|null when kept, each written position in the order first written */
+    public ?array $writes = null;
+
     /** @param array<string, ProtoChunk> $chunks keyed "x,z" */
     public function __construct(
         public readonly Blocks $blocks,
@@ -54,6 +57,7 @@ final class Region implements BlockReader
         private readonly int $zoomSeed,
         public readonly int $seed,
         ?int $genHeight = null,
+        public readonly int $writeRadius = 1,
     ) {
         // The generator's height (ChunkGenerator.getGenDepth), below a taller world's build height.
         $this->genHeight = $genHeight ?? $height;
@@ -93,7 +97,7 @@ final class Region implements BlockReader
     /** WorldGenRegion.ensureCanWrite */
     public function canWrite(int $x, int $z): bool
     {
-        return abs(($x >> 4) - $this->centerX) <= 1 && abs(($z >> 4) - $this->centerZ) <= 1;
+        return abs(($x >> 4) - $this->centerX) <= $this->writeRadius && abs(($z >> 4) - $this->centerZ) <= $this->writeRadius;
     }
 
     /** WorldGenRegion.setBlock; neighbours are not updated during generation. */
@@ -107,6 +111,9 @@ final class Region implements BlockReader
         }
         $chunk = $this->chunks[($x >> 4) . ',' . ($z >> 4)];
         $chunk->blocks[(($y - $this->minY) << 8) | (($z & 15) << 4) | ($x & 15)] = $state;
+        if ($this->writes !== null) {
+            $this->writes["$x,$y,$z"] ??= [$x, $y, $z];
+        }
         if ($state === $this->redMushroom || $state === $this->brownMushroom) {
             $this->postProcessing[] = [$x, $y, $z];
         }
