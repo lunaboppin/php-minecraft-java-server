@@ -19,12 +19,43 @@ trait BlockPlacement
     /** The connection blocks whose shapes follow their neighbours: fences, panes and bars, walls and stairs. */
     private const CONNECTING = ['FenceBlock', 'IronBarsBlock', 'WallBlock', 'StairBlock'];
 
+    private ?\PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival $placementSurvivalRules = null;
+
     private function shapeUpdater(): \PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater
     {
-        return $this->shapeUpdater ??= new \PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater(
-            $this->fireBlocks(),
-            new \PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival($this->fireBlocks(), $this->version->directory . '/worldgen/block-behaviour.json')
-        );
+        $this->placementSurvivalRules ??= new \PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival($this->fireBlocks(), $this->version->directory . '/worldgen/block-behaviour.json');
+        return $this->shapeUpdater ??= new \PhpMinecraftJavaServer\World\Vanilla\Structure\ShapeUpdater($this->fireBlocks(), $this->placementSurvivalRules);
+    }
+
+    /**
+     * BlockItem.canPlace: BlockState.canSurvive where the block would go, read from the world.
+     * Mushrooms also need light below 13, which the decoration rules leave out.
+     */
+    private function placementSurvives(int $state, int $x, int $y, int $z): bool
+    {
+        $name = $this->version->catalog->blockName($state);
+        if (($name === 'red_mushroom' || $name === 'brown_mushroom')
+            && !$this->fireBlocks()->inTag($this->world->get($x, $y - 1, $z), 'overrides_mushroom_light_requirement')) {
+            return $this->world->rawBrightness($x, $y, $z) < 13 && $this->fireBlocks()->flag($this->world->get($x, $y - 1, $z), \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::SOLID_RENDER);
+        }
+        $world = $this->world;
+        $reader = new class ($world) implements \PhpMinecraftJavaServer\World\Vanilla\Decoration\BlockReader {
+            public function __construct(private readonly \PhpMinecraftJavaServer\World\World $world)
+            {
+            }
+
+            public function get(int $x, int $y, int $z): int
+            {
+                return $this->world->get($x, $y, $z);
+            }
+        };
+        return $this->placementSurvival()->canSurvive($state, $reader, $x, $y, $z);
+    }
+
+    private function placementSurvival(): \PhpMinecraftJavaServer\World\Vanilla\Decoration\Survival
+    {
+        $this->shapeUpdater();
+        return $this->placementSurvivalRules;
     }
 
     /** The connection block's state with its sides joined to its neighbours, as placed. */
@@ -224,6 +255,8 @@ trait BlockPlacement
                 }
             }
             return null;
+        } elseif ($is('BaseRailBlock')) {
+            $properties['shape'] = $horizontal === 'east' || $horizontal === 'west' ? 'east_west' : 'north_south';
         } elseif ($is('LeavesBlock')) {
             $properties['persistent'] = 'true';
         } elseif ($is('VineBlock')) {

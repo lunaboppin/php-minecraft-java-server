@@ -3,7 +3,7 @@
   "normalizations": [
     "Compare blocks after random ticks at random_tick_speed 4096, once outcomes are certain: growing plants at their limits, buds fully grown, ore unlit.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs; the area's grass is replaced with stone so only these blocks tick.",
-    "Covers lit redstone ore, sweet berries, cocoa, kelp to the water's surface, twisting vines to age 25, a bamboo shoot's first stalk and budding amethyst on every face; nylium under stone and under a bottom slab, whose face shuts out light, turns to netherrack while nylium under glass stays."
+    "Covers lit redstone ore, sweet berries, cocoa, kelp to the water's surface, twisting vines to age 25, a bamboo shoot's first stalk and budding amethyst on every face; nylium under stone and under a bottom slab, whose face shuts out light, turns to netherrack while nylium under glass stays; and a vine hangs down the full height of a pillar."
   ],
   "steps": [
     {
@@ -97,6 +97,14 @@
     {
       "action": "command",
       "text": "setblock 28 65 0 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "fill 20 64 0 20 71 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 71 1 minecraft:vine[north=true]"
     },
     {
       "action": "command",
@@ -361,6 +369,41 @@
           28,
           64,
           0
+        ],
+        [
+          20,
+          64,
+          1
+        ],
+        [
+          20,
+          65,
+          1
+        ],
+        [
+          20,
+          66,
+          1
+        ],
+        [
+          20,
+          67,
+          1
+        ],
+        [
+          20,
+          68,
+          1
+        ],
+        [
+          20,
+          69,
+          1
+        ],
+        [
+          20,
+          70,
+          1
         ]
       ]
     }

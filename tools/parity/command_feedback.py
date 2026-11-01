@@ -949,6 +949,30 @@ SCRIPT = [
     ('fillbiome 1000 200 1000 1003 203 1003 desert', False),
     ('fillbiome 0 200 0 3 203 3 plains', False),
     ('!witness fillbiome 0 200 0 3 203 3 plains', False),
+    # /place: templates turned, mirrored, partly placed by integrity and seed, with and without
+    # shape updates, and failures; features placed inline and by ID where the outcome is certain.
+    ('place template minecraft:fossil/skull_1 0 200 0', False),
+    ('place template fossil/skull_1 10 200 0 clockwise_90', False),
+    ('place template fossil/skull_1 20 200 0 180', False),
+    ('place template fossil/skull_1 30 200 0 counterclockwise_90', False),
+    ('place template fossil/skull_1 0 210 10 none front_back', False),
+    ('place template fossil/skull_1 10 210 10 none left_right', False),
+    ('place template fossil/skull_1 20 210 10 clockwise_90 left_right', False),
+    ('place template fossil/skull_1 0 220 20 none none 0.5 7', False),
+    ('place template fossil/skull_1 10 220 20 none none 0.5 8', False),
+    ('place template fossil/skull_1 20 220 20 none none 0 8', False),
+    ('place template fossil/skull_1 0 200 0', False),
+    ('place template minecraft:nope 0 200 0', False),
+    ('place template igloo/top 20 200 30', False),
+    ('place template ruined_portal/portal_1 0 200 40 none none 1 0 strict', False),
+    ('place template empty 0 230 0', False),
+    ('place template fossil/skull_1 5000 200 0', False),
+    ('!witness place template fossil/skull_1 0 200 0', False),
+    ('place template fossil/skull_1 30 220 30 clockwise_90 front_back 1 5 strict', False),
+    ('place feature minecraft:nope 0 240 0', False),
+    ('place feature {type:"minecraft:simple_block",to_place:{id:"minecraft:stone"}} 0 240 0', False),
+    ('place feature {type:"minecraft:simple_block",to_place:{id:"minecraft:stone"}} 0 240 0', False),
+    ('place feature minecraft:oak 5000 240 10', False),
     # /waypoint: listing transmitters and changing icons. A HashSet orders several transmitters, so
     # each list holds one: the other player stops transmitting first.
     ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
@@ -1118,7 +1142,7 @@ def surface(name, payload):
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
 # Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
 BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
-EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'recipe ': ('recipe_book_add', 'recipe_book_remove', 'update_advancements'), 'advancement ': ('update_advancements', 'recipe_book_add'), 'give ': ('update_advancements', 'recipe_book_add'), 'clear': ('update_advancements', 'recipe_book_add')}
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'recipe ': ('recipe_book_add', 'recipe_book_remove', 'update_advancements'), 'advancement ': ('update_advancements', 'recipe_book_add'), 'give ': ('update_advancements', 'recipe_book_add'), 'clear': ('update_advancements', 'recipe_book_add'), 'place ': BLOCKS}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -1365,9 +1389,11 @@ def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
+        # ServerChunkCache broadcasts changed chunks from an identity hash set, so a placement
+        # spanning several chunks sends their updates in an order that varies between runs.
         # So do advancement announcements for a tree's children, which vanilla keeps in a hash set.
         # Items meet recipe and advancement criteria in the order of vanilla's listener hash map.
-        unordered = expected['command'].startswith(('kick ', 'give ', 'clear')) or (expected['command'].startswith('advancement ') and (' from ' in expected['command'] or ' through ' in expected['command']))
+        unordered = expected['command'].startswith(('kick ', 'place ', 'give ', 'clear')) or (expected['command'].startswith('advancement ') and (' from ' in expected['command'] or ' through ' in expected['command']))
         # A summoned entity has a random UUID on each server.
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
