@@ -57,7 +57,7 @@ trait RandomTicks
                     $name === 'bamboo' => $p['stage'] === '0',
                     in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
-                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava'], true) => true,
+                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium'], true) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -154,6 +154,16 @@ trait RandomTicks
         return $this->lightDampening[$state] ?? 0;
     }
 
+    /**
+     * LightEngine.getLightDampeningInto upward from a full block: 16 when the block above covers
+     * its whole bottom face for light occlusion, else that block's light dampening.
+     */
+    private function dampeningUpInto(int $above): int
+    {
+        $face = \PhpMinecraftJavaServer\World\Lighting::faces($this->version->directory)[$above][0] ?? null;
+        return $face === str_repeat("\xff", 32) ? 16 : $this->dampening($above);
+    }
+
     private function randomTick(int $x, int $y, int $z): void
     {
         $catalog = $this->version->catalog;
@@ -190,6 +200,11 @@ trait RandomTicks
             $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
+        } elseif ($name === 'crimson_nylium' || $name === 'warped_nylium') {
+            // NyliumBlock.randomTick: nylium under a block that stops all light turns to netherrack.
+            if ($this->dampeningUpInto($this->world->get($x, $y + 1, $z)) >= 15) {
+                $this->setBlock($x, $y, $z, $catalog->state('netherrack'));
+            }
         } elseif ($name === 'lava') {
             // LiquidBlock.randomTick passes the tick to the fluid, and ServerLevel.tickChunk then
             // random-ticks the fluid state itself, so lava gets two.
@@ -472,7 +487,7 @@ trait RandomTicks
             if (in_array($aboveName, ['water', 'lava'], true) && in_array($catalog->properties($above)['level'], ['0', '8'], true)) {
                 return false;
             }
-            return $this->dampening($above) < 15;
+            return $this->dampeningUpInto($above) < 15;
         };
         if (!$alive($x, $y, $z)) {
             $this->setBlock($x, $y, $z, $catalog->state('dirt'));
