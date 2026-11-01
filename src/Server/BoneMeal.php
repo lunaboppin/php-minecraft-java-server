@@ -114,6 +114,27 @@ trait BoneMeal
                 }
             };
         }
+        if ($name === 'brown_mushroom' || $name === 'red_mushroom') {
+            // MushroomBlock.growMushroom, 40% of the time: the mushroom gives way to its huge
+            // feature, and comes back when the feature does not fit.
+            return function () use ($x, $y, $z, $name): void {
+                if (self::randomUnit() < 0.4) {
+                    $this->placeTree('huge_' . $name, $x, $y, $z, [[$x, $y, $z, $this->world->get($x, $y, $z)]], new WorldgenRandom(random_int(PHP_INT_MIN, PHP_INT_MAX)));
+                }
+            };
+        }
+        if ($name === 'crimson_fungus' || $name === 'warped_fungus') {
+            // FungusBlock: only on its own nylium; 40% of the time the planted huge fungus grows from it.
+            if ($catalog->blockName($this->world->get($x, $y - 1, $z)) !== substr($name, 0, -6) . 'nylium') {
+                return null;
+            }
+            return function () use ($x, $y, $z, $name): void {
+                if (self::randomUnit() < 0.4) {
+                    $random = new WorldgenRandom(random_int(PHP_INT_MIN, PHP_INT_MAX));
+                    $this->onRegion($x, $z, fn (Region $region, Decorator $decorator): bool => $decorator->place($name . '_planted', $region, $random, $x, $y, $z));
+                }
+            };
+        }
         if ($name === 'short_grass' || $name === 'fern') {
             if (!$catalog->air($this->world->get($x, $y + 1, $z)) || $y + 1 >= $this->world->minY + $this->world->height) {
                 return null;
