@@ -73,6 +73,8 @@ final class Server
 
     use Bells;
 
+    use Tripwires;
+
     use Corals;
 
     use PressurePlates;
@@ -1566,6 +1568,10 @@ final class Server
             if (!$blocked) {
                 $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
                 $this->updateNeighbourShapes($tx, $ty, $tz);
+                if ($blockName === 'tripwire_hook') {
+                    // TripWireHookBlock.setPlacedBy.
+                    $this->hookCalculate([$tx, $ty, $tz], $this->world->get($tx, $ty, $tz), false, false, -1, null);
+                }
                 if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
                     $this->joinChest([$tx, $ty, $tz]);
                 }
@@ -1648,6 +1654,10 @@ final class Server
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         $this->blockChanged($x, $y, $z);
+        // Block.onPlace and affectNeighborsAfterRemoval run only when the block itself changes.
+        if ($this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
+            $this->tripwireBlockSwapped($x, $y, $z, $previous, $state);
+        }
         // BaseRailBlock.onPlace: a rail set where it was not joins the rails beside it.
         if ($this->isRail($state) && $this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
             $this->placeRail($x, $y, $z);
