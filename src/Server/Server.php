@@ -97,6 +97,8 @@ final class Server
 
     use VehicleSteering;
 
+    use Waypoints;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -1707,6 +1709,7 @@ final class Server
             $this->pollLocates();
         }
         $this->tickClients($now);
+        $this->tickWaypoints();
     }
 
     private function tickTime(): void
