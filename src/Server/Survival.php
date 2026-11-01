@@ -543,6 +543,7 @@ trait Survival
         $containerData = in_array($name, ['chest', 'barrel', 'furnace'], true) ? $this->world->container([$x, $y, $z]) : null;
         $properties = $this->version->catalog->properties($state);
         $this->setBlock($x, $y, $z, 0);
+        $this->updateNeighbourShapes($x, $y, $z);
         if (in_array($name, ['obsidian', 'nether_portal'], true)) {
             $this->invalidatePortal($x, $y, $z);
         }

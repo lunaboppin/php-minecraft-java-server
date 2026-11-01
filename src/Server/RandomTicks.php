@@ -47,6 +47,8 @@ trait RandomTicks
                     str_ends_with($name, '_leaves') => ($p['distance'] ?? '') === '7' && ($p['persistent'] ?? 'true') === 'false',
                     isset(self::CROPS[$name]) => (int) $p['age'] < self::CROPS[$name],
                     $name === 'nether_wart' => (int) $p['age'] < 3,
+                    $name === 'torchflower_crop' => true,
+                    $name === 'pitcher_crop' => $p['half'] === 'lower' && (int) $p['age'] < 4,
                     isset(self::PLANT_HEADS[$name]) => (int) $p['age'] < 25,
                     ($age = self::copperAge($name)) !== null => $age[1] < 3 && ($name !== 'copper_door' && !str_ends_with($name, '_copper_door') || $p['half'] === 'lower'),
                     $name === 'sweet_berry_bush' => (int) $p['age'] < 3,
@@ -55,7 +57,7 @@ trait RandomTicks
                     $name === 'bamboo' => $p['stage'] === '0',
                     in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
-                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava'], true) => true,
+                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium'], true) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -152,6 +154,16 @@ trait RandomTicks
         return $this->lightDampening[$state] ?? 0;
     }
 
+    /**
+     * LightEngine.getLightDampeningInto upward from a full block: 16 when the block above covers
+     * its whole bottom face for light occlusion, else that block's light dampening.
+     */
+    private function dampeningUpInto(int $above): int
+    {
+        $face = \PhpMinecraftJavaServer\World\Lighting::faces($this->version->directory)[$above][0] ?? null;
+        return $face === str_repeat("\xff", 32) ? 16 : $this->dampening($above);
+    }
+
     private function randomTick(int $x, int $y, int $z): void
     {
         $catalog = $this->version->catalog;
@@ -169,6 +181,13 @@ trait RandomTicks
             $this->spreadSnowyBlock($x, $y, $z, $name);
         } elseif (isset(self::CROPS[$name]) || $name === 'melon_stem' || $name === 'pumpkin_stem') {
             $this->growCrop($x, $y, $z, $name, $p);
+        } elseif ($name === 'torchflower_crop') {
+            // TorchflowerCropBlock.randomTick: two ticks in three reach CropBlock.randomTick.
+            if (random_int(0, 2) !== 0) {
+                $this->growCrop($x, $y, $z, $name, $p);
+            }
+        } elseif ($name === 'pitcher_crop') {
+            $this->pitcherTick($x, $y, $z, $p);
         } elseif ($name === 'nether_wart') {
             if ((int) $p['age'] < 3 && random_int(0, 9) === 0) {
                 $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1]));
@@ -181,6 +200,11 @@ trait RandomTicks
             $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
+        } elseif ($name === 'crimson_nylium' || $name === 'warped_nylium') {
+            // NyliumBlock.randomTick: nylium under a block that stops all light turns to netherrack.
+            if ($this->dampeningUpInto($this->world->get($x, $y + 1, $z)) >= 15) {
+                $this->setBlock($x, $y, $z, $catalog->state('netherrack'));
+            }
         } elseif ($name === 'lava') {
             // LiquidBlock.randomTick passes the tick to the fluid, and ServerLevel.tickChunk then
             // random-ticks the fluid state itself, so lava gets two.
@@ -463,7 +487,7 @@ trait RandomTicks
             if (in_array($aboveName, ['water', 'lava'], true) && in_array($catalog->properties($above)['level'], ['0', '8'], true)) {
                 return false;
             }
-            return $this->dampening($above) < 15;
+            return $this->dampeningUpInto($above) < 15;
         };
         if (!$alive($x, $y, $z)) {
             $this->setBlock($x, $y, $z, $catalog->state('dirt'));
@@ -489,6 +513,35 @@ trait RandomTicks
         if ($this->world->rawBrightness($x, $y, $z) < 9) {
             return;
         }
+        if (random_int(0, (int) (25.0 / $this->cropGrowthSpeed($x, $y, $z, $name))) !== 0) {
+            return;
+        }
+        $age = (int) $p['age'];
+        if ($name === 'torchflower_crop') {
+            // TorchflowerCropBlock.getStateForAge: at age 2 the crop is a torchflower.
+            $this->setBlock($x, $y, $z, $age + 1 >= 2 ? $catalog->state('torchflower') : $catalog->state($name, ['age' => (string) ($age + 1)]));
+            return;
+        }
+        if (isset(self::CROPS[$name]) || $age < 7) {
+            if ($age < (self::CROPS[$name] ?? 7)) {
+                $this->setBlock($x, $y, $z, $catalog->state($name, ['age' => (string) ($age + 1)]));
+            }
+            return;
+        }
+        // A grown stem bears its fruit on a random side over dirt or farmland.
+        [$dx, $dz, $facing] = [[0, -1, 'north'], [1, 0, 'east'], [0, 1, 'south'], [-1, 0, 'west']][random_int(0, 3)];
+        $below = $catalog->blockName($this->world->get($x + $dx, $y - 1, $z + $dz));
+        if ($catalog->air($this->world->get($x + $dx, $y, $z + $dz)) && in_array($below, ['farmland', 'dirt', 'coarse_dirt', 'podzol', 'grass_block', 'mud', 'muddy_mangrove_roots', 'rooted_dirt', 'moss_block', 'pale_moss_block'], true)) {
+            $fruit = $name === 'melon_stem' ? 'melon' : 'pumpkin';
+            $this->setBlock($x + $dx, $y, $z + $dz, $catalog->state($fruit));
+            $this->setBlock($x, $y, $z, $catalog->state('attached_' . $name, ['facing' => $facing]));
+        }
+    }
+
+    /** CropBlock.getGrowthSpeed: farmland under and around the crop, halved among rows of the same crop. */
+    private function cropGrowthSpeed(int $x, int $y, int $z, string $name): float
+    {
+        $catalog = $this->version->catalog;
         $speed = 1.0;
         for ($dx = -1; $dx <= 1; ++$dx) {
             for ($dz = -1; $dz <= 1; ++$dz) {
@@ -506,23 +559,37 @@ trait RandomTicks
         if ($horizontal && $vertical || $same($x - 1, $z - 1) || $same($x + 1, $z - 1) || $same($x + 1, $z + 1) || $same($x - 1, $z + 1)) {
             $speed /= 2.0;
         }
-        if (random_int(0, (int) (25.0 / $speed)) !== 0) {
+        return $speed;
+    }
+
+    /** PitcherCropBlock.randomTick: the lower half grows by the crop's speed, without needing light to roll. */
+    private function pitcherTick(int $x, int $y, int $z, array $p): void
+    {
+        if (random_int(0, (int) (25.0 / $this->cropGrowthSpeed($x, $y, $z, 'pitcher_crop'))) === 0) {
+            $this->growPitcher($x, $y, $z, $p);
+        }
+    }
+
+    /** PitcherCropBlock.canGrow: under age 4, light 8, and room above once it is two blocks tall. */
+    private function pitcherCanGrow(int $x, int $y, int $z, array $p): bool
+    {
+        $catalog = $this->version->catalog;
+        $above = $this->world->get($x, $y + 1, $z);
+        return (int) $p['age'] < 4 && $this->world->rawBrightness($x, $y, $z) >= 8 && $y + 1 < $this->world->minY + $this->world->height
+            && ((int) $p['age'] + 1 < 3 || $catalog->air($above) || $catalog->blockName($above) === 'pitcher_crop');
+    }
+
+    /** PitcherCropBlock.grow: one age, with an upper half from age 3. */
+    private function growPitcher(int $x, int $y, int $z, array $p): void
+    {
+        if (!$this->pitcherCanGrow($x, $y, $z, $p)) {
             return;
         }
-        $age = (int) $p['age'];
-        if (isset(self::CROPS[$name]) || $age < 7) {
-            if ($age < (self::CROPS[$name] ?? 7)) {
-                $this->setBlock($x, $y, $z, $catalog->state($name, ['age' => (string) ($age + 1)]));
-            }
-            return;
-        }
-        // A grown stem bears its fruit on a random side over dirt or farmland.
-        [$dx, $dz, $facing] = [[0, -1, 'north'], [1, 0, 'east'], [0, 1, 'south'], [-1, 0, 'west']][random_int(0, 3)];
-        $below = $catalog->blockName($this->world->get($x + $dx, $y - 1, $z + $dz));
-        if ($catalog->air($this->world->get($x + $dx, $y, $z + $dz)) && in_array($below, ['farmland', 'dirt', 'coarse_dirt', 'podzol', 'grass_block', 'mud', 'muddy_mangrove_roots', 'rooted_dirt', 'moss_block', 'pale_moss_block'], true)) {
-            $fruit = $name === 'melon_stem' ? 'melon' : 'pumpkin';
-            $this->setBlock($x + $dx, $y, $z + $dz, $catalog->state($fruit));
-            $this->setBlock($x, $y, $z, $catalog->state('attached_' . $name, ['facing' => $facing]));
+        $catalog = $this->version->catalog;
+        $age = (string) ((int) $p['age'] + 1);
+        $this->setBlock($x, $y, $z, $catalog->state('pitcher_crop', ['age' => $age, 'half' => 'lower']));
+        if ((int) $age >= 3) {
+            $this->setBlock($x, $y + 1, $z, $catalog->state('pitcher_crop', ['age' => $age, 'half' => 'upper']));
         }
     }
 

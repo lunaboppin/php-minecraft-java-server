@@ -1,7 +1,7 @@
 {
   "name": "copper-weathering",
   "normalizations": [
-    "Compare copper after random ticks at random_tick_speed 4096, once every piece has oxidized; the area's grass is replaced with stone.",
+    "Compare copper after random ticks at random_tick_speed 4096, once every piece has oxidized (a 90 s wait, so a slow runner still gets there); the area's grass is replaced with stone.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
     "Covers ChangeOverTimeBlock ageing of copper blocks, cut copper stairs (keeping their properties), copper beside older copper and a copper door's two halves; waxed copper stays."
   ],
@@ -48,7 +48,7 @@
     },
     {
       "action": "wait",
-      "seconds": 40
+      "seconds": 90
     },
     {
       "action": "command",
