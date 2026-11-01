@@ -23,6 +23,38 @@ from run import Server
 SCRIPT = [
     # 26.3 has no spawn-monsters property; without these, night-time monsters kill the witness.
     ('gamerule spawn_monsters false', False), ('gamerule spawn_mobs false', False),
+    # The recipe book: entries sent and removed, counted per display, for one recipe or all. First,
+    # while no item has reached the players: vanilla unlocks recipes when items do, which is not
+    # reported here yet.
+    ('recipe give @s minecraft:acacia_boat', False),
+    ('recipe give @s acacia_boat', False),
+    ('recipe give @s andesite_slab_from_andesite_stonecutting', False),
+    ('recipe give @s baked_potato_from_campfire_cooking', False),
+    ('recipe give @s black_bundle', False),
+    ('recipe give @s bolt_armor_trim_smithing_template_smithing_trim', False),
+    ('recipe give @s netherite_axe_smithing', False),
+    ('recipe give @s leather_boots_dyed', False),
+    ('recipe give @s tipped_arrow', False),
+    ('recipe give @s decorated_pot', False),
+    ('recipe give @s map_cloning', False),
+    ('recipe give @s firework_rocket', False),
+    ('recipe give @s lingering_potion_awkward_blaze_powder', False),
+    ('recipe give @s minecraft:nope', False),
+    ('recipe give @s Nope', False),
+    ('recipe give @e[type=pig] acacia_boat', False),
+    ('recipe give @s', False),
+    ('recipe take @s acacia_boat', False),
+    ('recipe take @s acacia_boat', False),
+    ('recipe take @s firework_rocket', False),
+    ('recipe give Witness *', False),
+    ('recipe give @a *', False),
+    ('recipe give @a *', False),
+    ('recipe take Witness *', True),
+    ('recipe take @a *', False),
+    ('recipe take @a *', False),
+    ('recipe give @a minecraft:acacia_button', False),
+    ('recipe take @a acacia_button', False),
+    ('!witness recipe give @s *', False),
     ('list', False), ('seed', False),
     ('difficulty', False), ('difficulty hard', False), ('difficulty hard', False),
     ('defaultgamemode survival', False), ('defaultgamemode survival', False),
@@ -1087,7 +1119,7 @@ def surface(name, payload):
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
 # Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
 BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
-EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'place ': BLOCKS}
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'place ': BLOCKS, 'recipe ': ('recipe_book_add', 'recipe_book_remove')}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',

@@ -11,14 +11,15 @@ sys.path.insert(0, str(ROOT / 'tools/parity'))
 from protocol import Probe, wire
 
 # PlayerList.placeNewPlayer and sendLevelInfo as observed from the official 26.3 server, without
-# the recipe, advancement and attribute packets that need systems not implemented here (#24, #42, #23).
-VANILLA_ORDER = ['login', 'change_difficulty', 'player_abilities', 'set_held_slot', 'entity_event', 'commands', 'recipe_book_settings',
+# the advancement and attribute packets that need systems not implemented here (#42, #23).
+VANILLA_ORDER = ['login', 'change_difficulty', 'player_abilities', 'set_held_slot', 'update_recipes', 'entity_event', 'commands', 'recipe_book_settings', 'recipe_book_add',
                  'player_position', 'server_data', 'player_info_update', 'player_info_update', 'initialize_border', 'set_time',
                  'set_default_spawn_position', 'game_event', 'ticking_state', 'ticking_step', 'set_chunk_cache_center', 'post_effects',
                  'container_set_content', 'set_entity_data']
 # Payloads captured from the official server that do not depend on the world or the player.
 FIXED = {'initialize_border': '00000000000000000000000000000000418c9c3700000000418c9c370000000000f086a70e05ac02',
-         'ticking_state': '41a0000000', 'ticking_step': '00', 'post_effects': '00', 'recipe_book_settings': '0000000000000000'}
+         'ticking_state': '41a0000000', 'ticking_step': '00', 'post_effects': '00', 'recipe_book_settings': '0000000000000000',
+         'recipe_book_add': '0001', 'update_recipes': json.loads((Path(__file__).parent.parent / 'reference/26.3/recipe-book.json').read_text())['update_recipes']}
 
 
 def main():
