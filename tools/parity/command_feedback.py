@@ -89,6 +89,9 @@ SCRIPT = [
     ('!witness advancement grant @s everything', False),
     ('advancement grant @e[type=pig] everything', False),
     ('advancement', False),
+    # Grants leave both players with levels whose progress depends on vanilla's unordered grant
+    # sets, and which a later death would drop as orbs for the other player to pick up or not.
+    ('!quiet xp set @a 0 levels', False), ('!quiet xp set @a 0 points', False),
     ('list', False), ('seed', False),
     ('difficulty', False), ('difficulty hard', False), ('difficulty hard', False),
     ('defaultgamemode survival', False), ('defaultgamemode survival', False),
