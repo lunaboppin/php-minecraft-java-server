@@ -853,6 +853,36 @@ SCRIPT = [
     ('spreadplayers ~ ~ 1 10 false @s', False),
     ('spreadplayers 0 0 1 10 maybe @s', False),
     ('!quiet tp @a 0 200 0 0 0', False),
+    # /fillbiome: quart rounding, filters by biome and tag, a section's palette growing from one
+    # biome past three bits, fills across chunks, and failures, with each player's chunks_biomes.
+    ('!quiet tp @a 0 200 0 0 0', False),
+    ('fillbiome 0 200 0 3 203 3 desert', False),
+    ('fillbiome 0 200 0 3 203 3 minecraft:desert', False),
+    ('fillbiome 1 201 1 6 206 6 badlands', False),
+    ('fillbiome 0 200 0 15 215 15 snowy_plains replace desert', False),
+    ('fillbiome 0 200 0 15 215 15 forest replace #minecraft:is_badlands', False),
+    ('fillbiome 0 200 0 15 215 15 forest replace #is_forest', False),
+    ('fillbiome 8 208 8 8 208 8 ocean', False),
+    ('fillbiome 12 212 12 12 212 12 river', False),
+    ('fillbiome 4 216 0 4 216 0 taiga', False),
+    ('fillbiome 0 220 4 0 220 4 swamp', False),
+    ('fillbiome 12 208 0 12 208 0 jungle', False),
+    ('fillbiome 0 208 12 0 208 12 savanna', False),
+    ('fillbiome 4 212 4 4 212 4 beach', False),
+    ('fillbiome 8 220 12 8 220 12 desert', False),
+    ('fillbiome 0 208 0 15 223 15 plains replace ocean', False),
+    ('fillbiome ~-20 ~ ~-20 ~20 ~7 ~20 jungle', False),
+    ('fillbiome -20 200 -20 20 207 20 cherry_grove replace jungle', False),
+    ('fillbiome 0 200 0 3 203 3 nope', False),
+    ('fillbiome 0 200 0 3 203 3 desert replace nope', False),
+    ('fillbiome 0 200 0 3 203 3 desert replace #nope', False),
+    ('fillbiome 0 200 0 3 203 3 desert keep', False),
+    ('fillbiome 0 100 0 100 200 100 desert', False),
+    ('fillbiome 0 -100 0 3 203 3 desert', False),
+    ('fillbiome 0 200 0 3 400 3 desert', False),
+    ('fillbiome 1000 200 1000 1003 203 1003 desert', False),
+    ('fillbiome 0 200 0 3 203 3 plains', False),
+    ('!witness fillbiome 0 200 0 3 203 3 plains', False),
     ('list', False),
 ]
 
@@ -878,7 +908,7 @@ def surface(name, payload):
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
 # Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
 BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
-EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',)}
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',)}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
