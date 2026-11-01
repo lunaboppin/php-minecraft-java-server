@@ -13,8 +13,9 @@ use PhpMinecraftJavaServer\Protocol\Packets;
  * nodes the client is shown, as AdvancementVisibilityEvaluator decides, sent once a tick by
  * flushDirty.
  *
- * Criteria are met by commands and by the minecraft:tick, minecraft:recipe_unlocked and
- * minecraft:inventory_changed triggers; the other triggers are not reported yet. A criterion
+ * Criteria are met by commands and by the minecraft:tick, minecraft:recipe_unlocked,
+ * minecraft:inventory_changed and minecraft:location (for biomes) triggers; the others are not
+ * reported yet. A criterion
  * listens, as vanilla's listeners do, only while it is unmet and its advancement is not done.
  */
 trait Advancements
@@ -32,6 +33,7 @@ trait Advancements
             $recipeUnlocked = [];
             $inventoryByItem = [];
             $inventory = [];
+            $location = [];
             foreach ($data['advancements'] as $advancement) {
                 $id = $advancement['id'];
                 $advancement['entry'] = (string) hex2bin($advancement['entry']);
@@ -45,6 +47,12 @@ trait Advancements
                         }, $criterion['conditions']['recipes']),
                         default => null,
                     };
+                    // PlayerTrigger with an entity_properties condition on the player's location
+                    // biome; structures and other properties are not reported yet.
+                    $predicate = $criterion['conditions']['player']['predicate'] ?? [];
+                    if ($criterion['trigger'] === 'minecraft:location' && array_keys($predicate) === ['minecraft:location'] && array_keys($predicate['minecraft:location']) === ['biomes']) {
+                        $location[] = [$id, $name, array_fill_keys(array_map(static fn (string $biome): string => substr($biome, strlen('minecraft:')), (array) $predicate['minecraft:location']['biomes']), true)];
+                    }
                     if ($criterion['trigger'] === 'minecraft:inventory_changed') {
                         $conditions = $criterion['conditions'] ?? [];
                         $items = array_map(fn (array $predicate): array => $this->itemPredicateItems($predicate), $conditions['items'] ?? []);
@@ -66,7 +74,7 @@ trait Advancements
                 }
                 $byId[$id]['root'] = $root;
             }
-            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked, 'inventoryByItem' => $inventoryByItem, 'inventory' => $inventory];
+            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked, 'inventoryByItem' => $inventoryByItem, 'inventory' => $inventory, 'location' => $location];
         }
         return $reference;
     }
@@ -268,9 +276,17 @@ trait Advancements
         $this->triggerAdvancements($c, $this->advancementReference()['recipeUnlocked'][$recipe] ?? []);
     }
 
-    /** ServerPlayer.tick: the open menu's changes, the minecraft:tick trigger, then flushDirty. */
+    /**
+     * ServerPlayer.doTick's location trigger every 20 ticks of the player's age, then
+     * ServerPlayer.tick: the open menu's changes, the minecraft:tick trigger and flushDirty.
+     */
     private function tickAdvancements(Client $c): void
     {
+        if ($c->livingTicks % 20 === 0 && !$c->dead && $this->advancementReference()['location'] !== []) {
+            // LocationPredicate: the biome where the player stands, in a loaded chunk.
+            $biome = $this->worlds[$c->dimension]->biomeAt((int) floor($c->x), (int) floor($c->y), (int) floor($c->z));
+            $this->triggerAdvancements($c, array_map(static fn (array $criterion): array => [$criterion[0], $criterion[1]], array_filter($this->advancementReference()['location'], static fn (array $criterion): bool => isset($criterion[2][$biome]))));
+        }
         $this->inventoryChangedCheck($c);
         $this->triggerAdvancements($c, $this->advancementReference()['tick']);
         $this->flushAdvancements($c, true);

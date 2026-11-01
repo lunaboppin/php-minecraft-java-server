@@ -56,7 +56,9 @@ SCRIPT = [
     ('!witness recipe give @s *', False),
     # Advancements: one, a criterion, a tree's parents and children, or all, with rewards and
     # announcements. Before any item arrives too, as items meet criteria. The players stand in
-    # plains, which vanilla's location trigger, not reported here yet, meets for adventuring_time.
+    # plains, which the location trigger has met for adventuring_time.
+    ('advancement grant @s only minecraft:adventure/adventuring_time minecraft:plains', False),
+    ('advancement revoke @s only minecraft:adventure/adventuring_time minecraft:plains', False),
     ('advancement grant @s only minecraft:story/root', False),
     ('advancement grant @s only minecraft:story/root', False),
     ('advancement revoke @s only minecraft:story/root', False),
