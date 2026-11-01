@@ -383,6 +383,10 @@ jobs:
           python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
           python3 tests/mob-knockback.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/knockback-java
           python3 tools/parity/verify.py tools/.cache/knockback-java/php-packets.json tools/.cache/knockback-java/java-packets.json
+      - name: Compare player fall damage with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/player-falls.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-player-falls
+          python3 tools/parity/verify.py tools/.cache/parity-player-falls/php-packets.json tools/.cache/parity-player-falls/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -392,6 +396,7 @@ jobs:
             tools/.cache/knockback-java/
             tools/.cache/pushing-java/
             tools/.cache/collision-network/
+            tools/.cache/parity-player-falls/
           retention-days: 7
 
   docker:

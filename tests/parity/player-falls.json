@@ -1,0 +1,265 @@
+{
+  "name": "player-falls",
+  "normalizations": [
+    "Compare a survival or adventure player's health after ten-block falls reported by movement packets onto stone, hay, slime and a stalagmite's tip.",
+    "Health is restored between falls and natural regeneration is off.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 -4 30 63 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -4 30 90 4 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 63 0 minecraft:hay_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 15 63 0 minecraft:slime_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 64 0 minecraft:pointed_dripstone"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 5.5 74.0 0.5 0 0"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "40160000000000004051c000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040510000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040504000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040500000000000003fe000000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stone",
+      "fields": [
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:instant_health 1 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 10.5 74.0 0.5 0 0"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "40250000000000004051c000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402500000000000040510000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402500000000000040504000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402500000000000040500000000000003fe000000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "hay",
+      "fields": [
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:instant_health 1 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 15.5 74.0 0.5 0 0"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402f0000000000004051c000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402f00000000000040510000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402f00000000000040504000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "402f00000000000040500000000000003fe000000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "slime",
+      "fields": [
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:instant_health 1 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 20.5 74.6875 0.5 0 0"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "40348000000000004051ec00000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "403480000000000040512c00000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "403480000000000040506c00000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "403480000000000040502c00000000003fe000000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stalagmite",
+      "fields": [
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:instant_health 1 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "gamemode adventure @s"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 5.5 74.0 0.5 0 0"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "40160000000000004051c000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040510000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040504000000000003fe000000000000000"
+    },
+    {
+      "action": "packet",
+      "name": "move_player_pos",
+      "hex": "401600000000000040500000000000003fe000000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "adventure",
+      "fields": [
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:instant_health 1 10"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    }
+  ]
+}
