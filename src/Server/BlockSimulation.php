@@ -39,6 +39,7 @@ trait BlockSimulation
         $this->coralsChanged($x,$y,$z);
         $this->turtleEggPlaced($x,$y,$z);
         $this->pistonsChanged($x,$y,$z);
+        $this->observersChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -62,6 +63,7 @@ trait BlockSimulation
             elseif($kind==='leaves'){$this->tickLeaves($x,$y,$z);}
             elseif($kind==='fire'){$this->tickFire($x,$y,$z);}
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
+            elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
@@ -126,6 +128,7 @@ trait BlockSimulation
     private function directSignal(int $x,int $y,int $z,array $target,bool $wires=true):int {
         $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);
         if($name==='redstone_block'){return 15;}
+        if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
         if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
         if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
@@ -150,7 +153,7 @@ trait BlockSimulation
                 foreach(self::NEIGHBORS as [$ex,$ey,$ez]){
                     if([$a+$ex,$b+$ey,$d+$ez]===[$x,$y,$z]){continue;}
                     $source=$c->blockName($this->world->get($a+$ex,$b+$ey,$d+$ez));
-                    if(in_array($source,['redstone_block','lever','repeater','comparator'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
+                    if(in_array($source,['redstone_block','lever','repeater','comparator','observer'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
                     // LightningRodBlock.getDirectSignal: a struck rod strongly powers the block it is on.
                     elseif($this->lightningRod($source)){$rod=$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez));if($rod['powered']==='true' && self::ROD_FACES[$rod['facing']]===[$ex,$ey,$ez]){$power=15;}}
                 }

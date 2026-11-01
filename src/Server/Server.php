@@ -74,6 +74,7 @@ final class Server
     use Bells;
 
     use Corals;
+    use Observers;
 
     use Pistons;
 
