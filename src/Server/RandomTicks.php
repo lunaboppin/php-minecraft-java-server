@@ -57,7 +57,7 @@ trait RandomTicks
                     $name === 'bamboo' => $p['stage'] === '0',
                     in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
-                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium'], true) => true,
+                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium', 'vine'], true) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -210,6 +210,8 @@ trait RandomTicks
             // random-ticks the fluid state itself, so lava gets two.
             $this->lavaTick($x, $y, $z);
             $this->lavaTick($x, $y, $z);
+        } elseif ($name === 'vine') {
+            $this->spreadVine($x, $y, $z, $p);
         } elseif ($name === 'farmland') {
             $this->farmlandTick($x, $y, $z, $p);
         } elseif ($name === 'ice' || $name === 'snow') {
@@ -330,6 +332,113 @@ trait RandomTicks
                 break;
             }
             $this->setBlock($x, $b, $z, $catalog->state('bamboo', array_merge($catalog->properties($state), ['age' => '1'])));
+        }
+    }
+
+    /**
+     * VineBlock.randomTick: with spread_vines on, one tick in four tries a random direction. Sideways
+     * a vine grows a face onto a block, or around a corner into the air beside it; upward it
+     * climbs onto the block above or into the air there; downward it hangs random faces below.
+     *
+     * @param array<string, string> $p
+     */
+    private function spreadVine(int $x, int $y, int $z, array $p): void
+    {
+        if ($this->gameRule('spread_vines') !== 'true' || random_int(0, 3) !== 0) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $blocks = $this->fireBlocks();
+        // Direction.values() order, with Blocks' direction numbers for the sturdy face checks.
+        $directions = [['down', 0, -1, 0, 0], ['up', 0, 1, 0, 1], ['north', 0, 0, -1, 2], ['south', 0, 0, 1, 3], ['west', -1, 0, 0, 4], ['east', 1, 0, 0, 5]];
+        $clockwise = ['north' => 'east', 'east' => 'south', 'south' => 'west', 'west' => 'north'];
+        $byName = array_column($directions, null, 0);
+        $vine = fn (array $faces): int => $catalog->state('vine', array_merge(['east' => 'false', 'north' => 'false', 'south' => 'false', 'up' => 'false', 'west' => 'false'], $faces));
+        // MultifaceBlock.canAttachTo: the neighbour's face toward the vine is full.
+        $acceptable = fn (int $a, int $b, int $c, string $toward): bool => $blocks->sturdy($this->world->get($a, $b, $c), $byName[$toward][4] ^ 1);
+        $air = fn (int $a, int $b, int $c): bool => $catalog->air($this->world->get($a, $b, $c));
+        // VineBlock.canSpread: at most four vines within 4 blocks across and 1 up or down.
+        $canSpread = function () use ($x, $y, $z, $catalog): bool {
+            $count = 0;
+            for ($a = $x - 4; $a <= $x + 4; ++$a) {
+                for ($b = $y - 1; $b <= $y + 1; ++$b) {
+                    for ($c = $z - 4; $c <= $z + 4; ++$c) {
+                        if ($catalog->blockName($this->world->get($a, $b, $c)) === 'vine' && ++$count > 4) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        };
+        [$face, $dx, $dy, $dz] = $directions[random_int(0, 5)];
+        if ($dy === 0 && $p[$face] === 'false') {
+            if (!$canSpread()) {
+                return;
+            }
+            [$tx, $tz] = [$x + $dx, $z + $dz];
+            if (!$air($tx, $y, $tz)) {
+                if ($acceptable($tx, $y, $tz, $face)) {
+                    $this->setBlock($x, $y, $z, $catalog->state('vine', array_merge($p, [$face => 'true'])));
+                }
+                return;
+            }
+            $cw = $clockwise[$face];
+            $ccw = array_search($face, $clockwise, true);
+            [$cwx, $cwz] = [$tx + $byName[$cw][1], $tz + $byName[$cw][3]];
+            [$ccwx, $ccwz] = [$tx + $byName[$ccw][1], $tz + $byName[$ccw][3]];
+            $opposite = $clockwise[$clockwise[$face]];
+            if ($p[$cw] === 'true' && $acceptable($cwx, $y, $cwz, $cw)) {
+                $this->setBlock($tx, $y, $tz, $vine([$cw => 'true']));
+            } elseif ($p[$ccw] === 'true' && $acceptable($ccwx, $y, $ccwz, $ccw)) {
+                $this->setBlock($tx, $y, $tz, $vine([$ccw => 'true']));
+            } elseif ($p[$cw] === 'true' && $air($cwx, $y, $cwz) && $acceptable($x + $byName[$cw][1], $y, $z + $byName[$cw][3], $opposite)) {
+                $this->setBlock($cwx, $y, $cwz, $vine([$opposite => 'true']));
+            } elseif ($p[$ccw] === 'true' && $air($ccwx, $y, $ccwz) && $acceptable($x + $byName[$ccw][1], $y, $z + $byName[$ccw][3], $opposite)) {
+                $this->setBlock($ccwx, $y, $ccwz, $vine([$opposite => 'true']));
+            } elseif (self::randomUnit() < 0.05 && $acceptable($tx, $y + 1, $tz, 'up')) {
+                $this->setBlock($tx, $y, $tz, $vine(['up' => 'true']));
+            }
+            return;
+        }
+        if ($face === 'up' && $y < $this->world->minY + $this->world->height - 1) {
+            // VineBlock.canSupportAtFace upward: the block above.
+            if ($acceptable($x, $y + 1, $z, 'up')) {
+                $this->setBlock($x, $y, $z, $catalog->state('vine', array_merge($p, ['up' => 'true'])));
+                return;
+            }
+            if ($air($x, $y + 1, $z)) {
+                if (!$canSpread()) {
+                    return;
+                }
+                $above = $p;
+                foreach (['north', 'east', 'south', 'west'] as $side) {
+                    if (random_int(0, 1) === 1 || !$acceptable($x + $byName[$side][1], $y + 1, $z + $byName[$side][3], $side)) {
+                        $above[$side] = 'false';
+                    }
+                }
+                if (in_array('true', [$above['north'], $above['east'], $above['south'], $above['west']], true)) {
+                    $this->setBlock($x, $y + 1, $z, $catalog->state('vine', $above));
+                }
+                return;
+            }
+        }
+        if ($y > $this->world->minY) {
+            $below = $this->world->get($x, $y - 1, $z);
+            $belowVine = $catalog->blockName($below) === 'vine';
+            if ($catalog->air($below) || $belowVine) {
+                $before = $belowVine ? $catalog->properties($below) : $catalog->properties($vine([]));
+                $after = $before;
+                // VineBlock.copyRandomFaces
+                foreach (['north', 'east', 'south', 'west'] as $side) {
+                    if (random_int(0, 1) === 1 && $p[$side] === 'true') {
+                        $after[$side] = 'true';
+                    }
+                }
+                if ($after !== $before && in_array('true', [$after['north'], $after['east'], $after['south'], $after['west']], true)) {
+                    $this->setBlock($x, $y - 1, $z, $catalog->state('vine', $after));
+                }
+            }
         }
     }
 

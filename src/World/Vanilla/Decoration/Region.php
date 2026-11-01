@@ -12,7 +12,7 @@ use PhpMinecraftJavaServer\World\Vanilla\BiomeClimate;
  * heightmaps are the chunks' post-carving ones; the others are found by scanning, which
  * matches vanilla's incrementally maintained ones.
  */
-final class Region
+final class Region implements BlockReader
 {
     public const WORLD_SURFACE_WG = 'WORLD_SURFACE_WG';
     public const WORLD_SURFACE = 'WORLD_SURFACE';

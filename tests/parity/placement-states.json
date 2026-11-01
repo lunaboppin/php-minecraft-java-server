@@ -1,18 +1,18 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, and the neighbour shape updates that follow: on top of stone, against the north face of a stone block, and beside the first one.",
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does.",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Rail connections, scaffolding distance, plant survival and hanging signs are not covered yet."
+    "Scaffolding distance and hanging signs are not covered yet."
   ],
   "steps": [
     {
       "action": "command",
-      "text": "fill -2 63 -6 157 63 6 minecraft:stone"
+      "text": "fill -2 63 -6 172 63 6 minecraft:stone"
     },
     {
       "action": "command",
-      "text": "fill -2 64 -6 157 70 6 minecraft:air"
+      "text": "fill -2 64 -6 172 70 6 minecraft:air"
     },
     {
       "action": "command",
@@ -4758,6 +4758,683 @@
           151,
           65,
           0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 153.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:cactus"
+    },
+    {
+      "action": "place",
+      "position": [
+        153,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 153 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        153,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        154,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "cactus",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          153,
+          64,
+          0
+        ],
+        [
+          153,
+          65,
+          0
+        ],
+        [
+          153,
+          64,
+          2
+        ],
+        [
+          153,
+          65,
+          2
+        ],
+        [
+          154,
+          64,
+          0
+        ],
+        [
+          154,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 156.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:sugar_cane"
+    },
+    {
+      "action": "place",
+      "position": [
+        156,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 156 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        156,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        157,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "sugar_cane",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          156,
+          64,
+          0
+        ],
+        [
+          156,
+          65,
+          0
+        ],
+        [
+          156,
+          64,
+          2
+        ],
+        [
+          156,
+          65,
+          2
+        ],
+        [
+          157,
+          64,
+          0
+        ],
+        [
+          157,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 159.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:small_dripleaf"
+    },
+    {
+      "action": "place",
+      "position": [
+        159,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 159 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        159,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        160,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "small_dripleaf",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          159,
+          64,
+          0
+        ],
+        [
+          159,
+          65,
+          0
+        ],
+        [
+          159,
+          64,
+          2
+        ],
+        [
+          159,
+          65,
+          2
+        ],
+        [
+          160,
+          64,
+          0
+        ],
+        [
+          160,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 162.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_sapling"
+    },
+    {
+      "action": "place",
+      "position": [
+        162,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 162 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        162,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        163,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "oak_sapling",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          162,
+          64,
+          0
+        ],
+        [
+          162,
+          65,
+          0
+        ],
+        [
+          162,
+          64,
+          2
+        ],
+        [
+          162,
+          65,
+          2
+        ],
+        [
+          163,
+          64,
+          0
+        ],
+        [
+          163,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 165.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:red_mushroom"
+    },
+    {
+      "action": "place",
+      "position": [
+        165,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 165 64 3 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        165,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        166,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "red_mushroom",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          165,
+          64,
+          0
+        ],
+        [
+          165,
+          65,
+          0
+        ],
+        [
+          165,
+          64,
+          2
+        ],
+        [
+          165,
+          65,
+          2
+        ],
+        [
+          166,
+          64,
+          0
+        ],
+        [
+          166,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill -44 63 -6 -32 63 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -44 64 -6 -32 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s -39.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:rail"
+    },
+    {
+      "action": "place",
+      "position": [
+        -40,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -39,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -40,
+        63,
+        1
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -36 64 0 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        -36,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -37,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:powered_rail"
+    },
+    {
+      "action": "place",
+      "position": [
+        -34,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -34,
+        63,
+        1
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -33,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -40 64 3 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock -39 64 3 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock -40 64 4 minecraft:rail"
+    },
+    {
+      "action": "snapshot",
+      "name": "rails",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -40,
+          64,
+          0
+        ],
+        [
+          -39,
+          64,
+          0
+        ],
+        [
+          -40,
+          64,
+          1
+        ],
+        [
+          -36,
+          65,
+          0
+        ],
+        [
+          -37,
+          64,
+          0
+        ],
+        [
+          -34,
+          64,
+          0
+        ],
+        [
+          -34,
+          64,
+          1
+        ],
+        [
+          -33,
+          64,
+          0
+        ],
+        [
+          -40,
+          64,
+          3
+        ],
+        [
+          -39,
+          64,
+          3
+        ],
+        [
+          -40,
+          64,
+          4
         ]
       ]
     }
