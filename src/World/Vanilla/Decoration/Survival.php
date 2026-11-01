@@ -35,7 +35,7 @@ final class Survival
         return $this->blocks->properties($state)[$name] ?? null;
     }
 
-    private function vegetationSupport(string $class, int $state, int $below, Region $region, int $x, int $y, int $z): bool
+    private function vegetationSupport(string $class, int $state, int $below, BlockReader $region, int $x, int $y, int $z): bool
     {
         $blocks = $this->blocks;
         return match ($class) {
@@ -58,7 +58,7 @@ final class Survival
         };
     }
 
-    public function canSurvive(int $state, Region $region, int $x, int $y, int $z): bool
+    public function canSurvive(int $state, BlockReader $region, int $x, int $y, int $z): bool
     {
         $blocks = $this->blocks;
         $chain = $this->classes($state);
