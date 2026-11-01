@@ -71,6 +71,8 @@ final class Server
 
     use RespawnPoints;
 
+    use Corals;
+
     use BlockPlacement;
 
     use Rails;

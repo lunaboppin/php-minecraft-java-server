@@ -168,6 +168,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/lightning.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lightning
           python3 tools/parity/run.py --scenario tests/parity/precipitation.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-precipitation
           python3 tools/parity/run.py --scenario tests/parity/bone-meal.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bone-meal
+          python3 tools/parity/run.py --scenario tests/parity/coral.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-coral
           python3 tools/parity/run.py --scenario tests/parity/light.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-light
           python3 tools/parity/run.py --scenario tests/parity/respawn-anchor.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-respawn-anchor
           python3 tools/parity/verify.py tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-plants/php-packets.json tools/.cache/parity-plants/reference-packets.json tools/.cache/parity-copper/php-packets.json tools/.cache/parity-copper/reference-packets.json tools/.cache/parity-fire/php-packets.json tools/.cache/parity-fire/reference-packets.json tools/.cache/parity-explosion/php-packets.json tools/.cache/parity-explosion/reference-packets.json tools/.cache/parity-tnt-restart/php-packets.json tools/.cache/parity-tnt-restart/reference-packets.json tools/.cache/parity-sleep/php-packets.json tools/.cache/parity-sleep/reference-packets.json tools/.cache/parity-weather/php-packets.json tools/.cache/parity-weather/reference-packets.json tools/.cache/parity-lightning/php-packets.json tools/.cache/parity-lightning/reference-packets.json tools/.cache/parity-precipitation/php-packets.json tools/.cache/parity-precipitation/reference-packets.json tools/.cache/parity-bone-meal/php-packets.json tools/.cache/parity-bone-meal/reference-packets.json tools/.cache/parity-light/php-packets.json tools/.cache/parity-light/reference-packets.json tools/.cache/parity-respawn-anchor/php-packets.json tools/.cache/parity-respawn-anchor/reference-packets.json
@@ -189,6 +190,7 @@ jobs:
             tools/.cache/parity-lightning/
             tools/.cache/parity-precipitation/
             tools/.cache/parity-bone-meal/
+            tools/.cache/parity-coral/
             tools/.cache/parity-light/
             tools/.cache/parity-respawn-anchor/
           retention-days: 7
