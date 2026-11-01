@@ -6,6 +6,7 @@ system_chat and disconnect payload either client receives after the command is r
 so a PHP recording can be compared byte for byte with an official one.
 """
 import argparse
+import concurrent.futures
 import json
 import os
 from pathlib import Path
@@ -1415,11 +1416,16 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
     script = [(line.strip(), False) for line in args.commands.read_text().splitlines() if line.strip()] if args.commands else SCRIPT
-    php = record('php', args.output, args.java, args.jar, args.eula_file, script)
     if args.eula_file is None:
+        record('php', args.output, args.java, args.jar, args.eula_file, script)
         print('Recorded PHP feedback only; pass --eula-file to compare with the official server')
         return
-    reference = record('java', args.output, args.java, args.jar, args.eula_file, script)
+    # The two servers are independent, each in its own directory on its own port, so both
+    # recordings run at once; the script's tick barriers make each take hours alone.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        php_run = pool.submit(record, 'php', args.output, args.java, args.jar, args.eula_file, script)
+        reference_run = pool.submit(record, 'java', args.output, args.java, args.jar, args.eula_file, script)
+        php, reference = php_run.result(), reference_run.result()
     differences = compare(reference, php)
     (args.output / 'differences.json').write_text(json.dumps(differences, indent=1))
     observed = sum(command not in ('!respawn', '!reconnect') and not command.startswith('!quiet ') for command, _ in script) * 2

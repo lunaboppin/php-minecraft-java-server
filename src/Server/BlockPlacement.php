@@ -61,7 +61,16 @@ trait BlockPlacement
     /** The connection block's state with its sides joined to its neighbours, as placed. */
     private function connectedState(int $state, int $x, int $y, int $z): int
     {
-        if (array_intersect(self::CONNECTING, $this->placementClasses($this->version->catalog->blockName($state))) === []) {
+        $catalog = $this->version->catalog;
+        $classes = $this->placementClasses($catalog->blockName($state));
+        if (in_array('FenceGateBlock', $classes, true)) {
+            // FenceGateBlock: lowered when a wall is beside it across its opening.
+            $wall = fn (int $a, int $c): bool => $this->fireBlocks()->inTag($this->world->get($a, $y, $c), 'walls');
+            $p = array_map('strval', $catalog->properties($state));
+            $p['in_wall'] = (in_array($p['facing'], ['north', 'south'], true) ? $wall($x - 1, $z) || $wall($x + 1, $z) : $wall($x, $z - 1) || $wall($x, $z + 1)) ? 'true' : 'false';
+            return $catalog->state($catalog->blockName($state), $p);
+        }
+        if (array_intersect(self::CONNECTING, $classes) === []) {
             return $state;
         }
         return $this->shapeUpdater()->update($state, $x, $y, $z, fn (int $a, int $b, int $c): int => $this->world->get($a, $b, $c)) ?? $state;
@@ -146,6 +155,50 @@ trait BlockPlacement
     }
 
     /**
+     * BlockBehaviour.canBeReplaced with the item in hand: replaceable blocks other than the
+     * item's own, and the blocks that stack (slabs, candles, snow layers, sea pickles, turtle
+     * eggs, flower beds) when clicked with more of themselves. $clicked is
+     * BlockPlaceContext.replacingClickedOnBlock, true while the clicked block itself is tested.
+     */
+    private function canBeReplacedBy(int $state, ?string $item, bool $clicked, int $face, float $cursorY, bool $sneaking): bool
+    {
+        $catalog = $this->version->catalog;
+        $name = $catalog->blockName($state);
+        $p = $catalog->properties($state);
+        $default = $catalog->blocks[$name]['replaceable'] && $item !== $name;
+        $classes = $this->placementClasses($name);
+        $horizontal = $face >= 2;
+        if (in_array('SlabBlock', $classes, true)) {
+            if ($p['type'] === 'double' || $item !== $name) {
+                return false;
+            }
+            if (!$clicked) {
+                return true;
+            }
+            $upper = $cursorY > 0.5;
+            return $p['type'] === 'bottom' ? $face === 1 || ($upper && $horizontal) : $face === 0 || (!$upper && $horizontal);
+        }
+        if (in_array('SnowLayerBlock', $classes, true)) {
+            $layers = (int) $p['layers'];
+            if ($item !== $name || $layers >= 8) {
+                return $layers === 1;
+            }
+            return !$clicked || $face === 1;
+        }
+        $count = match (true) {
+            in_array('CandleBlock', $classes, true) => 'candles',
+            in_array('SeaPickleBlock', $classes, true) => 'pickles',
+            in_array('TurtleEggBlock', $classes, true) => 'eggs',
+            in_array('FlowerBedBlock', $classes, true), in_array('LeafLitterBlock', $classes, true) => array_key_exists('flower_amount', $p) ? 'flower_amount' : 'segment_amount',
+            default => null,
+        };
+        if ($count !== null && !$sneaking && $item === $name && (int) $p[$count] < 4) {
+            return true;
+        }
+        return $default;
+    }
+
+    /**
      * The block and properties to place, or null when the block cannot be placed there.
      *
      * @param array<string, string> $properties what the generic rules chose
@@ -164,6 +217,9 @@ trait BlockPlacement
         $classes = $this->placementClasses($name);
         $is = static fn (string ...$names): bool => array_intersect($names, $classes) !== [];
 
+        if (str_ends_with($name, '_hanging_sign') && !str_contains($name, '_wall_')) {
+            return $this->hangingSignPlacement($c, $name, $properties, $pos, $clicked, $looking());
+        }
         // StandingAndWallBlockItem: the floor block or its wall form, whichever survives first.
         $wall = preg_replace('/(^|_)(torch|banner|skull|head|fan)$/', '$1wall_$2', $name);
         if ($wall !== $name && isset($catalog->blocks[$wall])) {
@@ -182,6 +238,27 @@ trait BlockPlacement
                 }
             }
             return null;
+        }
+        // Clicking a block of the same kind adds to it.
+        $existing = $this->world->get(...$pos);
+        if ($catalog->blockName($existing) === $name) {
+            $old = array_map('strval', $catalog->properties($existing));
+            $more = static fn (string $key, int $max): array => [$name, [$key => (string) min($max, (int) $old[$key] + 1)] + $old];
+            if ($is('SlabBlock')) {
+                return [$name, ['type' => 'double', 'waterlogged' => 'false'] + $old];
+            }
+            foreach (['CandleBlock' => ['candles', 4], 'SnowLayerBlock' => ['layers', 8], 'SeaPickleBlock' => ['pickles', 4], 'TurtleEggBlock' => ['eggs', 4],
+                'FlowerBedBlock' => [array_key_exists('flower_amount', $old) ? 'flower_amount' : 'segment_amount', 4], 'LeafLitterBlock' => ['segment_amount', 4]] as $class => [$key, $max]) {
+                if ($is($class)) {
+                    return $more($key, $max);
+                }
+            }
+        }
+        if ($is('FlowerBedBlock', 'LeafLitterBlock')) {
+            $properties['facing'] = $opposite($horizontal);
+        }
+        if ($is('FenceGateBlock')) {
+            $properties['facing'] = $horizontal;
         }
         if ($is(
             'AbstractFurnaceBlock',
@@ -257,6 +334,14 @@ trait BlockPlacement
             return null;
         } elseif ($is('BaseRailBlock')) {
             $properties['shape'] = $horizontal === 'east' || $horizontal === 'west' ? 'east_west' : 'north_south';
+        } elseif ($is('ScaffoldingBlock')) {
+            // ScaffoldingBlock: its distance from support, refused once it would be 7.
+            $distance = $this->scaffoldingDistance($pos);
+            if ($distance >= 7) {
+                return null;
+            }
+            $properties['distance'] = (string) $distance;
+            $properties['bottom'] = $distance > 0 && $catalog->blockName($this->world->get($pos[0], $pos[1] - 1, $pos[2])) !== $name ? 'true' : 'false';
         } elseif ($is('LeavesBlock')) {
             $properties['persistent'] = 'true';
         } elseif ($is('VineBlock')) {
@@ -265,6 +350,90 @@ trait BlockPlacement
             return $this->multifacePlacement($name, $properties, $pos, $looking());
         }
         return [$name, $properties];
+    }
+
+    /**
+     * HangingSignItem: a StandingAndWallBlockItem attached upward. The ceiling sign needs a block
+     * above with a sturdy centre; the wall sign hangs across a looking direction off the clicked
+     * face's axis, from a sturdy side or another wall hanging sign beside it.
+     */
+    private function hangingSignPlacement(Client $c, string $name, array $properties, array $pos, string $clicked, array $looking): ?array
+    {
+        $catalog = $this->version->catalog;
+        $blocks = $this->fireBlocks();
+        $wall = str_replace('_hanging_sign', '_wall_hanging_sign', $name);
+        $axis = static fn (string $d): string => in_array($d, ['north', 'south'], true) ? 'z' : (in_array($d, ['east', 'west'], true) ? 'x' : 'y');
+        $clockwise = ['north' => 'east', 'east' => 'south', 'south' => 'west', 'west' => 'north'];
+        $wallState = null;
+        foreach ($looking as $direction) {
+            if ($axis($direction) !== 'y' && $axis($direction) !== $axis($clicked)) {
+                $facing = self::PLACEMENT_DIRECTIONS[$direction][3];
+                $attaches = function (string $side, string $face) use ($pos, $facing, $blocks, $axis): bool {
+                    [$dx, , $dz] = self::PLACEMENT_DIRECTIONS[$side];
+                    $state = $this->world->get($pos[0] + $dx, $pos[1], $pos[2] + $dz);
+                    return $blocks->inTag($state, 'wall_hanging_signs')
+                        ? $axis($this->version->catalog->properties($state)['facing']) === $axis($facing)
+                        : $blocks->sturdy($state, self::PLACEMENT_INDEX[$face]);
+                };
+                $cw = $clockwise[$facing];
+                $ccw = array_search($facing, $clockwise, true);
+                if ($attaches($cw, $ccw) || $attaches($ccw, $cw)) {
+                    $wallState = [$wall, ['facing' => $facing, 'waterlogged' => $properties['waterlogged'] ?? 'false']];
+                    break;
+                }
+            }
+        }
+        foreach ($looking as $direction) {
+            if ($direction === 'down') {
+                continue;
+            }
+            if ($direction !== 'up') {
+                if ($wallState !== null) {
+                    return $wallState;
+                }
+                continue;
+            }
+            // CeilingHangingSignBlock: chains to the middle unless the block above has a full bottom face.
+            $above = $this->world->get($pos[0], $pos[1] + 1, $pos[2]);
+            if (!$blocks->sturdyCenter($above, 0)) {
+                continue;
+            }
+            $toward = ['south', 'west', 'north', 'east'][((int) floor($c->yaw / 90 + 0.5)) & 3];
+            $middle = !$blocks->sturdy($above, 0) || $c->sneaking;
+            if ($blocks->inTag($above, 'all_hanging_signs') && !$c->sneaking) {
+                $p = $catalog->properties($above);
+                $aboveFacing = $p['facing'] ?? ((int) ($p['rotation'] ?? 1) % 4 === 0 ? ['south', 'west', 'north', 'east'][intdiv((int) $p['rotation'], 4)] : null);
+                if ($aboveFacing !== null && $axis($aboveFacing) === $axis($toward)) {
+                    $middle = false;
+                }
+            }
+            $rotation = $middle ? ((int) floor(($c->yaw + 180) / 22.5 + 0.5)) & 15 : ['south' => 0, 'west' => 4, 'north' => 8, 'east' => 12][self::PLACEMENT_DIRECTIONS[$toward][3]];
+            return [$name, ['attached' => $middle ? 'true' : 'false', 'rotation' => (string) $rotation, 'waterlogged' => $properties['waterlogged'] ?? 'false']];
+        }
+        return null;
+    }
+
+    /** ScaffoldingBlock.getDistance: 0 on a sturdy block, else one more than the nearest scaffolding beside or the one below's. */
+    private function scaffoldingDistance(array $pos): int
+    {
+        $catalog = $this->version->catalog;
+        $below = $this->world->get($pos[0], $pos[1] - 1, $pos[2]);
+        $distance = 7;
+        if ($catalog->blockName($below) === 'scaffolding') {
+            $distance = (int) $catalog->properties($below)['distance'];
+        } elseif ($this->fireBlocks()->sturdy($below, 1)) {
+            return 0;
+        }
+        foreach (['north', 'east', 'south', 'west'] as $direction) {
+            $side = $this->placementNeighbour($pos, $direction);
+            if ($catalog->blockName($side) === 'scaffolding') {
+                $distance = min($distance, (int) $catalog->properties($side)['distance'] + 1);
+                if ($distance === 1) {
+                    break;
+                }
+            }
+        }
+        return $distance;
     }
 
     /** The wall form's getStateForPlacement: the first horizontal looking direction it can hang toward. */
