@@ -30,6 +30,7 @@ trait BlockSimulation
     }
     private function changedSimulation(int $x,int $y,int $z):void {
         $this->fluidsChanged($x,$y,$z);
+        $this->spongesChanged($x,$y,$z);
         $this->randomTickChanged($x,$y,$z,$this->world->get($x,$y,$z));
         $this->leavesChanged($x,$y,$z);
         $this->poweredRailsChanged($x,$y,$z);
