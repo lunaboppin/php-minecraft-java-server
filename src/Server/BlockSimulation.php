@@ -37,6 +37,7 @@ trait BlockSimulation
         $this->tntChanged($x,$y,$z);
         $this->bellsChanged($x,$y,$z);
         $this->coralsChanged($x,$y,$z);
+        $this->turtleEggPlaced($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));

@@ -75,6 +75,8 @@ final class Server
 
     use Corals;
 
+    use TurtleEggs;
+
     use BlockPlacement;
 
     use Rails;
