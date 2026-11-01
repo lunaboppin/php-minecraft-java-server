@@ -26,7 +26,7 @@ trait Entities
      * An item entity, by default as the ItemEntity constructor makes it: a random sideways push
      * and a 0.2 hop. $age 5999 is makeFakeItem's, gone on its next tick.
      */
-    private function dropStack(float $x, float $y, float $z, array $stack, int $age = 0, ?array $velocity = null, int $pickupDelay = 0, ?string $target = null): ?int
+    private function dropStack(float $x, float $y, float $z, array $stack, int $age = 0, ?array $velocity = null, int $pickupDelay = 0, ?string $target = null, ?float $yaw = null): ?int
     {
         if ($stack['count'] <= 0) {
             return null;
@@ -37,7 +37,7 @@ trait Entities
             return null;
         }
         $velocity ??= [self::randomUnit() * 0.2 - 0.1, 0.2, self::randomUnit() * 0.2 - 0.1];
-        $this->itemEntities[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => self::randomUnit() * 360.0,
+        $this->itemEntities[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => $yaw ?? self::randomUnit() * 360.0,
             'velocity' => $velocity, 'stack' => $stack, 'age' => $age, 'pickupDelay' => $pickupDelay, 'target' => $target, 'ticks' => 0, 'ground' => false,
             'created' => $this->ticks, 'dirty' => true];
         foreach ($this->localPlayers() as $player) {
@@ -148,7 +148,7 @@ trait Entities
     private function itemTracker(array $entity): EntityMovementTracker
     {
         $profile = $this->itemReference()['item'];
-        return $this->itemTrackers[$entity['id']] ??= new EntityMovementTracker($entity['id'], $profile['update_interval'], $profile['track_deltas'], $this->itemState($entity));
+        return $this->itemTrackers[$entity['id']] ??= new EntityMovementTracker($entity['id'], $profile['update_interval'], $profile['track_deltas'], $this->itemState($entity), false);
     }
 
     /** ServerEntity.sendPairingData for an item: the spawn with its movement, then its stack. */
@@ -158,8 +158,11 @@ trait Entities
         if (isset($c->entities[$id]) || !$this->tracksPosition($c, $entity['x'], $entity['z'], 'item')) {
             return;
         }
+        // ServerEntity.sendPairingData: the spawn and the stack, bundled.
+        $c->send($this->version, 'bundle_delimiter', '');
         $c->send($this->version, 'add_entity', $this->itemTracker($entity)->spawnPacket($entity['uuid'], $this->version->blocks['entity_types']['item'], 0));
         $c->send($this->version, 'set_entity_data', $this->itemMetadata($entity));
+        $c->send($this->version, 'bundle_delimiter', '');
         $c->entities[$id] = true;
     }
 
@@ -203,9 +206,15 @@ trait Entities
         }
     }
 
-    /** ItemEntity.tick for every item, then players touching items pick them up. */
+    /**
+     * ChunkMap.tick sends what changed before the entities tick; then ItemEntity.tick for every
+     * item, and players touching items pick them up.
+     */
     private function tickItems(): void
     {
+        foreach (array_keys($this->itemEntities) as $id) {
+            $this->synchronizeItem($id);
+        }
         $collision = new Collision($this->version->catalog);
         foreach (array_keys($this->itemEntities) as $id) {
             if (!isset($this->itemEntities[$id])) {
@@ -273,9 +282,6 @@ trait Entities
             }
             unset($item);
             $this->itemTouches($id);
-            if (isset($this->itemEntities[$id])) {
-                $this->synchronizeItem($id);
-            }
         }
     }
 
@@ -386,20 +392,15 @@ trait Entities
                 $this->forgetEntity($player, $id);
             }
         }
-        // A new or changed stack reaches viewers with the next ServerEntity.sendChanges.
+        // A new or changed stack forces the next ServerEntity.sendChanges, and goes after the movement.
+        $state = $this->itemState($item) + ['force_update' => $item['dirty']];
+        $packets = $this->itemTracker($item)->update($state);
         if ($item['dirty']) {
             $this->itemEntities[$id]['dirty'] = false;
-            foreach ($this->localPlayers() as $player) {
-                if (isset($player->entities[$id])) {
-                    $player->send($this->version, 'set_entity_data', $this->itemMetadata($item));
-                }
-            }
+            $packets[] = ['name' => 'set_entity_data', 'payload' => $this->itemMetadata($item)];
         }
-        $state = $this->itemState($item);
-        $packets = $this->itemTracker($item)->update($state);
-        if ($packets !== []) {
-            $this->itemEntities[$id]['needsSync'] = false;
-        }
+        // ServerEntity.sendChanges clears needsSync once it has acted on it, whatever it sent.
+        $this->itemEntities[$id]['needsSync'] = $state['needs_sync'];
         foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {
                 if (isset($player->entities[$id])) {

@@ -20,13 +20,25 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt') {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb') {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
-            $id = $kind === 'tnt' ? $this->addTnt(...[...$position, [0.0, 0.0, 0.0]]) : $this->spawnLightning(...$position);
-            if ($kind === 'tnt') {
-                $this->synchronizeTnt($id);
+            $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+            $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
+            if ($kind === 'experience_orb') {
+                // ExperienceOrb.readAdditionalSaveData: the value, count, age and health from the tag.
+                $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5)]]);
+                $uuid = $this->experienceOrbs[$id]['uuid'];
+            } elseif ($kind === 'tnt') {
+                // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
+                $id = $this->addTnt(...[...$position, [0.0, 0.0, 0.0], $tag('fuse', 80)]);
+                foreach ($this->localPlayers() as $player) {
+                    $this->showTnt($player, $id);
+                }
+                $uuid = $this->tntEntities[$id]['uuid'];
+            } else {
+                $id = $this->spawnLightning(...$position);
+                $uuid = $this->lightningBolts[$id]['uuid'];
             }
-            $uuid = $kind === 'tnt' ? $this->tntEntities[$id]['uuid'] : $this->lightningBolts[$id]['uuid'];
             $this->sendSuccess($sender, ['translate' => 'commands.summon.success', 'with' => [$this->entityComponent($kind, $uuid, null)]], true);
             return;
         }
@@ -36,6 +48,10 @@ trait SummonCommand
         // Without a position the entity appears at the sender's position, as in vanilla.
         $position = count($arguments) < 4 ? [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]] : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
         $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+        // SummonCommand.createEntity: a type not allowed in peaceful is refused there.
+        if ($this->config->difficulty === 0 && !$info['peaceful']) {
+            throw new CommandFailure(['translate' => 'commands.summon.failed.peaceful']);
+        }
         $id = $this->spawnAnimal($kind, ...$position);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
@@ -47,7 +63,8 @@ trait SummonCommand
 
     /**
      * An item entity from ItemEntity's bare constructor, which neither pushes nor delays it, then
-     * its Item tag. Without a stack the entity is discarded as it loads, so nothing appears.
+     * its Item tag; loading the tag also sets its rotation, 0 without one. Without a stack the
+     * entity is discarded as it loads, so nothing appears.
      */
     private function summonItem(Client $sender, array $arguments, string $text): void
     {
@@ -56,7 +73,7 @@ trait SummonCommand
         $name = preg_replace('/^minecraft:/', '', (string) ($tag['id']['value'] ?? ''));
         $count = (int) ($tag['count']['value'] ?? 1);
         $item = $this->version->blocks['items'][$name] ?? null;
-        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0]]);
+        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0], 0, null, 0.0]);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
         }

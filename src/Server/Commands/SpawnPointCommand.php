@@ -24,9 +24,8 @@ trait SpawnPointCommand
         $yaw = unpack('G', pack('G', fmod(fmod($yaw + 180.0, 360.0) + 360.0, 360.0) - 180.0))[1];
         $pitch = max(-90.0, min(90.0, $pitch));
         foreach ($targets as $target) {
-            // A forced spawn point without a bed respawns at the block's bottom centre.
-            $target->personalSpawn = [$position[0] + 0.5, (float) $position[1], $position[2] + 0.5];
-            $this->savePlayer($target);
+            // SpawnPointCommand: a forced RespawnConfig, without the "Respawn point set" message.
+            $this->setRespawnPoint($target, ['dimension' => 'overworld', 'pos' => $position, 'yaw' => (float) $yaw, 'pitch' => (float) $pitch, 'forced' => true], false);
         }
         $common = [...$position, $yaw, $pitch, ['text' => 'minecraft:overworld']];
         $message = count($targets) === 1

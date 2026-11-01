@@ -55,7 +55,9 @@ trait Explosions
                 }
             }
         }
-        $this->synchronizeTnt($id);
+        foreach ($this->localPlayers() as $player) {
+            $this->showTnt($player, $id);
+        }
     }
 
     /** A PrimedTnt entity; /summon makes one with no push and the default fuse. */
@@ -94,6 +96,10 @@ trait Explosions
     /** PrimedTnt.tick: gravity, movement, drag and bounce, then the fuse burns down. */
     private function tickTnt(): void
     {
+        // ChunkMap.tick sends what changed before the entities tick.
+        foreach (array_keys($this->tntEntities) as $id) {
+            $this->synchronizeTnt($id);
+        }
         $collision = new Collision($this->version->catalog);
         foreach (array_keys($this->tntEntities) as $id) {
             if (!isset($this->tntEntities[$id])) {
@@ -129,7 +135,6 @@ trait Explosions
                 continue;
             }
             unset($tnt);
-            $this->synchronizeTnt($id);
         }
     }
 
@@ -158,7 +163,7 @@ trait Explosions
         $state = ['position' => [$tnt['x'], $tnt['y'], $tnt['z']], 'velocity' => $tnt['velocity'], 'yaw' => 0.0, 'pitch' => 0.0, 'head' => 0.0,
             'ground' => $tnt['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => false, 'precise' => $tnt['precise'] ?? false,
             'force_update' => $tnt['dirty']];
-        $tracker = $this->tntTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state);
+        $tracker = $this->tntTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state, false);
         $packets = $tracker->update($state);
         if ($tnt['dirty']) {
             $this->tntEntities[$id]['dirty'] = false;
@@ -182,11 +187,13 @@ trait Explosions
         }
         $state = ['position' => [$tnt['x'], $tnt['y'], $tnt['z']], 'velocity' => $tnt['velocity'], 'yaw' => 0.0, 'pitch' => 0.0, 'head' => 0.0,
             'ground' => $tnt['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => false, 'precise' => $tnt['precise'] ?? false];
-        $tracker = $this->tntTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state);
+        $tracker = $this->tntTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state, false);
+        $player->send($this->version, 'bundle_delimiter', '');
         $player->send($this->version, 'add_entity', $tracker->spawnPacket($tnt['uuid'], $this->version->blocks['entity_types']['tnt'], 0));
         if ($tnt['fuse'] !== 80) {
             $player->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . "\x08\x01" . Binary::writeVarInt($tnt['fuse']) . "\xff");
         }
+        $player->send($this->version, 'bundle_delimiter', '');
         $player->entities[$id] = true;
         return true;
     }
