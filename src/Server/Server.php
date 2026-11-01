@@ -1460,6 +1460,7 @@ final class Server
             if ($placed !== null) {
                 [$blockName, $properties] = $placed;
                 $block = $this->version->catalog->blocks[$blockName];
+                $blocked = !$this->placementSurvives($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz);
             }
             if ($block['full_cube']) {
                 foreach ($this->localPlayers() as $player) {
