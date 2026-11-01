@@ -3,7 +3,7 @@
   "normalizations": [
     "Compare block states once fire has settled; fire's random spread is not compared tick by tick.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
-    "Covers fire going out without fuel, fire kept by infiniburn netherrack, unsupported fire dropping out and fire losing its fuel; burning and spreading are random and not compared."
+    "Covers fire going out without fuel, fire kept by infiniburn netherrack, unsupported fire dropping out and fire losing its fuel; burning and spreading are random and not compared. Lava at random_tick_speed 1024 lights fire on the infiniburn netherrack beside a crafting table, which lava ignites though fire cannot burn it; fire is reset to age 0 before comparing, so only where it was lit counts."
   ],
   "steps": [
     {
@@ -66,6 +66,30 @@
       ]
     },
     {
+      "action": "command",
+      "text": "fill 27 62 -3 33 70 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 27 62 -3 33 62 3 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 29 63 -1 31 63 1 minecraft:netherrack"
+    },
+    {
+      "action": "command",
+      "text": "setblock 30 63 0 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock 31 64 1 minecraft:crafting_table"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 1024"
+    },
+    {
       "action": "wait",
       "seconds": 20
     },
@@ -94,6 +118,39 @@
         [
           18,
           65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 29 64 -1 31 64 1 minecraft:fire replace minecraft:fire"
+    },
+    {
+      "action": "snapshot",
+      "name": "lava",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          30,
+          64,
+          1
+        ],
+        [
+          31,
+          64,
+          0
+        ],
+        [
+          29,
+          64,
+          -1
+        ],
+        [
+          30,
+          64,
           0
         ]
       ]

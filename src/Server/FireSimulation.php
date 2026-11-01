@@ -19,6 +19,9 @@ trait FireSimulation
     /** @var array<string, array{0: int, 1: int}>|null ignite and burn odds by block name */
     private ?array $flammable = null;
 
+    /** @var array<string, int>|null blocks lava sets fire beside, by name */
+    private ?array $ignitedByLava = null;
+
     /** @var list<int>|null skylight-down and dampening bits by state */
     private ?array $skyBits = null;
 
@@ -36,6 +39,7 @@ trait FireSimulation
             $path = $this->version->directory . '/worldgen/block-behaviour.json';
             $behaviour = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
             $this->flammable = $behaviour['flammable'];
+            $this->ignitedByLava = array_flip($behaviour['ignited_by_lava']);
             $this->skyBits = array_values(unpack('v*', base64_decode($behaviour['spawning'])));
             $this->fireBlocks = new Blocks($this->version, $path);
         }
@@ -220,6 +224,49 @@ trait FireSimulation
         // A burnt TNT block primes.
         if ($this->version->catalog->blockName($state) === 'tnt') {
             $this->primeTnt($x, $y, $z);
+        }
+    }
+
+    /**
+     * LavaFluid.randomTick: lava climbs up to two blocks looking for air beside something lava
+     * ignites, stopping at a block that blocks lava fire spread, or else lights up to three
+     * spots on top of such blocks around it.
+     */
+    private function lavaTick(int $x, int $y, int $z): void
+    {
+        if (!$this->canSpreadFireAround($x, $y, $z)) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $blocks = $this->fireBlocks();
+        $inside = fn (int $b): bool => $b >= $this->world->minY && $b < $this->world->minY + $this->world->height;
+        // LavaFluid.isFlammable: only blocks inside the world catch.
+        $ignites = fn (int $a, int $b, int $c): bool => $inside($b) && isset($this->ignitedByLava[$catalog->blockName($this->world->get($a, $b, $c))]);
+        $passes = random_int(0, 2);
+        if ($passes > 0) {
+            [$tx, $ty, $tz] = [$x, $y, $z];
+            for ($pass = 0; $pass < $passes; ++$pass) {
+                [$tx, $ty, $tz] = [$tx + random_int(0, 2) - 1, $ty + 1, $tz + random_int(0, 2) - 1];
+                $state = $this->world->get($tx, $ty, $tz);
+                if ($catalog->air($state)) {
+                    foreach (self::FIRE_DIRECTIONS as [$dx, $dy, $dz]) {
+                        if ($ignites($tx + $dx, $ty + $dy, $tz + $dz)) {
+                            $this->setBlock($tx, $ty, $tz, $this->fireWithAge($tx, $ty, $tz, 0));
+                            return;
+                        }
+                    }
+                } elseif ($blocks->inTag($state, 'blocks_lava_fire_spread')) {
+                    return;
+                }
+            }
+            return;
+        }
+        for ($i = 0; $i < 3; ++$i) {
+            [$tx, $tz] = [$x + random_int(0, 2) - 1, $z + random_int(0, 2) - 1];
+            if ($catalog->air($this->world->get($tx, $y + 1, $tz)) && $ignites($tx, $y, $tz)) {
+                // BaseFireBlock.getState is asked about the burning block's own position.
+                $this->setBlock($tx, $y + 1, $tz, $this->fireWithAge($tx, $y, $tz, 0));
+            }
         }
     }
 
