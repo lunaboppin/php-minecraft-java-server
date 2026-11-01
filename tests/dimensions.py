@@ -114,6 +114,15 @@ def main():
                 with sqlite3.connect(world) as db:
                     states = [s for s, in db.execute('SELECT state FROM blocks WHERE x IN (3,4) AND y BETWEEN 64 AND 66 AND z=2')]
                     net.check(len(states) == 6 and len(set(states)) == 1 and states[0] == net.BLOCKS['states']['nether_portal'], 'obsidian frame ignites six portal blocks')
+                # allow_entering_nether_using_portals: the portal's time runs out, but no one travels.
+                command(a, 'gamerule allow_entering_nether_using_portals false', 'commands.gamerule.set')
+                wait_cooldown(a)
+                move(a, (3.5, 64., 2.5))
+                for _ in range(5):
+                    ping(a)
+                net.check(a.dimension == 'overworld' and not any(n == 'respawn' for n, _ in a.seen[-40:]), 'the gamerule keeps players out of the Nether')
+                move(a, (3.5, 64., 0.5))
+                command(a, 'gamerule allow_entering_nether_using_portals true', 'commands.gamerule.set')
                 wait_cooldown(a)
                 move(a, (3.5, 64., 2.5), wait=False)
                 a.until('respawn')
