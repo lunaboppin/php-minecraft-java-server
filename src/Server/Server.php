@@ -75,6 +75,8 @@ final class Server
 
     use Corals;
 
+    use Observers;
+
     use Pistons;
 
     use TurtleEggs;
