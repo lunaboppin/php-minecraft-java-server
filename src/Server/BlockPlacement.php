@@ -217,6 +217,9 @@ trait BlockPlacement
         $classes = $this->placementClasses($name);
         $is = static fn (string ...$names): bool => array_intersect($names, $classes) !== [];
 
+        if (str_ends_with($name, '_hanging_sign') && !str_contains($name, '_wall_')) {
+            return $this->hangingSignPlacement($c, $name, $properties, $pos, $clicked, $looking());
+        }
         // StandingAndWallBlockItem: the floor block or its wall form, whichever survives first.
         $wall = preg_replace('/(^|_)(torch|banner|skull|head|fan)$/', '$1wall_$2', $name);
         if ($wall !== $name && isset($catalog->blocks[$wall])) {
@@ -339,6 +342,67 @@ trait BlockPlacement
             return $this->multifacePlacement($name, $properties, $pos, $looking());
         }
         return [$name, $properties];
+    }
+
+    /**
+     * HangingSignItem: a StandingAndWallBlockItem attached upward. The ceiling sign needs a block
+     * above with a sturdy centre; the wall sign hangs across a looking direction off the clicked
+     * face's axis, from a sturdy side or another wall hanging sign beside it.
+     */
+    private function hangingSignPlacement(Client $c, string $name, array $properties, array $pos, string $clicked, array $looking): ?array
+    {
+        $catalog = $this->version->catalog;
+        $blocks = $this->fireBlocks();
+        $wall = str_replace('_hanging_sign', '_wall_hanging_sign', $name);
+        $axis = static fn (string $d): string => in_array($d, ['north', 'south'], true) ? 'z' : (in_array($d, ['east', 'west'], true) ? 'x' : 'y');
+        $clockwise = ['north' => 'east', 'east' => 'south', 'south' => 'west', 'west' => 'north'];
+        $wallState = null;
+        foreach ($looking as $direction) {
+            if ($axis($direction) !== 'y' && $axis($direction) !== $axis($clicked)) {
+                $facing = self::PLACEMENT_DIRECTIONS[$direction][3];
+                $attaches = function (string $side, string $face) use ($pos, $facing, $blocks, $axis): bool {
+                    [$dx, , $dz] = self::PLACEMENT_DIRECTIONS[$side];
+                    $state = $this->world->get($pos[0] + $dx, $pos[1], $pos[2] + $dz);
+                    return $blocks->inTag($state, 'wall_hanging_signs')
+                        ? $axis($this->version->catalog->properties($state)['facing']) === $axis($facing)
+                        : $blocks->sturdy($state, self::PLACEMENT_INDEX[$face]);
+                };
+                $cw = $clockwise[$facing];
+                $ccw = array_search($facing, $clockwise, true);
+                if ($attaches($cw, $ccw) || $attaches($ccw, $cw)) {
+                    $wallState = [$wall, ['facing' => $facing, 'waterlogged' => $properties['waterlogged'] ?? 'false']];
+                    break;
+                }
+            }
+        }
+        foreach ($looking as $direction) {
+            if ($direction === 'down') {
+                continue;
+            }
+            if ($direction !== 'up') {
+                if ($wallState !== null) {
+                    return $wallState;
+                }
+                continue;
+            }
+            // CeilingHangingSignBlock: chains to the middle unless the block above has a full bottom face.
+            $above = $this->world->get($pos[0], $pos[1] + 1, $pos[2]);
+            if (!$blocks->sturdyCenter($above, 0)) {
+                continue;
+            }
+            $toward = ['south', 'west', 'north', 'east'][((int) floor($c->yaw / 90 + 0.5)) & 3];
+            $middle = !$blocks->sturdy($above, 0) || $c->sneaking;
+            if ($blocks->inTag($above, 'all_hanging_signs') && !$c->sneaking) {
+                $p = $catalog->properties($above);
+                $aboveFacing = $p['facing'] ?? ((int) ($p['rotation'] ?? 1) % 4 === 0 ? ['south', 'west', 'north', 'east'][intdiv((int) $p['rotation'], 4)] : null);
+                if ($aboveFacing !== null && $axis($aboveFacing) === $axis($toward)) {
+                    $middle = false;
+                }
+            }
+            $rotation = $middle ? ((int) floor(($c->yaw + 180) / 22.5 + 0.5)) & 15 : ['south' => 0, 'west' => 4, 'north' => 8, 'east' => 12][self::PLACEMENT_DIRECTIONS[$toward][3]];
+            return [$name, ['attached' => $middle ? 'true' : 'false', 'rotation' => (string) $rotation, 'waterlogged' => $properties['waterlogged'] ?? 'false']];
+        }
+        return null;
     }
 
     /** The wall form's getStateForPlacement: the first horizontal looking direction it can hang toward. */
