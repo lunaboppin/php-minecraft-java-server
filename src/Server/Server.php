@@ -71,6 +71,8 @@ final class Server
 
     use BlockPlacement;
 
+    use Rails;
+
     use Precipitation;
 
     use BoneMeal;
@@ -1294,6 +1296,11 @@ final class Server
         if ($face < 0 || $face > 5 || $hand < 0 || $hand > 1 || $sequence < 0) {
             throw new ProtocolException('Invalid placement');
         }
+        // Player.isWithinBlockInteractionRange with a block of slack: farther clicks are only acknowledged.
+        if (!$this->withinBlockReach($c, $x, $y, $z, 1.0)) {
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         // Vanilla measures the hit against the block centre, with a strict 1.0000001 bound.
         // Valid client edge hits can lie outside [0,1]. Invalid hits are acknowledged and ignored.
         foreach ($cursor as $axis => $value) {
@@ -1568,6 +1575,10 @@ final class Server
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         $this->blockChanged($x, $y, $z);
+        // BaseRailBlock.onPlace: a rail set where it was not joins the rails beside it.
+        if ($this->isRail($state) && $this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
+            $this->placeRail($x, $y, $z);
+        }
     }
 
     /** ChunkHolder.blockChanged: clients hear of a changed block with the tick's other changes, and its light follows. */

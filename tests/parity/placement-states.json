@@ -1,9 +1,9 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one.",
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does.",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Rail connections, scaffolding distance and hanging signs are not covered yet."
+    "Scaffolding distance and hanging signs are not covered yet."
   ],
   "steps": [
     {
@@ -5223,6 +5223,218 @@
           166,
           65,
           0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill -44 63 -6 -32 63 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -44 64 -6 -32 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s -39.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:rail"
+    },
+    {
+      "action": "place",
+      "position": [
+        -40,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -39,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -40,
+        63,
+        1
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -36 64 0 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        -36,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -37,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:powered_rail"
+    },
+    {
+      "action": "place",
+      "position": [
+        -34,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -34,
+        63,
+        1
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        -33,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -40 64 3 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock -39 64 3 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock -40 64 4 minecraft:rail"
+    },
+    {
+      "action": "snapshot",
+      "name": "rails",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -40,
+          64,
+          0
+        ],
+        [
+          -39,
+          64,
+          0
+        ],
+        [
+          -40,
+          64,
+          1
+        ],
+        [
+          -36,
+          65,
+          0
+        ],
+        [
+          -37,
+          64,
+          0
+        ],
+        [
+          -34,
+          64,
+          0
+        ],
+        [
+          -34,
+          64,
+          1
+        ],
+        [
+          -33,
+          64,
+          0
+        ],
+        [
+          -40,
+          64,
+          3
+        ],
+        [
+          -39,
+          64,
+          3
+        ],
+        [
+          -40,
+          64,
+          4
         ]
       ]
     }
