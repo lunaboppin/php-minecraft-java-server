@@ -1412,6 +1412,7 @@ final class Server
                 } else {
                     $c->inventory[$slot]['damage'] = ($c->inventory[$slot]['damage'] ?? 0) + 1;
                     if ($c->inventory[$slot]['damage'] >= $this->version->catalog->item($c->inventory[$slot]['item'])['durability']) {
+                        $this->awardStat($c, 'broken', $this->version->catalog->itemName($c->inventory[$slot]['item']));
                         unset($c->inventory[$slot]);
                     }
                 }

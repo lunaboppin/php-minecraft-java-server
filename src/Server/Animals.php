@@ -323,6 +323,8 @@ trait Animals
             if ($cost > 0 && $maximum > 0) {
                 $stack['damage'] = ($stack['damage'] ?? 0) + $cost;
                 if ($stack['damage'] >= $maximum) {
+                    // ServerPlayer.onEquippedItemBroken
+                    $this->awardStat($c, 'broken', $this->version->catalog->itemName($stack['item']));
                     unset($c->inventory[$slot]);
                 } else {
                     $c->inventory[$slot] = $stack;

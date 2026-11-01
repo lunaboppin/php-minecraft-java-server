@@ -459,6 +459,7 @@ trait Dimensions
             if ($c->gameMode === 0) {
                 $c->inventory[$slot]['damage'] = ($c->inventory[$slot]['damage'] ?? 0) + 1;
                 if ($c->inventory[$slot]['damage'] >= $catalog->item($c->inventory[$slot]['item'])['durability']) {
+                    $this->awardStat($c, 'broken', $catalog->itemName($c->inventory[$slot]['item']));
                     unset($c->inventory[$slot]);
                 }
                 $this->syncInventory($c);

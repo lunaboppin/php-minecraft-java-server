@@ -633,6 +633,7 @@ trait Survival
         if ($held !== null && $wear > 0 && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
             $held['damage'] = ($held['damage'] ?? 0) + $wear;
             if ($held['damage'] >= $max) {
+                $this->awardStat($c, 'broken', $this->version->catalog->itemName($held['item']));
                 unset($c->inventory[$slot]);
             } else {
                 $c->inventory[$slot] = $held;

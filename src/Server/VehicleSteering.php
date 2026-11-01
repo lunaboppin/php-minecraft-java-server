@@ -84,6 +84,7 @@ trait VehicleSteering
             $stack = $player->inventory[$slot];
             $stack['damage'] = ($stack['damage'] ?? 0) + 7;
             if ($stack['damage'] >= $this->version->catalog->item($stack['item'])['durability']) {
+                $this->awardStat($player, 'broken', $this->version->catalog->itemName($stack['item']));
                 $stack = ['item' => $this->version->blocks['items']['fishing_rod'], 'count' => 1];
             }
             $player->inventory[$slot] = $stack;
