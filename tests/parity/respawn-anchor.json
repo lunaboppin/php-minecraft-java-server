@@ -1,0 +1,21 @@
+{
+  "name": "respawn-anchor",
+  "normalizations": [
+    "Compare a respawn anchor charged with glowstone, then used in the Overworld, where it explodes; the crater around it is random and only the anchor's own block is compared.",
+    "Use matching flat terrain and ignore clocks, sound seeds and generated IDs."
+  ],
+  "steps": [
+    {"action": "command", "text": "fill -4 64 -4 8 70 8 minecraft:air"},
+    {"action": "command", "text": "setblock 4 64 0 minecraft:respawn_anchor"},
+    {"action": "command", "text": "tp @s 0.5 64 0.5 -90 20"},
+    {"action": "command", "text": "item replace entity @s weapon.mainhand with minecraft:glowstone 4"},
+    {"action": "place", "position": [4, 64, 0], "face": 4, "cursor": [0, 0.5, 0.5]},
+    {"action": "place", "position": [4, 64, 0], "face": 4, "cursor": [0, 0.5, 0.5]},
+    {"action": "snapshot", "name": "charged", "fields": ["blocks"], "positions": [[4, 64, 0]]},
+    {"action": "command", "text": "item replace entity @s weapon.mainhand with minecraft:air"},
+    {"action": "command", "text": "gamemode creative @s"},
+    {"action": "place", "position": [4, 64, 0], "face": 4, "cursor": [0, 0.5, 0.5]},
+    {"action": "wait", "seconds": 1},
+    {"action": "snapshot", "name": "exploded", "fields": ["blocks"], "positions": [[4, 64, 0]]}
+  ]
+}
