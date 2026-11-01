@@ -170,6 +170,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/weather.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-weather
           python3 tools/parity/run.py --scenario tests/parity/lightning.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lightning
           python3 tools/parity/run.py --scenario tests/parity/precipitation.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-precipitation
+          python3 tools/parity/run.py --scenario tests/parity/bells.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bells
           python3 tools/parity/run.py --scenario tests/parity/bone-meal.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bone-meal
           python3 tools/parity/run.py --scenario tests/parity/coral.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-coral
           python3 tools/parity/run.py --scenario tests/parity/light.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-light
@@ -193,6 +194,7 @@ jobs:
             tools/.cache/parity-weather/
             tools/.cache/parity-lightning/
             tools/.cache/parity-precipitation/
+            tools/.cache/parity-bells/
             tools/.cache/parity-bone-meal/
             tools/.cache/parity-coral/
             tools/.cache/parity-light/

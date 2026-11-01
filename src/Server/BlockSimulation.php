@@ -35,6 +35,7 @@ trait BlockSimulation
         $this->fireChanged($x,$y,$z);
         $this->heightChanged($x,$z);
         $this->tntChanged($x,$y,$z);
+        $this->bellsChanged($x,$y,$z);
         $this->coralsChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){

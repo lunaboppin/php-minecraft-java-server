@@ -3321,6 +3321,7 @@
     "block.respawn_anchor.charge": 1388,
     "block.respawn_anchor.deplete": 1389,
     "block.respawn_anchor.set_spawn": 1390,
+    "block.bell.use": 167,
     "entity.player.small_fall": 1322,
     "entity.player.big_fall": 1312
   },
