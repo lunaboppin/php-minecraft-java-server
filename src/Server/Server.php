@@ -69,6 +69,8 @@ final class Server
 
     use Lightning;
 
+    use PoweredRails;
+
     use RespawnPoints;
 
     use Bells;
