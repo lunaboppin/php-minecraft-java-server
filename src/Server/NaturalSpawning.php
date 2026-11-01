@@ -31,10 +31,26 @@ trait NaturalSpawning
         'surface_monster' => ['husk', 'parched', 'camel_husk'],
         'any_light_monster' => ['blaze', 'breeze', 'zoglin'],
         'animal' => ['chicken', 'cow', 'donkey', 'happy_ghast', 'horse', 'llama', 'mule', 'pig', 'sheep', 'cat', 'panda', 'trader_llama'],
-        'surface_water_animal' => ['cod', 'pufferfish', 'salmon'],
+        'surface_water_animal' => ['cod', 'pufferfish', 'salmon', 'squid', 'dolphin'],
         'bat' => ['bat'],
-        'tagged_animal' => ['wolf', 'rabbit', 'goat', 'mooshroom', 'armadillo', 'camel', 'frog'],
+        'tagged_animal' => ['wolf', 'rabbit', 'goat', 'mooshroom', 'armadillo', 'camel', 'frog', 'fox', 'parrot'],
         'mob' => ['ender_dragon', 'iron_golem', 'snow_golem', 'villager', 'phantom', 'shulker', 'wandering_trader'],
+        'drowned' => ['drowned'],
+        'guardian' => ['guardian', 'elder_guardian'],
+        'glow_squid' => ['glow_squid'],
+        'tropical_fish' => ['tropical_fish'],
+        'axolotl' => ['axolotl'],
+        'nautilus' => ['nautilus'],
+        'polar_bear' => ['polar_bear'],
+        'ocelot' => ['ocelot'],
+        'turtle' => ['turtle'],
+        'strider' => ['strider'],
+        'ghast' => ['ghast'],
+        'not_on_wart' => ['piglin', 'hoglin'],
+        'zombified_piglin' => ['zombified_piglin'],
+        'stray' => ['stray'],
+        'alone_any_light' => ['endermite', 'silverfish'],
+        'skeleton_horse' => ['skeleton_horse'],
     ];
 
     private ?LegacyRandom $spawnRandom = null;
@@ -307,7 +323,7 @@ trait NaturalSpawning
     {
         $spawners = $this->biomeMobSpawns($biome)['spawns_by_category'][$category] ?? [];
         // REDUCED_WATER_AMBIENT_SPAWNS: rivers and the like mostly skip fish.
-        if ($category === 'water_ambient' && in_array($biome, ['river', 'frozen_river'], true) && $this->spawnRandom->nextFloat() < 0.98) {
+        if ($category === 'water_ambient' && in_array($biome, $this->version->registryTags('minecraft:worldgen/biome')['minecraft:reduced_water_ambient_spawns'] ?? [], true) && $this->spawnRandom->nextFloat() < 0.98) {
             return null;
         }
         $total = array_sum(array_column($spawners, 'weight'));
@@ -380,21 +396,101 @@ trait NaturalSpawning
         $mobRule = fn (): bool => $this->stateIn($info['valid_spawn'], $below);
         // Animal.isBrightEnoughToSpawn
         $bright = fn (): bool => $this->world->rawBrightness($x, $y, $z, false, 0) > 8;
+        $water = fn (int $state): bool => $this->stateIn($this->naturalSpawningReference()['blocks']['water'], $state);
+        $above = $this->world->get($x, $y + 1, $z);
+        $biome = fn (string $tag): bool => in_array($this->world->biomeAt($x, $y, $z), $this->version->registryTags('minecraft:worldgen/biome')['minecraft:' . $tag] ?? [], true);
+        $sea = $this->seaLevel();
+        // WaterAnimal and AgeableWaterCreature's surface rule: near the sea's surface, water below and above.
+        $surfaceWater = fn (): bool => $y >= $sea - 13 && $y <= $sea && $water($below) && $this->version->catalog->blockName($above) === 'water';
         return match ($this->naturalSpawningReference()['rules'][$kind] ?? null) {
             'monster' => $this->darkEnoughToSpawn($x, $y, $z) && $mobRule(),
             'surface_monster' => $this->darkEnoughToSpawn($x, $y, $z) && $mobRule() && $this->world->skyLight($x, $y, $z) >= 15,
             'any_light_monster', 'mob' => $mobRule(),
-            'animal' => $this->stateTagged('minecraft:animals_spawnable_on', $below) && $bright(),
-            // Wolf, Rabbit, Goat, MushroomCow, Armadillo, Camel and Frog: their own tag of blocks, in the light.
-            'tagged_animal' => $this->stateTagged('minecraft:' . ['wolf' => 'wolves', 'rabbit' => 'rabbits', 'goat' => 'goats', 'mooshroom' => 'mooshrooms', 'armadillo' => 'armadillo', 'camel' => 'camels', 'frog' => 'frogs'][$kind] . '_spawnable_on', $below) && $bright(),
-            // WaterAnimal.checkSurfaceWaterAnimalSpawnRules: near the sea's surface, water below and above.
-            'surface_water_animal' => $y >= 63 - 13 && $y <= 63 && $this->stateIn($this->naturalSpawningReference()['blocks']['water'], $below)
-                && $this->version->catalog->blockName($this->world->get($x, $y + 1, $z)) === 'water',
+            'animal', 'skeleton_horse' => $this->stateTagged('minecraft:animals_spawnable_on', $below) && $bright(),
+            // Wolf, Rabbit, Goat, MushroomCow, Armadillo, Camel, Frog, Fox and Parrot: their own tag of blocks, in the light.
+            'tagged_animal' => $this->stateTagged('minecraft:' . ['wolf' => 'wolves', 'rabbit' => 'rabbits', 'goat' => 'goats', 'mooshroom' => 'mooshrooms', 'armadillo' => 'armadillo', 'camel' => 'camels', 'frog' => 'frogs', 'fox' => 'foxes', 'parrot' => 'parrots'][$kind] . '_spawnable_on', $below) && $bright(),
+            'surface_water_animal' => $surfaceWater(),
+            // Drowned.checkDrownedSpawnRules: in water over water, dark, and rarely; deep down outside its rivers.
+            'drowned' => $water($below) && $this->darkEnoughToSpawn($x, $y, $z) && $water($this->world->get($x, $y, $z))
+                && ($biome('more_frequent_drowned_spawns') ? $random->nextInt(15) === 0 : $random->nextInt(40) === 0 && $y < $sea - 5),
+            // Guardian.checkGuardianSpawnRules: under cover of water, or one time in twenty.
+            'guardian' => ($random->nextInt(20) === 0 || !$this->skyFromBelowWater($x, $y, $z)) && $water($this->world->get($x, $y, $z)) && $water($below),
+            'glow_squid' => $y <= $sea - 33 && $this->world->rawBrightness($x, $y, $z, false, 0) === 0 && $this->version->catalog->blockName($this->world->get($x, $y, $z)) === 'water',
+            'tropical_fish' => $water($below) && $this->version->catalog->blockName($above) === 'water' && ($biome('allows_tropical_fish_spawns_at_any_height') || $surfaceWater()),
+            'axolotl' => $this->stateTagged('minecraft:axolotls_spawnable_on', $below),
+            'nautilus' => $y >= $sea - 25 && $y <= $sea - 5 && $water($below) && $this->version->catalog->blockName($above) === 'water',
+            'polar_bear' => $biome('polar_bears_spawn_on_alternate_blocks')
+                ? $bright() && in_array($this->version->catalog->blockName($below), $this->version->registryTags('minecraft:block')['minecraft:polar_bears_spawnable_on_alternate'] ?? [], true)
+                : $this->stateTagged('minecraft:animals_spawnable_on', $below) && $bright(),
+            'ocelot' => $random->nextInt(3) !== 0,
+            // TurtleEggBlock.onSand
+            'turtle' => $y < $sea + 4 && in_array($this->version->catalog->blockName($below), $this->version->registryTags('minecraft:block')['minecraft:sand'] ?? [], true) && $bright(),
+            'strider' => $this->striderSurfaced($x, $y, $z),
+            'ghast' => $random->nextInt(20) === 0 && $mobRule(),
+            'not_on_wart' => $this->version->catalog->blockName($below) !== 'nether_wart_block',
+            'zombified_piglin' => $this->version->catalog->blockName($below) !== 'nether_wart_block',
+            'stray' => $this->darkEnoughToSpawn($x, $y, $z) && $mobRule() && $this->strayUnderSky($x, $y, $z),
+            // Endermite and Silverfish: any light, with no player within 5 blocks.
+            'alone_any_light' => $mobRule() && !$this->playerWithin($x + 0.5, $y + 0.5, $z + 0.5, 5.0),
             // Bat.checkBatSpawnRules: below the surface, in the dark, on a bat's block.
             'bat' => $y < $this->surfaceHeight($x, $z) && !$random->nextBoolean() && $this->world->rawBrightness($x, $y, $z, false, $this->skyDarken()) <= $random->nextInt(4)
                 && $this->stateTagged('minecraft:bats_spawnable_on', $below) && $mobRule(),
             default => false,
         };
+    }
+
+    /** Level.getSeaLevel: the noise settings' 63, a flat world's -63, the Nether's 32 and the End's 0. */
+    private function seaLevel(): int
+    {
+        return match ($this->world->dimension) {
+            'the_nether' => 32,
+            'the_end' => 0,
+            default => $this->world->generator === 'flat' ? -63 : 63,
+        };
+    }
+
+    /** Level.canSeeSkyFromBelowWater: the sky above the water column the position is in. */
+    private function skyFromBelowWater(int $x, int $y, int $z): bool
+    {
+        if ($y >= $this->seaLevel()) {
+            return $this->world->skyLight($x, $y, $z) >= 15;
+        }
+        $top = $y;
+        while ($top < $this->seaLevel() && $this->stateIn($this->naturalSpawningReference()['blocks']['water'], $this->world->get($x, $top + 1, $z))) {
+            ++$top;
+        }
+        return $this->world->skyLight($x, $top + 1, $z) >= 15;
+    }
+
+    /** Strider.checkStriderSpawnRules: air right above the lava it is in. */
+    private function striderSurfaced(int $x, int $y, int $z): bool
+    {
+        $lava = $this->naturalSpawningReference()['blocks']['lava'];
+        do {
+            ++$y;
+        } while ($this->stateIn($lava, $this->world->get($x, $y, $z)));
+        return (($this->version->catalog->flags[$this->world->get($x, $y, $z)] ?? 0) & 1) !== 0;
+    }
+
+    /** Stray.checkStraySpawnRules: the sky above any powder snow it stands in. */
+    private function strayUnderSky(int $x, int $y, int $z): bool
+    {
+        $top = $y + 1;
+        while ($this->version->catalog->blockName($this->world->get($x, $top, $z)) === 'powder_snow') {
+            ++$top;
+        }
+        return $this->world->skyLight($x, $top - 1, $z) >= 15;
+    }
+
+    /** Level.getNearestPlayer within a distance, survival or adventure players only. */
+    private function playerWithin(float $x, float $y, float $z, float $distance): bool
+    {
+        foreach ($this->localPlayers() as $player) {
+            if (in_array($player->gameMode, [0, 2], true) && ($player->x - $x) ** 2 + ($player->y - $y) ** 2 + ($player->z - $z) ** 2 < $distance ** 2) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Monster.isDarkEnoughToSpawn: little sky light, no block light here, and dark enough by the dimension's test. */
@@ -421,9 +517,31 @@ trait NaturalSpawning
         if ($despawn !== null && $nearest > $despawn['despawn_distance'] ** 2 && $this->removeWhenFarAwayByDefault($despawn['remove_when_far_away'])) {
             return false;
         }
-        // Mob.checkSpawnObstruction: Level.isUnobstructed against other living entities.
         $size = $this->version->catalog->mobs['entities'][$kind];
         $half = $size['width'] / 2;
+        // Mob.checkSpawnObstruction: no liquid in the mob's box, except for those spawning in water
+        // or lava, then Level.isUnobstructed against other living entities.
+        $placement = $this->naturalSpawningReference()['mobs'][$kind]['placement'] ?? 'on_ground';
+        if ($placement !== 'in_water' && $placement !== 'in_lava') {
+            $fluid = $this->naturalSpawningReference()['blocks']['fluid'];
+            for ($bx = (int) floor($x - $half); $bx <= (int) floor($x + $half); ++$bx) {
+                for ($by = $y; $by <= (int) floor($y + $size['height']); ++$by) {
+                    for ($bz = (int) floor($z - $half); $bz <= (int) floor($z + $half); ++$bz) {
+                        if ($this->stateIn($fluid, $this->world->get($bx, $by, $bz))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        // Ocelot.checkSpawnObstruction: at or above sea level, on grass or leaves.
+        if ($kind === 'ocelot') {
+            $below = $this->world->get((int) floor($x), $y - 1, (int) floor($z));
+            $name = $this->version->catalog->blockName($below);
+            if ($y < $this->seaLevel() || ($name !== 'grass_block' && !in_array($name, $this->version->registryTags('minecraft:block')['minecraft:leaves'] ?? [], true))) {
+                return false;
+            }
+        }
         foreach ([...$this->animals, ...array_map(static fn (Client $p): array => ['x' => $p->x, 'y' => $p->y, 'z' => $p->z, 'kind' => 'player'], $this->localPlayers())] as $other) {
             if (isset($other['deadAt'])) {
                 continue;
