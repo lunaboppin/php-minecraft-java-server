@@ -1,9 +1,9 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls. Hanging signs go under a block, beside a wall, or nowhere (HangingSignItem).",
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls. Hanging signs go under a block, beside a wall, or nowhere (HangingSignItem). Scaffolding takes its distance from support (ScaffoldingBlock.getDistance).",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Scaffolding distance is not covered yet."
+    "Scaffolding distance updates after placement and falling scaffolding are not covered."
   ],
   "steps": [
     {
@@ -6324,6 +6324,102 @@
         [
           66,
           64,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 78 63 14 92 63 26 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 78 64 14 92 70 26 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 80.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:scaffolding"
+    },
+    {
+      "action": "place",
+      "position": [
+        80,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 81 63 20 83 63 20 minecraft:air"
+    },
+    {
+      "action": "place",
+      "position": [
+        80,
+        64,
+        20
+      ],
+      "face": 5,
+      "cursor": [
+        1,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        81,
+        64,
+        20
+      ],
+      "face": 5,
+      "cursor": [
+        1,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "scaffolding",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          80,
+          64,
+          20
+        ],
+        [
+          81,
+          64,
+          20
+        ],
+        [
+          82,
+          64,
+          20
+        ],
+        [
+          80,
+          65,
+          20
+        ],
+        [
+          80,
+          66,
           20
         ]
       ]
