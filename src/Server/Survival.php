@@ -616,6 +616,10 @@ trait Survival
                 }
             }
         }
+        if ($name === 'turtle_egg') {
+            // TurtleEggBlock.playerDestroy: breaking takes one egg, leaving the rest.
+            $this->decreaseTurtleEggs($x, $y, $z, $state);
+        }
         // Item.mineBlock: tools wear by their damage per block on blocks that take time to break.
         $slot = 36 + $c->heldSlot;
         $held = $c->inventory[$slot] ?? null;
@@ -799,6 +803,7 @@ trait Survival
         if ($c->dead) {
             return;
         }
+        $this->playerStepOn($c);
         if (!$this->validWindow($c)) {
             $this->closeWindow($c, true);
             $this->syncInventory($c);

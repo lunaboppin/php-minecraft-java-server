@@ -3323,7 +3323,10 @@
     "block.respawn_anchor.set_spawn": 1390,
     "block.bell.use": 167,
     "entity.player.small_fall": 1322,
-    "entity.player.big_fall": 1312
+    "entity.player.big_fall": 1312,
+    "entity.turtle.egg_break": 1663,
+    "entity.turtle.egg_crack": 1664,
+    "entity.turtle.egg_hatch": 1665
   },
   "particle_types": {
     "angry_villager": 0,
