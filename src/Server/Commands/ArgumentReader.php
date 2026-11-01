@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server\Commands;
 
+use PhpMinecraftJavaServer\World\ContextNumberError;
+use PhpMinecraftJavaServer\World\ContextNumbers;
 use PhpMinecraftJavaServer\Protocol\NbtDouble;
 use PhpMinecraftJavaServer\Protocol\Version;
 
@@ -297,6 +299,10 @@ final class ArgumentReader
                 }
                 $this->resourceOrId($reader, 'minecraft:item_modifier');
                 return;
+            case 'minecraft:context_int_provider':
+            case 'minecraft:context_float_provider':
+                self::contextNumber($reader, $node['argument'] === 'minecraft:context_int_provider' ? 'int' : 'float');
+                return;
             case 'minecraft:heightmap':
                 // HeightmapTypeArgument: the heightmaps kept after world generation.
                 $name = $reader->readUnquotedString();
@@ -315,6 +321,29 @@ final class ArgumentReader
                 // Other structured values: one balanced token.
                 self::balanced($reader);
         }
+    }
+
+    /**
+     * ResourceOrIdArgument: a named provider, or an inline one.
+     *
+     * @return array{?string, array} the name, if any, and the provider
+     */
+    public static function contextNumber(StringReader $reader, string $kind): array
+    {
+        if ($reader->canRead() && in_array($reader->peek(), ['{', '"', "'", '['], true)) {
+            $tag = Snbt::read($reader);
+            try {
+                return [null, ContextNumbers::decode($tag, $kind)];
+            } catch (ContextNumberError $error) {
+                throw $reader->error('argument.resource_or_id.failed_to_parse', [$error->getMessage()]);
+            }
+        }
+        $id = $reader->readIdentifier();
+        $named = $kind === 'int' ? ContextNumbers::namedInts() : ContextNumbers::namedFloats();
+        if (!isset($named[$id])) {
+            throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:context_' . $kind . '_provider']);
+        }
+        return [$id, $named[$id]];
     }
 
     /** ResourceOrIdArgument for a registry this server holds no entries of: inline values only. */

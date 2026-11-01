@@ -213,6 +213,12 @@ final class Loot
         return $count;
     }
 
+    /** LootItemCondition.test for a condition outside a table, such as a number provider's. */
+    public function test(mixed $condition, array $context): bool
+    {
+        return $this->conditions($condition, $context);
+    }
+
     /** A condition, a list of conditions (all must pass), or a named predicate. */
     private function conditions(mixed $condition, array $context): bool
     {
