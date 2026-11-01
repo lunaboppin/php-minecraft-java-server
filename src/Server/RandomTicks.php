@@ -55,7 +55,7 @@ trait RandomTicks
                     $name === 'bamboo' => $p['stage'] === '0',
                     in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
-                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem'], true) => true,
+                    in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava'], true) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -181,6 +181,11 @@ trait RandomTicks
             $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
+        } elseif ($name === 'lava') {
+            // LiquidBlock.randomTick passes the tick to the fluid, and ServerLevel.tickChunk then
+            // random-ticks the fluid state itself, so lava gets two.
+            $this->lavaTick($x, $y, $z);
+            $this->lavaTick($x, $y, $z);
         } elseif ($name === 'farmland') {
             $this->farmlandTick($x, $y, $z, $p);
         } elseif ($name === 'ice' || $name === 'snow') {
