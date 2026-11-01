@@ -134,6 +134,7 @@ trait Survival
                     + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
+                $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
