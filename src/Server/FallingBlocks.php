@@ -271,14 +271,21 @@ trait FallingBlocks
     /** BlockState.canSurvive for the blocks that fall: those that need support check for it. */
     private function fallingBlockSurvives(int $state, int $x, int $y, int $z): bool
     {
+        $tip = $this->speleothemTip($state);
+        if ($tip !== null) {
+            return $this->speleothemValid($this->version->catalog->blockName($state), $x, $y, $z, $tip);
+        }
         return $this->placementSurvives($state, $x, $y, $z);
     }
 
-    /** Fallable.onBrokenAfterFall: an anvil that cannot set down sounds as it breaks. */
+    /** Fallable.onBrokenAfterFall: an anvil or a stalactite that cannot set down sounds as it breaks. */
     private function fallingBlockBroke(string $name, array $position): void
     {
         if (str_ends_with($name, 'anvil')) {
             $this->levelEvent(1029, $position, 0);
+        } elseif (isset(self::SPELEOTHEMS[$name])) {
+            // SpeleothemBlock.onBrokenAfterFall: the stalactite's landing sound.
+            $this->levelEvent($name === 'pointed_dripstone' ? 1045 : 1052, $position, 0);
         }
     }
 
@@ -317,7 +324,7 @@ trait FallingBlocks
         [$perDistance, $max] = $block['hurt'];
         $amount = (float) min((int) floor($distance * $perDistance), $max);
         $name = $this->version->catalog->blockName($block['state']);
-        $type = str_ends_with($name, 'anvil') ? 'minecraft:falling_anvil' : (in_array($name, ['pointed_dripstone'], true) ? 'minecraft:falling_stalactite' : 'minecraft:falling_block');
+        $type = str_ends_with($name, 'anvil') ? 'minecraft:falling_anvil' : (isset(self::SPELEOTHEMS[$name]) ? 'minecraft:falling_stalactite' : 'minecraft:falling_block');
         $box = [$block['x'] - 0.49, $block['y'], $block['z'] - 0.49, $block['x'] + 0.49, $block['y'] + 0.98, $block['z'] + 0.49];
         $overlaps = static fn (array $other): bool => $other[0] < $box[3] && $other[3] > $box[0] && $other[1] < $box[4] && $other[4] > $box[1] && $other[2] < $box[5] && $other[5] > $box[2];
         foreach ($this->localPlayers() as $player) {

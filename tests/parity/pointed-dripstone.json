@@ -1,0 +1,416 @@
+{
+  "name": "pointed-dripstone",
+  "normalizations": [
+    "Compare pointed dripstone placed by a player looking up and down, and set by commands, its thickness, and what happens when its support goes.",
+    "With fast random ticks, a stalactite under water, lava or mud fills the cauldron below or dries the mud to clay; the results are compared once settled.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 -6 40 63 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -6 40 75 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:pointed_dripstone"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 10.5 64 -1.5 0 30"
+    },
+    {
+      "action": "place",
+      "position": [
+        10,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        10,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 67 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 12.5 64 -1.5 0 -30"
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        67,
+        0
+      ],
+      "face": 0,
+      "cursor": [
+        0.5,
+        0,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        66,
+        0
+      ],
+      "face": 0,
+      "cursor": [
+        0.5,
+        0,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 12.5 64 -1.5 0 30"
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 14 66 0 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        14,
+        66,
+        0
+      ],
+      "face": 0,
+      "cursor": [
+        0.5,
+        0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "placed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          10,
+          64,
+          0
+        ],
+        [
+          10,
+          65,
+          0
+        ],
+        [
+          10,
+          66,
+          0
+        ],
+        [
+          12,
+          64,
+          0
+        ],
+        [
+          12,
+          65,
+          0
+        ],
+        [
+          12,
+          66,
+          0
+        ],
+        [
+          14,
+          64,
+          0
+        ],
+        [
+          14,
+          65,
+          0
+        ],
+        [
+          14,
+          66,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 70 0 minecraft:dripstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 69 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 68 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 67 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 23 64 0 minecraft:pointed_dripstone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 23 65 0 minecraft:pointed_dripstone"
+    },
+    {
+      "action": "snapshot",
+      "name": "built",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          20,
+          67,
+          0
+        ],
+        [
+          20,
+          68,
+          0
+        ],
+        [
+          20,
+          69,
+          0
+        ],
+        [
+          23,
+          64,
+          0
+        ],
+        [
+          23,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 20 70 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 23 63 0 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "fallen",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          20,
+          64,
+          0
+        ],
+        [
+          20,
+          65,
+          0
+        ],
+        [
+          20,
+          66,
+          0
+        ],
+        [
+          20,
+          67,
+          0
+        ],
+        [
+          20,
+          68,
+          0
+        ],
+        [
+          20,
+          69,
+          0
+        ],
+        [
+          20,
+          70,
+          0
+        ],
+        [
+          23,
+          63,
+          0
+        ],
+        [
+          23,
+          64,
+          0
+        ],
+        [
+          23,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 25 67 -1 33 67 1 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 26 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 26 66 0 minecraft:dripstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 26 65 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 26 67 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 29 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 29 66 0 minecraft:dripstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 29 65 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 29 67 0 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock 32 66 0 minecraft:dripstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 32 65 0 minecraft:pointed_dripstone[vertical_direction=down]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 32 67 0 minecraft:mud"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 1000"
+    },
+    {
+      "action": "wait",
+      "seconds": 40
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
+    {
+      "action": "snapshot",
+      "name": "dripped",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          26,
+          64,
+          0
+        ],
+        [
+          26,
+          65,
+          0
+        ],
+        [
+          29,
+          64,
+          0
+        ],
+        [
+          29,
+          65,
+          0
+        ],
+        [
+          32,
+          67,
+          0
+        ],
+        [
+          32,
+          65,
+          0
+        ]
+      ]
+    }
+  ]
+}

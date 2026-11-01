@@ -74,6 +74,7 @@ final class Server
     use RespawnPoints;
 
     use FallingBlocks;
+    use Speleothems;
 
     use Bells;
 
