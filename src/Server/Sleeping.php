@@ -97,8 +97,8 @@ trait Sleeping
             }
         }
         // BedRule can_set_spawn: always in the Overworld.
-        $c->personalSpawn = [$x + 0.5, (float) $y + 0.5625, $z + 0.5];
-        $this->savePlayer($c);
+        // ServerPlayer.startSleepInBed sets the respawn point at the bed, saying so when it moves.
+        $this->setRespawnPoint($c, ['dimension' => $this->world->dimension, 'pos' => [$x, $y, $z], 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'forced' => false], true);
         if (!$this->darkOutside()) {
             return 'block.minecraft.bed.no_sleep';
         }

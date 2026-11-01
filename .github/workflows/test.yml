@@ -108,10 +108,11 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/lifecycle.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lifecycle
           python3 tools/parity/run.py --scenario tests/parity/placement.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-placement
           python3 tools/parity/run.py --scenario tests/parity/placement-states.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-placement-states
+          python3 tools/parity/run.py --scenario tests/parity/resting-items.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-resting-items
           python3 tools/parity/run.py --scenario tests/parity/settings.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-settings
           python3 tools/parity/run.py --scenario tests/parity/music-redstone.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-music
           python3 tools/parity/run.py --scenario tests/parity/water.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-water
-          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json
+          python3 tools/parity/verify.py tools/.cache/parity-music/php-packets.json tools/.cache/parity-music/reference-packets.json tools/.cache/parity-water/php-packets.json tools/.cache/parity-water/reference-packets.json tools/.cache/parity-settings/php-packets.json tools/.cache/parity-settings/reference-packets.json tools/.cache/parity-placement/php-packets.json tools/.cache/parity-placement/reference-packets.json tools/.cache/parity-java/php-packets.json tools/.cache/parity-java/reference-packets.json tools/.cache/parity-lifecycle/php-packets.json tools/.cache/parity-lifecycle/reference-packets.json tools/.cache/parity-resting-items/php-packets.json tools/.cache/parity-resting-items/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -122,6 +123,7 @@ jobs:
             tools/.cache/parity-lifecycle/
             tools/.cache/parity-placement/
             tools/.cache/parity-placement-states/
+            tools/.cache/parity-resting-items/
             tools/.cache/parity-settings/
             tools/.cache/parity-music/
             tools/.cache/parity-water/
@@ -166,8 +168,10 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/lightning.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-lightning
           python3 tools/parity/run.py --scenario tests/parity/precipitation.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-precipitation
           python3 tools/parity/run.py --scenario tests/parity/bone-meal.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-bone-meal
+          python3 tools/parity/run.py --scenario tests/parity/coral.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-coral
           python3 tools/parity/run.py --scenario tests/parity/light.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-light
-          python3 tools/parity/verify.py tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-plants/php-packets.json tools/.cache/parity-plants/reference-packets.json tools/.cache/parity-copper/php-packets.json tools/.cache/parity-copper/reference-packets.json tools/.cache/parity-fire/php-packets.json tools/.cache/parity-fire/reference-packets.json tools/.cache/parity-explosion/php-packets.json tools/.cache/parity-explosion/reference-packets.json tools/.cache/parity-tnt-restart/php-packets.json tools/.cache/parity-tnt-restart/reference-packets.json tools/.cache/parity-sleep/php-packets.json tools/.cache/parity-sleep/reference-packets.json tools/.cache/parity-weather/php-packets.json tools/.cache/parity-weather/reference-packets.json tools/.cache/parity-lightning/php-packets.json tools/.cache/parity-lightning/reference-packets.json tools/.cache/parity-precipitation/php-packets.json tools/.cache/parity-precipitation/reference-packets.json tools/.cache/parity-bone-meal/php-packets.json tools/.cache/parity-bone-meal/reference-packets.json tools/.cache/parity-light/php-packets.json tools/.cache/parity-light/reference-packets.json
+          python3 tools/parity/run.py --scenario tests/parity/respawn-anchor.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-respawn-anchor
+          python3 tools/parity/verify.py tools/.cache/parity-fluids/php-packets.json tools/.cache/parity-fluids/reference-packets.json tools/.cache/parity-bubbles/php-packets.json tools/.cache/parity-bubbles/reference-packets.json tools/.cache/parity-random/php-packets.json tools/.cache/parity-random/reference-packets.json tools/.cache/parity-plants/php-packets.json tools/.cache/parity-plants/reference-packets.json tools/.cache/parity-copper/php-packets.json tools/.cache/parity-copper/reference-packets.json tools/.cache/parity-fire/php-packets.json tools/.cache/parity-fire/reference-packets.json tools/.cache/parity-explosion/php-packets.json tools/.cache/parity-explosion/reference-packets.json tools/.cache/parity-tnt-restart/php-packets.json tools/.cache/parity-tnt-restart/reference-packets.json tools/.cache/parity-sleep/php-packets.json tools/.cache/parity-sleep/reference-packets.json tools/.cache/parity-weather/php-packets.json tools/.cache/parity-weather/reference-packets.json tools/.cache/parity-lightning/php-packets.json tools/.cache/parity-lightning/reference-packets.json tools/.cache/parity-precipitation/php-packets.json tools/.cache/parity-precipitation/reference-packets.json tools/.cache/parity-bone-meal/php-packets.json tools/.cache/parity-bone-meal/reference-packets.json tools/.cache/parity-light/php-packets.json tools/.cache/parity-light/reference-packets.json tools/.cache/parity-respawn-anchor/php-packets.json tools/.cache/parity-respawn-anchor/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -186,7 +190,9 @@ jobs:
             tools/.cache/parity-lightning/
             tools/.cache/parity-precipitation/
             tools/.cache/parity-bone-meal/
+            tools/.cache/parity-coral/
             tools/.cache/parity-light/
+            tools/.cache/parity-respawn-anchor/
           retention-days: 7
 
   multiplayer-parity:
@@ -381,6 +387,10 @@ jobs:
           python3 tools/parity/verify.py tools/.cache/motion-java/packets.json
           python3 tests/mob-knockback.py --java-jar tools/.cache/26.3/server.jar --java-home "$JAVA_HOME" --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/knockback-java
           python3 tools/parity/verify.py tools/.cache/knockback-java/php-packets.json tools/.cache/knockback-java/java-packets.json
+      - name: Compare player fall damage with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/player-falls.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-player-falls
+          python3 tools/parity/verify.py tools/.cache/parity-player-falls/php-packets.json tools/.cache/parity-player-falls/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -390,6 +400,7 @@ jobs:
             tools/.cache/knockback-java/
             tools/.cache/pushing-java/
             tools/.cache/collision-network/
+            tools/.cache/parity-player-falls/
           retention-days: 7
 
   docker:

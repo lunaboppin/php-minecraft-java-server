@@ -1084,6 +1084,16 @@ SCRIPT = [
     ('compute default float {type:"environment_attribute",attribute:"minecraft:visual/sky_color"}', False),
     ('compute default integer {type:"environment_attribute",attribute:"minecraft:gameplay/water_evaporates"}', False),
     ('!witness compute default integer 1', False),
+    # Mob.checkDespawn: a monster more than 128 blocks from every player goes at once, one that
+    # must persist stays, and peaceful removes monsters and refuses to summon them.
+    ('summon zombie ~ ~130 ~ {NoAI:1b}', False),
+    ('execute if entity @e[type=zombie]', False),
+    ('summon zombie ~ ~ ~3 {NoAI:1b,PersistenceRequired:1b}', False),
+    ('execute if entity @e[type=zombie]', False),
+    ('difficulty peaceful', False),
+    ('execute if entity @e[type=zombie]', False),
+    ('summon zombie ~ ~ ~3', False),
+    ('difficulty hard', False),
     ('list', False),
 ]
 

@@ -1,0 +1,635 @@
+{
+  "version": "26.3",
+  "mobs": {
+    "allay": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Allay"
+    },
+    "armadillo": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "axolotl": {
+      "category": "axolotls",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Axolotl"
+    },
+    "bat": {
+      "category": "ambient",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "bee": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "blaze": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "bogged": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "breeze": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "camel": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "camel_husk": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "CamelHusk"
+    },
+    "cat": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Cat"
+    },
+    "cave_spider": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "chicken": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Chicken"
+    },
+    "cod": {
+      "category": "water_ambient",
+      "despawn_distance": 64,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractFish"
+    },
+    "copper_golem": {
+      "category": "misc",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractGolem"
+    },
+    "cow": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "creaking": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "creeper": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "dolphin": {
+      "category": "water_creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "donkey": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "drowned": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "elder_guardian": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "enderman": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "endermite": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "ender_dragon": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "evoker": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "fox": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "frog": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "ghast": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "happy_ghast": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "giant": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "glow_squid": {
+      "category": "underground_water_creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "goat": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "guardian": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "hoglin": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Hoglin"
+    },
+    "horse": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "husk": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "illusioner": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "iron_golem": {
+      "category": "misc",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractGolem"
+    },
+    "llama": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "magma_cube": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "mooshroom": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "mule": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "nautilus": {
+      "category": "water_creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractNautilus"
+    },
+    "ocelot": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Ocelot"
+    },
+    "panda": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "parched": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "parrot": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "phantom": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "pig": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "piglin": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "piglin_brute": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "pillager": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "polar_bear": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "pufferfish": {
+      "category": "water_ambient",
+      "despawn_distance": 64,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractFish"
+    },
+    "rabbit": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "ravager": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "salmon": {
+      "category": "water_ambient",
+      "despawn_distance": 64,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractFish"
+    },
+    "sheep": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "shulker": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractGolem"
+    },
+    "silverfish": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "skeleton": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "skeleton_horse": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "slime": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "sniffer": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "snow_golem": {
+      "category": "misc",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractGolem"
+    },
+    "spider": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "squid": {
+      "category": "water_creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "stray": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "strider": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "sulfur_cube": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Mob"
+    },
+    "tadpole": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractFish"
+    },
+    "trader_llama": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "tropical_fish": {
+      "category": "water_ambient",
+      "despawn_distance": 64,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractFish"
+    },
+    "turtle": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "vex": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "villager": {
+      "category": "misc",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Villager"
+    },
+    "vindicator": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "wandering_trader": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "WanderingTrader"
+    },
+    "warden": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Warden"
+    },
+    "witch": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Raider"
+    },
+    "wither": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "wither_skeleton": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "wolf": {
+      "category": "creature",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "Animal"
+    },
+    "zoglin": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "zombie": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    },
+    "zombie_horse": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "ZombieHorse"
+    },
+    "zombie_nautilus": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": true,
+      "remove_when_far_away": "AbstractNautilus"
+    },
+    "zombie_villager": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "ZombieVillager"
+    },
+    "zombified_piglin": {
+      "category": "monster",
+      "despawn_distance": 128,
+      "no_despawn_distance": 32,
+      "allowed_in_peaceful": false,
+      "remove_when_far_away": "Mob"
+    }
+  }
+}

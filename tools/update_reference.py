@@ -270,7 +270,7 @@ def main():
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
         'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
-        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportMining.java', 'ExportExperience.java', 'ExportItemEntities.java',
+        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportMining.java', 'ExportExperience.java', 'ExportItemEntities.java', 'ExportMobDespawn.java',
         'ExportRecipeBook.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
@@ -304,6 +304,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMining', str(out / 'mining.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportExperience', str(out / 'experience.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportItemEntities', str(out / 'item-entities.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobDespawn', str(out / 'mob-despawn.json'), str(ROOT / 'tools/mob-classes.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportRecipeBook', str(out / 'recipe-book.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
     structure_templates(inner, out)
@@ -341,7 +342,7 @@ def main():
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     # Sound events the server plays outside mob audio.
-    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed']}
+    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed', 'block.respawn_anchor.charge', 'block.respawn_anchor.deplete', 'block.respawn_anchor.set_spawn', 'entity.player.small_fall', 'entity.player.big_fall']}
     data['particle_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:particle_type']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
