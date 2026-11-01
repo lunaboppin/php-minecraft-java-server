@@ -1316,8 +1316,25 @@ final class Server
         $name = $this->version->catalog->blockName($clicked);
         $within = !$c->dead && ($x + 0.5 - $c->x) ** 2 + ($y + 0.5 - $c->y - 1.62) ** 2 + ($z + 0.5 - $c->z) ** 2 <= 64;
         // ServerGamePacketListenerImpl.handleUseItemOn: spawn protection stops any use on the block.
-        if ($within && $y >= $this->world->minY && $y < $this->world->minY + $this->world->height && $this->underSpawnProtection($c, $x, $z)) {
+        // ServerPlayer.sendBuildLimitMessage, as an overlay: clicks above or below the world.
+        $maxY = $this->world->minY + $this->world->height - 1;
+        $buildLimit = fn (bool $high) => $c->send($this->version, 'system_chat', Nbt::component(['translate' => $high ? 'build.tooHigh' : 'build.tooLow', 'with' => [$high ? $maxY : $this->world->minY], 'color' => 'red']) . "\1");
+        if ($y > $maxY || $y < $this->world->minY) {
+            $buildLimit($y > $maxY);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        if ($within && $this->underSpawnProtection($c, $x, $z)) {
             $this->spawnProtectionMessage($c, $x, $y, $z);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        // handleUseItemOn ignores the click while a teleport awaits its confirmation, answering
+        // with the too-high message and the two blocks as they are.
+        if ($c->teleport !== null) {
+            $buildLimit(true);
+            $this->blockUpdate($c, $x, $y, $z);
+            $this->blockUpdate($c, $x + [0, 0, 0, 0, -1, 1][$face], $y + [-1, 1, 0, 0, 0, 0][$face], $z + [0, 0, -1, 1, 0, 0][$face]);
             $this->acknowledge($c, $sequence);
             return;
         }
