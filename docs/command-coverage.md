@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **80** have an existing PHP handler; **12** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **81** have an existing PHP handler; **11** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -38,7 +38,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/experience` | [ExperienceCommand.php](../src/Server/Commands/ExperienceCommand.php) | Partial handler; native behavior incomplete | — |
 | `/fetchprofile` | — | Unimplemented | — |
 | `/fill` | [FillCommand.php](../src/Server/Commands/FillCommand.php) | Partial handler; native behavior incomplete | — |
-| `/fillbiome` | — | Unimplemented | — |
+| `/fillbiome` | [FillBiomeCommand.php](../src/Server/Commands/FillBiomeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/forceload` | [ForceLoadCommand.php](../src/Server/Commands/ForceLoadCommand.php) | Partial handler; native behavior incomplete | — |
 | `/function` | [FunctionCommand.php](../src/Server/Commands/FunctionCommand.php) | Partial handler; native behavior incomplete | — |
 | `/gamemode` | [GameModeCommand.php](../src/Server/Commands/GameModeCommand.php) | Partial handler; native behavior incomplete | — |
