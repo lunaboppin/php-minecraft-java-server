@@ -75,6 +75,8 @@ final class Server
 
     use FallingBlocks;
 
+    use Speleothems;
+
     use Bells;
 
     use Tripwires;

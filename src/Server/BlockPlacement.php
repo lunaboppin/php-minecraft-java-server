@@ -224,6 +224,9 @@ trait BlockPlacement
             // ConcretePowderBlock.getStateForPlacement: it sets at once beside or in water.
             return [substr($name, 0, -7), []];
         }
+        if (isset(self::SPELEOTHEMS[$name])) {
+            return $this->speleothemPlacement($c, $name, $pos);
+        }
         if (str_ends_with($name, '_hanging_sign') && !str_contains($name, '_wall_')) {
             return $this->hangingSignPlacement($c, $name, $properties, $pos, $clicked, $looking());
         }

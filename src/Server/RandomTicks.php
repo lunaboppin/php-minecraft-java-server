@@ -60,6 +60,7 @@ trait RandomTicks
                     in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium', 'vine'], true) => true,
                     $name === 'turtle_egg' => true,
                     $name === 'chorus_flower' => (int) $p['age'] < 5,
+                    isset(self::SPELEOTHEMS[$name]) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -204,6 +205,8 @@ trait RandomTicks
             $this->turtleEggRandomTick($x, $y, $z, $state);
         } elseif ($name === 'chorus_flower') {
             $this->chorusFlowerRandomTick($x, $y, $z, $state);
+        } elseif (isset(self::SPELEOTHEMS[$name])) {
+            $this->speleothemRandomTick($x, $y, $z, $state);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
         } elseif ($name === 'crimson_nylium' || $name === 'warped_nylium') {
