@@ -75,6 +75,8 @@ final class Server
 
     use Corals;
 
+    use PressurePlates;
+
     use DaylightDetectors;
 
     use Observers;
