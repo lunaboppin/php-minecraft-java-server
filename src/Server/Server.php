@@ -1378,7 +1378,8 @@ final class Server
             }
         }
         [$dx, $dy, $dz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$face];
-        $replace = $this->version->catalog->blocks[$name]['replaceable'];
+        $heldName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        $replace = $this->canBeReplacedBy($clicked, $heldName, true, $face, $cursor[1], $c->sneaking);
         [$tx, $ty, $tz] = $replace ? [$x, $y, $z] : [$x + $dx, $y + $dy, $z + $dz];
         if ($this->useSpawnEggOn($c, $slot, $x, $y, $z, $face)) {
             $this->useSwing($c, $hand);
@@ -1435,7 +1436,8 @@ final class Server
             }
         }
         $block = $this->version->catalog->blocks[$blockName ?? ''] ?? null;
-        if ($block !== null && $stack !== null && $this->editable($c, $tx, $ty, $tz) && $this->version->catalog->blocks[$this->version->catalog->blockName($this->world->get($tx, $ty, $tz))]['replaceable']) {
+        if ($block !== null && $stack !== null && $this->editable($c, $tx, $ty, $tz)
+            && ($replace || $this->canBeReplacedBy($this->world->get($tx, $ty, $tz), $itemName, false, $face, $cursor[1], $c->sneaking))) {
             $properties = [];
             $facing = ['south', 'west', 'north', 'east'][((int) floor($c->yaw / 90 + 0.5)) & 3];
             if (str_ends_with($blockName, '_wall_sign')) {
