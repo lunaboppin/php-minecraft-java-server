@@ -54,6 +54,7 @@ final class ArgumentReader
             'damageable' => $ids(array_keys(array_filter($version->blocks['items'], static fn (int $id): bool => ($version->catalog->item($id)['durability'] ?? 0) > 0))),
             'block_tag' => array_fill_keys(array_keys($version->blockTags()), true),
             'minecraft:worldgen/biome' => $ids(array_map(static fn (string $path): string => basename($path, '.json'), glob($version->directory . '/worldgen/biome/*.json') ?: [])),
+            'minecraft:worldgen/configured_feature' => $ids(array_map(static fn (string $path): string => basename($path, '.json'), glob($version->directory . '/worldgen/feature/*.json') ?: [])),
             'tags:minecraft:worldgen/biome' => array_fill_keys(array_keys($version->registryTags('minecraft:worldgen/biome')), true),
             'item_tag' => array_fill_keys(array_keys($version->registryTags('minecraft:item')), true),
         ];
@@ -296,6 +297,17 @@ final class ArgumentReader
                     return;
                 }
                 $this->resourceOrId($reader, 'minecraft:item_modifier');
+                return;
+            case 'minecraft:feature':
+                // ResourceOrIdArgument: a configured feature's ID, or an inline feature.
+                if ($reader->canRead() && in_array($reader->peek(), ['{', '"', "'", '['], true)) {
+                    Snbt::read($reader);
+                    return;
+                }
+                $id = $reader->readIdentifier();
+                if (!isset($this->registries['minecraft:worldgen/configured_feature'][$id])) {
+                    throw $reader->error('argument.resource_or_id.no_such_element', [$id, 'minecraft:worldgen/feature']);
+                }
                 return;
             case 'minecraft:heightmap':
                 // HeightmapTypeArgument: the heightmaps kept after world generation.

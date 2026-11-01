@@ -1613,7 +1613,7 @@ final class Server
             foreach ($players as $player) {
                 $player->send($this->version, 'section_blocks_update', $payload);
                 foreach ($positions as [$x, $y, $z]) {
-                    $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+                    $type = $this->world->blockEntityUpdateType($this->world->get($x, $y, $z));
                     if ($type !== null) {
                         $player->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
                     }
@@ -1668,7 +1668,7 @@ final class Server
     private function blockUpdate(Client $c, int $x, int $y, int $z): void
     {
         $c->send($this->version, 'block_update', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($this->world->get($x, $y, $z)));
-        $type = $this->world->blockEntityType($this->world->get($x, $y, $z));
+        $type = $this->world->blockEntityUpdateType($this->world->get($x, $y, $z));
         if ($type !== null) {
             $c->send($this->version, 'block_entity_data', Binary::writePosition($x, $y, $z) . Binary::writeVarInt($type) . $this->world->blockEntityNbt($x, $y, $z));
         }
