@@ -22,6 +22,8 @@ class World
     private array $staleLight=[];
     private array $blockEntityMap=[];
     private array $containerPositions=[];
+    /** @var array<string, array<int, array>> biome containers /fillbiome rewrote, by chunk and section */
+    private array $biomeEdits=[];
     private readonly TerrainGenerator|DimensionGenerator|null $terrain;
     private ?TerrainGenerator $legacyTerrain=null;
     /** Vanilla 26.3 generation for chunks first generated after it was enabled (generation.legacy=2). */
@@ -38,7 +40,7 @@ class World
         $exists=is_file($path);$directory=dirname($path);
         if(!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory)){throw new \RuntimeException('Cannot create world directory');}
         $this->db=new \PDO('sqlite:'.$path,null,null,[\PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION]);
-        $this->db->exec('CREATE TABLE IF NOT EXISTS generation(cx INTEGER NOT NULL,cz INTEGER NOT NULL,legacy INTEGER NOT NULL,PRIMARY KEY(cx,cz)); PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=3000; CREATE TABLE IF NOT EXISTS blocks(x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,state INTEGER NOT NULL,PRIMARY KEY(x,y,z)); CREATE INDEX IF NOT EXISTS chunk_blocks ON blocks(x,z); CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS players(uuid TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS containers(position TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS chunk_mobs(cx INTEGER NOT NULL,cz INTEGER NOT NULL,data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS chunk_mobs_chunk ON chunk_mobs(cx,cz)');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS generation(cx INTEGER NOT NULL,cz INTEGER NOT NULL,legacy INTEGER NOT NULL,PRIMARY KEY(cx,cz)); PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=3000; CREATE TABLE IF NOT EXISTS blocks(x INTEGER NOT NULL,y INTEGER NOT NULL,z INTEGER NOT NULL,state INTEGER NOT NULL,PRIMARY KEY(x,y,z)); CREATE INDEX IF NOT EXISTS chunk_blocks ON blocks(x,z); CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS players(uuid TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS containers(position TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS chunk_mobs(cx INTEGER NOT NULL,cz INTEGER NOT NULL,data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS chunk_mobs_chunk ON chunk_mobs(cx,cz); CREATE TABLE IF NOT EXISTS chunk_biomes(cx INTEGER NOT NULL,cz INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(cx,cz))');
         foreach($this->db->query('SELECT position FROM containers')->fetchAll(\PDO::FETCH_COLUMN) as $position){$this->containerPositions[$position]=true;}
         $stored=$this->setting('generator');
         if($stored===null){
@@ -148,6 +150,28 @@ class World
         if(!$generator instanceof Vanilla\ChunkStore){return null;}
         return array_map(fn(string $biome):int=>$this->version->registryId('worldgen/biome',$biome),$generator->final($cx,$cz)[1]);
     }
+    /** @return array<int, array> the biome containers /fillbiome rewrote in a chunk, by section */
+    public function biomeEdits(int $cx,int $cz):array {
+        $key=$cx.':'.$cz;if(isset($this->biomeEdits[$key])){return $this->biomeEdits[$key];}
+        $q=$this->db->prepare('SELECT data FROM chunk_biomes WHERE cx=? AND cz=?');$q->execute([$cx,$cz]);$data=$q->fetchColumn();
+        if(count($this->biomeEdits)>=64){array_shift($this->biomeEdits);}
+        return $this->biomeEdits[$key]=$data===false?[]:json_decode($data,true,512,JSON_THROW_ON_ERROR);
+    }
+    /** @return list<array> every section's biome container, as rewritten or as generated */
+    public function biomeContainers(int $cx,int $cz):array {
+        $edits=$this->biomeEdits($cx,$cz);$names=$this->version->registryEntries('minecraft:worldgen/biome');$containers=[];
+        $vanilla=$this->vanillaBiomes($cx,$cz);$columns=[];
+        if($vanilla===null){for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$columns[]=substr($names[$this->generatedBiome($cx*16+$bx*4+2,$cz*16+$bz*4+2)],10);}}}
+        for($section=0;$section<intdiv($this->height,16);++$section){
+            $containers[]=$edits[$section]??BiomeContainer::fromBiomes($vanilla===null?array_merge($columns,$columns,$columns,$columns):array_map(static fn(int $id):string=>substr($names[$id],10),array_slice($vanilla,$section*64,64)));
+        }
+        return $containers;
+    }
+    /** Saves a chunk's rewritten biome containers and rebuilds its packet. */
+    public function setBiomeContainers(int $cx,int $cz,array $containers):void {
+        $key=$cx.':'.$cz;$this->biomeEdits[$key]=$containers;unset($this->cache[$key]);
+        $q=$this->db->prepare('INSERT INTO chunk_biomes(cx,cz,data) VALUES(?,?,?) ON CONFLICT(cx,cz) DO UPDATE SET data=excluded.data');$q->execute([$cx,$cz,json_encode($containers,JSON_THROW_ON_ERROR)]);
+    }
     public function loadPlayer(string $uuid,bool $online=false):?array {
         $q=$this->db->prepare('SELECT data FROM players WHERE uuid=?');$q->execute([($online?'online:':'').bin2hex($uuid)]);$data=$q->fetchColumn();return $data===false?null:json_decode($data,true,512,JSON_THROW_ON_ERROR);
     }
@@ -165,17 +189,28 @@ class World
         try{$action();$this->db->commit();}
         catch(\Throwable $e){
             try{if($this->db->inTransaction()){$this->db->rollBack();}}
-            finally{$this->cache=[];$this->baseCache=[];$this->editCache=[];$this->lightCache=[];$this->lightLevels=[];$this->ownLight=[];$this->staleLight=[];$this->builtWithout=[];$this->generationCache=[];$this->containerPositions=$containers;}
+            finally{$this->cache=[];$this->baseCache=[];$this->editCache=[];$this->lightCache=[];$this->lightLevels=[];$this->ownLight=[];$this->staleLight=[];$this->builtWithout=[];$this->generationCache=[];$this->biomeEdits=[];$this->containerPositions=$containers;}
             throw $e;
         }
     }
     public function checkpoint():void {$this->db->exec('PRAGMA wal_checkpoint(PASSIVE)');}
     public function biome(int $x,int $z):int {
+        return $this->biomeEdits($x>>4,$z>>4)!==[]?$this->version->registryId('worldgen/biome',$this->column($x,$z)['biome']):$this->generatedBiome($x,$z);
+    }
+    private function generatedBiome(int $x,int $z):int {
         $generator=$this->generatorFor($x>>4,$z>>4);
         if($generator instanceof Vanilla\ChunkStore){$column=$this->column($x,$z);return $this->version->registryId('worldgen/biome',$column['biome']);}
         return $generator?->biome($x,$z)??$this->version->registryId('worldgen/biome','plains');
     }
     public function column(int $x,int $z):array {
+        $column=$this->generatedColumn($x,$z);$edits=$this->biomeEdits($x>>4,$z>>4);
+        if($edits!==[]){
+            $quartY=min(max(($column['height']-$this->minY)>>2,0),intdiv($this->height,4)-1);
+            if(isset($edits[$quartY>>2])){$column['biome']=BiomeContainer::get($edits[$quartY>>2],(($quartY&3)<<4)|((($z&15)>>2)<<2)|(($x&15)>>2));}
+        }
+        return $column;
+    }
+    private function generatedColumn(int $x,int $z):array {
         $generator=$this->generatorFor($x>>4,$z>>4);
         if($generator instanceof Vanilla\ChunkStore){
             [$blocks,$biomes]=$generator->final($x>>4,$z>>4);$catalog=$this->version->catalog;$column=(($z&15)<<4)|($x&15);$height=$this->minY;
@@ -239,10 +274,10 @@ class World
         $key=$cx.':'.$cz;if(isset($this->cache[$key])){return $this->cache[$key];}
         $sections=$this->sections($cx,$cz);$catalog=$this->version->catalog;$surface=array_fill(0,256,0);$motion=$surface;$bytes='';$entities=[];
         $biomeBits=(int)ceil(log($this->version->registryCount('worldgen/biome'),2));
-        $vanillaBiomes=$this->vanillaBiomes($cx,$cz);$biomeData=null;
+        $vanillaBiomes=$this->vanillaBiomes($cx,$cz);$biomeData=null;$edited=$this->biomeEdits($cx,$cz);$biomeId=fn(string $biome):int=>$this->version->registryId('worldgen/biome',$biome);
         if($vanillaBiomes===null){
             $biomes=[];
-            for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$biomes[]=$this->biome($cx*16+$bx*4+2,$cz*16+$bz*4+2);}}
+            for($bz=0;$bz<4;++$bz){for($bx=0;$bx<4;++$bx){$biomes[]=$this->generatedBiome($cx*16+$bx*4+2,$cz*16+$bz*4+2);}}
             $biomeData=Palette::biomes(array_merge($biomes,$biomes,$biomes,$biomes),$biomeBits);
         }
         // Counts come from each section's distinct states; only sections holding block entities are
@@ -262,7 +297,7 @@ class World
                     if(isset($this->blockEntityMap[$state]) && (($flags[$state]??0)&1)===0){$entities[]=chr((($index&15)<<4)|(($index>>4)&15)).pack('n',$section*16+$this->minY+($index>>8)).Binary::writeVarInt($this->blockEntityMap[$state]).$this->blockEntityNbt($cx*16+($index&15),$section*16+$this->minY+($index>>8),$cz*16+(($index>>4)&15));}
                 }
             }
-            $bytes.=pack('nn',$count,$fluids).Palette::blocks($states,$this->globalBits).($biomeData??Palette::biomes(array_slice($vanillaBiomes,$section*64,64),$biomeBits));
+            $bytes.=pack('nn',$count,$fluids).Palette::blocks($states,$this->globalBits).(isset($edited[$section])?BiomeContainer::encode($edited[$section],$biomeId,$biomeBits):($biomeData??Palette::biomes(array_slice($vanillaBiomes,$section*64,64),$biomeBits)));
         }
         for($column=0;$column<256;++$column){
             $needSurface=true;$needMotion=true;

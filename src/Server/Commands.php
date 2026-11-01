@@ -58,6 +58,8 @@ trait Commands
 
     use CommandModules\SpreadPlayersCommand;
 
+    use CommandModules\FillBiomeCommand;
+
     use CommandModules\DatapackCommand;
 
     use CommandModules\LocateCommand;
@@ -268,11 +270,10 @@ trait Commands
             foreach ($this->experienceOrbs as $id => $orb) {
                 $items[] = ['orb' => $id, 'x' => $orb['x'], 'y' => $orb['y'], 'z' => $orb['z'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:experience_orb', 'width' => 0.5, 'height' => 0.5, 'id' => $id, 'uuid' => $orb['uuid']];
             }
+            // A dying mob stays in the level, and selectable, until its death animation ends.
             foreach ($this->animals as $id => $animal) {
-                if (!isset($animal['deadAt'])) {
-                    $info = $this->version->catalog->mobs['entities'][$animal['kind']];
-                    $mobs[] = ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0, 'type' => 'minecraft:' . $animal['kind'], 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
-                }
+                $info = $this->version->catalog->mobs['entities'][$animal['kind']];
+                $mobs[] = ['mob' => $id, 'x' => $animal['x'], 'y' => $animal['y'], 'z' => $animal['z'], 'yaw' => (float) ($animal['yaw'] ?? 0), 'pitch' => 0.0, 'type' => 'minecraft:' . $animal['kind'], 'width' => $info['width'], 'height' => $info['height'], 'id' => $id, 'uuid' => hex2bin($animal['uuid'])];
             }
         }
         $candidates = match ($selector->kind) {
@@ -702,12 +703,8 @@ trait Commands
         $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $this->sourcePosition($client)[0]), $this->coordinate($arguments[1], $this->sourcePosition($client)[1]), $this->coordinate($arguments[2], $this->sourcePosition($client)[2])]);
         // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
         // player's view as soon as they are placed, before the chunks reach the client.
-        [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
         $dimension ??= $this->sourceDimension($client);
-        // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
-        $forced = array_filter($this->forcedChunks($dimension), static fn (array $chunk): bool => abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2);
-        if ($forced === []
-            && array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
+        if (!$this->commandChunkLoaded($dimension, $position[0] >> 4, $position[2] >> 4)) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
         $world = $this->worlds[$dimension];
@@ -715,6 +712,18 @@ trait Commands
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.outofworld']);
         }
         return $position;
+    }
+
+    /** A chunk commands may use: within a player's view in the dimension, or near a forced chunk. */
+    private function commandChunkLoaded(string $dimension, int $chunkX, int $chunkZ): bool
+    {
+        // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
+        foreach ($this->forcedChunks($dimension) as $chunk) {
+            if (abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2) {
+                return true;
+            }
+        }
+        return array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) !== [];
     }
 
     /**
