@@ -184,9 +184,9 @@ trait FallingBlocks
             }
             $position = [(int) floor($block['x']), (int) floor($block['y']), (int) floor($block['z'])];
             $inWater = $this->fireBlocks()->isWater($this->world->get(...$position));
-            // Entity.checkFallDamage: the distance fallen adds up out of water until it lands.
+            // Entity.checkFallDamage: the distance fallen adds up, each move cast to float, out of water until it lands.
             if (!$inWater && $moved[1] < 0.0) {
-                $block['fall'] -= $moved[1];
+                $block['fall'] -= \PhpMinecraftJavaServer\World\Generation\Float32::round($moved[1]);
             }
             $state = $block['state'];
             unset($block);
