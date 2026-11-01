@@ -132,6 +132,8 @@ trait Survival
                 // PrimedTnt.addAdditionalSaveData: the fuse, motion and owner keep.
                 $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid'])]
                     + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
+                $this->saveMovingPistons();
+                $this->saveDaylightDetectors();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -607,6 +609,10 @@ trait Survival
                 }
             }
         }
+        if ($name === 'turtle_egg') {
+            // TurtleEggBlock.playerDestroy: breaking takes one egg, leaving the rest.
+            $this->decreaseTurtleEggs($x, $y, $z, $state);
+        }
         // Item.mineBlock: tools wear by their damage per block on blocks that take time to break.
         $slot = 36 + $c->heldSlot;
         $held = $c->inventory[$slot] ?? null;
@@ -713,6 +719,12 @@ trait Survival
             case $name === 'pointed_dripstone' && ($p['vertical_direction'] ?? '') === 'up' && ($p['thickness'] ?? '') === 'tip':
                 $this->playerFallDamage($c, $fall + 2.5, 2.0, 'minecraft:stalagmite');
                 return;
+            case $name === 'turtle_egg':
+                // TurtleEggBlock.fallOn: one landing in three breaks an egg.
+                if ($this->editable($c, ...$position) && random_int(0, 2) === 0) {
+                    $this->decreaseTurtleEggs(...[...$position, $state]);
+                }
+                break;
             case $name === 'farmland':
                 // FarmlandBlock.fallOn: a player tramples it by chance as the fall grows.
                 if (self::randomUnit() < $fall - 0.5) {
@@ -790,6 +802,7 @@ trait Survival
         if ($c->dead) {
             return;
         }
+        $this->playerStepOn($c);
         if (!$this->validWindow($c)) {
             $this->closeWindow($c, true);
             $this->syncInventory($c);

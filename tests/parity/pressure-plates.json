@@ -1,0 +1,227 @@
+{
+  "name": "pressure-plates",
+  "normalizations": [
+    "Compare pressure plates on redstone lamps with items or a pig resting on them, then after they are removed: wooden plates count any entity, stone plates only the living, weighted plates by number.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:oak_pressure_plate"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 63 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:stone_pressure_plate"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:light_weighted_pressure_plate"
+    },
+    {
+      "action": "command",
+      "text": "setblock 9 63 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 9 64 0 minecraft:heavy_weighted_pressure_plate"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 63 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 0 minecraft:stone_pressure_plate"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 0.5 64.1 0.5 {Item:{id:\"minecraft:dirt\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 3.5 64.1 0.5 {Item:{id:\"minecraft:dirt\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 6.5 64.1 0.5 {Item:{id:\"minecraft:dirt\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 6.5 64.1 0.5 {Item:{id:\"minecraft:sand\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 6.5 64.1 0.5 {Item:{id:\"minecraft:gravel\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 9.5 64.1 0.5 {Item:{id:\"minecraft:dirt\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 9.5 64.1 0.5 {Item:{id:\"minecraft:sand\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 9.5 64.1 0.5 {Item:{id:\"minecraft:gravel\",count:1},PickupDelay:32767,Motion:[0.0,0.0,0.0]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:pig 12.5 64.1 0.5 {NoAI:1b}"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "pressed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          63,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          63,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          9,
+          63,
+          0
+        ],
+        [
+          9,
+          64,
+          0
+        ],
+        [
+          12,
+          63,
+          0
+        ],
+        [
+          12,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=!player]"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "released",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          63,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          63,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          9,
+          63,
+          0
+        ],
+        [
+          9,
+          64,
+          0
+        ],
+        [
+          12,
+          63,
+          0
+        ],
+        [
+          12,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}
