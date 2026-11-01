@@ -107,6 +107,7 @@ trait Dimensions
             return;
         }
         // The player is a new entity there (or after respawning), with a fresh ServerEntity.
+        $from = $c->dimension;
         $c->motionTracker = null;
         $this->withDimension($c->dimension, function () use ($c): void {
             $this->closeWindow($c, true);
@@ -152,6 +153,10 @@ trait Dimensions
             }
             $this->savePlayer($c);
         });
+        // ServerPlayer.triggerDimensionChangeTriggers, for a teleport but not a respawn.
+        if (!$force) {
+            $this->simpleTrigger($c, 'minecraft:changed_dimension', ['from' => $from, 'to' => $dimension]);
+        }
     }
 
     /**

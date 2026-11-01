@@ -122,6 +122,7 @@ trait Sleeping
         // ServerPlayer.startSleeping resets the time since rest; startSleepInBed counts the sleep.
         $this->resetStat($c, 'custom', 'time_since_rest');
         $this->awardStat($c, 'custom', 'sleep_in_bed');
+        $this->simpleTrigger($c, 'minecraft:slept_in_bed', []);
         if ((int) $this->gameRule('players_sleeping_percentage') > 100) {
             $this->overlay($c, ['translate' => 'sleep.not_possible']);
         }

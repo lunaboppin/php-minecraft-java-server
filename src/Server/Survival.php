@@ -892,6 +892,7 @@ trait Survival
             if ($stack !== null && $stack['item'] === $c->eating['item']) {
                 // Consumable.onConsume: the item counts as used.
                 $this->awardStat($c, 'used', $this->version->catalog->itemName($stack['item']));
+                $this->simpleTrigger($c, 'minecraft:consume_item', ['item' => $this->version->catalog->itemName($stack['item'])]);
                 $food = $this->version->catalog->item($stack['item']);
                 $c->food = min(20, $c->food + $food['nutrition']);
                 $c->saturation = min($c->food, $c->saturation + $food['saturation']);
