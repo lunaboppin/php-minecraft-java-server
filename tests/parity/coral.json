@@ -1,0 +1,147 @@
+{
+  "name": "coral",
+  "normalizations": [
+    "Compare living coral blocks, plants and fans set by commands and placed by a player, dry or beside contained water, after their death ticks have passed.",
+    "Dry corals die 60 to 99 ticks after they are checked; water is kept in a pit so it cannot spread to the others.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -2 62 -6 30 63 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -6 30 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:tube_coral_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 65 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:brain_coral_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 0 minecraft:fire_coral_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 1 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 9 64 0 minecraft:tube_coral[waterlogged=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 0 minecraft:horn_coral_wall_fan[facing=north,waterlogged=false]"
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative @s"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 16.5 64 -1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bubble_coral_block"
+    },
+    {
+      "action": "place",
+      "position": [
+        15,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bubble_coral_fan"
+    },
+    {
+      "action": "place",
+      "position": [
+        18,
+        63,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "snapshot",
+      "name": "settled",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          63,
+          0
+        ],
+        [
+          6,
+          63,
+          1
+        ],
+        [
+          9,
+          64,
+          0
+        ],
+        [
+          12,
+          64,
+          0
+        ],
+        [
+          15,
+          64,
+          0
+        ],
+        [
+          18,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -36,6 +36,10 @@ trait SummonCommand
         // Without a position the entity appears at the sender's position, as in vanilla.
         $position = count($arguments) < 4 ? [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]] : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
         $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+        // SummonCommand.createEntity: a type not allowed in peaceful is refused there.
+        if ($this->config->difficulty === 0 && !$info['peaceful']) {
+            throw new CommandFailure(['translate' => 'commands.summon.failed.peaceful']);
+        }
         $id = $this->spawnAnimal($kind, ...$position);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
@@ -47,7 +51,8 @@ trait SummonCommand
 
     /**
      * An item entity from ItemEntity's bare constructor, which neither pushes nor delays it, then
-     * its Item tag. Without a stack the entity is discarded as it loads, so nothing appears.
+     * its Item tag; loading the tag also sets its rotation, 0 without one. Without a stack the
+     * entity is discarded as it loads, so nothing appears.
      */
     private function summonItem(Client $sender, array $arguments, string $text): void
     {
@@ -56,7 +61,7 @@ trait SummonCommand
         $name = preg_replace('/^minecraft:/', '', (string) ($tag['id']['value'] ?? ''));
         $count = (int) ($tag['count']['value'] ?? 1);
         $item = $this->version->blocks['items'][$name] ?? null;
-        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0]]);
+        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0], 0, null, 0.0]);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
         }

@@ -76,7 +76,7 @@ trait Animals
         foreach (['x', 'y', 'z', 'yaw'] as $field) {
             $animal[$field] = (float) $animal[$field];
         }
-        unset($animal['lastHurtTick'], $animal['lastHurtAmount'], $animal['needsSync'], $animal['syncVelocity'], $animal['syncPosition']);
+        unset($animal['tickCount'], $animal['lastHurtTick'], $animal['lastHurtAmount'], $animal['needsSync'], $animal['syncVelocity'], $animal['syncPosition']);
         $animal['equipment'] ??= $this->mobEquipment($animal['kind']);
         if (isset($this->version->catalog->mobSounds['mobs'][$animal['kind']]['variants'])) {
             $animal['soundVariant'] ??= 'minecraft:classic';
@@ -239,6 +239,62 @@ trait Animals
                 $viewer->send($this->version, 'set_equipment', Packets::equipment($mob['id'], $changed, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
             }
         }
+    }
+
+    /** Mob.checkDespawn's per-type inputs, from mob-despawn.json. */
+    private function mobDespawnReference(): array
+    {
+        static $reference = null;
+        return $reference ??= json_decode((string) file_get_contents($this->version->directory . '/mob-despawn.json'), true, 512, JSON_THROW_ON_ERROR)['mobs'];
+    }
+
+    /**
+     * Mob.checkDespawn: in peaceful, mobs not allowed there go; otherwise a mob that is not
+     * persistent and would be removed far away goes at once beyond its category's despawn distance
+     * from the nearest player, or by a 1 in 800 chance once idle for 600 ticks beyond 32 blocks.
+     * Within 32 blocks it is no longer idle.
+     */
+    private function mobDespawns(int $id, array &$mob): bool
+    {
+        $info = $this->mobDespawnReference()[$mob['kind']] ?? null;
+        if ($info === null) {
+            return false;
+        }
+        if ($this->config->difficulty === 0 && !$info['allowed_in_peaceful']) {
+            return true;
+        }
+        // Mob.requiresCustomPersistence: a passenger stays.
+        $persistent = ($mob['persistent'] ?? false) || isset($mob['vehicle']);
+        // Level.getNearestPlayer: the nearest player here who is not a spectator.
+        $nearest = null;
+        foreach ($this->localPlayers() as $player) {
+            if ($player->gameMode !== 3) {
+                $distance = ($player->x - $mob['x']) ** 2 + ($player->y - $mob['y']) ** 2 + ($player->z - $mob['z']) ** 2;
+                $nearest = $nearest === null ? $distance : min($nearest, $distance);
+            }
+        }
+        if ($nearest === null) {
+            return false;
+        }
+        // removeWhenFarAway, by the class that decides it; conversions, raids, patrols, taming and
+        // buckets are not modelled here, so those mobs are in their ordinary state.
+        $far = match ($info['remove_when_far_away']) {
+            'Animal', 'AbstractGolem', 'Allay', 'Villager', 'WanderingTrader', 'Warden', 'Chicken' => false,
+            'AbstractFish', 'Axolotl' => !isset($mob['customName']),
+            'Cat', 'Ocelot' => ($mob['tickCount'] ?? 0) > 2400,
+            default => true,
+        };
+        if (!$persistent && $nearest > $info['despawn_distance'] ** 2 && $far) {
+            return true;
+        }
+        $idle = $info['no_despawn_distance'] ** 2;
+        if (!$persistent && ($mob['noActionTime'] ?? 0) > 600 && $this->mobRandom($id)->nextInt(800) === 0 && $nearest > $idle && $far) {
+            return true;
+        }
+        if ($nearest < $idle) {
+            $mob['noActionTime'] = 0;
+        }
+        return false;
     }
 
     private function removeAnimal(int $id): void
@@ -614,6 +670,12 @@ trait Animals
                 }
                 continue;
             }
+            // ServerLevel.tick: Mob.checkDespawn before the mob ticks.
+            if ($this->mobDespawns($id, $animal)) {
+                $this->removeAnimal($id);
+                continue;
+            }
+            $animal['tickCount'] = ($animal['tickCount'] ?? 0) + 1;
             // Entity.baseTick: the fire countdown, for mobs in ticking chunks.
             if ($this->mobIsTicking($animal)) {
                 $this->tickMobFire($id, $animal);
@@ -640,10 +702,6 @@ trait Animals
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {
-                // Mob.checkDespawn: a player who is not a spectator within 32 blocks resets noActionTime.
-                if ($p->gameMode !== 3 && ($p->x - $animal['x']) ** 2 + ($p->y - $animal['y']) ** 2 + ($p->z - $animal['z']) ** 2 < 32 ** 2) {
-                    $animal['noActionTime'] = 0;
-                }
                 if ($this->ticks % 4 === 0) {
                     $this->showAnimal($p, $animal);
                 }
