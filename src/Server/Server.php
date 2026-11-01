@@ -99,6 +99,8 @@ final class Server
 
     use Rails;
 
+    use Sponges;
+
     use Precipitation;
 
     use BoneMeal;
