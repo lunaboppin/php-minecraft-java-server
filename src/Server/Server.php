@@ -345,6 +345,7 @@ final class Server
                     }
                 }
                 $this->pollAuthentication();
+                $this->pollProfileFetches();
                 $now = self::now();
                 if ($now >= $nextTick) {
                     // MinecraftServer.runServer: a sprint runs the next tick at once.

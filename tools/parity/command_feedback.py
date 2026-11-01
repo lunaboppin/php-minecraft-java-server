@@ -635,6 +635,13 @@ SCRIPT = [
     ('fillbiome 1000 200 1000 1003 203 1003 desert', False),
     ('fillbiome 0 200 0 3 203 3 plains', False),
     ('!witness fillbiome 0 200 0 3 203 3 plains', False),
+    # /fetchprofile: players' own profiles with their copy, head, mannequin and sprite links, and
+    # failures. Name and UUID lookups reply off the tick once the services answer, so only their
+    # syntax is compared.
+    ('fetchprofile entity @s', False), ('fetchprofile entity Witness', False),
+    ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["fp"],CustomName:"Bob"}', False), ('fetchprofile entity @e[tag=fp,limit=1]', False),
+    ('!quiet kill @e[tag=fp]', False), ('fetchprofile entity @e[type=pig]', False), ('fetchprofile id nope', False),
+    ('fetchprofile id 1-2-3', False), ('fetchprofile name', False), ('fetchprofile entity', False), ('!witness fetchprofile entity @s', False),
     ('list', False),
 ]
 
