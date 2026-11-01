@@ -334,6 +334,14 @@ trait BlockPlacement
             return null;
         } elseif ($is('BaseRailBlock')) {
             $properties['shape'] = $horizontal === 'east' || $horizontal === 'west' ? 'east_west' : 'north_south';
+        } elseif ($is('ScaffoldingBlock')) {
+            // ScaffoldingBlock: its distance from support, refused once it would be 7.
+            $distance = $this->scaffoldingDistance($pos);
+            if ($distance >= 7) {
+                return null;
+            }
+            $properties['distance'] = (string) $distance;
+            $properties['bottom'] = $distance > 0 && $catalog->blockName($this->world->get($pos[0], $pos[1] - 1, $pos[2])) !== $name ? 'true' : 'false';
         } elseif ($is('LeavesBlock')) {
             $properties['persistent'] = 'true';
         } elseif ($is('VineBlock')) {
@@ -403,6 +411,29 @@ trait BlockPlacement
             return [$name, ['attached' => $middle ? 'true' : 'false', 'rotation' => (string) $rotation, 'waterlogged' => $properties['waterlogged'] ?? 'false']];
         }
         return null;
+    }
+
+    /** ScaffoldingBlock.getDistance: 0 on a sturdy block, else one more than the nearest scaffolding beside or the one below's. */
+    private function scaffoldingDistance(array $pos): int
+    {
+        $catalog = $this->version->catalog;
+        $below = $this->world->get($pos[0], $pos[1] - 1, $pos[2]);
+        $distance = 7;
+        if ($catalog->blockName($below) === 'scaffolding') {
+            $distance = (int) $catalog->properties($below)['distance'];
+        } elseif ($this->fireBlocks()->sturdy($below, 1)) {
+            return 0;
+        }
+        foreach (['north', 'east', 'south', 'west'] as $direction) {
+            $side = $this->placementNeighbour($pos, $direction);
+            if ($catalog->blockName($side) === 'scaffolding') {
+                $distance = min($distance, (int) $catalog->properties($side)['distance'] + 1);
+                if ($distance === 1) {
+                    break;
+                }
+            }
+        }
+        return $distance;
     }
 
     /** The wall form's getStateForPlacement: the first horizontal looking direction it can hang toward. */

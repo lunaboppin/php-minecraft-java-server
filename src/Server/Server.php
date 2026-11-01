@@ -1395,6 +1395,25 @@ final class Server
         $heldName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
         $replace = $this->canBeReplacedBy($clicked, $heldName, true, $face, $cursor[1], $c->sneaking);
         [$tx, $ty, $tz] = $replace ? [$x, $y, $z] : [$x + $dx, $y + $dy, $z + $dz];
+        if ($heldName === 'scaffolding' && $name === 'scaffolding') {
+            // ScaffoldingBlockItem.updatePlacementContext: up the column, or outward from its top,
+            // to the first free space within seven blocks sideways.
+            $toward = $c->sneaking ? $face : ($face === 1 ? [3, 4, 2, 5][((int) floor($c->yaw / 90 + 0.5)) & 3] : 1);
+            [$sx, $sy, $sz] = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][$toward];
+            [$tx, $ty, $tz] = [$x, $y, $z];
+            for ($sideways = 0; $sideways < 7;) {
+                [$tx, $ty, $tz] = [$tx + $sx, $ty + $sy, $tz + $sz];
+                $there = $ty >= $this->world->minY && $ty < $this->world->minY + $this->world->height ? $this->world->get($tx, $ty, $tz) : null;
+                if ($there === null || $this->version->catalog->blockName($there) !== 'scaffolding') {
+                    $replace = $there !== null && $this->canBeReplacedBy($there, $heldName, true, $toward, $cursor[1], $c->sneaking);
+                    break;
+                }
+                $sideways += $sy === 0 ? 1 : 0;
+            }
+            if (!$replace) {
+                [$tx, $ty, $tz] = [$x, $y, $z];
+            }
+        }
         if ($this->useSpawnEggOn($c, $slot, $x, $y, $z, $face)) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
