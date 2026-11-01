@@ -1483,7 +1483,8 @@ final class Server
                 $blocked = true;
             }
             if (!$blocked) {
-                $this->setBlock($tx, $ty, $tz, $this->version->catalog->state($blockName, $properties));
+                $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
+                $this->updateNeighbourShapes($tx, $ty, $tz);
                 if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
                     $this->joinChest([$tx, $ty, $tz]);
                 }
