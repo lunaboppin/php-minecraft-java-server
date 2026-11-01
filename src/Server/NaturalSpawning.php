@@ -307,10 +307,10 @@ trait NaturalSpawning
         if ($nearest <= 576.0) {
             return false;
         }
+        // LevelData.getRespawnData: the world spawn block, measured from its centre.
         if ($this->world->dimension === 'overworld') {
-            [$sx, $sy, $sz] = $this->sharedSpawn();
-            [$bx, $by, $bz] = [floor($sx) + 0.5, floor($sy), floor($sz) + 0.5];
-            if (($bx - ($x + 0.5)) ** 2 + ($by - $y) ** 2 + ($bz - ($z + 0.5)) ** 2 < 576.0) {
+            [$sx, $sy, $sz] = array_map(static fn (float $v): float => floor($v) + 0.5, $this->worlds['overworld']->spawn());
+            if (($sx - ($x + 0.5)) ** 2 + ($sy - $y) ** 2 + ($sz - ($z + 0.5)) ** 2 < 576.0) {
                 return false;
             }
         }
