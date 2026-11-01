@@ -59,6 +59,7 @@ trait Commands
     use CommandModules\DebugCommand;
 
     use CommandModules\LootCommand;
+
     use CommandModules\SpreadPlayersCommand;
 
     use CommandModules\LocateCommand;
