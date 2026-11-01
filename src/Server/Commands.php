@@ -74,6 +74,8 @@ trait Commands
 
     use CommandModules\JfrCommand;
 
+    use CommandModules\ComputeCommand;
+
     use CommandModules\PlaceCommand;
 
     use CommandModules\LocateCommand;

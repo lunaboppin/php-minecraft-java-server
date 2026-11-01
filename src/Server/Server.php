@@ -69,6 +69,8 @@ final class Server
 
     use Lightning;
 
+    use BlockPlacement;
+
     use Precipitation;
 
     use BoneMeal;
@@ -1453,7 +1455,12 @@ final class Server
             if ($blockName === 'chest' || $blockName === 'trapped_chest') {
                 [$properties['facing'], $properties['type']] = $this->chestPlacement($blockName, [$tx, $ty, $tz], $facing, $face, $c->sneaking);
             }
-            $blocked = false;
+            $placed = $this->placementState($c, $blockName, $properties, [$tx, $ty, $tz], $face, $cursor, [$tx, $ty, $tz] === [$x, $y, $z]);
+            $blocked = $placed === null;
+            if ($placed !== null) {
+                [$blockName, $properties] = $placed;
+                $block = $this->version->catalog->blocks[$blockName];
+            }
             if ($block['full_cube']) {
                 foreach ($this->localPlayers() as $player) {
                     if ($player->gameMode !== 3 && !$player->dead && $tx + 1 > $player->x - 0.3 && $tx < $player->x + 0.3 && $tz + 1 > $player->z - 0.3 && $tz < $player->z + 0.3 && $ty + 1 > $player->y && $ty < $player->y + 1.8) {
@@ -1476,7 +1483,8 @@ final class Server
                 $blocked = true;
             }
             if (!$blocked) {
-                $this->setBlock($tx, $ty, $tz, $this->version->catalog->state($blockName, $properties));
+                $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
+                $this->updateNeighbourShapes($tx, $ty, $tz);
                 if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
                     $this->joinChest([$tx, $ty, $tz]);
                 }
