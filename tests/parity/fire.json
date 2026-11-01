@@ -3,7 +3,7 @@
   "normalizations": [
     "Compare block states once fire has settled; fire's random spread is not compared tick by tick.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
-    "Covers fire going out without fuel, fire kept by infiniburn netherrack, unsupported fire dropping out and fire losing its fuel; burning and spreading are random and not compared. Lava at random_tick_speed 1024 lights fire on the infiniburn netherrack beside a crafting table, which lava ignites though fire cannot burn it; fire is reset to age 0 before comparing, so only where it was lit counts."
+    "Covers fire going out without fuel, fire kept by infiniburn netherrack, unsupported fire dropping out and fire losing its fuel; burning and spreading are random and not compared. Lava at random_tick_speed 1024 lights fire on the infiniburn netherrack beside a crafting table, which lava ignites though fire cannot burn it; fire is replaced with glass before comparing, so only where it was lit counts, not its age."
   ],
   "steps": [
     {
@@ -124,7 +124,7 @@
     },
     {
       "action": "command",
-      "text": "fill 29 64 -1 31 64 1 minecraft:fire replace minecraft:fire"
+      "text": "fill 29 64 -1 31 64 1 minecraft:glass replace minecraft:fire"
     },
     {
       "action": "snapshot",
