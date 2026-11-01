@@ -74,6 +74,7 @@ final class Server
     use Bells;
 
     use Corals;
+    use Pistons;
 
     use TurtleEggs;
 
@@ -163,6 +164,7 @@ final class Server
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreTnt();
+                $this->restoreMovingPistons();
                 $this->restoreBlockSimulation();
             });
         }

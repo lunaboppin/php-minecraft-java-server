@@ -38,6 +38,7 @@ trait BlockSimulation
         $this->bellsChanged($x,$y,$z);
         $this->coralsChanged($x,$y,$z);
         $this->turtleEggPlaced($x,$y,$z);
+        $this->pistonsChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -53,6 +54,7 @@ trait BlockSimulation
         uasort($this->blockTicks,static fn(array $a,array $b):int=>$a[0]<=>$b[0]);
         $due=array_filter($this->blockTicks,fn(array $t):bool=>$t[0]<=$this->worldAge);
         $fluid=array_filter($due,static fn(array $t):bool=>in_array($t[1],self::FLUID_TICKS,true));
+        $this->handlingBlockTicks=true;
         foreach([array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)] as $batch)foreach($batch as $key=>[,$kind,$position]){
             unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
             if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
@@ -67,6 +69,7 @@ trait BlockSimulation
             }elseif($kind==='repeater'){$this->tickCircuit($x,$y,$z,true);}
             elseif($kind==='lightning_rod'){$this->unpowerLightningRod($x,$y,$z);}
         }
+        $this->handlingBlockTicks=false;
         foreach($this->jukeboxes as $key=>&$record){
             if($record['remaining']>0 && --$record['remaining']===0){$this->levelEvent(1011,$record['position'],0);$this->world->container($record['position'],$record);}
         }unset($record);
@@ -137,9 +140,10 @@ trait BlockSimulation
         }
         return 0;
     }
-    private function powerAt(int $x,int $y,int $z,bool $wires=true):int {
+    private function powerAt(int $x,int $y,int $z,bool $wires=true,?array $exclude=null):int {
         $power=0;$c=$this->version->catalog;
         foreach(self::NEIGHBORS as [$dx,$dy,$dz]){
+            if([$dx,$dy,$dz]===$exclude){continue;}
             $a=$x+$dx;$b=$y+$dy;$d=$z+$dz;$power=max($power,$this->directSignal($a,$b,$d,[$x,$y,$z],$wires));
             $state=$this->world->get($a,$b,$d);$name=$c->blockName($state);
             if($c->blocks[$name]['full_cube'] && !$this->circuit($name)){
