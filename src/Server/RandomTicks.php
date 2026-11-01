@@ -59,6 +59,7 @@ trait RandomTicks
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
                     in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium', 'vine'], true) => true,
                     $name === 'turtle_egg' => true,
+                    $name === 'chorus_flower' => (int) $p['age'] < 5,
                     default => false,
                 };
                 if ($ticks) {
@@ -201,6 +202,8 @@ trait RandomTicks
             $this->saplingTick($x, $y, $z, $name, $p);
         } elseif ($name === 'turtle_egg') {
             $this->turtleEggRandomTick($x, $y, $z, $state);
+        } elseif ($name === 'chorus_flower') {
+            $this->chorusFlowerRandomTick($x, $y, $z, $state);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
         } elseif ($name === 'crimson_nylium' || $name === 'warped_nylium') {

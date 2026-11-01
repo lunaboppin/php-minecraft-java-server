@@ -76,6 +76,7 @@ final class Server
     use Tripwires;
 
     use Corals;
+    use Chorus;
 
     use PressurePlates;
 
