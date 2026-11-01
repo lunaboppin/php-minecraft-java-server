@@ -244,6 +244,12 @@ trait InventoryManagement
             }
         }
         $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
+        // The block's use: chests, barrels and ender chests count as opened, tables and furnaces as used.
+        $stat = match ($type) {
+            'crafting' => 'interact_with_crafting_table', 'furnace' => 'interact_with_furnace', 'ender' => 'open_enderchest',
+            default => $this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'open_barrel' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'trapped_chest' ? 'trigger_trapped_chest' : 'open_chest'),
+        };
+        $this->awardStat($c, 'custom', $stat);
         if ($type === 'furnace') {
             $this->activeFurnaces[implode(':', $position)] = $position;
         }
@@ -339,7 +345,7 @@ trait InventoryManagement
         if ($slot === -999) {
             if ($c->cursor !== null) {
                 $n = $button === 1 ? 1 : $c->cursor['count'];
-                $this->playerDrop($c, array_replace($c->cursor, ['count' => $n]), false);
+                $this->playerDrop($c, array_replace($c->cursor, ['count' => $n]), false, 0, true);
                 $c->cursor['count'] -= $n;
                 if ($c->cursor['count'] === 0) {
                     $c->cursor = null;
@@ -397,7 +403,7 @@ trait InventoryManagement
             $c->cursor = array_replace($items[$slot], ['count' => $this->version->catalog->item($items[$slot]['item'])['max_stack']]);
         } elseif ($mode === 4 && $items[$slot] !== null) {
             $n = $button === 0 ? 1 : $items[$slot]['count'];
-            $this->playerDrop($c, array_replace($items[$slot], ['count' => $n]), false);
+            $this->playerDrop($c, array_replace($items[$slot], ['count' => $n]), false, 0, true);
             Inventory::consume($items, $slot, $n);
         } elseif ($mode === 6 && $c->cursor !== null) {
             $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];
@@ -442,6 +448,8 @@ trait InventoryManagement
                 }
                 $c->cursor = array_replace($result, ['count' => ($c->cursor['count'] ?? 0) + $result['count']]);
             }
+            // ResultSlot.checkTakeAchievements: ItemStack.onCraftedBy counts the items made.
+            $this->awardStat($c, 'crafted', $this->version->catalog->itemName($result['item']), $result['count']);
             foreach ($recipe['used'] as $slot) {
                 $itemName = $this->version->catalog->itemName($items[$slot + 1]['item']);
                 Inventory::consume($items, $slot + 1);

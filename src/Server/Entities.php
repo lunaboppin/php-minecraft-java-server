@@ -63,7 +63,7 @@ trait Entities
      * LivingEntity.createItemStackToDrop for a player: from the hand, thrown along the look or
      * scattered at random, picked up after 40 ticks.
      */
-    private function playerDrop(Client $c, array $stack, bool $randomly, int $age = 0): ?int
+    private function playerDrop(Client $c, array $stack, bool $randomly, int $age = 0, bool $thrown = false): ?int
     {
         $eye = $c->y + ($c->sneaking && !$c->flying ? 1.27 : 1.62);
         if ($randomly) {
@@ -79,7 +79,13 @@ trait Entities
         }
         $velocity = array_map(static fn (float $v): float => Float32::round($v), $velocity);
         // getEyeY() - 0.3F subtracts the float 0.3.
-        return $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
+        $id = $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
+        // ServerPlayer.drop: an item thrown from the hand counts as dropped.
+        if ($thrown && $id !== null) {
+            $this->awardStat($c, 'dropped', $this->version->catalog->itemName($stack['item']), $stack['count']);
+            $this->awardStat($c, 'custom', 'drop');
+        }
+        return $id;
     }
 
     /** Containers.dropItemStack: a broken container's stacks in random parts of 10 to 30, free to take at once. */
@@ -358,6 +364,8 @@ trait Entities
                     $viewer->send($this->version, 'take_item_entity', Binary::writeVarInt($id) . Binary::writeVarInt($player->entityId) . Binary::writeVarInt($count));
                 }
             }
+            // ItemEntity.playerTouch: the whole stack counts as picked up, however much fitted.
+            $this->awardStat($player, 'picked_up', $this->version->catalog->itemName($item['stack']['item']), $count);
             $this->syncInventory($player);
             if ($left === 0) {
                 $this->removeItem($id);

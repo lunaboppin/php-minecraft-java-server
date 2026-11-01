@@ -162,6 +162,12 @@ final class Client
 
     public bool $postEffectsDirty = true;
 
+    /** @var array<string, array<string, int>> ServerStatsCounter: statistics by type and value */
+    public array $stats = [];
+
+    /** @var array<string, true> statistics changed since the client last asked, as type|value */
+    public array $statsDirty = [];
+
     public string $state = 'handshake';
 
     public bool $bufferedWork = false;

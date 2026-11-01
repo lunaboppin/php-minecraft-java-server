@@ -341,6 +341,10 @@ def main():
     # Sound events the server plays outside mob audio.
     data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed']}
     data['particle_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:particle_type']['entries'].items()}
+    # Statistics: their types, the custom ones, and the blocks the mined ones count.
+    data['stat_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:stat_type']['entries'].items()}
+    data['custom_stats'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:custom_stat']['entries'].items()}
+    data['block_ids'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))

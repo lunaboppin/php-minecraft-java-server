@@ -77,6 +77,7 @@ trait Survival
         $c->personalSpawn = $data['personalSpawn'] ?? null;
         $c->tags = array_values(array_filter($data['tags'] ?? [], 'is_string'));
         $c->postEffects = $data['postEffects'] ?? [];
+        $this->loadStatistics($c, is_array($data['stats'] ?? null) ? $data['stats'] : []);
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
         foreach ($data['enderItems'] ?? [] as $slot => $stack) {
@@ -108,7 +109,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'stats' => $this->savedStatistics($c), 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -262,6 +263,10 @@ trait Survival
             $absorbed = min($c->absorption, $amount);
             $this->setAbsorption($c, $c->absorption - $absorbed);
             $amount -= $absorbed;
+            // Player.actuallyHurt: tenths of a heart absorbed and taken.
+            if ($absorbed > 0.0) {
+                $this->awardStat($c, 'custom', 'damage_absorbed', (int) round($absorbed * 10.0));
+            }
         }
         // CombatTracker.recordDamage, before the health falls: damage from a living attacker starts combat.
         if ($amount != 0.0) {
@@ -274,6 +279,9 @@ trait Survival
             }
         }
         $c->health = max(0, $c->health - $amount);
+        if ($amount != 0.0) {
+            $this->awardStat($c, 'custom', 'damage_taken', (int) round($amount * 10.0));
+        }
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
         // the death event when the hit was lethal.
@@ -342,9 +350,16 @@ trait Survival
             $this->incrementCriteria('deathCount', $c->name);
             $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
             if ($killer !== null && $killer !== $c) {
+                $this->awardStat($c, 'killed_by', 'player');
+                // ServerPlayer.awardKillScore
+                $this->awardStat($killer, 'killed', 'player');
                 $this->incrementCriteria('totalKillCount', $killer->name);
+                $this->awardStat($killer, 'custom', 'player_kills');
                 $this->incrementCriteria('playerKillCount', $killer->name);
             }
+            $this->awardStat($c, 'custom', 'deaths');
+            $this->resetStat($c, 'custom', 'time_since_death');
+            $this->resetStat($c, 'custom', 'time_since_rest');
             // Then it rechecks combat, which a dead player always leaves.
             $this->recheckCombat($c);
             $this->savePlayer($c);
@@ -578,6 +593,13 @@ trait Survival
             return;
         }
         $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
+        // ItemStack.mineBlock: a tool counts as used; then Block.playerDestroy counts the block mined.
+        if ($tool !== '' && $this->heldTool($c) !== null) {
+            $this->awardStat($c, 'used', $tool);
+        }
+        if ($this->correctToolForDrops($c, $name)) {
+            $this->awardStat($c, 'mined', $name);
+        }
         if ($this->correctToolForDrops($c, $name) && $this->gameRule('block_drops') === 'true') {
             // The block's official loot table, for the held tool.
             $held = $c->inventory[36 + $c->heldSlot] ?? null;
@@ -687,6 +709,8 @@ trait Survival
             $slot = $c->eating['slot'];
             $stack = $c->inventory[$slot] ?? null;
             if ($stack !== null && $stack['item'] === $c->eating['item']) {
+                // Consumable.onConsume: the item counts as used.
+                $this->awardStat($c, 'used', $this->version->catalog->itemName($stack['item']));
                 $food = $this->version->catalog->item($stack['item']);
                 $c->food = min(20, $c->food + $food['nutrition']);
                 $c->saturation = min($c->food, $c->saturation + $food['saturation']);
