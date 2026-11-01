@@ -61,7 +61,16 @@ trait BlockPlacement
     /** The connection block's state with its sides joined to its neighbours, as placed. */
     private function connectedState(int $state, int $x, int $y, int $z): int
     {
-        if (array_intersect(self::CONNECTING, $this->placementClasses($this->version->catalog->blockName($state))) === []) {
+        $catalog = $this->version->catalog;
+        $classes = $this->placementClasses($catalog->blockName($state));
+        if (in_array('FenceGateBlock', $classes, true)) {
+            // FenceGateBlock: lowered when a wall is beside it across its opening.
+            $wall = fn (int $a, int $c): bool => $this->fireBlocks()->inTag($this->world->get($a, $y, $c), 'walls');
+            $p = array_map('strval', $catalog->properties($state));
+            $p['in_wall'] = (in_array($p['facing'], ['north', 'south'], true) ? $wall($x - 1, $z) || $wall($x + 1, $z) : $wall($x, $z - 1) || $wall($x, $z + 1)) ? 'true' : 'false';
+            return $catalog->state($catalog->blockName($state), $p);
+        }
+        if (array_intersect(self::CONNECTING, $classes) === []) {
             return $state;
         }
         return $this->shapeUpdater()->update($state, $x, $y, $z, fn (int $a, int $b, int $c): int => $this->world->get($a, $b, $c)) ?? $state;
@@ -146,6 +155,50 @@ trait BlockPlacement
     }
 
     /**
+     * BlockBehaviour.canBeReplaced with the item in hand: replaceable blocks other than the
+     * item's own, and the blocks that stack (slabs, candles, snow layers, sea pickles, turtle
+     * eggs, flower beds) when clicked with more of themselves. $clicked is
+     * BlockPlaceContext.replacingClickedOnBlock, true while the clicked block itself is tested.
+     */
+    private function canBeReplacedBy(int $state, ?string $item, bool $clicked, int $face, float $cursorY, bool $sneaking): bool
+    {
+        $catalog = $this->version->catalog;
+        $name = $catalog->blockName($state);
+        $p = $catalog->properties($state);
+        $default = $catalog->blocks[$name]['replaceable'] && $item !== $name;
+        $classes = $this->placementClasses($name);
+        $horizontal = $face >= 2;
+        if (in_array('SlabBlock', $classes, true)) {
+            if ($p['type'] === 'double' || $item !== $name) {
+                return false;
+            }
+            if (!$clicked) {
+                return true;
+            }
+            $upper = $cursorY > 0.5;
+            return $p['type'] === 'bottom' ? $face === 1 || ($upper && $horizontal) : $face === 0 || (!$upper && $horizontal);
+        }
+        if (in_array('SnowLayerBlock', $classes, true)) {
+            $layers = (int) $p['layers'];
+            if ($item !== $name || $layers >= 8) {
+                return $layers === 1;
+            }
+            return !$clicked || $face === 1;
+        }
+        $count = match (true) {
+            in_array('CandleBlock', $classes, true) => 'candles',
+            in_array('SeaPickleBlock', $classes, true) => 'pickles',
+            in_array('TurtleEggBlock', $classes, true) => 'eggs',
+            in_array('FlowerBedBlock', $classes, true), in_array('LeafLitterBlock', $classes, true) => array_key_exists('flower_amount', $p) ? 'flower_amount' : 'segment_amount',
+            default => null,
+        };
+        if ($count !== null && !$sneaking && $item === $name && (int) $p[$count] < 4) {
+            return true;
+        }
+        return $default;
+    }
+
+    /**
      * The block and properties to place, or null when the block cannot be placed there.
      *
      * @param array<string, string> $properties what the generic rules chose
@@ -182,6 +235,27 @@ trait BlockPlacement
                 }
             }
             return null;
+        }
+        // Clicking a block of the same kind adds to it.
+        $existing = $this->world->get(...$pos);
+        if ($catalog->blockName($existing) === $name) {
+            $old = array_map('strval', $catalog->properties($existing));
+            $more = static fn (string $key, int $max): array => [$name, [$key => (string) min($max, (int) $old[$key] + 1)] + $old];
+            if ($is('SlabBlock')) {
+                return [$name, ['type' => 'double', 'waterlogged' => 'false'] + $old];
+            }
+            foreach (['CandleBlock' => ['candles', 4], 'SnowLayerBlock' => ['layers', 8], 'SeaPickleBlock' => ['pickles', 4], 'TurtleEggBlock' => ['eggs', 4],
+                'FlowerBedBlock' => [array_key_exists('flower_amount', $old) ? 'flower_amount' : 'segment_amount', 4], 'LeafLitterBlock' => ['segment_amount', 4]] as $class => [$key, $max]) {
+                if ($is($class)) {
+                    return $more($key, $max);
+                }
+            }
+        }
+        if ($is('FlowerBedBlock', 'LeafLitterBlock')) {
+            $properties['facing'] = $opposite($horizontal);
+        }
+        if ($is('FenceGateBlock')) {
+            $properties['facing'] = $horizontal;
         }
         if ($is(
             'AbstractFurnaceBlock',
