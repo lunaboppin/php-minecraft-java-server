@@ -75,6 +75,8 @@ final class Server
 
     use Corals;
 
+    use DaylightDetectors;
+
     use Observers;
 
     use Pistons;
@@ -168,6 +170,7 @@ final class Server
                 $this->restoreItems();
                 $this->restoreTnt();
                 $this->restoreMovingPistons();
+                $this->restoreDaylightDetectors();
                 $this->restoreBlockSimulation();
             });
         }
