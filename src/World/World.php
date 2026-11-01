@@ -325,9 +325,22 @@ class World
     }
     public function blockEntityNbt(int $x,int $y,int $z):string {
         $name=$this->version->catalog->blockName($this->get($x,$y,$z));
+        if($name==='jigsaw'){
+            // JigsawBlockEntity.saveAdditional: its names, pool, final state, joint and priorities.
+            $data=$this->container([$x,$y,$z])+['name'=>'minecraft:empty','target'=>'minecraft:empty','pool'=>'minecraft:empty','final_state'=>'minecraft:air','joint'=>'rollable'];
+            return Nbt::component(['name'=>(string)$data['name'],'target'=>(string)$data['target'],'pool'=>(string)$data['pool'],'final_state'=>(string)$data['final_state'],'joint'=>(string)$data['joint'],'placement_priority'=>(int)($data['placement_priority']??0),'selection_priority'=>(int)($data['selection_priority']??0)]);
+        }
         return str_ends_with($name,'_sign')?Nbt::sign($this->container([$x,$y,$z])):"\x0a\0";
     }
     public function blockEntityType(int $state):?int {return $this->blockEntityMap[$state]??null;}
+    /** The block entity's type when BlockEntity.getUpdatePacket sends its data as the block changes, else null. */
+    public function blockEntityUpdateType(int $state):?int {
+        static $updating=['banner','beacon','brushable_block','campfire','conduit','copper_golem_statue','creaking_heart','decorated_pot','jigsaw','shelf','sign','hanging_sign','skull','mob_spawner','structure_block','test_block','test_instance_block','end_gateway','trial_spawner','vault'];
+        static $types=null;
+        $types??=array_flip(array_intersect_key($this->version->blocks['block_entity_types'],array_flip($updating)));
+        $type=$this->blockEntityMap[$state]??null;
+        return $type!==null && isset($types[$type])?$type:null;
+    }
     /** BlockAndLightGetter.getRawBrightness: the larger of the chunk's sky light less the sky's darkening and its block light, or block light alone. */
     public function rawBrightness(int $x,int $y,int $z,bool $blockOnly=false,int $skyDarken=0):int {
         if($y<$this->minY || $y>=$this->minY+$this->height){return !$blockOnly && $y>=$this->minY+$this->height && $this->dimension==='overworld'?max(0,15-$skyDarken):0;}

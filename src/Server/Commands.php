@@ -76,6 +76,8 @@ trait Commands
 
     use CommandModules\ComputeCommand;
 
+    use CommandModules\PlaceCommand;
+
     use CommandModules\RecipeCommand;
 
     use CommandModules\LocateCommand;
