@@ -55,20 +55,6 @@ trait RecipeBook
         return isset($learnable[$id]);
     }
 
-    /**
-     * PlayerAdvancements: recipes/decorations/crafting_table is the one recipe advancement whose
-     * criterion, minecraft:tick, any player meets; it completes on the first tick and rewards the
-     * crafting table recipe once, so taking the recipe later does not bring it back.
-     */
-    private function tickRecipeAdvancements(Client $c): void
-    {
-        $advancement = 'minecraft:recipes/decorations/crafting_table';
-        if (!isset($c->advancements[$advancement])) {
-            $c->advancements[$advancement] = true;
-            $this->awardRecipes($c, ['minecraft:crafting_table']);
-        }
-    }
-
     /** ServerRecipeBook.addRecipes: learn the recipes not yet known; the count is of display entries sent. */
     private function awardRecipes(Client $c, array $recipes): int
     {
@@ -84,6 +70,7 @@ trait RecipeBook
                 [$entry, $notification] = $reference['displays'][$display];
                 $entries[] = $entry . chr(($notification ? 1 : 0) | 2);
             }
+            $this->recipeUnlocked($c, $id);
         }
         if ($entries !== []) {
             $c->send($this->version, 'recipe_book_add', Binary::writeVarInt(count($entries)) . implode('', $entries) . "\0");

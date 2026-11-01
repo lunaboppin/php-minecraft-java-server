@@ -1082,7 +1082,7 @@ def surface(name, payload):
 # Packets compared for particular commands only; elsewhere they carry random hurt-sound pitches and the like.
 # Block changes are compared for the commands that edit blocks; fluids and random ticks change others.
 BLOCKS = ('block_update', 'section_blocks_update', 'block_entity_data')
-EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'recipe ': ('recipe_book_add', 'recipe_book_remove')}
+EXTRA = {'setblock ': BLOCKS, 'fill ': BLOCKS, 'clone ': BLOCKS, 'tp ': ('player_position',), 'teleport ': ('player_position',), 'item ': ('set_equipment',), 'ride': ('set_passengers', 'entity_position_sync', 'player_position'), 'damage Witness 3 minecraft:mob_attack by ParityProbe': ('damage_event', 'hurt_animation', 'set_entity_motion'), 'damage Witness 2 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'damage Witness 40 minecraft:mob_attack by ParityProbe': ('damage_event', 'player_combat_enter', 'player_combat_end'), 'summon pig 0.5 106': ('damage_event',), 'summon chicken 0.5 106': ('damage_event',), 'tp @a[name=Witness]': ('update_attributes',), 'attribute': ('update_attributes',), 'rotate': ('player_rotation', 'player_look_at'), 'dialog': ('show_dialog', 'clear_dialog'), 'execute': ('disguised_chat',), 'playsound': ('sound',), 'stopsound': ('stop_sound',), 'gamerule': ('game_event', 'entity_event'), 'damage ': ('damage_event',), 'bossbar': ('boss_event',), 'say ': ('disguised_chat',), 'me ': ('disguised_chat',), 'msg ': ('disguised_chat',), 'tell ': ('disguised_chat',), 'w ': ('disguised_chat',), 'teammsg ': ('disguised_chat',), 'tm ': ('disguised_chat',), 'particle': ('level_particles',), 'spectate': ('set_camera',), 'gamemode creative @s': ('set_camera',), 'tp @s 3 200 3': ('set_camera',), 'swing': ('swing_animation',), 'tick ': ('ticking_state', 'ticking_step'), 'transfer': ('transfer',), 'posteffect': ('post_effects',), 'fillbiome': ('chunks_biomes',), 'recipe ': ('recipe_book_add', 'recipe_book_remove', 'update_advancements'), 'advancement ': ('update_advancements', 'recipe_book_add')}
 
 # Chat, disconnects, and the packets commands send directly: scoreboard, teams, titles and the world border.
 COMPARED = ('system_chat', 'disconnect', 'set_objective', 'set_score', 'reset_score', 'set_display_objective', 'set_player_team',
@@ -1250,16 +1250,92 @@ def normalize_riding(items):
             else item for item in items if not (item['packet'] == 'entity_position_sync' and far(item['hex']))]
 
 
+ADVANCEMENT_ENTRIES = None
+
+
+def normalize_advancements(items):
+    """Sort update_advancements' nodes and progress and zero the times criteria were met.
+
+    Vanilla collects the nodes in an identity hash set and the progress in hash maps, and stamps
+    each criterion with the time. Its tree keeps children in an identity hash set too, so the
+    layout differs between runs: each node must be the official server's entry but for its x and y.
+    """
+    global ADVANCEMENT_ENTRIES
+    if ADVANCEMENT_ENTRIES is None:
+        data = json.loads((Path(__file__).resolve().parents[2] / 'reference/26.3/advancements.json').read_text())
+        ADVANCEMENT_ENTRIES = {entry['id']: bytes.fromhex(entry['entry']) for entry in data['advancements']}
+
+    def varint(data, at):
+        value = shift = 0
+        while True:
+            byte = data[at]
+            at += 1
+            value |= (byte & 0x7f) << shift
+            shift += 7
+            if byte < 0x80:
+                return value, at
+
+    def string(data, at):
+        length, start = varint(data, at)
+        return data[start:start + length], start + length
+
+    def canonical(payload):
+        data = bytes.fromhex(payload)
+        try:
+            at = 1
+            count, at = varint(data, at)
+            added = []
+            for _ in range(count):
+                name, _ = string(data, at)
+                entry = ADVANCEMENT_ENTRIES.get(name.decode())
+                if entry is None or data[at:at + len(entry) - 8] != entry[:-8]:
+                    return payload
+                added.append(entry[:-8])
+                at += len(entry)
+            count, at = varint(data, at)
+            removed = []
+            for _ in range(count):
+                start = at
+                _, at = string(data, at)
+                removed.append(data[start:at])
+            count, at = varint(data, at)
+            progress = []
+            for _ in range(count):
+                start = at
+                _, at = string(data, at)
+                head = data[start:at]
+                criteria, at = varint(data, at)
+                met = []
+                for _ in range(criteria):
+                    start = at
+                    _, at = string(data, at)
+                    name = data[start:at]
+                    if data[at]:
+                        met.append(name + b'\x01' + bytes(8))
+                        at += 9
+                    else:
+                        met.append(name + b'\x00')
+                        at += 1
+                progress.append(head + bytes([criteria]) + b''.join(sorted(met)))
+            rest = data[at:]
+        except IndexError:
+            return payload
+        return (data[:1] + bytes([len(added) & 0xff]) + b''.join(sorted(added)) + bytes([len(removed) & 0xff]) + b''.join(sorted(removed))
+                + bytes([len(progress) & 0xff]) + b''.join(sorted(progress)) + rest).hex()
+    return [{**item, 'hex': canonical(item['hex'])} if item['packet'] == 'update_advancements' else item for item in items]
+
+
 def compare(reference, php):
     differences = []
     for expected, actual in zip(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
-        unordered = expected['command'].startswith('kick ')
+        # So do advancement announcements for a tree's children, which vanilla keeps in a hash set.
+        unordered = expected['command'].startswith('kick ') or (expected['command'].startswith('advancement ') and (' from ' in expected['command'] or ' through ' in expected['command']))
         # A summoned entity has a random UUID on each server.
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))))) != key(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))))):
+            if key(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))))) != key(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 
