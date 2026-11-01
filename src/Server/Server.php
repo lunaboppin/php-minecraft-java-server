@@ -103,6 +103,8 @@ final class Server
 
     use Waypoints;
 
+    use MobFire;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
