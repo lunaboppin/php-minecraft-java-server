@@ -80,7 +80,7 @@ trait ExperienceOrbs
         return false;
     }
 
-    private function spawnOrb(float $x, float $y, float $z, int $value): void
+    private function spawnOrb(float $x, float $y, float $z, int $value, ?array $loaded = null): int
     {
         $id = $this->nextEntity++;
         $random = static fn (): float => mt_rand() / mt_getrandmax();
@@ -91,9 +91,14 @@ trait ExperienceOrbs
             // The value set while constructing stays dirty until the first ServerEntity.sendChanges.
             'dirty' => true,
         ];
+        if ($loaded !== null) {
+            // ExperienceOrb's bare constructor, then its tag: no push, facing yaw 0.
+            $this->experienceOrbs[$id] = $loaded + ['yaw' => 0.0, 'velocity' => [0.0, 0.0, 0.0]] + $this->experienceOrbs[$id];
+        }
         foreach ($this->localPlayers() as $player) {
             $this->showOrb($player, $this->experienceOrbs[$id]);
         }
+        return $id;
     }
 
     private function orbState(array $orb): array
@@ -105,7 +110,7 @@ trait ExperienceOrbs
     private function orbTracker(array $orb): EntityMovementTracker
     {
         $profile = $this->experienceReference()['orb'];
-        return $this->orbTrackers[$orb['id']] ??= new EntityMovementTracker($orb['id'], $profile['update_interval'], $profile['track_deltas'], $this->orbState($orb));
+        return $this->orbTrackers[$orb['id']] ??= new EntityMovementTracker($orb['id'], $profile['update_interval'], $profile['track_deltas'], $this->orbState($orb), false);
     }
 
     /** ServerEntity.sendPairingData for an orb: the spawn and its value. */
@@ -115,8 +120,10 @@ trait ExperienceOrbs
             return;
         }
         $reference = $this->experienceReference()['orb'];
+        $c->send($this->version, 'bundle_delimiter', '');
         $c->send($this->version, 'add_entity', $this->orbTracker($orb)->spawnPacket($orb['uuid'], $reference['type'], 0));
         $c->send($this->version, 'set_entity_data', $this->orbData($orb));
+        $c->send($this->version, 'bundle_delimiter', '');
         $c->entities[$orb['id']] = true;
     }
 
@@ -153,6 +160,10 @@ trait ExperienceOrbs
     /** ExperienceOrb.tick for every orb, then players touching orbs take them. */
     private function tickExperienceOrbs(): void
     {
+        // ChunkMap.tick sends what changed before the entities tick.
+        foreach (array_keys($this->experienceOrbs) as $id) {
+            $this->synchronizeOrb($id);
+        }
         $collision = new Collision($this->version->catalog);
         foreach (array_keys($this->experienceOrbs) as $id) {
             if (!isset($this->experienceOrbs[$id])) {
@@ -204,9 +215,6 @@ trait ExperienceOrbs
             }
             unset($orb);
             $this->orbTouches($id);
-            if (isset($this->experienceOrbs[$id])) {
-                $this->synchronizeOrb($id);
-            }
         }
     }
 
@@ -339,19 +347,14 @@ trait ExperienceOrbs
                 $this->forgetEntity($player, $id);
             }
         }
+        // Changed data forces ServerEntity.sendChanges and goes after the movement; needsSync clears once acted on.
+        $state = $this->orbState($orb) + ['force_update' => $orb['dirty']];
+        $packets = $this->orbTracker($orb)->update($state);
         if ($orb['dirty']) {
             $this->experienceOrbs[$id]['dirty'] = false;
-            foreach ($this->localPlayers() as $player) {
-                if (isset($player->entities[$id])) {
-                    $player->send($this->version, 'set_entity_data', $this->orbData($orb));
-                }
-            }
+            $packets[] = ['name' => 'set_entity_data', 'payload' => $this->orbData($orb)];
         }
-        $state = $this->orbState($orb);
-        $packets = $this->orbTracker($orb)->update($state);
-        if ($packets !== []) {
-            $this->experienceOrbs[$id]['needsSync'] = false;
-        }
+        $this->experienceOrbs[$id]['needsSync'] = $state['needs_sync'];
         foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {
                 if (isset($player->entities[$id])) {

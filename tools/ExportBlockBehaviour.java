@@ -117,6 +117,25 @@ public class ExportBlockBehaviour {
             if (block.defaultBlockState().ignitedByLava()) lava.add(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath());
         }
         root.add("ignited_by_lava", lava);
+        // PistonBaseBlock.isPushable: each state's PushReaction other than PUSH_PULL, the states that
+        // cannot be broken (destroy speed -1), and the blocks with block entities.
+        var reactions = new JsonObject();
+        var unbreakable = new JsonArray();
+        for (int id = 0; id < Block.BLOCK_STATE_REGISTRY.size(); ++id) {
+            var state = Block.BLOCK_STATE_REGISTRY.byId(id);
+            var reaction = state.getPistonPushReaction();
+            if (reaction != net.minecraft.world.level.material.PushReaction.PUSH_PULL) reactions.addProperty(Integer.toString(id), reaction.name().toLowerCase(java.util.Locale.ROOT));
+            if (state.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) == -1.0F) unbreakable.add(id);
+        }
+        var entityBlocks = new JsonArray();
+        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            if (block.defaultBlockState().hasBlockEntity()) entityBlocks.add(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath());
+        }
+        var piston = new JsonObject();
+        piston.add("push_reactions", reactions);
+        piston.add("unbreakable", unbreakable);
+        piston.add("block_entities", entityBlocks);
+        root.add("piston", piston);
         // Block.getExplosionResistance, which explosion rays lose power to.
         var resistance = new JsonObject();
         for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {

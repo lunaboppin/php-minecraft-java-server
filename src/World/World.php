@@ -342,14 +342,12 @@ class World
         return $type!==null && isset($types[$type])?$type:null;
     }
     /** BlockAndLightGetter.getRawBrightness: the larger of the chunk's sky light less the sky's darkening and its block light, or block light alone. */
-    /** LightLayer.SKY: the sky light alone. */
+    /** The sky light stored at a position, before any darkening. */
     public function skyLight(int $x,int $y,int $z):int {
         if($y<$this->minY || $y>=$this->minY+$this->height){return $y>=$this->minY+$this->height && $this->dimension==='overworld'?15:0;}
-        $key=($x>>4).':'.($z>>4);
-        $this->rawBrightness($x,$y,$z);
+        $this->rawBrightness($x,$y,$z);$key=($x>>4).':'.($z>>4);
         $section=(($y-$this->minY)>>4)+1;$index=(($y&15)<<8)|(($z&15)<<4)|($x&15);
-        $arrays=$this->lightLevels[$key][0]??[];
-        return isset($arrays[$section])?(ord($arrays[$section][$index>>1])>>(($index&1)*4))&15:0;
+        return isset($this->lightLevels[$key][0][$section])?(ord($this->lightLevels[$key][0][$section][$index>>1])>>(($index&1)*4)&15):0;
     }
     public function rawBrightness(int $x,int $y,int $z,bool $blockOnly=false,int $skyDarken=0):int {
         if($y<$this->minY || $y>=$this->minY+$this->height){return !$blockOnly && $y>=$this->minY+$this->height && $this->dimension==='overworld'?max(0,15-$skyDarken):0;}
