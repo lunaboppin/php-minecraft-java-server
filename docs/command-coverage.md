@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **84** have an existing PHP handler; **8** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **86** have an existing PHP handler; **6** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -46,7 +46,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/give` | [GiveCommand.php](../src/Server/Commands/GiveCommand.php) | Partial handler; native behavior incomplete | — |
 | `/help` | [HelpCommand.php](../src/Server/Commands/HelpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/item` | [ItemCommand.php](../src/Server/Commands/ItemCommand.php) | Partial handler; native behavior incomplete | — |
-| `/jfr` | — | Unimplemented | — |
+| `/jfr` | [JfrCommand.php](../src/Server/Commands/JfrCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kick` | [KickCommand.php](../src/Server/Commands/KickCommand.php) | Partial handler; native behavior incomplete | — |
 | `/kill` | [KillCommand.php](../src/Server/Commands/KillCommand.php) | Partial handler; native behavior incomplete | — |
 | `/list` | [ListCommand.php](../src/Server/Commands/ListCommand.php) | Partial handler; native behavior incomplete | — |
@@ -58,7 +58,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/pardon` | [PardonCommand.php](../src/Server/Commands/PardonCommand.php) | Partial handler; native behavior incomplete | — |
 | `/pardon-ip` | [PardonIpCommand.php](../src/Server/Commands/PardonIpCommand.php) | Partial handler; native behavior incomplete | — |
 | `/particle` | [ParticleCommand.php](../src/Server/Commands/ParticleCommand.php) | Partial handler; native behavior incomplete | — |
-| `/perf` | — | Unimplemented | — |
+| `/perf` | [PerfCommand.php](../src/Server/Commands/PerfCommand.php) | Partial handler; native behavior incomplete | — |
 | `/place` | — | Unimplemented | — |
 | `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/posteffect` | [PostEffectCommand.php](../src/Server/Commands/PostEffectCommand.php) | Partial handler; native behavior incomplete | — |

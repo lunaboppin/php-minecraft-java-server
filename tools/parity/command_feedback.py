@@ -675,6 +675,11 @@ SCRIPT = [
     ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["fp"],CustomName:"Bob"}', False), ('fetchprofile entity @e[tag=fp,limit=1]', False),
     ('!quiet kill @e[tag=fp]', False), ('fetchprofile entity @e[type=pig]', False), ('fetchprofile id nope', False),
     ('fetchprofile id 1-2-3', False), ('fetchprofile name', False), ('fetchprofile entity', False), ('!witness fetchprofile entity @s', False),
+    # /perf and /jfr: starting and stopping, and failures. A recording's timings and report name
+    # vary, so a stopped recording is not compared; Flight Recorder needs a JVM, so /jfr fails as
+    # vanilla does when no recording can start.
+    ('perf stop', False), ('!quiet perf start', False), ('perf start', False), ('!quiet perf stop', False), ('perf stop', False),
+    ('jfr stop', False), ('perf', False), ('!witness perf start', False), ('!witness jfr start', False),
     ('list', False),
 ]
 

@@ -94,6 +94,8 @@ final class CommandRegistry
             new CommandDefinition('waypoint', 'executeWaypoint', true),
             new CommandDefinition('datapack', 'executeDatapack', true),
             new CommandDefinition('fetchprofile', 'executeFetchProfile', true),
+            new CommandDefinition('perf', 'executePerf', true),
+            new CommandDefinition('jfr', 'executeJfr', true),
         ];
     }
 

@@ -66,6 +66,10 @@ trait Commands
 
     use CommandModules\FetchProfileCommand;
 
+    use CommandModules\PerfCommand;
+
+    use CommandModules\JfrCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
