@@ -1,9 +1,9 @@
 {
   "name": "placement-states",
   "normalizations": [
-    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does.",
+    "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls. Hanging signs go under a block, beside a wall, or nowhere (HangingSignItem). Scaffolding takes its distance from support (ScaffoldingBlock.getDistance).",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Scaffolding distance and hanging signs are not covered yet."
+    "Scaffolding distance updates after placement and falling scaffolding are not covered."
   ],
   "steps": [
     {
@@ -5435,6 +5435,992 @@
           -40,
           64,
           4
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 14 60 63 26 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 14 60 70 26 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_slab"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "oak_slab",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          20
+        ],
+        [
+          0,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 3.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:candle"
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "candle",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          3,
+          64,
+          20
+        ],
+        [
+          3,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:snow"
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.125,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.125,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "snow",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          64,
+          20
+        ],
+        [
+          6,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 9.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:pink_petals"
+    },
+    {
+      "action": "place",
+      "position": [
+        9,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        9,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.2,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        9,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.2,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "pink_petals",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          9,
+          64,
+          20
+        ],
+        [
+          9,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 12.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:sea_pickle"
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        12,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "sea_pickle",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          12,
+          64,
+          20
+        ],
+        [
+          12,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 15.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "setblock 15 63 20 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:turtle_egg"
+    },
+    {
+      "action": "place",
+      "position": [
+        15,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        15,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        15,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.4,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "turtle_egg",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          15,
+          64,
+          20
+        ],
+        [
+          15,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 18.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:white_carpet"
+    },
+    {
+      "action": "place",
+      "position": [
+        18,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        18,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.0625,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        18,
+        64,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.0625,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "white_carpet",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          18,
+          64,
+          20
+        ],
+        [
+          18,
+          65,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 24.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_door"
+    },
+    {
+      "action": "place",
+      "position": [
+        24,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        25,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        27,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "doors",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          24,
+          64,
+          20
+        ],
+        [
+          25,
+          64,
+          20
+        ],
+        [
+          24,
+          65,
+          20
+        ],
+        [
+          25,
+          65,
+          20
+        ],
+        [
+          27,
+          64,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 32.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_stairs"
+    },
+    {
+      "action": "place",
+      "position": [
+        32,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        33,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 32.5 64 18.5 90 30"
+    },
+    {
+      "action": "place",
+      "position": [
+        32,
+        63,
+        21
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 32.5 64 18.5 -90 30"
+    },
+    {
+      "action": "place",
+      "position": [
+        33,
+        63,
+        21
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "stairs",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          32,
+          64,
+          20
+        ],
+        [
+          33,
+          64,
+          20
+        ],
+        [
+          32,
+          64,
+          21
+        ],
+        [
+          33,
+          64,
+          21
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 40.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:chest"
+    },
+    {
+      "action": "place",
+      "position": [
+        40,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        41,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:cobblestone_wall"
+    },
+    {
+      "action": "place",
+      "position": [
+        43,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        45,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_fence_gate"
+    },
+    {
+      "action": "place",
+      "position": [
+        44,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "misc",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          40,
+          64,
+          20
+        ],
+        [
+          41,
+          64,
+          20
+        ],
+        [
+          43,
+          64,
+          20
+        ],
+        [
+          44,
+          64,
+          20
+        ],
+        [
+          45,
+          64,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 58 63 14 72 63 26 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 58 64 14 72 70 26 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 60.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:oak_hanging_sign"
+    },
+    {
+      "action": "command",
+      "text": "setblock 60 66 20 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        60,
+        66,
+        20
+      ],
+      "face": 0,
+      "cursor": [
+        0.5,
+        0,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 63 64 23 minecraft:stone"
+    },
+    {
+      "action": "place",
+      "position": [
+        63,
+        64,
+        23
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        66,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "hanging-signs",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          60,
+          65,
+          20
+        ],
+        [
+          63,
+          64,
+          22
+        ],
+        [
+          66,
+          64,
+          20
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 78 63 14 92 63 26 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 78 64 14 92 70 26 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 80.5 64 18.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:scaffolding"
+    },
+    {
+      "action": "place",
+      "position": [
+        80,
+        63,
+        20
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 81 63 20 83 63 20 minecraft:air"
+    },
+    {
+      "action": "place",
+      "position": [
+        80,
+        64,
+        20
+      ],
+      "face": 5,
+      "cursor": [
+        1,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        81,
+        64,
+        20
+      ],
+      "face": 5,
+      "cursor": [
+        1,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "scaffolding",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          80,
+          64,
+          20
+        ],
+        [
+          81,
+          64,
+          20
+        ],
+        [
+          82,
+          64,
+          20
+        ],
+        [
+          80,
+          65,
+          20
+        ],
+        [
+          80,
+          66,
+          20
         ]
       ]
     }
