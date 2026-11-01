@@ -218,6 +218,37 @@ trait DataAccessors
         return self::nbtCompound($pairs);
     }
 
+    /** ItemEntity.saveWithoutId: Entity's fields, then its health, age, pickup delay, owner and stack. */
+    private function itemEntityNbt(array $item): NbtTag
+    {
+        $pairs = $this->entityBaseNbt([$item['x'], $item['y'], $item['z']], $item['velocity'], [(float) $item['yaw'], 0.0], 0.0, 0, 300, (bool) $item['ground'], false, 0, $item['uuid']);
+        array_push(
+            $pairs,
+            ['Health', new NbtTag('short', (int) ($item['health'] ?? 5))],
+            ['Age', new NbtTag('short', $item['age'])],
+            ['PickupDelay', new NbtTag('short', $item['pickupDelay'])],
+        );
+        if ($item['target'] !== null) {
+            $pairs[] = ['Owner', self::uuidNbt($item['target'])];
+        }
+        $pairs[] = ['Item', $this->stackNbt($item['stack'])];
+        return self::nbtCompound($pairs);
+    }
+
+    /** ExperienceOrb.saveWithoutId: Entity's fields, then its health, age, value and count. */
+    private function orbNbt(array $orb): NbtTag
+    {
+        $pairs = $this->entityBaseNbt([$orb['x'], $orb['y'], $orb['z']], $orb['velocity'], [(float) $orb['yaw'], 0.0], 0.0, 0, 300, (bool) $orb['ground'], false, 0, $orb['uuid']);
+        array_push(
+            $pairs,
+            ['Health', new NbtTag('short', $orb['health'])],
+            ['Age', new NbtTag('short', $orb['age'])],
+            ['Value', new NbtTag('short', $orb['value'])],
+            ['Count', new NbtTag('int', $orb['count'])],
+        );
+        return self::nbtCompound($pairs);
+    }
+
     /** A text component as ComponentSerialization's NBT: plain text as a string. */
     private static function componentNbt(array|string $component): NbtTag
     {

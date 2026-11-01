@@ -109,7 +109,13 @@ trait DataCommand
     {
         return match ($target[0]) {
             'storage' => $this->storageData($target[1]),
-            'entity' => isset($target[1]['client']) ? $this->playerNbt($target[1]['client']) : (isset($target[1]['mob']) ? $this->mobNbt($this->animals[$target[1]['mob']]) : throw new \InvalidArgumentException('Only players and mobs have entity data here')),
+            'entity' => match (true) {
+                isset($target[1]['client']) => $this->playerNbt($target[1]['client']),
+                isset($target[1]['mob']) => $this->mobNbt($this->animals[$target[1]['mob']]),
+                isset($target[1]['item']) => $this->itemEntityNbt($this->itemEntities[$target[1]['item']]),
+                isset($target[1]['orb']) => $this->orbNbt($this->experienceOrbs[$target[1]['orb']]),
+                default => throw new \InvalidArgumentException('Only players, mobs, items and experience orbs have entity data here'),
+            },
             default => $this->blockNbt($target[1], $target[2]) ?? throw new CommandFailure(['translate' => 'commands.data.block.invalid']),
         };
     }
@@ -119,7 +125,11 @@ trait DataCommand
     {
         match ($target[0]) {
             'storage' => $this->setStorageData($target[1], $data),
-            'entity' => isset($target[1]['client']) ? throw new CommandFailure(['translate' => 'commands.data.entity.invalid']) : $this->setMobNbt($target[1]['mob'], $data),
+            'entity' => match (true) {
+                isset($target[1]['client']) => throw new CommandFailure(['translate' => 'commands.data.entity.invalid']),
+                isset($target[1]['mob']) => $this->setMobNbt($target[1]['mob'], $data),
+                default => throw new \InvalidArgumentException('Only mobs\' entity data can be changed here'),
+            },
             default => $this->setBlockNbt($target[1], $target[2], $data),
         };
     }
