@@ -191,8 +191,7 @@ trait BlockSimulation
             foreach(array_combine(['north','east','south','west'],self::SIDES) as $direction=>[$dx,$dy,$dz]){
                 $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
                 if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
-                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector' || $this->isPressurePlate($kind);
-                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $this->isPressurePlate($kind) || $kind==='tripwire_hook';
+                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector' || $this->isPressurePlate($kind) || $kind==='tripwire_hook';
             }
             if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
             if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}

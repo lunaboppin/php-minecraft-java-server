@@ -72,6 +72,7 @@ final class Server
     use RespawnPoints;
 
     use Bells;
+
     use Tripwires;
 
     use Corals;
