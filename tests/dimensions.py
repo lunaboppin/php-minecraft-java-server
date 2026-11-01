@@ -134,8 +134,9 @@ def main():
                 with sqlite3.connect(world) as db:
                     net.check(all(s == 0 for s, in db.execute('SELECT state FROM blocks WHERE x IN (3,4) AND y BETWEEN 64 AND 66 AND z=2')), 'breaking portal collapses its interior')
                 # An inward-facing twelve-frame ring activates after the final eye.
+                # Still in chunk 0 0, so no chunk batch follows the teleport.
                 command(a, 'tp 10.5 64 10.5')
-                a.until('player_position'); a.until('chunk_batch_finished'); ping(a)
+                a.until('player_position'); ping(a)
                 for dx, dz, facing in [(-2, 0, 'east'), (2, 0, 'west'), (0, -2, 'south'), (0, 2, 'north')]:
                     for i in range(-1, 2):
                         x, z = 10 + dx + (i if dx == 0 else 0), 10 + dz + (i if dz == 0 else 0)
