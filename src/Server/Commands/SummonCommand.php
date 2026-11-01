@@ -36,6 +36,10 @@ trait SummonCommand
         // Without a position the entity appears at the sender's position, as in vanilla.
         $position = count($arguments) < 4 ? [$this->sourcePosition($sender)[0], $this->sourcePosition($sender)[1], $this->sourcePosition($sender)[2]] : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
         $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+        // SummonCommand.createEntity: a type not allowed in peaceful is refused there.
+        if ($this->config->difficulty === 0 && !$info['peaceful']) {
+            throw new CommandFailure(['translate' => 'commands.summon.failed.peaceful']);
+        }
         $id = $this->spawnAnimal($kind, ...$position);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
