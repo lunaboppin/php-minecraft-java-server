@@ -27,6 +27,8 @@ trait Experience
     /** Player.giveExperiencePoints: progress in floats, levels gained or lost on the way. */
     private function giveExperiencePoints(Client $c, int $points): void
     {
+        // Player.increaseScore wraps as Java ints do.
+        $c->score = (($c->score + $points + 2147483648) & 0xFFFFFFFF) - 2147483648;
         $c->experienceProgress = self::f32($c->experienceProgress + self::f32($points / self::xpNeededForNextLevel($c->experienceLevel)));
         $c->experience = max(0, min(2147483647, $c->experience + $points));
         while ($c->experienceProgress < 0.0) {

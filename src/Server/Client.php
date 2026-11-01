@@ -71,6 +71,9 @@ final class Client
 
     public float $experienceProgress = 0.0;
 
+    /** Player.getScore: every experience point given, kept until a death that drops the inventory. */
+    public int $score = 0;
+
     public int $lastLevelUpTick = -1000;
 
     /** @var array<string, array{amplifier: int, duration: int, ambient: bool, particles: bool, icon: bool}> active status effects */

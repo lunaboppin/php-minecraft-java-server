@@ -44,6 +44,10 @@ trait Commands
 
     use CommandModules\SeedCommand;
 
+    use CommandModules\DataCommand;
+
+    use CommandModules\DataAccessors;
+
     use CommandModules\FunctionCommand;
 
     use CommandModules\ScheduleCommand;
