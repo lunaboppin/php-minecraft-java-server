@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Advancement progress: shown on the first tick, kept across a restart, and its tab selected on request."""
+"""Advancement progress: shown on the first tick, met by items arriving, kept across a restart, and its tab selected on request."""
 import json
 from pathlib import Path
 import sys
@@ -70,6 +70,13 @@ def main():
             # A done root shows its children and grandchildren.
             assert not reset and show and removed == [] and set(added) == {'minecraft:story/root', 'minecraft:story/mine_stone', 'minecraft:story/upgrade_tools'}, added
             assert progress['minecraft:story/root'] == {'crafting_table': True} and progress['minecraft:story/mine_stone'] == {'get_stone': False}, progress
+            # inventory_changed: cobblestone arriving meets Stone Age, which shows the next level.
+            mark = len(c.seen)
+            c.send('chat_command', wire.string('give @s cobblestone'))
+            c.tick_barrier()
+            [(reset, added, removed, progress, show)] = updates(c, mark)
+            assert progress['minecraft:story/mine_stone'] == {'get_stone': True} and 'minecraft:story/smelt_iron' in added, (added, progress)
+            assert any(b'chat.type.advancement.task' in p for n, p in c.seen[mark:] if n == 'system_chat'), 'Stone Age is announced'
             c.send('seen_advancements', wire.vi(0) + wire.string('minecraft:story/root'))
             c.send('seen_advancements', wire.vi(0) + wire.string('minecraft:story/root'))
             c.tick_barrier()
@@ -79,7 +86,7 @@ def main():
             c = Probe(port, 'after').login()
             c.tick_barrier()
             [(reset, added, removed, progress, show)] = updates(c)
-            assert reset and {'minecraft:story/root', 'minecraft:story/mine_stone', 'minecraft:story/upgrade_tools', 'minecraft:recipes/decorations/crafting_table'} <= set(added), added
+            assert reset and {'minecraft:story/root', 'minecraft:story/mine_stone', 'minecraft:story/upgrade_tools', 'minecraft:story/smelt_iron', 'minecraft:recipes/decorations/crafting_table'} <= set(added), added
             assert progress['minecraft:story/root'] == {'crafting_table': True}, progress
             c.close()
     print('PASS: advancement progress, visibility and the selected tab across a restart')

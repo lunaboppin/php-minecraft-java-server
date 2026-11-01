@@ -13,14 +13,14 @@ use PhpMinecraftJavaServer\Protocol\Packets;
  * nodes the client is shown, as AdvancementVisibilityEvaluator decides, sent once a tick by
  * flushDirty.
  *
- * Criteria are met by commands and by the minecraft:tick and minecraft:recipe_unlocked triggers;
- * the other triggers are not reported yet. A criterion listens, as vanilla's listeners do, only
- * while it is unmet and its advancement is not done.
+ * Criteria are met by commands and by the minecraft:tick, minecraft:recipe_unlocked and
+ * minecraft:inventory_changed triggers; the other triggers are not reported yet. A criterion
+ * listens, as vanilla's listeners do, only while it is unmet and its advancement is not done.
  */
 trait Advancements
 {
     /**
-     * @return array{byId: array<string, array>, tick: list<array{string, string}>, recipeUnlocked: array<string, list<array{string, string}>>}
+     * @return array{byId: array<string, array>, tick: list<array{string, string}>, recipeUnlocked: array<string, list<array{string, string}>>, inventoryByItem: array<int, list<array{string, string}>>, inventory: list<array{string, string, array}>}
      */
     private function advancementReference(): array
     {
@@ -30,6 +30,8 @@ trait Advancements
             $byId = [];
             $tick = [];
             $recipeUnlocked = [];
+            $inventoryByItem = [];
+            $inventory = [];
             foreach ($data['advancements'] as $advancement) {
                 $id = $advancement['id'];
                 $advancement['entry'] = (string) hex2bin($advancement['entry']);
@@ -43,6 +45,18 @@ trait Advancements
                         }, $criterion['conditions']['recipes']),
                         default => null,
                     };
+                    if ($criterion['trigger'] === 'minecraft:inventory_changed') {
+                        $conditions = $criterion['conditions'] ?? [];
+                        $items = array_map(fn (array $predicate): array => $this->itemPredicateItems($predicate), $conditions['items'] ?? []);
+                        if (count($items) === 1 && !isset($conditions['slots']) && !isset($conditions['player'])) {
+                            // One item predicate tests only the stack that changed.
+                            foreach (array_keys($items[0]) as $item) {
+                                $inventoryByItem[$item][] = [$id, $name];
+                            }
+                        } else {
+                            $inventory[] = [$id, $name, ['items' => $items, 'slots' => $conditions['slots'] ?? []]];
+                        }
+                    }
                 }
             }
             foreach ($byId as $id => $advancement) {
@@ -52,7 +66,7 @@ trait Advancements
                 }
                 $byId[$id]['root'] = $root;
             }
-            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked];
+            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked, 'inventoryByItem' => $inventoryByItem, 'inventory' => $inventory];
         }
         return $reference;
     }
@@ -145,13 +159,106 @@ trait Advancements
         }
     }
 
-    /** CriterionTrigger.trigger: the criteria still listening among those given. */
+    /**
+     * SimpleCriterionTrigger.trigger: the criteria still listening among those given, all found
+     * before any is met.
+     */
     private function triggerAdvancements(Client $c, array $criteria): void
     {
-        foreach ($criteria as [$id, $criterion]) {
-            if (!isset($c->advancementProgress[$id][$criterion]) && !$this->advancementDone($c, $id)) {
-                $this->awardAdvancement($c, $id, $criterion);
+        $listening = array_filter($criteria, fn (array $criterion): bool => !isset($c->advancementProgress[$criterion[0]][$criterion[1]]) && !$this->advancementDone($c, $criterion[0]));
+        foreach ($listening as [$id, $criterion]) {
+            $this->awardAdvancement($c, $id, $criterion);
+        }
+    }
+
+    /** ItemPredicate's items: an item, a list of them or a tag, as a set of item IDs. */
+    private function itemPredicateItems(array $predicate): array
+    {
+        $ids = [];
+        foreach ((array) ($predicate['items'] ?? []) as $item) {
+            $names = str_starts_with($item, '#') ? $this->version->registryTags('minecraft:item')[substr($item, 1)] ?? [] : [substr($item, strlen('minecraft:'))];
+            foreach ($names as $name) {
+                $ids[$this->version->catalog->items[$name]['id']] = true;
             }
+        }
+        return $ids;
+    }
+
+    /**
+     * AbstractContainerMenu.broadcastChanges with ServerPlayer's slot listener: each slot of the
+     * player's inventory in the open menu that changed since the menu last looked reports
+     * inventory_changed with its new stack. A new menu has looked at nothing yet.
+     */
+    private function inventoryChangedCheck(Client $c): void
+    {
+        $player = $c->windowType === 'player';
+        // The inventory menu's armour, main, hotbar and offhand slots; a container menu's main and hotbar.
+        $seen = $player ? $c->inventoryMenuSeen : $c->containerMenuSeen;
+        $changed = [];
+        foreach ($player ? range(5, 45) : range(9, 44) as $slot) {
+            $stack = $c->inventory[$slot] ?? null;
+            if (($seen[$slot] ?? null) != $stack) {
+                $seen[$slot] = $stack;
+                $changed[] = $stack;
+            }
+        }
+        if ($player) {
+            $c->inventoryMenuSeen = $seen;
+        } else {
+            $c->containerMenuSeen = $seen;
+        }
+        foreach ($changed as $stack) {
+            $this->inventoryChanged($c, $stack);
+        }
+    }
+
+    /** InventoryChangeTrigger.trigger: slot counts over the player's inventory, and the stack that changed. */
+    private function inventoryChanged(Client $c, ?array $changed): void
+    {
+        $reference = $this->advancementReference();
+        $criteria = $changed === null ? [] : $reference['inventoryByItem'][$changed['item']] ?? [];
+        if ($reference['inventory'] !== []) {
+            $full = $empty = $occupied = 0;
+            $stacks = [];
+            // Inventory: main, armour and offhand, then the body and saddle slots players leave empty.
+            foreach ([...range(9, 44), 5, 6, 7, 8, 45] as $slot) {
+                $stack = $c->inventory[$slot] ?? null;
+                if ($stack === null) {
+                    ++$empty;
+                    continue;
+                }
+                ++$occupied;
+                $stacks[] = $stack;
+                if ($stack['count'] >= ($this->version->catalog->item($stack['item'])['max_stack'] ?? 64)) {
+                    ++$full;
+                }
+            }
+            $empty += 2;
+            $range = static fn (array $bounds, int $value): bool => (!isset($bounds['min']) || $value >= $bounds['min']) && (!isset($bounds['max']) || $value <= $bounds['max']);
+            foreach ($reference['inventory'] as [$id, $name, $conditions]) {
+                $slots = $conditions['slots'];
+                if (!$range($slots['full'] ?? [], $full) || !$range($slots['empty'] ?? [], $empty) || !$range($slots['occupied'] ?? [], $occupied)) {
+                    continue;
+                }
+                $items = $conditions['items'];
+                if (count($items) === 1) {
+                    if ($changed === null || !isset($items[0][$changed['item']])) {
+                        continue;
+                    }
+                } else {
+                    // Every predicate is met by some stack in the inventory.
+                    foreach ($stacks as $stack) {
+                        $items = array_filter($items, static fn (array $set): bool => !isset($set[$stack['item']]));
+                    }
+                    if ($items !== []) {
+                        continue;
+                    }
+                }
+                $criteria[] = [$id, $name];
+            }
+        }
+        if ($criteria !== []) {
+            $this->triggerAdvancements($c, $criteria);
         }
     }
 
@@ -161,9 +268,10 @@ trait Advancements
         $this->triggerAdvancements($c, $this->advancementReference()['recipeUnlocked'][$recipe] ?? []);
     }
 
-    /** ServerPlayer.tick: the minecraft:tick trigger, then flushDirty. */
+    /** ServerPlayer.tick: the open menu's changes, the minecraft:tick trigger, then flushDirty. */
     private function tickAdvancements(Client $c): void
     {
+        $this->inventoryChangedCheck($c);
         $this->triggerAdvancements($c, $this->advancementReference()['tick']);
         $this->flushAdvancements($c, true);
     }

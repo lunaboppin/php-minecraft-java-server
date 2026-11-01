@@ -183,6 +183,12 @@ final class Client
     /** PlayerAdvancements.isFirstPacket: the first update replaces whatever the client showed. */
     public bool $advancementsFirstPacket = true;
 
+    /** @var array<int, ?array> the inventory menu's lastSlots for the player's own slots */
+    public array $inventoryMenuSeen = [];
+
+    /** @var array<int, ?array> the open container menu's lastSlots for the player's slots */
+    public array $containerMenuSeen = [];
+
     /** PlayerAdvancements.lastSelectedTab */
     public ?string $selectedAdvancementTab = null;
 
