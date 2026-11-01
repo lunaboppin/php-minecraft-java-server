@@ -255,6 +255,8 @@ trait BlockPlacement
                 }
             }
             return null;
+        } elseif ($is('BaseRailBlock')) {
+            $properties['shape'] = $horizontal === 'east' || $horizontal === 'west' ? 'east_west' : 'north_south';
         } elseif ($is('LeavesBlock')) {
             $properties['persistent'] = 'true';
         } elseif ($is('VineBlock')) {
