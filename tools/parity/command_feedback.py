@@ -1064,7 +1064,9 @@ SCRIPT = [
     ('difficulty hard', False),
     # AbstractFurnaceBlockEntity.serverTick: the fuel lights for an ingredient that can smelt, the
     # ingot cooks in 200 ticks and is counted in RecipesUsed; destroying the furnace drops it, the
-    # furnace and an orb with the recipe's experience, and a chest drops what it holds.
+    # furnace and an orb with the recipe's experience, and a chest drops what it holds. The operator
+    # stands clear: a container's contents can be picked up at once, the block's loot after 10 ticks.
+    ('!quiet tp @s 2 200 12', False),
     ('setblock 2 200 2 furnace', False),
     ('item replace block 2 200 2 container.0 with raw_gold 1', False),
     ('item replace block 2 200 2 container.1 with coal', False),
@@ -1095,6 +1097,13 @@ SCRIPT = [
     ('setblock 4 200 4 chest', False),
     ('item replace block 4 200 4 container.0 with diamond 3', False),
     ('setblock 4 200 4 air destroy', False),
+    ('kill @e[type=item]', False),
+    # FillCommand's destroy mode runs Level.destroyBlock on each block in turn.
+    ('setblock 4 200 4 chest', False),
+    ('item replace block 4 200 4 container.0 with diamond 3', False),
+    ('setblock 5 200 4 barrel', False),
+    ('item replace block 5 200 4 container.4 with emerald 2', False),
+    ('fill 4 200 4 5 200 4 air destroy', False),
     ('kill @e[type=item]', False),
     ('list', False),
 ]

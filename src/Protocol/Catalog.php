@@ -13,6 +13,7 @@ final class Catalog
     public readonly ItemStackCodec $itemStacks;
 
     public readonly array $pushing;
+
     /** Each fuel's burn ticks and cooking speed by furnace block entity type. */
     public readonly array $furnaceFuel;
 
