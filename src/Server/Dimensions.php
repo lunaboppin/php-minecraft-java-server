@@ -14,7 +14,7 @@ trait Dimensions
     private array $worlds = [];
 
     private array $dimensionState = [];
-    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes', 'randomTickIndex', 'tntEntities', 'tntTrackers', 'lightningBolts', 'motionHeights'];
+    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes', 'randomTickIndex', 'tntEntities', 'tntTrackers', 'fallingBlocks', 'fallingTrackers', 'lightningBolts', 'motionHeights'];
 
     private function withDimension(string $dimension, callable $action): mixed
     {
@@ -60,12 +60,18 @@ trait Dimensions
                     $this->runBlockEvents();
                     $this->tickItems();
                     $this->tickTnt();
+                    $this->tickFallingBlocks();
                     $this->tickLightning();
                     $this->tickWeather();
                     $this->tickSleep();
                     $this->tickExperienceOrbs();
                     $this->tickFurnaces();
                     $this->tickAnimals();
+                    // Level.tickBlockEntities runs after the entities.
+                    $this->tickMovingPistons();
+                    $this->tickDaylightDetectors();
+                    $this->tickPlateContacts();
+                    $this->tickTripwireContacts();
                 }
                 foreach (array_slice($this->pendingLight, 0, 9, true) as $key => [$cx,$cz]) {
                     // ChunkHolder.broadcastChanges sends light only to players for whom the chunk is on

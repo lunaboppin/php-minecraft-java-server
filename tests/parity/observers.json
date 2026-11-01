@@ -1,0 +1,133 @@
+{
+  "name": "observers",
+  "normalizations": [
+    "Compare an observer that sees the block in front of it change, priming the TNT behind it inside obsidian, with one that sees nothing, and an observer set already powered.",
+    "Observers set by /setblock pulse once as they are shaped to their neighbours; the TNT is placed after that pulse.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 63 -1 7 65 1 minecraft:obsidian"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 0 minecraft:observer[facing=west]"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 63 5 7 65 7 minecraft:obsidian"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 6 minecraft:observer[facing=west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 12 64 0 minecraft:observer[facing=west,powered=true]"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "settled",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          6
+        ],
+        [
+          12,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:tnt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 6 minecraft:tnt"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:stone"
+    },
+    {
+      "action": "wait",
+      "seconds": 6
+    },
+    {
+      "action": "snapshot",
+      "name": "observed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          7,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          5,
+          64,
+          6
+        ],
+        [
+          12,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -58,6 +58,9 @@ trait RandomTicks
                     in_array($name, ['budding_amethyst', 'bamboo_sapling', 'brown_mushroom', 'red_mushroom'], true) => true,
                     isset(self::GROWERS[$name]) => $name !== 'mangrove_propagule' || $p['hanging'] === 'false' || (int) $p['age'] < 4,
                     in_array($name, ['grass_block', 'mycelium', 'farmland', 'sugar_cane', 'cactus', 'ice', 'snow', 'melon_stem', 'pumpkin_stem', 'lava', 'crimson_nylium', 'warped_nylium', 'vine'], true) => true,
+                    $name === 'turtle_egg' => true,
+                    $name === 'chorus_flower' => (int) $p['age'] < 5,
+                    isset(self::SPELEOTHEMS[$name]) => true,
                     default => false,
                 };
                 if ($ticks) {
@@ -198,6 +201,12 @@ trait RandomTicks
             $this->plantTick($x, $y, $z, $name, $p);
         } elseif (isset(self::GROWERS[$name])) {
             $this->saplingTick($x, $y, $z, $name, $p);
+        } elseif ($name === 'turtle_egg') {
+            $this->turtleEggRandomTick($x, $y, $z, $state);
+        } elseif ($name === 'chorus_flower') {
+            $this->chorusFlowerRandomTick($x, $y, $z, $state);
+        } elseif (isset(self::SPELEOTHEMS[$name])) {
+            $this->speleothemRandomTick($x, $y, $z, $state);
         } elseif ($name === 'sugar_cane' || $name === 'cactus') {
             $this->growTall($x, $y, $z, $name, $p);
         } elseif ($name === 'crimson_nylium' || $name === 'warped_nylium') {

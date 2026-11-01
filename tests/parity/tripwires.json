@@ -1,0 +1,261 @@
+{
+  "name": "tripwires",
+  "normalizations": [
+    "Compare two tripwire hooks with string set between them: attaching, a pig in the string powering the hooks and the lamp one hangs on, clearing, and cutting the string.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule mob_drops false"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 64 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:tripwire_hook[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 0 minecraft:tripwire_hook[facing=west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "attached",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:pig 2.5 64 0.5 {NoAI:1b}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "pressed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=pig]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "released",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "cut",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

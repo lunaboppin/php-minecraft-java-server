@@ -1,0 +1,125 @@
+{
+  "name": "bells",
+  "normalizations": [
+    "Compare bells used on the side they swing from and on another side, and a bell powered then unpowered by a redstone block; their block events and sounds are compared in the packets.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:bell[facing=north,attachment=floor]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:bell[facing=north,attachment=floor]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -2.5 0 10"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0.0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 5,
+      "cursor": [
+        1.0,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "rung",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "unpowered",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          -1
+        ],
+        [
+          1,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

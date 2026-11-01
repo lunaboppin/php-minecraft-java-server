@@ -62,6 +62,9 @@ trait BlockPlacement
     private function connectedState(int $state, int $x, int $y, int $z): int
     {
         $catalog = $this->version->catalog;
+        if ($catalog->blockName($state) === 'tripwire') {
+            return $this->tripwireConnected($state, $x, $y, $z);
+        }
         $classes = $this->placementClasses($catalog->blockName($state));
         if (in_array('FenceGateBlock', $classes, true)) {
             // FenceGateBlock: lowered when a wall is beside it across its opening.
@@ -217,6 +220,13 @@ trait BlockPlacement
         $classes = $this->placementClasses($name);
         $is = static fn (string ...$names): bool => array_intersect($names, $classes) !== [];
 
+        if (str_ends_with($name, '_concrete_powder') && ($this->fireBlocks()->isWater($this->world->get(...$pos)) || $this->touchesLiquid(...$pos))) {
+            // ConcretePowderBlock.getStateForPlacement: it sets at once beside or in water.
+            return [substr($name, 0, -7), []];
+        }
+        if (isset(self::SPELEOTHEMS[$name])) {
+            return $this->speleothemPlacement($c, $name, $pos);
+        }
         if (str_ends_with($name, '_hanging_sign') && !str_contains($name, '_wall_')) {
             return $this->hangingSignPlacement($c, $name, $properties, $pos, $clicked, $looking());
         }

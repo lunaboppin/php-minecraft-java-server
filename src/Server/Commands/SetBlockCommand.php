@@ -30,7 +30,14 @@ trait SetBlockCommand
             if ($this->world->get($x, $y, $z) === $state) {
                 throw new CommandFailure(['translate' => 'commands.setblock.failed']);
             }
+            if ($mode !== 'strict') {
+                // SetBlockCommand: Block.updateFromNeighbourShapes shapes the block to its neighbours first.
+                $state = $this->connectedState($state, $x, $y, $z);
+            }
             $this->setBlock($x, $y, $z, $state);
+            if ($mode !== 'strict') {
+                $this->observerSetByCommand($x, $y, $z);
+            }
         }
         $this->sendSuccess($sender, ['translate' => 'commands.setblock.success', 'with' => [$x, $y, $z]], true);
     }
