@@ -72,6 +72,7 @@ final class Server
     use PoweredRails;
 
     use RespawnPoints;
+
     use FallingBlocks;
 
     use Bells;
