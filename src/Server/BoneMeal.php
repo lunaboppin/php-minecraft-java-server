@@ -62,6 +62,22 @@ trait BoneMeal
                 $this->setBlock($x, $y, $z, $with(['age' => min($max, (int) $p['age'] + $increase)]));
             };
         }
+        if ($name === 'torchflower_crop') {
+            // TorchflowerCropBlock.getBonemealAgeIncrease: one age, to a torchflower at 2.
+            return (int) $p['age'] < 2
+                ? fn () => $this->setBlock($x, $y, $z, (int) $p['age'] + 1 >= 2 ? $catalog->state('torchflower') : $with(['age' => (int) $p['age'] + 1]))
+                : null;
+        }
+        if ($name === 'pitcher_crop') {
+            // PitcherCropBlock: bone meal on either half grows the lower half one age.
+            $lowerY = $p['half'] === 'lower' ? $y : $y - 1;
+            $lower = $this->world->get($x, $lowerY, $z);
+            if ($catalog->blockName($lower) !== 'pitcher_crop' || $catalog->properties($lower)['half'] !== 'lower') {
+                return null;
+            }
+            $lp = $catalog->properties($lower);
+            return $this->pitcherCanGrow($x, $lowerY, $z, $lp) ? fn () => $this->growPitcher($x, $lowerY, $z, $lp) : null;
+        }
         if ($name === 'melon_stem' || $name === 'pumpkin_stem') {
             if ((int) $p['age'] === 7) {
                 return null;
