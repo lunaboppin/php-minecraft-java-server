@@ -3328,7 +3328,19 @@
     "entity.turtle.egg_crack": 1664,
     "entity.turtle.egg_hatch": 1665,
     "block.piston.contract": 1304,
-    "block.piston.extend": 1305
+    "block.piston.extend": 1305,
+    "block.bamboo_wood_pressure_plate.click_off": 136,
+    "block.bamboo_wood_pressure_plate.click_on": 137,
+    "block.cherry_wood_pressure_plate.click_off": 343,
+    "block.cherry_wood_pressure_plate.click_on": 344,
+    "block.metal_pressure_plate.click_off": 983,
+    "block.metal_pressure_plate.click_on": 984,
+    "block.nether_wood_pressure_plate.click_off": 1115,
+    "block.nether_wood_pressure_plate.click_on": 1116,
+    "block.stone_pressure_plate.click_off": 1606,
+    "block.stone_pressure_plate.click_on": 1607,
+    "block.wooden_pressure_plate.click_off": 1855,
+    "block.wooden_pressure_plate.click_on": 1856
   },
   "particle_types": {
     "angry_villager": 0,

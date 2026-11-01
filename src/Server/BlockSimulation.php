@@ -65,6 +65,7 @@ trait BlockSimulation
             elseif($kind==='fire'){$this->tickFire($x,$y,$z);}
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
             elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
+            elseif($kind==='plate'){$this->tickPressurePlate($x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
@@ -132,6 +133,7 @@ trait BlockSimulation
         if($name==='redstone_block'){return 15;}
         if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
         if($name==='daylight_detector'){return (int)$p['power'];}
+        if($this->isPressurePlate($name)){return $this->plateSignal($state);}
         if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
         if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
@@ -158,6 +160,8 @@ trait BlockSimulation
                     $source=$c->blockName($this->world->get($a+$ex,$b+$ey,$d+$ez));
                     if(in_array($source,['redstone_block','lever','repeater','comparator','observer'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
                     // LightningRodBlock.getDirectSignal: a struck rod strongly powers the block it is on.
+                    // BasePressurePlateBlock.getDirectSignal: a pressed plate strongly powers the block it is on.
+                    elseif($this->isPressurePlate($source) && [$ex,$ey,$ez]===[0,1,0]){$power=max($power,$this->plateSignal($this->world->get($a,$b+1,$d)));}
                     elseif($this->lightningRod($source)){$rod=$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez));if($rod['powered']==='true' && self::ROD_FACES[$rod['facing']]===[$ex,$ey,$ez]){$power=15;}}
                 }
             }
@@ -183,6 +187,7 @@ trait BlockSimulation
                 $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
                 if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
                 $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector';
+                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $this->isPressurePlate($kind);
             }
             if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
             if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}

@@ -69,6 +69,7 @@ trait Dimensions
                     // Level.tickBlockEntities runs after the entities.
                     $this->tickMovingPistons();
                     $this->tickDaylightDetectors();
+                    $this->tickPlateContacts();
                 }
                 foreach (array_slice($this->pendingLight, 0, 9, true) as $key => [$cx,$cz]) {
                     // ChunkHolder.broadcastChanges sends light only to players for whom the chunk is on
