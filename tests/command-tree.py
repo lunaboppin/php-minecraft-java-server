@@ -56,7 +56,7 @@ def main():
                             literal = sent[index]
                             argument = sent[literal['children'][0]]
                             assert literal['flags'] == 5 and argument['flags'] == 6 and argument['raw'] == b'\x02', (name, command)
-                    assert ('gamemode' in sent_roots) == (level == 4) and 'help' in sent_roots and 'advancement' not in sent_roots, sorted(sent_roots)
+                    assert ('gamemode' in sent_roots) == (level == 4) and 'help' in sent_roots and 'test' not in sent_roots, sorted(sent_roots)
                     # /help prints brigadier's smart usage of this tree, one literal line per command.
                     start = len(client.seen)
                     client.send('chat_command', wire.string('help'))
