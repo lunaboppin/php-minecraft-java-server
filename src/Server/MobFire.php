@@ -50,7 +50,7 @@ trait MobFire
 
     /**
      * Mob.burnUndead in aiStep, then applyEffectsFromBlocks: rain or water puts the fire out, and
-     * a mob neither burning nor just lit keeps one tick of fire immunity.
+     * a mob neither burning nor just lit has none left (Entity.getFireImmuneTicks is 0).
      */
     private function burnAndExtinguishMob(array &$mob): void
     {
@@ -70,7 +70,7 @@ trait MobFire
             $mob['fire'] = min(0, $mob['fire'] ?? 0);
         }
         if (($mob['fire'] ?? 0) <= 0 && ($mob['fire'] ?? 0) <= $before) {
-            $mob['fire'] = -1;
+            $mob['fire'] = 0;
         }
     }
 
