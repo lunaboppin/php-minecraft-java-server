@@ -14,7 +14,6 @@ trait InventoryManagement
 {
     private Crafting $crafting;
 
-
     private function storageSlots(): array
     {
         return array_merge(range(36, 44), range(9, 35));
