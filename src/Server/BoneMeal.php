@@ -115,7 +115,161 @@ trait BoneMeal
             }
             return fn () => $this->boneMealGrass($x, $y, $z);
         }
-        return null;
+        $inside = fn (int $b): bool => $b >= $this->world->minY && $b < $this->world->minY + $this->world->height;
+        switch ($name) {
+            case 'cocoa':
+                return (int) $p['age'] < 2 ? fn () => $this->setBlock($x, $y, $z, $with(['age' => (int) $p['age'] + 1])) : null;
+            case 'cave_vines':
+            case 'cave_vines_plant':
+                // CaveVines: bone meal grows berries instead of the vine.
+                return $p['berries'] === 'false' ? fn () => $this->setBlock($x, $y, $z, $with(['berries' => 'true'])) : null;
+            case 'pink_petals':
+            case 'wildflowers':
+                // FlowerBedBlock: one more flower, or the block's item once there are four.
+                return function () use ($x, $y, $z, $name, $p, $with): void {
+                    if ((int) $p['flower_amount'] < 4) {
+                        $this->setBlock($x, $y, $z, $with(['flower_amount' => (int) $p['flower_amount'] + 1]));
+                    } else {
+                        $this->popResource($x, $y, $z, ['item' => $this->version->blocks['items'][$name], 'count' => 1]);
+                    }
+                };
+            case 'rooted_dirt':
+                return $catalog->air($this->world->get($x, $y - 1, $z)) && $inside($y - 1) ? fn () => $this->setBlock($x, $y - 1, $z, $catalog->state('hanging_roots')) : null;
+            case 'mangrove_leaves':
+                return $catalog->air($this->world->get($x, $y - 1, $z))
+                    ? fn () => $this->setBlock($x, $y - 1, $z, $catalog->state('mangrove_propagule', ['hanging' => 'true']))
+                    : null;
+            case 'short_dry_grass':
+                return fn () => $this->setBlock($x, $y, $z, $catalog->state('tall_dry_grass'));
+            case 'bush':
+            case 'firefly_bush':
+            case 'tall_dry_grass':
+                // BonemealableBlock.findSpreadableNeighbourPos: an empty side where the plant survives.
+                $plant = $catalog->state($name === 'tall_dry_grass' ? 'short_dry_grass' : $name);
+                if ($this->spreadableNeighbours($x, $y, $z, $plant) === []) {
+                    return null;
+                }
+                return function () use ($x, $y, $z, $plant): void {
+                    $sides = $this->spreadableNeighbours($x, $y, $z, $plant, true);
+                    if ($sides !== []) {
+                        $this->setBlock($sides[0][0], $y, $sides[0][1], $plant);
+                    }
+                };
+            case 'bamboo_sapling':
+                if (!$catalog->air($this->world->get($x, $y + 1, $z)) || !$inside($y + 1)) {
+                    return null;
+                }
+                return function () use ($x, $y, $z, $catalog): void {
+                    $this->setBlock($x, $y + 1, $z, $catalog->state('bamboo', ['leaves' => 'small']));
+                    $this->setBlock($x, $y, $z, $catalog->state('bamboo'));
+                };
+            case 'bamboo':
+                return $this->boneMealBamboo($x, $y, $z);
+        }
+        return $this->boneMealVine($x, $y, $z, $name);
+    }
+
+    /**
+     * BonemealableBlock.getSpreadableNeighbourPos: the empty horizontal neighbours where the plant
+     * survives, the first found in a shuffled order when bone meal is used.
+     *
+     * @return list<array{int, int}>
+     */
+    private function spreadableNeighbours(int $x, int $y, int $z, int $plant, bool $shuffled = false): array
+    {
+        $sides = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+        if ($shuffled) {
+            for ($i = count($sides) - 1; $i > 0; --$i) {
+                $j = random_int(0, $i);
+                [$sides[$i], $sides[$j]] = [$sides[$j], $sides[$i]];
+            }
+        }
+        $found = [];
+        $this->onRegion($x, $z, function (Region $region, Decorator $decorator) use ($x, $y, $z, $plant, $sides, &$found): bool {
+            foreach ($sides as [$dx, $dz]) {
+                if ($decorator->blocks->isAir($region->get($x + $dx, $y, $z + $dz)) && $decorator->survival->canSurvive($plant, $region, $x + $dx, $y, $z + $dz)) {
+                    $found[] = [$x + $dx, $z + $dz];
+                    break;
+                }
+            }
+            return false;
+        });
+        return $found;
+    }
+
+    /** BambooStalkBlock: one or two more stalks on top while the bamboo is under 16 tall. */
+    private function boneMealBamboo(int $x, int $y, int $z): ?\Closure
+    {
+        $catalog = $this->version->catalog;
+        $count = function (int $step) use ($x, $y, $z, $catalog): int {
+            $height = 0;
+            while ($height < 16 && $catalog->blockName($this->world->get($x, $y + $step * ($height + 1), $z)) === 'bamboo') {
+                ++$height;
+            }
+            return $height;
+        };
+        [$above, $below] = [$count(1), $count(-1)];
+        $top = $y + $above;
+        $growth = $top + 1;
+        $inside = $growth >= $this->world->minY && $growth < $this->world->minY + $this->world->height;
+        if ($above + $below + 1 >= 16 || $catalog->properties($this->world->get($x, $top, $z))['stage'] === '1' || !$inside || !$catalog->air($this->world->get($x, $growth, $z))) {
+            return null;
+        }
+        return function () use ($x, $z, $top, $above, $below, $catalog): void {
+            $total = $above + $below + 1;
+            for ($i = 0, $grow = random_int(1, 2); $i < $grow; ++$i, ++$top, ++$total) {
+                $state = $this->world->get($x, $top, $z);
+                if ($total >= 16 || $catalog->properties($state)['stage'] === '1' || !$catalog->air($this->world->get($x, $top + 1, $z))
+                    || $top + 1 >= $this->world->minY + $this->world->height) {
+                    return;
+                }
+                $this->growBamboo($x, $top, $z, $catalog->properties($state), $total);
+            }
+        };
+    }
+
+    /**
+     * GrowingPlantHeadBlock and GrowingPlantBodyBlock: the head of kelp or nether vines grows one
+     * block (kelp) or a run of blocks (NetherVines.getBlocksToGrowWhenBonemealed).
+     */
+    private function boneMealVine(int $x, int $y, int $z, string $name): ?\Closure
+    {
+        $catalog = $this->version->catalog;
+        $heads = ['kelp' => 'kelp_plant', 'weeping_vines' => 'weeping_vines_plant', 'twisting_vines' => 'twisting_vines_plant'];
+        $head = array_search($name, $heads, true);
+        if ($head === false && !isset($heads[$name])) {
+            return null;
+        }
+        $head = $head === false ? $name : $head;
+        $step = self::PLANT_HEADS[$head][1];
+        // BlockUtil.getTopConnectedBlock: along the body to the head.
+        $hy = $y;
+        while ($catalog->blockName($this->world->get($x, $hy, $z)) === $heads[$head]) {
+            $hy += $step;
+        }
+        if ($catalog->blockName($this->world->get($x, $hy, $z)) !== $head) {
+            return null;
+        }
+        $into = fn (int $b): bool => $b >= $this->world->minY && $b < $this->world->minY + $this->world->height
+            && ($head === 'kelp' ? $catalog->blockName($this->world->get($x, $b, $z)) === 'water' : $catalog->air($this->world->get($x, $b, $z)));
+        if (!$into($hy + $step)) {
+            return null;
+        }
+        return function () use ($x, $z, $hy, $step, $head, $heads, $into, $catalog): void {
+            $state = $this->world->get($x, $hy, $z);
+            $age = min((int) $catalog->properties($state)['age'] + 1, 25);
+            $grow = 1;
+            if ($head !== 'kelp') {
+                for ($grow = 0, $chance = 1.0; self::randomUnit() < $chance; ++$grow) {
+                    $chance *= 0.826;
+                }
+            }
+            for ($i = 0, $b = $hy + $step; $i < $grow && $into($b); ++$i, $b += $step, $age = min($age + 1, 25)) {
+                $this->setBlock($x, $b, $z, $catalog->state($head, ['age' => (string) $age]));
+                // GrowingPlantHeadBlock.updateShape: the head behind becomes the plant's body.
+                $this->setBlock($x, $b - $step, $z, $catalog->state($heads[$head]));
+            }
+        };
     }
 
     private function twoByTwoSaplings(int $x, int $y, int $z, string $name): bool

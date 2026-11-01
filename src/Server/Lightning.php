@@ -30,6 +30,14 @@ trait Lightning
         $k = ($this->randomTickValue >= 0x80000000 ? $this->randomTickValue - 0x100000000 : $this->randomTickValue) >> 2;
         [$x, $z] = [$cx * 16 + ($k & 15), $cz * 16 + (($k >> 8) & 15)];
         $y = $this->motionBlockingHeight($x, $z);
+        $rod = $this->findLightningRod($x, $y, $z);
+        if ($rod !== null) {
+            [$x, $y, $z] = $rod;
+            if ($this->rainingAt($x, $y, $z)) {
+                $this->spawnLightning($x + 0.5, (float) $y, $z + 0.5);
+            }
+            return;
+        }
         $targets = [];
         foreach ($this->localPlayers() as $player) {
             if (!$player->dead && abs($player->x - ($x + 0.5)) <= 3.5 + 0.3 && abs($player->z - ($z + 0.5)) <= 3.5 + 0.3 && $player->y >= $y - 3
@@ -50,6 +58,136 @@ trait Lightning
         }
         if ($this->rainingAt($x, $y, $z)) {
             $this->spawnLightning($x + 0.5, (float) $y, $z + 0.5);
+        }
+    }
+
+    /** Directions a lightning rod can face, as offsets. */
+    private const ROD_FACES = ['down' => [0, -1, 0], 'up' => [0, 1, 0], 'north' => [0, 0, -1], 'south' => [0, 0, 1], 'west' => [-1, 0, 0], 'east' => [1, 0, 0]];
+
+    private function lightningRod(string $name): bool
+    {
+        return (bool) preg_match('/^(waxed_)?((exposed|weathered|oxidized)_)?lightning_rod$/', $name);
+    }
+
+    /**
+     * ServerLevel.findLightningRod: the closest lightning rod within 128 blocks that tops its
+     * column (WORLD_SURFACE), struck from the block above it.
+     *
+     * @return array{int, int, int}|null
+     */
+    private function findLightningRod(int $x, int $y, int $z): ?array
+    {
+        static $states = null;
+        $catalog = $this->version->catalog;
+        if ($states === null) {
+            $states = [];
+            for ($id = 0; $id < $this->version->blocks['state_count']; ++$id) {
+                if ($this->lightningRod($catalog->blockName($id))) {
+                    $states[] = $id;
+                }
+            }
+        }
+        $best = null;
+        $bestDistance = 128 ** 2 + 1;
+        foreach ($this->world->editedStates($states, $x - 128, $x + 128, $z - 128, $z + 128) as [$rx, $ry, $rz, $state]) {
+            $distance = ($rx - $x) ** 2 + ($ry - $y) ** 2 + ($rz - $z) ** 2;
+            if ($distance >= $bestDistance || $this->world->get($rx, $ry, $rz) !== $state) {
+                continue;
+            }
+            // Heightmap.Types.WORLD_SURFACE: the first Y above every block that is not air.
+            $top = $this->world->minY + $this->world->height - 1;
+            while ($top > $ry && $catalog->air($this->world->get($rx, $top, $rz))) {
+                --$top;
+            }
+            if ($top === $ry) {
+                [$best, $bestDistance] = [[$rx, $ry + 1, $rz], $distance];
+            }
+        }
+        return $best;
+    }
+
+    /** LightningRodBlock.onLightningStrike: powered for 8 ticks, with sparks along its axis. */
+    private function strikeLightningRod(int $x, int $y, int $z): void
+    {
+        $catalog = $this->version->catalog;
+        $state = $this->world->get($x, $y, $z);
+        if (!$this->lightningRod($catalog->blockName($state))) {
+            return;
+        }
+        $p = $catalog->properties($state);
+        $this->setBlock($x, $y, $z, $catalog->state($catalog->blockName($state), ['powered' => 'true'] + $p));
+        [$fx, $fy, $fz] = self::ROD_FACES[$p['facing']];
+        $this->changedSimulation($x - $fx, $y - $fy, $z - $fz);
+        $this->scheduleBlock('lightning_rod', $x, $y, $z, 8);
+        $this->levelEvent(3002, [$x, $y, $z], $fx !== 0 ? 0 : ($fy !== 0 ? 1 : 2));
+    }
+
+    private function unpowerLightningRod(int $x, int $y, int $z): void
+    {
+        $catalog = $this->version->catalog;
+        $state = $this->world->get($x, $y, $z);
+        if (!$this->lightningRod($catalog->blockName($state))) {
+            return;
+        }
+        $p = $catalog->properties($state);
+        $this->setBlock($x, $y, $z, $catalog->state($catalog->blockName($state), ['powered' => 'false'] + $p));
+        [$fx, $fy, $fz] = self::ROD_FACES[$p['facing']];
+        $this->changedSimulation($x - $fx, $y - $fy, $z - $fz);
+    }
+
+    /**
+     * LightningBolt.clearCopperOnLightningStrike: struck copper loses its oxidation, then three to
+     * five random walks through nearby copper each take a stage off the copper they step on.
+     */
+    private function clearCopperOnStrike(int $x, int $y, int $z): void
+    {
+        $catalog = $this->version->catalog;
+        $name = $catalog->blockName($this->world->get($x, $y, $z));
+        $age = self::copperAge($name);
+        if ($age === null && !(str_starts_with($name, 'waxed_') && self::copperAge(preg_replace('/^waxed_/', '', $name)) !== null)) {
+            return;
+        }
+        if ($age !== null) {
+            $this->setCopperStage($x, $y, $z, $age[0], 0);
+        }
+        for ($strike = 0, $strikes = random_int(0, 2) + 3; $strike < $strikes; ++$strike) {
+            [$wx, $wy, $wz] = [$x, $y, $z];
+            for ($step = 0, $steps = random_int(0, 7) + 1; $step < $steps; ++$step) {
+                // BlockPos.randomInCube: ten random tries within a block of the walk.
+                $found = false;
+                for ($try = 0; $try < 10; ++$try) {
+                    [$cx, $cy, $cz] = [$wx + random_int(-1, 1), $wy + random_int(-1, 1), $wz + random_int(-1, 1)];
+                    $other = self::copperAge($catalog->blockName($this->world->get($cx, $cy, $cz)));
+                    if ($other === null) {
+                        continue;
+                    }
+                    if ($other[1] > 0) {
+                        $this->setCopperStage($cx, $cy, $cz, $other[0], $other[1] - 1);
+                    }
+                    $this->levelEvent(3002, [$cx, $cy, $cz], -1);
+                    [$wx, $wy, $wz, $found] = [$cx, $cy, $cz, true];
+                    break;
+                }
+                if (!$found) {
+                    break;
+                }
+            }
+        }
+    }
+
+    /** A weathering copper block at another stage, a copper door's other half following. */
+    private function setCopperStage(int $x, int $y, int $z, string $base, int $stage): void
+    {
+        $catalog = $this->version->catalog;
+        $stem = $base === 'copper_block' && $stage > 0 ? 'copper' : $base;
+        $next = ['', 'exposed_', 'weathered_', 'oxidized_'][$stage] . $stem;
+        $properties = $catalog->properties($this->world->get($x, $y, $z));
+        $this->setBlock($x, $y, $z, $catalog->state($next, $properties));
+        if (str_ends_with($base, 'copper_door')) {
+            $other = $y + (($properties['half'] ?? '') === 'lower' ? 1 : -1);
+            if (str_ends_with($catalog->blockName($this->world->get($x, $other, $z)), 'copper_door')) {
+                $this->setBlock($x, $other, $z, $catalog->state($next, $catalog->properties($this->world->get($x, $other, $z))));
+            }
         }
     }
 
@@ -109,6 +247,10 @@ trait Lightning
                 if ($this->config->difficulty >= 2) {
                     $this->lightningFire($bolt, 4);
                 }
+                // LightningBolt.getStrikePosition: the block just below the bolt.
+                $strike = [(int) floor($bolt['x']), (int) floor($bolt['y'] - 1.0E-6), (int) floor($bolt['z'])];
+                $this->strikeLightningRod(...$strike);
+                $this->clearCopperOnStrike(...$strike);
             }
             --$bolt['life'];
             if ($bolt['life'] < 0) {

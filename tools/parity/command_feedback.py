@@ -635,6 +635,46 @@ SCRIPT = [
     ('fillbiome 1000 200 1000 1003 203 1003 desert', False),
     ('fillbiome 0 200 0 3 203 3 plains', False),
     ('!witness fillbiome 0 200 0 3 203 3 plains', False),
+    # /waypoint: listing transmitters and changing icons. A HashSet orders several transmitters, so
+    # each list holds one: the other player stops transmitting first.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet attribute Witness minecraft:waypoint_transmit_range base set 0', False), ('waypoint list', False),
+    ('waypoint modify @s color red', False), ('waypoint list', False), ('waypoint modify @s color hex 12AB34', False), ('waypoint list', False),
+    ('waypoint modify @s color black', False), ('waypoint modify @s style set minecraft:bowtie', False), ('waypoint modify @s style set nope', False),
+    ('waypoint modify @s style reset', False), ('waypoint modify @s color reset', False), ('waypoint list', False),
+    ('waypoint modify @e[type=item,limit=1] color red', False), ('waypoint modify @a color red', False),
+    ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["wp"]}', False), ('waypoint modify @e[tag=wp,limit=1] color blue', False), ('!quiet kill @e[tag=wp]', False),
+    ('!quiet attribute Witness minecraft:waypoint_transmit_range base reset', False),
+    ('!quiet attribute @s minecraft:waypoint_transmit_range base set 0', False), ('waypoint list', False),
+    ('!quiet attribute @s minecraft:waypoint_transmit_range base reset', False),
+    ('execute in minecraft:the_nether run waypoint list', False), ('!witness waypoint list', False),
+    # /datapack: listing, enabling at each position, disabling, feature packs and creating packs.
+    # Vanilla is disabled only briefly and comes back first, so the rest of the script keeps its data.
+    ('datapack list', False), ('datapack list available', False), ('datapack list enabled', False),
+    ('datapack enable vanilla', False), ('datapack disable vanilla', False), ('datapack list enabled', False),
+    ('datapack enable vanilla', False), ('datapack list', False),
+    ('datapack enable minecart_improvements', False), ('datapack disable minecart_improvements', False),
+    ('datapack enable trade_rebalance', False), ('datapack enable nope', False), ('datapack disable nope', False),
+    ('datapack create foo "My pack"', False), ('datapack create foo "My pack"', False), ('datapack create "a/b" x', False),
+    ('datapack create "con" x', False), ('datapack create "Con.txt" x', False), ('datapack create "x." x', False),
+    ('datapack create "" x', False), ('datapack create Foo x', False), ('datapack create bar {text:"Red",color:"red"}', False),
+    ('datapack create "my pack" x', False), ('datapack list available', False),
+    ('datapack enable "file/foo"', False), ('datapack enable "file/foo"', False), ('datapack list enabled', False),
+    ('datapack disable "file/foo"', False), ('datapack enable "file/foo" first', False), ('datapack list', False),
+    ('datapack enable "file/bar" before "file/foo"', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack enable "file/bar" after vanilla', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack enable "file/bar" before nope', False), ('datapack enable "file/bar" after "file/bar"', False),
+    ('datapack enable "file/bar" last', False), ('datapack list enabled', False),
+    ('datapack disable vanilla', False), ('datapack enable vanilla', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack disable "file/foo"', False), ('datapack enable file/foo', False),
+    ('!witness datapack list', False), ('datapack list', False),
+    # /fetchprofile: players' own profiles with their copy, head, mannequin and sprite links, and
+    # failures. Name and UUID lookups reply off the tick once the services answer, so only their
+    # syntax is compared.
+    ('fetchprofile entity @s', False), ('fetchprofile entity Witness', False),
+    ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["fp"],CustomName:"Bob"}', False), ('fetchprofile entity @e[tag=fp,limit=1]', False),
+    ('!quiet kill @e[tag=fp]', False), ('fetchprofile entity @e[type=pig]', False), ('fetchprofile id nope', False),
+    ('fetchprofile id 1-2-3', False), ('fetchprofile name', False), ('fetchprofile entity', False), ('!witness fetchprofile entity @s', False),
     # /perf and /jfr: starting and stopping, and failures. A recording's timings and report name
     # vary, so a stopped recording is not compared; Flight Recorder needs a JVM, so /jfr fails as
     # vanilla does when no recording can start.

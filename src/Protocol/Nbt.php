@@ -43,6 +43,7 @@ final class Nbt
             is_bool($value) => "\x01" . $name . chr((int) $value),
             // UUIDs are stored as four big-endian ints, the vanilla UUIDUtil codec.
             $key === 'uuid' => "\x0b" . $name . pack('N', 4) . self::uuid($value),
+            $value instanceof NbtIntArray => "\x0b" . $name . pack('N', count($value->values)) . pack('N*', ...$value->values),
             is_string($value) => "\x08" . $name . self::string($value),
             // Data component values in item hovers, such as minecraft:damage.
             is_int($value) => "\x03" . $name . pack('N', $value),
