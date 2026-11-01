@@ -212,6 +212,9 @@ trait Animals
         if (isset($animal['soundVariant'])) {
             $c->send($this->version, 'set_entity_data', Packets::mobSoundVariant($this->version, $id, $animal['kind'], $animal['soundVariant']));
         }
+        if ($animal['onFire'] ?? false) {
+            $c->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . "\0" . Binary::writeVarInt(0) . "\1\xff");
+        }
         $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $id, $this->mobAttributeEntries($animal)));
         if (($animal['equipment'] ?? []) !== []) {
             $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
@@ -588,7 +591,7 @@ trait Animals
         $context = [
             'this' => [
                 'type' => 'minecraft:' . $animal['kind'],
-                'flags' => ['is_baby' => false, 'is_on_fire' => false],
+                'flags' => ['is_baby' => false, 'is_on_fire' => ($animal['fire'] ?? 0) > 0],
                 'components' => ['minecraft:sheep/color' => $animal['color'] ?? 'white'],
                 'type_specific' => ['sheep' => ['sheared' => $animal['sheared'] ?? false]],
             ],
@@ -673,6 +676,14 @@ trait Animals
                 continue;
             }
             $animal['tickCount'] = ($animal['tickCount'] ?? 0) + 1;
+            // Entity.baseTick: the fire countdown, for mobs in ticking chunks.
+            if ($this->mobIsTicking($animal)) {
+                $this->tickMobFire($id, $animal);
+                if (isset($animal['deadAt'])) {
+                    continue;
+                }
+                $this->burnAndExtinguishMob($animal);
+            }
             // Entity.checkBelowWorld: LivingEntity.onBelowWorld hurts a mob 64 blocks below the world.
             if ($animal['y'] < $this->world->minY - 64) {
                 $this->hurtMob($id, 4.0, 'minecraft:out_of_world');
