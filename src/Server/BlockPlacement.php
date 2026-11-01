@@ -220,6 +220,10 @@ trait BlockPlacement
         $classes = $this->placementClasses($name);
         $is = static fn (string ...$names): bool => array_intersect($names, $classes) !== [];
 
+        if (str_ends_with($name, '_concrete_powder') && ($this->fireBlocks()->isWater($this->world->get(...$pos)) || $this->touchesLiquid(...$pos))) {
+            // ConcretePowderBlock.getStateForPlacement: it sets at once beside or in water.
+            return [substr($name, 0, -7), []];
+        }
         if (str_ends_with($name, '_hanging_sign') && !str_contains($name, '_wall_')) {
             return $this->hangingSignPlacement($c, $name, $properties, $pos, $clicked, $looking());
         }

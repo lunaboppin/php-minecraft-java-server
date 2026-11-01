@@ -72,6 +72,7 @@ final class Server
     use PoweredRails;
 
     use RespawnPoints;
+    use FallingBlocks;
 
     use Bells;
 
@@ -179,6 +180,7 @@ final class Server
                 $this->restoreTnt();
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
+                $this->restoreFallingBlocks();
                 $this->restoreBlockSimulation();
             });
         }
