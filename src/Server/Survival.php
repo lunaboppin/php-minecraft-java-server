@@ -575,17 +575,8 @@ trait Survival
                 $this->setBlock($bx, $y, $bz, 0);
             }
         }
-        if (in_array($name, ['chest', 'barrel', 'furnace'], true)) {
-            foreach ($this->localPlayers() as $viewer) {
-                if ($viewer->windowPosition === [$x, $y, $z]) {
-                    $this->closeWindow($viewer, true);
-                    $this->syncInventory($viewer);
-                }
-            }
-            $data = $containerData;
-            foreach ($data['slots'] as $stack) {
-                $this->dropContainerStack($x, $y, $z, $stack);
-            }$this->world->deleteContainer([$x, $y, $z]);
+        if ($containerData !== null) {
+            $this->removeContainer($x, $y, $z, $name, $containerData);
         }
         if ($c->gameMode !== 0) {
             return;
@@ -1015,5 +1006,26 @@ trait Survival
             $attacker->exhaustion += 0.1;
             return;
         }
+    }
+
+    /**
+     * BlockEntity.preRemoveSideEffects for a container: its viewers' screens close, its contents
+     * drop and, for a furnace, the experience it holds pops at the block's centre.
+     */
+    private function removeContainer(int $x, int $y, int $z, string $name, array $data): void
+    {
+        foreach ($this->localPlayers() as $viewer) {
+            if ($viewer->windowPosition === [$x, $y, $z]) {
+                $this->closeWindow($viewer, true);
+                $this->syncInventory($viewer);
+            }
+        }
+        foreach ($data['slots'] as $stack) {
+            $this->dropContainerStack($x, $y, $z, $stack);
+        }
+        if ($name === 'furnace') {
+            $this->popFurnaceExperience($data, $x + 0.5, $y + 0.5, $z + 0.5);
+        }
+        $this->world->deleteContainer([$x, $y, $z]);
     }
 }

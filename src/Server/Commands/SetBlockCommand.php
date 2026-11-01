@@ -43,8 +43,14 @@ trait SetBlockCommand
             return false;
         }
         $this->levelEvent(2001, [$x, $y, $z], $state);
+        $name = $this->version->catalog->blockName($state);
+        $container = in_array($name, ['chest', 'barrel', 'furnace'], true) ? $this->world->container([$x, $y, $z]) : null;
         $this->setBlock($x, $y, $z, 0);
         $this->dropBlockLoot($x, $y, $z, $state);
+        // Level.setBlock after the loot: removing the block entity drops what it holds.
+        if ($container !== null) {
+            $this->removeContainer($x, $y, $z, $name, $container);
+        }
         return true;
     }
 

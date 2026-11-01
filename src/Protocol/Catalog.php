@@ -13,6 +13,8 @@ final class Catalog
     public readonly ItemStackCodec $itemStacks;
 
     public readonly array $pushing;
+    /** Each fuel's burn ticks and cooking speed by furnace block entity type. */
+    public readonly array $furnaceFuel;
 
     public readonly EntityPushEligibility $pushEligibility;
 
@@ -68,6 +70,7 @@ final class Catalog
         }
         $data = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
         $this->pushing = json_decode(file_get_contents($directory . '/entity-pushing-rules.json'), true, 512, JSON_THROW_ON_ERROR)['profiles'];
+        $this->furnaceFuel = json_decode(file_get_contents($directory . '/furnace-fuel.json'), true, 512, JSON_THROW_ON_ERROR)['fuel'];
         $pushRules = json_decode(file_get_contents($directory . '/push-eligibility-rules.json'), true, 512, JSON_THROW_ON_ERROR);
         $this->pushEligibility = new EntityPushEligibility($pushRules);
         $this->pushEligibilityRegistry = new EligibilityRegistry($this->pushEligibility);

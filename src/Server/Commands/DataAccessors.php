@@ -303,10 +303,10 @@ trait DataAccessors
         if ($type === 'furnace') {
             array_push(
                 $pairs,
-                ['lit_time_remaining', new NbtTag('int', 0)],
-                ['cooking_time_spent', new NbtTag('int', 0)],
-                ['cooking_total_time', new NbtTag('int', 0)],
-                ['lit_total_time', new NbtTag('int', 0)],
+                ['lit_time_remaining', new NbtTag('int', $data['burn'] ?? 0)],
+                ['cooking_time_spent', new NbtTag('int', $data['cook'] ?? 0)],
+                ['cooking_total_time', new NbtTag('int', $data['cookTotal'] ?? 0)],
+                ['lit_total_time', new NbtTag('int', $data['fuelTotal'] ?? 0)],
             );
         }
         if (isset($data['customName'])) {
@@ -322,7 +322,11 @@ trait DataAccessors
         }
         $pairs[] = ['Items', new NbtTag('list', $items)];
         if ($type === 'furnace') {
-            array_push($pairs, ['RecipesUsed', NbtTag::compound()], ['speed_multiplier', new NbtTag('float', 1.0)]);
+            $used = [];
+            foreach ($data['recipesUsed'] ?? [] as $recipe => $count) {
+                $used[] = ['minecraft:' . $recipe, new NbtTag('int', $count)];
+            }
+            array_push($pairs, ['RecipesUsed', self::nbtCompound($used)], ['speed_multiplier', new NbtTag('float', (float) ($data['speed'] ?? 1.0))]);
         }
         array_push(
             $pairs,
