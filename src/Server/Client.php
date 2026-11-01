@@ -35,6 +35,9 @@ final class Client
     public int $livingTicks = 0;
 
     /** @var array{in: bool, taking: bool, last: int, start: int, end: int} CombatTracker, timed in livingTicks */
+    /** Waypoint.Icon: the locator bar style and colour others see this player with. */
+    public array $waypointIcon = ['style' => 'minecraft:default', 'color' => null];
+
     public array $combat = ['in' => false, 'taking' => false, 'last' => 0, 'start' => 0, 'end' => 0];
 
     /** Health, food and whether saturation was empty, as last sent. */

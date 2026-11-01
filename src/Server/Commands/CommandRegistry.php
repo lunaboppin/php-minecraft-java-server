@@ -91,6 +91,8 @@ final class CommandRegistry
             new CommandDefinition('loot', 'executeLoot', true),
             new CommandDefinition('spreadplayers', 'executeSpreadPlayers', true),
             new CommandDefinition('fillbiome', 'executeFillBiome', true),
+            new CommandDefinition('waypoint', 'executeWaypoint', true),
+            new CommandDefinition('datapack', 'executeDatapack', true),
             new CommandDefinition('fetchprofile', 'executeFetchProfile', true),
         ];
     }

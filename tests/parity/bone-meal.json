@@ -1,11 +1,15 @@
 {
   "name": "bone-meal",
   "normalizations": [
-    "Compare block states after bone meal, at targets whose outcome is certain whatever the random growth.",
+    "Compare block states after bone meal, at targets whose outcome is certain whatever the random growth. Random ticks are off, so no plant grows between uses; a sweet berry bush grown fully by a random tick would have its berries picked by the next use.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
-    "Covers wheat grown fully by four uses, a sweet berry bush by three, and short grass and a fern grown tall. Bone meal on grass and an oak sapling also runs, but its random outcome is not compared."
+    "Covers wheat grown fully by four uses, a sweet berry bush by three, and short grass and a fern grown tall. Bone meal on grass and an oak sapling also runs, but its random outcome is not compared. Also covers cocoa grown twice, cave vine berries, pink petals to four, hanging roots under rooted dirt, a hanging propagule under mangrove leaves, short dry grass grown tall, a bamboo shoot grown into bamboo, and a weeping vine head turning into its body as it grows."
   ],
   "steps": [
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
     {
       "action": "command",
       "text": "fill -3 63 -3 6 66 6 minecraft:air"
@@ -200,6 +204,153 @@
       "face": 1
     },
     {
+      "action": "command",
+      "text": "setblock 0 64 -3 minecraft:jungle_log"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 -3 minecraft:cocoa[facing=west,age=0]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 66 -3 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 65 -3 minecraft:cave_vines[berries=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 -2 minecraft:pink_petals[flower_amount=1]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 66 -1 minecraft:rooted_dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 66 -1 minecraft:mangrove_leaves[persistent=true]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 62 -3 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 63 -3 minecraft:short_dry_grass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 63 -3 minecraft:bamboo_sapling"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 66 -1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 65 -1 minecraft:weeping_vines[age=0]"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        -3
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        -3
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        65,
+        -3
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        -2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        -2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        -2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        66,
+        -1
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        66,
+        -1
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        5,
+        63,
+        -3
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        63,
+        -3
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        5,
+        65,
+        -1
+      ],
+      "face": 1
+    },
+    {
       "action": "wait",
       "seconds": 1
     },
@@ -239,6 +390,51 @@
           4,
           64,
           2
+        ],
+        [
+          1,
+          64,
+          -3
+        ],
+        [
+          3,
+          65,
+          -3
+        ],
+        [
+          4,
+          63,
+          -2
+        ],
+        [
+          0,
+          65,
+          -1
+        ],
+        [
+          4,
+          65,
+          -1
+        ],
+        [
+          5,
+          63,
+          -3
+        ],
+        [
+          3,
+          63,
+          -3
+        ],
+        [
+          3,
+          64,
+          -3
+        ],
+        [
+          5,
+          65,
+          -1
         ]
       ]
     }

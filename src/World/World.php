@@ -265,6 +265,13 @@ class World
         }
         if(isset($this->editCache[$key])){$index=(($y-$this->minY)<<8)|(($z&15)<<4)|($x&15);if($state===$base){unset($this->editCache[$key][$index]);}else{$this->editCache[$key][$index]=$state;}}
     }
+    /** Changed blocks in one of these states within the columns, as [x, y, z, state]; generated terrain is not searched. */
+    public function editedStates(array $states,int $minX,int $maxX,int $minZ,int $maxZ):array {
+        if($states===[]){return [];}
+        $q=$this->db->prepare('SELECT x,y,z,state FROM blocks WHERE x BETWEEN ? AND ? AND z BETWEEN ? AND ? AND state IN ('.implode(',',array_fill(0,count($states),'?')).')');
+        $q->execute([$minX,$maxX,$minZ,$maxZ,...$states]);
+        return array_map(static fn(array $row):array=>array_map('intval',[$row['x'],$row['y'],$row['z'],$row['state']]),$q->fetchAll(\PDO::FETCH_ASSOC));
+    }
     public function sections(int $cx,int $cz):array {
         $sections=$this->baseSections($cx,$cz);
         foreach($this->chunkEdits($cx,$cz) as $index=>$state){$sections[$index>>12][$index&4095]=$state;}

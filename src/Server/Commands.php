@@ -60,6 +60,10 @@ trait Commands
 
     use CommandModules\FillBiomeCommand;
 
+    use CommandModules\WaypointCommand;
+
+    use CommandModules\DatapackCommand;
+
     use CommandModules\FetchProfileCommand;
 
     use CommandModules\LocateCommand;
