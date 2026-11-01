@@ -17,7 +17,7 @@ import net.minecraft.world.level.WorldDataConfiguration;
  * The recipe book as the official server builds it: every recipe display entry in RecipeDisplayId
  * order, encoded for the network, with its recipe and whether unlocking it shows a toast; the
  * learnable recipes in RecipeManager order; the update_recipes payload sent on joining; and
- * how the recipe book places each crafting recipe in a grid.
+ * how the recipe book places each crafting and furnace recipe.
  */
 public class ExportRecipeBook {
     public static void main(String[] args) throws Exception {
@@ -55,14 +55,16 @@ public class ExportRecipeBook {
             for (var recipe : manager.getLearnableRecipes()) learnable.add(recipe.id().identifier().toString());
             root.add("learnable", learnable);
             var recipes = new JsonArray();
-            // PlacementInfo for crafting recipes the book can place: each ingredient's items, the
-            // grid slots' ingredient indices, and a shaped recipe's size.
+            // PlacementInfo for the crafting and furnace recipes the book can place: the recipe type,
+            // each ingredient's items, the grid slots' ingredient indices, and a shaped recipe's size.
             var placements = new JsonObject();
             for (var recipe : manager.getRecipes()) {
                 recipes.add(recipe.id().identifier().toString());
-                if (recipe.value().getType() != RecipeType.CRAFTING || recipe.value().isSpecial()) continue;
+                var type = recipe.value().getType();
+                if (type != RecipeType.CRAFTING && type != RecipeType.SMELTING && type != RecipeType.BLASTING && type != RecipeType.SMOKING || recipe.value().isSpecial()) continue;
                 var info = recipe.value().placementInfo();
                 var placement = new JsonObject();
+                placement.addProperty("type", BuiltInRegistries.RECIPE_TYPE.getKey(type).getPath());
                 placement.addProperty("impossible", info.isImpossibleToPlace());
                 var ingredients = new JsonArray();
                 for (var ingredient : info.ingredients()) {

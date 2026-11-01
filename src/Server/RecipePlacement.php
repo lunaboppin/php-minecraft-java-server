@@ -8,49 +8,65 @@ use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\World\StackedContents;
 
 /**
- * The recipe book filling a crafting grid, as ServerGamePacketListenerImpl.handlePlaceRecipe and
- * ServerPlaceRecipe do for the inventory's 2x2 grid and the crafting table's 3x3: the grid's items
- * go back to the inventory, then one (or, with shift, as many as possible) of each ingredient is
- * moved in, or the recipe is shown as a ghost when the player lacks the items. Furnace books are
- * not placed yet.
+ * The recipe book filling a menu, as ServerGamePacketListenerImpl.handlePlaceRecipe and
+ * ServerPlaceRecipe do for the inventory's 2x2 crafting grid, the crafting table's 3x3 and the
+ * furnace's input: what the menu holds goes back to the inventory, then one (or, with shift, as
+ * many as possible) of each ingredient is moved in, or the recipe is shown as a ghost when the
+ * player lacks the items.
  */
 trait RecipePlacement
 {
+    /**
+     * RecipeBookMenu: the recipe type it places, the grid's width, its input slots, the slots
+     * cleared first, and those counted as available, as menu container indices.
+     *
+     * @return array{type: string, width: int, input: list<int>, clear: list<int>, stock: list<int>, usable: bool}|null
+     */
+    private function recipeMenu(Client $c): ?array
+    {
+        return match ($c->windowType) {
+            'player' => ['type' => 'crafting', 'width' => 2, 'input' => range(0, 3), 'clear' => range(0, 3), 'stock' => range(0, 3), 'usable' => true],
+            'crafting' => ['type' => 'crafting', 'width' => 3, 'input' => range(0, 8), 'clear' => range(0, 8), 'stock' => range(0, 8), 'usable' => true],
+            // AbstractFurnaceMenu: the input, cleared with the result; the block entity counts all three slots.
+            'furnace' => ['type' => 'smelting', 'width' => 1, 'input' => [0], 'clear' => [0, 2], 'stock' => [0, 1, 2], 'usable' => false],
+            default => null,
+        };
+    }
+
     /** ServerGamePacketListenerImpl.handlePlaceRecipe */
     private function placeRecipe(Client $c, int $windowId, int $display, bool $useMaxItems): void
     {
-        if ($c->gameMode === 3 || $windowId !== $c->windowId || !in_array($c->windowType, ['player', 'crafting'], true) || !$this->validWindow($c)) {
+        $menu = $this->recipeMenu($c);
+        if ($c->gameMode === 3 || $windowId !== $c->windowId || $menu === null || !$this->validWindow($c)) {
             return;
         }
         $reference = $this->recipeBookReference();
         $recipe = $reference['displays'][$display][2] ?? null;
         $placement = $reference['placements'][$recipe] ?? null;
-        if ($recipe === null || !isset($c->knownRecipes[$recipe]) || $placement === null || $placement['impossible']) {
+        if ($recipe === null || !isset($c->knownRecipes[$recipe]) || $placement === null || $placement['type'] !== $menu['type'] || $placement['impossible']) {
             return;
         }
-        $size = $c->windowType === 'player' ? 2 : 3;
-        // AbstractCraftingMenu.handlePlacement: creative players may drop what does not fit back.
-        if ($c->gameMode !== 1 && !$this->testClearGrid($c, $size)) {
+        // handlePlacement: creative players may drop what does not fit back.
+        if ($c->gameMode !== 1 && !$this->testClearGrid($c, $menu)) {
             return;
         }
         $ingredients = array_map(static fn (array $items): array => array_fill_keys($items, true), $placement['ingredients']);
-        $available = $this->craftingStock($c, $size);
+        $available = $this->craftingStock($c, $menu);
         if (!$available->tryPick($ingredients, 1)) {
-            $this->clearGrid($c, $size);
+            $this->clearGrid($c, $menu);
             $this->syncInventory($c);
             $c->send($this->version, 'place_ghost_recipe', Binary::writeVarInt($c->windowId) . $reference['ghosts'][$display]);
             return;
         }
-        $this->placeIngredients($c, $size, $recipe, $placement, $ingredients, $available, $useMaxItems);
+        $this->placeIngredients($c, $menu, $recipe, $placement, $ingredients, $available, $useMaxItems);
         $this->syncInventory($c);
     }
 
     /** ServerPlaceRecipe.placeRecipe */
-    private function placeIngredients(Client $c, int $size, string $recipe, array $placement, array $ingredients, StackedContents $available, bool $useMaxItems): void
+    private function placeIngredients(Client $c, array $menu, string $recipe, array $placement, array $ingredients, StackedContents $available, bool $useMaxItems): void
     {
-        $grid = $this->craftingGrid($c, $size);
-        $placed = $this->crafting->match(array_values($grid), $size);
-        $matches = $placed !== null && 'minecraft:' . $placed['name'] === $recipe;
+        $grid = array_map(fn (int $slot): ?array => $this->menuSlot($c, $slot), $menu['input']);
+        $matches = $this->menuRecipe($c, $menu, $grid) === $recipe;
         $biggest = $available->tryPickAll($ingredients, PHP_INT_MAX);
         if ($matches) {
             foreach ($grid as $stack) {
@@ -83,19 +99,30 @@ trait RecipePlacement
                 return;
             }
         }
-        $this->clearGrid($c, $size);
-        [$width, $height] = isset($placement['width']) ? [$placement['width'], $placement['height']] : [$size, $size];
-        foreach (self::placeRecipeSlots($size, $width, $height, $placement['slots']) as [$ingredient, $gridIndex]) {
+        $this->clearGrid($c, $menu);
+        [$width, $height] = isset($placement['width']) ? [$placement['width'], $placement['height']] : [$menu['width'], $menu['width']];
+        foreach (self::placeRecipeSlots($menu['width'], $width, $height, $placement['slots']) as [$ingredient, $gridIndex]) {
             if ($ingredient === -1) {
                 continue;
             }
             for ($remaining = $adjusted; $remaining > 0;) {
-                $remaining = $this->moveItemToGrid($c, $size, $gridIndex, $used[$ingredient], $remaining);
+                $remaining = $this->moveItemToGrid($c, $menu['input'][$gridIndex], $used[$ingredient], $remaining);
                 if ($remaining === -1) {
                     break;
                 }
             }
         }
+    }
+
+    /** CraftingMenuAccess.recipeMatches: the recipe the menu's input makes now, if any. */
+    private function menuRecipe(Client $c, array $menu, array $grid): ?string
+    {
+        if ($menu['type'] === 'smelting') {
+            $name = $grid[0] === null ? null : $this->crafting->smelt($grid[0]['item'])['name'] ?? null;
+        } else {
+            $name = $this->crafting->match($grid, $menu['width'])['name'] ?? null;
+        }
+        return $name === null ? null : 'minecraft:' . $name;
     }
 
     /**
@@ -139,37 +166,57 @@ trait RecipePlacement
         return $out;
     }
 
-    /** @return array<int, ?array> the grid's stacks by grid index */
-    private function craftingGrid(Client $c, int $size): array
+    /** A recipe menu's slot: the inventory's crafting grid, the crafting table's, or the furnace's. */
+    private function menuSlot(Client $c, int $slot): ?array
     {
-        $grid = [];
-        for ($i = 0; $i < $size * $size; ++$i) {
-            $grid[$i] = ($size === 2 ? $c->inventory[$i + 1] ?? null : $c->craftGrid[$i + 1] ?? null);
-        }
-        return $grid;
+        return match ($c->windowType) {
+            'player' => $c->inventory[$slot + 1] ?? null,
+            'crafting' => $c->craftGrid[$slot + 1] ?? null,
+            default => $this->windowContainerSlots($c)[$slot] ?? null,
+        };
     }
 
-    private function setCraftingSlot(Client $c, int $size, int $index, ?array $stack): void
+    private function setMenuSlot(Client $c, int $slot, ?array $stack): void
     {
-        if ($size === 2) {
+        if ($c->windowType === 'player' || $c->windowType === 'crafting') {
+            $slots = $c->windowType === 'player' ? $c->inventory : $c->craftGrid;
             if ($stack === null) {
-                unset($c->inventory[$index + 1]);
+                unset($slots[$slot + 1]);
             } else {
-                $c->inventory[$index + 1] = $stack;
+                $slots[$slot + 1] = $stack;
             }
-        } elseif ($stack === null) {
-            unset($c->craftGrid[$index + 1]);
-        } else {
-            $c->craftGrid[$index + 1] = $stack;
+            if ($c->windowType === 'player') {
+                $c->inventory = $slots;
+            } else {
+                $c->craftGrid = $slots;
+            }
+            return;
         }
+        $slots = $this->windowContainerSlots($c);
+        if ($stack === null) {
+            unset($slots[$slot]);
+        } else {
+            $slots[$slot] = $stack;
+        }
+        $this->storeWindowContainerSlots($c, $slots);
     }
 
-    /** Inventory.fillStackedContents and the grid's: stacks usable for crafting, each up to a full stack. */
-    private function craftingStock(Client $c, int $size): StackedContents
+    /**
+     * Inventory.fillStackedContents and the menu's: inventory stacks usable for crafting, then the
+     * grid's usable stacks or all of a furnace's, each up to a full stack.
+     */
+    private function craftingStock(Client $c, array $menu): StackedContents
     {
         $stock = new StackedContents();
-        foreach ([...array_map(fn (int $slot): ?array => $c->inventory[self::inventoryWindowSlot($slot)] ?? null, range(0, 35)), ...$this->craftingGrid($c, $size)] as $stack) {
+        foreach (range(0, 35) as $slot) {
+            $stack = $c->inventory[self::inventoryWindowSlot($slot)] ?? null;
             if ($stack !== null && self::usableForCrafting($stack)) {
+                $stock->account($stack['item'], min($this->maxStack($stack), $stack['count']));
+            }
+        }
+        foreach ($menu['stock'] as $slot) {
+            $stack = $this->menuSlot($c, $slot);
+            if ($stack !== null && (!$menu['usable'] || self::usableForCrafting($stack))) {
                 $stock->account($stack['item'], min($this->maxStack($stack), $stack['count']));
             }
         }
@@ -221,15 +268,16 @@ trait RecipePlacement
         return -1;
     }
 
-    /** ServerPlaceRecipe.testClearGrid: whether the grid's items would all fit back in the inventory. */
-    private function testClearGrid(Client $c, int $size): bool
+    /** ServerPlaceRecipe.testClearGrid: whether the input slots' items would all fit back in the inventory. */
+    private function testClearGrid(Client $c, array $menu): bool
     {
         $free = 0;
         foreach (range(0, 35) as $slot) {
             $free += isset($c->inventory[self::inventoryWindowSlot($slot)]) ? 0 : 1;
         }
         $freeSlots = [];
-        foreach ($this->craftingGrid($c, $size) as $stack) {
+        foreach ($menu['input'] as $input) {
+            $stack = $this->menuSlot($c, $input);
             if ($stack === null) {
                 continue;
             }
@@ -256,10 +304,11 @@ trait RecipePlacement
         return true;
     }
 
-    /** ServerPlaceRecipe.clearGrid: each grid stack back into the inventory, dropping what does not fit. */
-    private function clearGrid(Client $c, int $size): void
+    /** ServerPlaceRecipe.clearGrid: each slot's stack back into the inventory, dropping what does not fit. */
+    private function clearGrid(Client $c, array $menu): void
     {
-        foreach ($this->craftingGrid($c, $size) as $index => $stack) {
+        foreach ($menu['clear'] as $menuSlot) {
+            $stack = $this->menuSlot($c, $menuSlot);
             // Inventory.placeItemBackInInventory
             while ($stack !== null && $stack['count'] > 0) {
                 $slot = $this->slotWithRemainingSpace($c, $stack);
@@ -276,14 +325,15 @@ trait RecipePlacement
                 $c->inventory[$window] = $held === null ? array_replace($stack, ['count' => $moved]) : array_replace($held, ['count' => $held['count'] + $moved]);
                 $stack['count'] -= $moved;
             }
-            $this->setCraftingSlot($c, $size, $index, null);
+            // clearCraftingContent
+            $this->setMenuSlot($c, $menuSlot, null);
         }
     }
 
     /** ServerPlaceRecipe.moveItemToGrid: the count still to move, or -1 when no stack is left to take from. */
-    private function moveItemToGrid(Client $c, int $size, int $gridIndex, int $item, int $count): int
+    private function moveItemToGrid(Client $c, int $menuSlot, int $item, int $count): int
     {
-        $target = $this->craftingGrid($c, $size)[$gridIndex];
+        $target = $this->menuSlot($c, $menuSlot);
         // Inventory.findSlotMatchingCraftingIngredient
         $found = null;
         foreach (range(0, 35) as $slot) {
@@ -303,7 +353,7 @@ trait RecipePlacement
         } else {
             unset($c->inventory[$found]);
         }
-        $this->setCraftingSlot($c, $size, $gridIndex, $target === null ? array_replace($stack, ['count' => $taken]) : array_replace($target, ['count' => $target['count'] + $taken]));
+        $this->setMenuSlot($c, $menuSlot, $target === null ? array_replace($stack, ['count' => $taken]) : array_replace($target, ['count' => $target['count'] + $taken]));
         return $count - $taken;
     }
 }
