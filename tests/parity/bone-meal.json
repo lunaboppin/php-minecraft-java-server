@@ -1,11 +1,15 @@
 {
   "name": "bone-meal",
   "normalizations": [
-    "Compare block states after bone meal, at targets whose outcome is certain whatever the random growth.",
+    "Compare block states after bone meal, at targets whose outcome is certain whatever the random growth. Random ticks are off, so no plant grows between uses; a sweet berry bush grown fully by a random tick would have its berries picked by the next use.",
     "Use matching flat terrain and ignore clocks, sound seeds and generated IDs.",
     "Covers wheat grown fully by four uses, a sweet berry bush by three, and short grass and a fern grown tall. Bone meal on grass and an oak sapling also runs, but its random outcome is not compared. Also covers cocoa grown twice, cave vine berries, pink petals to four, hanging roots under rooted dirt, a hanging propagule under mangrove leaves, short dry grass grown tall, a bamboo shoot grown into bamboo, and a weeping vine head turning into its body as it grows."
   ],
   "steps": [
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
     {
       "action": "command",
       "text": "fill -3 63 -3 6 66 6 minecraft:air"
