@@ -59,9 +59,12 @@ trait MobMovement
             new EntityPhysics(file_get_contents($this->version->directory . '/entity-sine.bin')),
             $this->version->catalog->movement
         );
+        // Mob.serverAiStep counts ticks without a player near; RandomStrollGoal starts no stroll
+        // once that reaches 100.
+        $mob['noActionTime'] = ($mob['noActionTime'] ?? 0) + 1;
         // Preserve the existing target chooser until native goal/navigation
         // stacks are implemented; feed its intent into actual travel physics.
-        if ($this->ticks >= $mob['nextWander']) {
+        if ($this->ticks >= $mob['nextWander'] && $mob['noActionTime'] < 100) {
             $hash = $noise->hash($mob['id'], $this->ticks >> 5, 0, 121);
             $mob['targetX'] = $mob['x'] + $hash % 17 - 8;
             $mob['targetZ'] = $mob['z'] + intdiv($hash, 19) % 17 - 8;
