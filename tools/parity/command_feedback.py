@@ -605,6 +605,26 @@ SCRIPT = [
     ('spreadplayers ~ ~ 1 10 false @s', False),
     ('spreadplayers 0 0 1 10 maybe @s', False),
     ('!quiet tp @a 0 200 0 0 0', False),
+    # /datapack: listing, enabling at each position, disabling, feature packs and creating packs.
+    # Vanilla is disabled only briefly and comes back first, so the rest of the script keeps its data.
+    ('datapack list', False), ('datapack list available', False), ('datapack list enabled', False),
+    ('datapack enable vanilla', False), ('datapack disable vanilla', False), ('datapack list enabled', False),
+    ('datapack enable vanilla', False), ('datapack list', False),
+    ('datapack enable minecart_improvements', False), ('datapack disable minecart_improvements', False),
+    ('datapack enable trade_rebalance', False), ('datapack enable nope', False), ('datapack disable nope', False),
+    ('datapack create foo "My pack"', False), ('datapack create foo "My pack"', False), ('datapack create "a/b" x', False),
+    ('datapack create "con" x', False), ('datapack create "Con.txt" x', False), ('datapack create "x." x', False),
+    ('datapack create "" x', False), ('datapack create Foo x', False), ('datapack create bar {text:"Red",color:"red"}', False),
+    ('datapack create "my pack" x', False), ('datapack list available', False),
+    ('datapack enable "file/foo"', False), ('datapack enable "file/foo"', False), ('datapack list enabled', False),
+    ('datapack disable "file/foo"', False), ('datapack enable "file/foo" first', False), ('datapack list', False),
+    ('datapack enable "file/bar" before "file/foo"', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack enable "file/bar" after vanilla', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack enable "file/bar" before nope', False), ('datapack enable "file/bar" after "file/bar"', False),
+    ('datapack enable "file/bar" last', False), ('datapack list enabled', False),
+    ('datapack disable vanilla', False), ('datapack enable vanilla', False), ('datapack list enabled', False),
+    ('datapack disable "file/bar"', False), ('datapack disable "file/foo"', False), ('datapack enable file/foo', False),
+    ('!witness datapack list', False), ('datapack list', False),
     ('list', False),
 ]
 

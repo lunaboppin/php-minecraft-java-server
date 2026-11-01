@@ -56,6 +56,7 @@ trait Commands
 
     use CommandModules\LootCommand;
     use CommandModules\SpreadPlayersCommand;
+    use CommandModules\DatapackCommand;
 
     use CommandModules\LocateCommand;
 
