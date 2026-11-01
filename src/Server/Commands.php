@@ -64,6 +64,16 @@ trait Commands
 
     use CommandModules\FillBiomeCommand;
 
+    use CommandModules\WaypointCommand;
+
+    use CommandModules\DatapackCommand;
+
+    use CommandModules\FetchProfileCommand;
+
+    use CommandModules\PerfCommand;
+
+    use CommandModules\JfrCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

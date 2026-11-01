@@ -174,6 +174,10 @@ trait Survival
         $c->mining = null;
         $this->abilities($c);
         $c->send($this->version, 'game_event', "\3" . pack('G', $mode));
+        // Becoming a spectator hides the player from the locator bar at once.
+        if ($mode === 3 && $previous !== 3 && $this->isTransmittingWaypoint($c)) {
+            $this->updateWaypoint($c);
+        }
         // ServerPlayer.setGameMode: leaving spectator mode ends any camera view.
         if ($mode !== 3) {
             $this->setCamera($c, null);
@@ -480,7 +484,11 @@ trait Survival
         }
         if (!$c->dead) {
             return;
-        }$c->dead = false;
+        }
+        // The dead player's entity leaves the locator bar; the respawned one joins it again.
+        $this->removeWaypointPlayer($c);
+        unset($this->waypointPositions[$c->entityId]);
+        $c->dead = false;
         $c->health = 20;
         $c->food = 20;
         $c->saturation = 5;
