@@ -55,7 +55,10 @@ trait Commands
     use CommandModules\DebugCommand;
 
     use CommandModules\LootCommand;
+
     use CommandModules\SpreadPlayersCommand;
+
+    use CommandModules\FillBiomeCommand;
 
     use CommandModules\LocateCommand;
 
@@ -699,12 +702,8 @@ trait Commands
         $position = array_map(static fn (float $value): int => (int) floor($value), $this->localPosition($arguments, $client) ?? [$this->coordinate($arguments[0], $this->sourcePosition($client)[0]), $this->coordinate($arguments[1], $this->sourcePosition($client)[1]), $this->coordinate($arguments[2], $this->sourcePosition($client)[2])]);
         // A chunk is loaded while it is within a player's view in the dimension, as vanilla loads a
         // player's view as soon as they are placed, before the chunks reach the client.
-        [$chunkX, $chunkZ] = [$position[0] >> 4, $position[2] >> 4];
         $dimension ??= $this->sourceDimension($client);
-        // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
-        $forced = array_filter($this->forcedChunks($dimension), static fn (array $chunk): bool => abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2);
-        if ($forced === []
-            && array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) === []) {
+        if (!$this->commandChunkLoaded($dimension, $position[0] >> 4, $position[2] >> 4)) {
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.unloaded']);
         }
         $world = $this->worlds[$dimension];
@@ -712,6 +711,18 @@ trait Commands
             throw new CommandModules\CommandFailure(['translate' => 'argument.pos.outofworld']);
         }
         return $position;
+    }
+
+    /** A chunk commands may use: within a player's view in the dimension, or near a forced chunk. */
+    private function commandChunkLoaded(string $dimension, int $chunkX, int $chunkZ): bool
+    {
+        // A forced chunk's ticket (level 31) keeps the chunks up to 2 away fully loaded.
+        foreach ($this->forcedChunks($dimension) as $chunk) {
+            if (abs($chunk[0] - $chunkX) <= 2 && abs($chunk[1] - $chunkZ) <= 2) {
+                return true;
+            }
+        }
+        return array_filter($this->players(), fn (Client $player): bool => $player->dimension === $dimension && $this->chunkInView($player, $chunkX, $chunkZ)) !== [];
     }
 
     /**

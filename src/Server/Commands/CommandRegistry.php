@@ -90,6 +90,7 @@ final class CommandRegistry
             new CommandDefinition('debug', 'executeDebug', true),
             new CommandDefinition('loot', 'executeLoot', true),
             new CommandDefinition('spreadplayers', 'executeSpreadPlayers', true),
+            new CommandDefinition('fillbiome', 'executeFillBiome', true),
         ];
     }
 
