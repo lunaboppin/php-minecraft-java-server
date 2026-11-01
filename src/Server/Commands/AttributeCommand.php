@@ -43,6 +43,7 @@ trait AttributeCommand
             if ($client !== null) {
                 $this->syncPlayerAttributes($client, [$attribute]);
                 $this->savePlayer($client);
+                $this->waypointRangeChanged($client, preg_replace('/^minecraft:/', '', $attribute));
             } else {
                 $this->syncMobAttributes($entity['mob'], [$attribute]);
             }

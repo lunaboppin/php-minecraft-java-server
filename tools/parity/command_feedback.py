@@ -605,6 +605,19 @@ SCRIPT = [
     ('spreadplayers ~ ~ 1 10 false @s', False),
     ('spreadplayers 0 0 1 10 maybe @s', False),
     ('!quiet tp @a 0 200 0 0 0', False),
+    # /waypoint: listing transmitters and changing icons. A HashSet orders several transmitters, so
+    # each list holds one: the other player stops transmitting first.
+    ('!quiet fill -3 199 -3 3 199 3 stone', False), ('!quiet tp @a 0 200 0 0 0', False),
+    ('!quiet attribute Witness minecraft:waypoint_transmit_range base set 0', False), ('waypoint list', False),
+    ('waypoint modify @s color red', False), ('waypoint list', False), ('waypoint modify @s color hex 12AB34', False), ('waypoint list', False),
+    ('waypoint modify @s color black', False), ('waypoint modify @s style set minecraft:bowtie', False), ('waypoint modify @s style set nope', False),
+    ('waypoint modify @s style reset', False), ('waypoint modify @s color reset', False), ('waypoint list', False),
+    ('waypoint modify @e[type=item,limit=1] color red', False), ('waypoint modify @a color red', False),
+    ('!quiet summon pig 3 200 3 {NoAI:1b,Tags:["wp"]}', False), ('waypoint modify @e[tag=wp,limit=1] color blue', False), ('!quiet kill @e[tag=wp]', False),
+    ('!quiet attribute Witness minecraft:waypoint_transmit_range base reset', False),
+    ('!quiet attribute @s minecraft:waypoint_transmit_range base set 0', False), ('waypoint list', False),
+    ('!quiet attribute @s minecraft:waypoint_transmit_range base reset', False),
+    ('execute in minecraft:the_nether run waypoint list', False), ('!witness waypoint list', False),
     ('list', False),
 ]
 
