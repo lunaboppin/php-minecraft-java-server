@@ -447,6 +447,19 @@ trait Advancements
         }
     }
 
+    /**
+     * PlayerAdvancements.reload: the progress saved, as if read back, and nothing shown, so the
+     * next flush resets the client with every tree's visible nodes.
+     */
+    private function reloadAdvancements(Client $c): void
+    {
+        $saved = $this->savedAdvancements($c);
+        $c->visibleAdvancements = $c->advancementsChanged = $c->advancementRootsToUpdate = [];
+        $c->advancementsFirstPacket = true;
+        $c->selectedAdvancementTab = null;
+        $this->loadAdvancements($c, $saved);
+    }
+
     /** PlayerAdvancements.asData: the advancements with progress, and when each criterion was met. */
     private function savedAdvancements(Client $c): array
     {
