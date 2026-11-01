@@ -101,6 +101,8 @@ final class Server
 
     use Waypoints;
 
+    use RecipeBook;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -684,9 +686,9 @@ final class Server
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
+        $this->sendUpdateRecipes($c);
         $this->sendPermissionLevel($c);
-        // The recipe book (all filters closed) has no recipes here yet (#24).
-        $c->send($this->version, 'recipe_book_settings', str_repeat("\0", 8));
+        $this->sendInitialRecipeBook($c);
         // PlayerList.updateEntireScoreboard: displayed objectives and their scores.
         $this->sendScoreboard($c);
         // The join message reaches players already online, not the one joining.
@@ -1060,6 +1062,18 @@ final class Server
                         $this->syncInventory($c);
                     }
                 }return;
+            case 'recipe_book_seen_recipe':
+                $display = $r->varInt();
+                $r->end();
+                $this->recipeSeen($c, $display);
+                return;
+            case 'recipe_book_change_settings':
+                $type = $r->varInt();
+                $open = $r->bool();
+                $filtering = $r->bool();
+                $r->end();
+                $this->changeRecipeBookSettings($c, $type, $open, $filtering);
+                return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
                 return;
@@ -1792,6 +1806,7 @@ final class Server
                         return;
                     }
                     $this->tickControlledVehicle($c);
+                    $this->tickRecipeAdvancements($c);
                     $this->tickSurvival($c);
                     $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);

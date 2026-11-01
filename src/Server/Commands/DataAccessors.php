@@ -150,6 +150,8 @@ trait DataAccessors
             ])],
             ['EnderItems', new NbtTag('list', array_map(fn (int $slot): NbtTag => $this->stackNbt($player->enderItems[$slot], $slot), array_keys(array_filter($player->enderItems))))],
             ['seenCredits', new NbtTag('byte', 0)],
+            // ServerRecipeBook.Packed: the settings that are on, then the known and highlighted recipes.
+            ['recipeBook', self::nbtCompound(array_map(static fn (string $key, mixed $value): array => [$key, is_bool($value) ? new NbtTag('byte', 1) : self::nbtList('string', $value)], array_keys($book = $this->savedRecipeBook($player)), $book))],
             ['Dimension', new NbtTag('string', 'minecraft:' . $player->dimension)],
             ['spawn_extra_particles_on_fall', new NbtTag('byte', 0)],
             ['post_effects', self::nbtList('string', $player->postEffects)],
