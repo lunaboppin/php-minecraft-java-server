@@ -42,6 +42,7 @@ trait BlockSimulation
         $this->pistonsChanged($x,$y,$z);
         $this->observersChanged($x,$y,$z);
         $this->daylightDetectorChanged($x,$y,$z);
+        $this->chorusChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -68,6 +69,7 @@ trait BlockSimulation
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
             elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
             elseif($kind==='plate'){$this->tickPressurePlate($x,$y,$z);}
+            elseif($kind==='chorus'){$this->tickChorus($x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);

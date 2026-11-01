@@ -77,6 +77,8 @@ final class Server
 
     use Corals;
 
+    use Chorus;
+
     use PressurePlates;
 
     use DaylightDetectors;
