@@ -726,6 +726,12 @@ trait Survival
             case $name === 'pointed_dripstone' && ($p['vertical_direction'] ?? '') === 'up' && ($p['thickness'] ?? '') === 'tip':
                 $this->playerFallDamage($c, $fall + 2.5, 2.0, 'minecraft:stalagmite');
                 return;
+            case $name === 'turtle_egg':
+                // TurtleEggBlock.fallOn: one landing in three breaks an egg.
+                if ($this->editable($c, ...$position) && random_int(0, 2) === 0) {
+                    $this->decreaseTurtleEggs(...[...$position, $state]);
+                }
+                break;
             case $name === 'farmland':
                 // FarmlandBlock.fallOn: a player tramples it by chance as the fall grows.
                 if (self::randomUnit() < $fall - 0.5) {
