@@ -194,6 +194,18 @@ class World
         }
     }
     public function checkpoint():void {$this->db->exec('PRAGMA wal_checkpoint(PASSIVE)');}
+    /** LevelReader.getBiome: BiomeManager's fuzzed quart, read as the chunk packets send it. */
+    public function biomeAt(int $x,int $y,int $z):string {
+        [$qx,$qy,$qz]=Vanilla\BiomeClimate::zoom($this->hashedSeed(),$x,$y,$z);
+        [$cx,$cz]=[$qx>>2,$qz>>2];
+        $quartY=min(max($qy-($this->minY>>2),0),intdiv($this->height,4)-1);
+        $index=(($quartY&3)<<4)|(($qz&3)<<2)|($qx&3);
+        $edits=$this->biomeEdits($cx,$cz);
+        if(isset($edits[$quartY>>2])){return BiomeContainer::get($edits[$quartY>>2],$index);}
+        $generator=$this->generatorFor($cx,$cz);
+        if($generator instanceof Vanilla\ChunkStore){return $generator->final($cx,$cz)[1][($quartY<<4)|(($qz&3)<<2)|($qx&3)];}
+        return substr($this->version->registryEntries('minecraft:worldgen/biome')[$this->generatedBiome($cx*16+($qx&3)*4+2,$cz*16+($qz&3)*4+2)],strlen('minecraft:'));
+    }
     public function biome(int $x,int $z):int {
         return $this->biomeEdits($x>>4,$z>>4)!==[]?$this->version->registryId('worldgen/biome',$this->column($x,$z)['biome']):$this->generatedBiome($x,$z);
     }
