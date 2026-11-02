@@ -426,6 +426,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/dispensers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispensers
           python3 tools/parity/verify.py tools/.cache/parity-dispensers/php-packets.json tools/.cache/parity-dispensers/reference-packets.json
+      - name: Compare dispensers shooting arrows and snowballs with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/dispenser-projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispenser-projectiles
+          python3 tools/parity/verify.py tools/.cache/parity-dispenser-projectiles/php-packets.json tools/.cache/parity-dispenser-projectiles/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -446,6 +450,7 @@ jobs:
             tools/.cache/parity-smithing/
             tools/.cache/parity-hoppers/
             tools/.cache/parity-dispensers/
+            tools/.cache/parity-dispenser-projectiles/
           retention-days: 7
 
   docker:
