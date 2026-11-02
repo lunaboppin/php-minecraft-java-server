@@ -176,8 +176,29 @@ final class Client
     /** @var array<string, true> ServerRecipeBook.highlight: known recipes not yet seen in the book */
     public array $highlightedRecipes = [];
 
-    /** @var array<string, true> advancements completed, of those this server grants */
-    public array $advancements = [];
+    /** @var array<string, array<string, int>> PlayerAdvancements.progress: criteria met, with the time in milliseconds */
+    public array $advancementProgress = [];
+
+    /** @var array<string, true> PlayerAdvancements.visible: the advancements the client is shown */
+    public array $visibleAdvancements = [];
+
+    /** @var array<string, true> PlayerAdvancements.progressChanged */
+    public array $advancementsChanged = [];
+
+    /** @var array<string, true> PlayerAdvancements.rootsToUpdate: trees whose visibility may change */
+    public array $advancementRootsToUpdate = [];
+
+    /** PlayerAdvancements.isFirstPacket: the first update replaces whatever the client showed. */
+    public bool $advancementsFirstPacket = true;
+
+    /** @var array<int, ?array> the inventory menu's lastSlots for the player's own slots */
+    public array $inventoryMenuSeen = [];
+
+    /** @var array<int, ?array> the open container menu's lastSlots for the player's slots */
+    public array $containerMenuSeen = [];
+
+    /** PlayerAdvancements.lastSelectedTab */
+    public ?string $selectedAdvancementTab = null;
 
     /** @var list<bool> RecipeBookSettings: open and filtering for crafting, furnace, blast furnace and smoker */
     public array $recipeBookSettings = [false, false, false, false, false, false, false, false];

@@ -145,7 +145,8 @@ trait Entities
     private function itemState(array $entity): array
     {
         return ['position' => [$entity['x'], $entity['y'], $entity['z']], 'velocity' => $entity['velocity'], 'yaw' => $entity['yaw'], 'pitch' => 0.0, 'head' => 0.0,
-            'ground' => $entity['ground'], 'needs_sync' => $entity['needsSync'] ?? false, 'sync_velocity' => false, 'sync_position' => false];
+            'ground' => $entity['ground'], 'needs_sync' => $entity['needsSync'] ?? false, 'sync_velocity' => false, 'sync_position' => $entity['syncPosition'] ?? false,
+            'vertical_collision' => $entity['verticalCollision'] ?? false, 'horizontal_collision' => $entity['horizontalCollision'] ?? false];
     }
 
     private function itemTracker(array $entity): EntityMovementTracker
@@ -246,10 +247,15 @@ trait Entities
             }
             $horizontal = $item['velocity'][0] ** 2 + $item['velocity'][2] ** 2;
             // Resting items move only every fourth tick, staggered by their ID.
-            if (!($item['ground'] && $horizontal <= 1.0E-5 && ($item['ticks'] + $id) % 4 !== 0)) {
+            if (!($item['ground'] && $horizontal <= 9.999999747378752E-6 && ($item['ticks'] + $id) % 4 !== 0)) {
                 $box = [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125];
+                $fall = $item['velocity'][1];
                 $moved = $collision->move($this->world, $box, $item['velocity']);
                 $below = $moved[1] !== $item['velocity'][1] && $item['velocity'][1] < 0.0;
+                $item['horizontalCollision'] = abs($moved[0] - $item['velocity'][0]) >= 1.0E-5 || abs($moved[2] - $item['velocity'][2]) >= 1.0E-5;
+                if ($item['velocity'][1] !== 0.0) {
+                    $item['verticalCollision'] = $moved[1] !== $item['velocity'][1];
+                }
                 [$item['x'], $item['y'], $item['z']] = [$item['x'] + $moved[0], $item['y'] + $moved[1], $item['z'] + $moved[2]];
                 foreach ([0, 1, 2] as $axis) {
                     if ($moved[$axis] !== $item['velocity'][$axis]) {
@@ -257,11 +263,18 @@ trait Entities
                     }
                 }
                 $item['ground'] = $below;
-                $ground = 0.98;
-                if ($item['ground']) {
-                    $ground *= $this->blockFriction($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.999999), (int) floor($item['z'])));
+                $bounced = $below ? $this->itemBounce($item, $fall, $moved[1]) : null;
+                if ($bounced !== null) {
+                    $item['velocity'][1] = $bounced;
+                    $item['syncPosition'] = true;
                 }
-                $item['velocity'] = [$item['velocity'][0] * $ground, $item['velocity'][1] * 0.98, $item['velocity'][2] * $ground];
+                // getAirDrag and getFriction are floats, multiplied as floats.
+                $drag = 0.9800000190734863;
+                $ground = $drag;
+                if ($item['ground']) {
+                    $ground = Float32::round($drag * Float32::round($this->blockFriction($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.999999), (int) floor($item['z'])))));
+                }
+                $item['velocity'] = [$item['velocity'][0] * $ground, $item['velocity'][1] * $drag, $item['velocity'][2] * $ground];
                 if ($item['ground'] && $item['velocity'][1] < 0.0) {
                     $item['velocity'][1] *= -0.5;
                 }
@@ -286,6 +299,28 @@ trait Entities
             unset($item);
             $this->itemTouches($id);
         }
+    }
+
+    /**
+     * Entity.restituteMovementAfterCollisions for an item landing on slime, a bed or a shelf
+     * mushroom faster than gravity: the bounce, or null when it does not bounce.
+     */
+    private function itemBounce(array $item, float $fall, float $movedY): ?float
+    {
+        if (-$fall <= 0.04) {
+            return null;
+        }
+        $name = $this->version->catalog->blockName($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.2), (int) floor($item['z'])));
+        $restitution = match ($name) {
+            'slime_block' => 0.800000011920929,
+            'shelf_mushroom' => 0.6000000238418579,
+            default => str_ends_with($name, '_bed') ? 0.6000000238418579 : 0.0,
+        };
+        if ($restitution === 0.0) {
+            return null;
+        }
+        $portion = $movedY / $fall;
+        return ($portion * 0.04 - $fall) * (1.0 + $portion * (0.9800000190734863 - 1.0)) * $restitution;
     }
 
     /** Entity.isInWater/isInLava with a fluid height above 0.1 in the item's block. */
@@ -404,6 +439,7 @@ trait Entities
         }
         // ServerEntity.sendChanges clears needsSync once it has acted on it, whatever it sent.
         $this->itemEntities[$id]['needsSync'] = $state['needs_sync'];
+        $this->itemEntities[$id]['syncPosition'] = false;
         foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {
                 if (isset($player->entities[$id])) {
