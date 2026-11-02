@@ -22,11 +22,11 @@ final class Crafting
                         if(($item===null)!==($allowed===[]) || ($item!==null && !in_array($item,$allowed,true))){$matches=false;break;}
                         if($item!==null){$used[]=$slot;}
                     }}
-                    if($matches){return ['result'=>$recipe['result'],'used'=>$used];}
+                    if($matches){return ['result'=>$recipe['result'],'used'=>$used,'name'=>$recipe['name']];}
                 }}}
             }elseif($recipe['type']==='crafting_shapeless' && count($occupied)===count($recipe['ingredients'])){
                 $remaining=$recipe['ingredients'];usort($remaining,static fn(array $a,array $b):int=>count($a)<=>count($b));
-                if($this->assign($remaining,array_values($occupied))){return ['result'=>$recipe['result'],'used'=>array_keys($occupied)];}
+                if($this->assign($remaining,array_values($occupied))){return ['result'=>$recipe['result'],'used'=>array_keys($occupied),'name'=>$recipe['name']];}
             }
         }
         return null;

@@ -14,8 +14,9 @@ use PhpMinecraftJavaServer\Protocol\Packets;
  * flushDirty.
  *
  * Criteria are met by commands and by the minecraft:tick, minecraft:recipe_unlocked,
- * minecraft:inventory_changed and minecraft:location (for biomes) triggers; the others are not
- * reported yet. A criterion
+ * minecraft:inventory_changed, minecraft:location (for biomes), minecraft:player_killed_entity
+ * (by entity type), minecraft:consume_item, minecraft:changed_dimension and
+ * minecraft:slept_in_bed triggers; the others are not reported yet. A criterion
  * listens, as vanilla's listeners do, only while it is unmet and its advancement is not done.
  */
 trait Advancements
@@ -34,6 +35,9 @@ trait Advancements
             $inventoryByItem = [];
             $inventory = [];
             $location = [];
+            // Triggers matched by a type or ID per condition: the criteria with conditions this
+            // server can test, each condition as a set of accepted names.
+            $simple = [];
             foreach ($data['advancements'] as $advancement) {
                 $id = $advancement['id'];
                 $advancement['entry'] = (string) hex2bin($advancement['entry']);
@@ -52,6 +56,10 @@ trait Advancements
                     $predicate = $criterion['conditions']['player']['predicate'] ?? [];
                     if ($criterion['trigger'] === 'minecraft:location' && array_keys($predicate) === ['minecraft:location'] && array_keys($predicate['minecraft:location']) === ['biomes']) {
                         $location[] = [$id, $name, array_fill_keys(array_map(static fn (string $biome): string => substr($biome, strlen('minecraft:')), (array) $predicate['minecraft:location']['biomes']), true)];
+                    }
+                    $tests = $this->simpleTriggerConditions($criterion['trigger'], $criterion['conditions'] ?? []);
+                    if ($tests !== null) {
+                        $simple[$criterion['trigger']][] = [$id, $name, $tests];
                     }
                     if ($criterion['trigger'] === 'minecraft:inventory_changed') {
                         $conditions = $criterion['conditions'] ?? [];
@@ -74,7 +82,7 @@ trait Advancements
                 }
                 $byId[$id]['root'] = $root;
             }
-            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked, 'inventoryByItem' => $inventoryByItem, 'inventory' => $inventory, 'location' => $location];
+            $reference = ['byId' => $byId, 'tick' => $tick, 'recipeUnlocked' => $recipeUnlocked, 'inventoryByItem' => $inventoryByItem, 'inventory' => $inventory, 'location' => $location, 'simple' => $simple];
         }
         return $reference;
     }
@@ -176,6 +184,66 @@ trait Advancements
         $listening = array_filter($criteria, fn (array $criterion): bool => !isset($c->advancementProgress[$criterion[0]][$criterion[1]]) && !$this->advancementDone($c, $criterion[0]));
         foreach ($listening as [$id, $criterion]) {
             $this->awardAdvancement($c, $id, $criterion);
+        }
+    }
+
+    /**
+     * The conditions of the triggers below that name only an entity type, an item or a dimension,
+     * each as the set of names it accepts; null for conditions not tested here, so never met.
+     *
+     * @return array<string, array<string, true>>|null
+     */
+    private function simpleTriggerConditions(string $trigger, array $conditions): ?array
+    {
+        $names = function (string|array $value, string $registry): array {
+            $set = [];
+            foreach ((array) $value as $entry) {
+                foreach (str_starts_with($entry, '#') ? $this->version->registryTags($registry)[substr($entry, 1)] ?? [] : [substr($entry, strlen('minecraft:'))] as $name) {
+                    $set[$name] = true;
+                }
+            }
+            return $set;
+        };
+        // EntityPredicate on the entity's type alone.
+        $entity = static function (array $predicate) use ($names): ?array {
+            $properties = $predicate['predicate'] ?? [];
+            return ($predicate['type'] ?? '') === 'minecraft:entity_properties' && array_keys($properties) === ['minecraft:entity_type'] ? $names($properties['minecraft:entity_type'], 'minecraft:entity_type') : null;
+        };
+        $tests = [];
+        foreach ($conditions as $key => $value) {
+            $test = match ([$trigger, $key]) {
+                ['minecraft:player_killed_entity', 'entity'], ['minecraft:entity_killed_player', 'entity'] => $entity($value),
+                ['minecraft:consume_item', 'item'] => array_keys($value) === ['items'] ? $names($value['items'], 'minecraft:item') : null,
+                ['minecraft:changed_dimension', 'from'], ['minecraft:changed_dimension', 'to'] => [substr($value, strlen('minecraft:')) => true],
+                default => null,
+            };
+            if ($test === null) {
+                return null;
+            }
+            $tests[$key] = $test;
+        }
+        return in_array($trigger, ['minecraft:player_killed_entity', 'minecraft:entity_killed_player', 'minecraft:consume_item', 'minecraft:changed_dimension', 'minecraft:slept_in_bed'], true) ? $tests : null;
+    }
+
+    /**
+     * SimpleCriterionTrigger.trigger for those triggers: the criteria whose every condition
+     * accepts the given name for it.
+     *
+     * @param array<string, string> $values
+     */
+    private function simpleTrigger(Client $c, string $trigger, array $values): void
+    {
+        $criteria = [];
+        foreach ($this->advancementReference()['simple'][$trigger] ?? [] as [$id, $name, $tests]) {
+            foreach ($tests as $key => $accepted) {
+                if (!isset($values[$key], $accepted[$values[$key]])) {
+                    continue 2;
+                }
+            }
+            $criteria[] = [$id, $name];
+        }
+        if ($criteria !== []) {
+            $this->triggerAdvancements($c, $criteria);
         }
     }
 
@@ -377,6 +445,19 @@ trait Advancements
             $c->selectedAdvancementTab = $selected;
             $c->send($this->version, 'select_advancements_tab', $selected === null ? "\0" : "\1" . Binary::writeString($selected));
         }
+    }
+
+    /**
+     * PlayerAdvancements.reload: the progress saved, as if read back, and nothing shown, so the
+     * next flush resets the client with every tree's visible nodes.
+     */
+    private function reloadAdvancements(Client $c): void
+    {
+        $saved = $this->savedAdvancements($c);
+        $c->visibleAdvancements = $c->advancementsChanged = $c->advancementRootsToUpdate = [];
+        $c->advancementsFirstPacket = true;
+        $c->selectedAdvancementTab = null;
+        $this->loadAdvancements($c, $saved);
     }
 
     /** PlayerAdvancements.asData: the advancements with progress, and when each criterion was met. */
