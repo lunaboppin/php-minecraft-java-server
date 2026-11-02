@@ -1,0 +1,316 @@
+{
+  "name": "composters",
+  "normalizations": [
+    "Compare composting by hand (the first layer is certain, pumpkin pie always adds one), ripening a second after the seventh layer, emptying a ripe composter by using it, a composter set at seven layers ripening by itself, and hoppers filling a composter and taking its bone meal.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 -2 8 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 8 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:composter"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -2.5 0 40"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:wheat_seeds 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "seeded",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:pumpkin_pie 8"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "seven",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "emptied-by-use",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "ripe",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "emptied",
+      "fields": [
+        "blocks",
+        "inventory",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 0 minecraft:chest"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:hopper"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 65 0 minecraft:composter"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 66 0 minecraft:hopper"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 4 66 0 container.0 with minecraft:pumpkin_pie 9"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:composter[level=7]"
+    },
+    {
+      "action": "wait",
+      "seconds": 8
+    },
+    {
+      "action": "snapshot",
+      "name": "hoppers",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          4,
+          65,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 64 -1.5 0 45"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "chest",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        66,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "feeder",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "02"
+    }
+  ]
+}

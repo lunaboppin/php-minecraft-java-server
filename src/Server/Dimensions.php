@@ -72,6 +72,7 @@ trait Dimensions
                     // Level.tickBlockEntities runs after the entities.
                     $this->tickMovingPistons();
                     $this->tickDaylightDetectors();
+                    $this->tickHoppers();
                     $this->tickCampfires();
                     $this->tickPlateContacts();
                     $this->tickTripwireContacts();
