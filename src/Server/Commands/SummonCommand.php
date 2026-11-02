@@ -125,6 +125,7 @@ trait SummonCommand
         }
         if (isset($nbt['Age'])) {
             $animal['baby'] = (int) $nbt['Age']['value'] < 0;
+            $animal['age'] = (int) $nbt['Age']['value'];
         }
         foreach ($this->localPlayers() as $player) {
             if (isset($player->entities[$id])) {
