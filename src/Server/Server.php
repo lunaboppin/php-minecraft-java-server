@@ -1296,7 +1296,7 @@ final class Server
             if (isset($c->inventory[$slot]) && $c->gameMode !== 3) {
                 $stack = $c->inventory[$slot];
                 $count = $action === 4 ? $stack['count'] : 1;
-                $this->playerDrop($c, array_replace($stack, ['count' => $count]), false);
+                $this->playerDrop($c, array_replace($stack, ['count' => $count]), false, thrown: true);
                 \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot, $count);
                 $this->syncInventory($c);
             }
