@@ -28,6 +28,7 @@ public class ExportEquipmentStacks {
         COMPONENTS.put("storedEnchantments", DataComponents.STORED_ENCHANTMENTS);
         COMPONENTS.put("enchantability", DataComponents.ENCHANTABLE);
         COMPONENTS.put("potion", DataComponents.POTION_CONTENTS);
+        COMPONENTS.put("repairCost", DataComponents.REPAIR_COST);
     }
 
     static JsonElement value(Object value) {

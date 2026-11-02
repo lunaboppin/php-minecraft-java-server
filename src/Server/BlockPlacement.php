@@ -34,6 +34,10 @@ trait BlockPlacement
     private function placementSurvives(int $state, int $x, int $y, int $z): bool
     {
         $name = $this->version->catalog->blockName($state);
+        if ($name === 'scaffolding') {
+            // ScaffoldingBlock.canSurvive.
+            return $this->scaffoldingDistance([$x, $y, $z]) < 7;
+        }
         if (($name === 'red_mushroom' || $name === 'brown_mushroom')
             && !$this->fireBlocks()->inTag($this->world->get($x, $y - 1, $z), 'overrides_mushroom_light_requirement')) {
             return $this->world->rawBrightness($x, $y, $z) < 13 && $this->fireBlocks()->flag($this->world->get($x, $y - 1, $z), \PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks::SOLID_RENDER);
