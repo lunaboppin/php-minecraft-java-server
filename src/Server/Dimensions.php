@@ -14,7 +14,7 @@ trait Dimensions
     private array $worlds = [];
 
     private array $dimensionState = [];
-    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes', 'randomTickIndex', 'tntEntities', 'tntTrackers', 'fallingBlocks', 'fallingTrackers', 'lightningBolts', 'motionHeights'];
+    private const LOCAL_STATE = ['animals', 'naturalSpawns', 'itemEntities', 'experienceOrbs', 'orbTrackers', 'activeFurnaces', 'pendingLight', 'blockTicks', 'jukeboxes', 'randomTickIndex', 'tntEntities', 'tntTrackers', 'projectiles', 'projectileTrackers', 'fallingBlocks', 'fallingTrackers', 'lightningBolts', 'motionHeights'];
 
     private function withDimension(string $dimension, callable $action): mixed
     {
@@ -61,6 +61,7 @@ trait Dimensions
                     $this->tickItems();
                     $this->tickTnt();
                     $this->tickFallingBlocks();
+                    $this->tickProjectiles();
                     $this->tickLightning();
                     $this->tickWeather();
                     $this->tickSleep();
