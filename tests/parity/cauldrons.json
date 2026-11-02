@@ -1,0 +1,1910 @@
+{
+  "name": "cauldrons",
+  "normalizations": [
+    "Compare a survival and a creative player using buckets, glass bottles and potions on empty, water, lava and powder snow cauldrons: block levels and the inventory after each use, and the bucket dropped when the inventory is full.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 12 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 12 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 3.5 64 -1.5 0 60"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:cauldron"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 2 minecraft:water_cauldron[level=3]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 2 minecraft:water_cauldron[level=1]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 2 minecraft:powder_snow_cauldron[level=2]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 2 minecraft:lava_cauldron"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "placed",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:water_bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bucket-emptied",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:glass_bottle 3"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "two-bottles",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "three-bottles",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bottle-on-empty",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "potion-into-empty",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "potion-into-level-1",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:potion[potion_contents={potion:\"minecraft:awkward\"}]"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "awkward-potion",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bucket-on-level-2",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bucket-from-full",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        64,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bucket-from-lava",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:lava_bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "lava-into-empty",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "bucket-on-snow-2",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:powder_snow_bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "snow-into-empty",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bucket 2"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "snow-into-stack",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:water_bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        64,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "water-over-level-1",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:water_bucket"
+    },
+    {
+      "action": "place",
+      "position": [
+        5,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "creative-fill",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:glass_bottle"
+    },
+    {
+      "action": "place",
+      "position": [
+        5,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        5,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "creative-bottles",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.0 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.1 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.2 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.3 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.4 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.5 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.6 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.7 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.8 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.9 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.10 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.11 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.12 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.13 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.14 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.15 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.16 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.17 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.18 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.19 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.20 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.21 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.22 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.23 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.24 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.25 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s inventory.26 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.2 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.3 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.4 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.5 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.6 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.7 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.8 with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.offhand with minecraft:stone 64"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bucket 2"
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "before-full-inventory",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:water_cauldron[level=3]"
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "full-inventory",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          2
+        ],
+        [
+          1,
+          64,
+          2
+        ],
+        [
+          2,
+          64,
+          2
+        ],
+        [
+          3,
+          64,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "dropped",
+      "fields": [
+        "entities"
+      ]
+    }
+  ]
+}

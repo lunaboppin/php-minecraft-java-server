@@ -4,7 +4,8 @@
       "translate": "enchantment.minecraft.aqua_affinity"
     },
     "supported_items": "#minecraft:enchantable/head_armor",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 4
   },
   "minecraft:bane_of_arthropods": {
     "description": {
@@ -12,14 +13,16 @@
     },
     "supported_items": "#minecraft:enchantable/weapon",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 2
   },
   "minecraft:binding_curse": {
     "description": {
       "translate": "enchantment.minecraft.binding_curse"
     },
     "supported_items": "#minecraft:enchantable/equippable",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 8
   },
   "minecraft:blast_protection": {
     "description": {
@@ -27,7 +30,8 @@
     },
     "supported_items": "#minecraft:enchantable/armor",
     "exclusive_set": "#minecraft:exclusive_set/armor",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 4
   },
   "minecraft:breach": {
     "description": {
@@ -35,14 +39,16 @@
     },
     "supported_items": "#minecraft:enchantable/mace",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 4
   },
   "minecraft:channeling": {
     "description": {
       "translate": "enchantment.minecraft.channeling"
     },
     "supported_items": "#minecraft:enchantable/trident",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 8
   },
   "minecraft:density": {
     "description": {
@@ -50,7 +56,8 @@
     },
     "supported_items": "#minecraft:enchantable/mace",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 2
   },
   "minecraft:depth_strider": {
     "description": {
@@ -58,28 +65,32 @@
     },
     "supported_items": "#minecraft:enchantable/foot_armor",
     "exclusive_set": "#minecraft:exclusive_set/boots",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:efficiency": {
     "description": {
       "translate": "enchantment.minecraft.efficiency"
     },
     "supported_items": "#minecraft:enchantable/mining",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 1
   },
   "minecraft:feather_falling": {
     "description": {
       "translate": "enchantment.minecraft.feather_falling"
     },
     "supported_items": "#minecraft:enchantable/foot_armor",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 2
   },
   "minecraft:fire_aspect": {
     "description": {
       "translate": "enchantment.minecraft.fire_aspect"
     },
     "supported_items": "#minecraft:enchantable/fire_aspect",
-    "max_level": 2
+    "max_level": 2,
+    "anvil_cost": 4
   },
   "minecraft:fire_protection": {
     "description": {
@@ -87,14 +98,16 @@
     },
     "supported_items": "#minecraft:enchantable/armor",
     "exclusive_set": "#minecraft:exclusive_set/armor",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 2
   },
   "minecraft:flame": {
     "description": {
       "translate": "enchantment.minecraft.flame"
     },
     "supported_items": "#minecraft:enchantable/bow",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 4
   },
   "minecraft:fortune": {
     "description": {
@@ -102,7 +115,8 @@
     },
     "supported_items": "#minecraft:enchantable/mining_loot",
     "exclusive_set": "#minecraft:exclusive_set/mining",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:frost_walker": {
     "description": {
@@ -110,7 +124,8 @@
     },
     "supported_items": "#minecraft:enchantable/foot_armor",
     "exclusive_set": "#minecraft:exclusive_set/boots",
-    "max_level": 2
+    "max_level": 2,
+    "anvil_cost": 4
   },
   "minecraft:impaling": {
     "description": {
@@ -118,7 +133,8 @@
     },
     "supported_items": "#minecraft:enchantable/trident",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 4
   },
   "minecraft:infinity": {
     "description": {
@@ -126,56 +142,64 @@
     },
     "supported_items": "#minecraft:enchantable/bow",
     "exclusive_set": "#minecraft:exclusive_set/bow",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 8
   },
   "minecraft:knockback": {
     "description": {
       "translate": "enchantment.minecraft.knockback"
     },
     "supported_items": "#minecraft:enchantable/melee_weapon",
-    "max_level": 2
+    "max_level": 2,
+    "anvil_cost": 2
   },
   "minecraft:looting": {
     "description": {
       "translate": "enchantment.minecraft.looting"
     },
     "supported_items": "#minecraft:enchantable/melee_weapon",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:loyalty": {
     "description": {
       "translate": "enchantment.minecraft.loyalty"
     },
     "supported_items": "#minecraft:enchantable/trident",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 2
   },
   "minecraft:luck_of_the_sea": {
     "description": {
       "translate": "enchantment.minecraft.luck_of_the_sea"
     },
     "supported_items": "#minecraft:enchantable/fishing",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:lunge": {
     "description": {
       "translate": "enchantment.minecraft.lunge"
     },
     "supported_items": "#minecraft:enchantable/lunge",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 2
   },
   "minecraft:lure": {
     "description": {
       "translate": "enchantment.minecraft.lure"
     },
     "supported_items": "#minecraft:enchantable/fishing",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:mending": {
     "description": {
       "translate": "enchantment.minecraft.mending"
     },
     "supported_items": "#minecraft:enchantable/durability",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 4
   },
   "minecraft:multishot": {
     "description": {
@@ -183,7 +207,8 @@
     },
     "supported_items": "#minecraft:enchantable/crossbow",
     "exclusive_set": "#minecraft:exclusive_set/crossbow",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 4
   },
   "minecraft:piercing": {
     "description": {
@@ -191,14 +216,16 @@
     },
     "supported_items": "#minecraft:enchantable/crossbow",
     "exclusive_set": "#minecraft:exclusive_set/crossbow",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 1
   },
   "minecraft:power": {
     "description": {
       "translate": "enchantment.minecraft.power"
     },
     "supported_items": "#minecraft:enchantable/bow",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 1
   },
   "minecraft:projectile_protection": {
     "description": {
@@ -206,7 +233,8 @@
     },
     "supported_items": "#minecraft:enchantable/armor",
     "exclusive_set": "#minecraft:exclusive_set/armor",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 2
   },
   "minecraft:protection": {
     "description": {
@@ -214,28 +242,32 @@
     },
     "supported_items": "#minecraft:enchantable/armor",
     "exclusive_set": "#minecraft:exclusive_set/armor",
-    "max_level": 4
+    "max_level": 4,
+    "anvil_cost": 1
   },
   "minecraft:punch": {
     "description": {
       "translate": "enchantment.minecraft.punch"
     },
     "supported_items": "#minecraft:enchantable/bow",
-    "max_level": 2
+    "max_level": 2,
+    "anvil_cost": 4
   },
   "minecraft:quick_charge": {
     "description": {
       "translate": "enchantment.minecraft.quick_charge"
     },
     "supported_items": "#minecraft:enchantable/crossbow",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 2
   },
   "minecraft:respiration": {
     "description": {
       "translate": "enchantment.minecraft.respiration"
     },
     "supported_items": "#minecraft:enchantable/head_armor",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:riptide": {
     "description": {
@@ -243,7 +275,8 @@
     },
     "supported_items": "#minecraft:enchantable/trident",
     "exclusive_set": "#minecraft:exclusive_set/riptide",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:sharpness": {
     "description": {
@@ -251,7 +284,8 @@
     },
     "supported_items": "#minecraft:enchantable/sharp_weapon",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 1
   },
   "minecraft:silk_touch": {
     "description": {
@@ -259,7 +293,8 @@
     },
     "supported_items": "#minecraft:enchantable/mining_loot",
     "exclusive_set": "#minecraft:exclusive_set/mining",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 8
   },
   "minecraft:smite": {
     "description": {
@@ -267,55 +302,63 @@
     },
     "supported_items": "#minecraft:enchantable/weapon",
     "exclusive_set": "#minecraft:exclusive_set/damage",
-    "max_level": 5
+    "max_level": 5,
+    "anvil_cost": 2
   },
   "minecraft:soul_speed": {
     "description": {
       "translate": "enchantment.minecraft.soul_speed"
     },
     "supported_items": "#minecraft:enchantable/foot_armor",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 8
   },
   "minecraft:sweeping_edge": {
     "description": {
       "translate": "enchantment.minecraft.sweeping_edge"
     },
     "supported_items": "#minecraft:enchantable/sweeping",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   },
   "minecraft:swift_sneak": {
     "description": {
       "translate": "enchantment.minecraft.swift_sneak"
     },
     "supported_items": "#minecraft:enchantable/leg_armor",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 8
   },
   "minecraft:thorns": {
     "description": {
       "translate": "enchantment.minecraft.thorns"
     },
     "supported_items": "#minecraft:enchantable/armor",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 8
   },
   "minecraft:unbreaking": {
     "description": {
       "translate": "enchantment.minecraft.unbreaking"
     },
     "supported_items": "#minecraft:enchantable/durability",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 2
   },
   "minecraft:vanishing_curse": {
     "description": {
       "translate": "enchantment.minecraft.vanishing_curse"
     },
     "supported_items": "#minecraft:enchantable/vanishing",
-    "max_level": 1
+    "max_level": 1,
+    "anvil_cost": 8
   },
   "minecraft:wind_burst": {
     "description": {
       "translate": "enchantment.minecraft.wind_burst"
     },
     "supported_items": "#minecraft:enchantable/mace",
-    "max_level": 3
+    "max_level": 3,
+    "anvil_cost": 4
   }
 }
