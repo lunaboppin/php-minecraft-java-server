@@ -63,11 +63,15 @@ final class Server
 
     use Explosions;
 
+    use Projectiles;
+
     use Sleeping;
 
     use WeatherCycle;
 
     use Lightning;
+
+    use Redstone;
 
     use PoweredRails;
 
@@ -133,6 +137,10 @@ final class Server
 
     use Statistics;
 
+    use NaturalSpawning;
+
+    use RecipeBook;
+
     use MobFire;
 
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
@@ -187,6 +195,7 @@ final class Server
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreTnt();
+                $this->restoreRedstone();
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
@@ -721,9 +730,9 @@ final class Server
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
+        $this->sendUpdateRecipes($c);
         $this->sendPermissionLevel($c);
-        // The recipe book (all filters closed) has no recipes here yet (#24).
-        $c->send($this->version, 'recipe_book_settings', str_repeat("\0", 8));
+        $this->sendInitialRecipeBook($c);
         // PlayerList.updateEntireScoreboard: displayed objectives and their scores.
         $this->sendScoreboard($c);
         // The join message reaches players already online, not the one joining.
@@ -1100,6 +1109,18 @@ final class Server
                         $this->syncInventory($c);
                     }
                 }return;
+            case 'recipe_book_seen_recipe':
+                $display = $r->varInt();
+                $r->end();
+                $this->recipeSeen($c, $display);
+                return;
+            case 'recipe_book_change_settings':
+                $type = $r->varInt();
+                $open = $r->bool();
+                $filtering = $r->bool();
+                $r->end();
+                $this->changeRecipeBookSettings($c, $type, $open, $filtering);
+                return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
                 return;
@@ -1235,6 +1256,7 @@ final class Server
         if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 1.0E-5) {
             $c->lastActionTime = self::now();
         }
+        $c->knownMovement = [$x - $c->x, $y - $c->y, $z - $c->z];
         $c->x = $x;
         $c->y = $y;
         $c->z = $z;
@@ -1588,7 +1610,9 @@ final class Server
                 $blocked = true;
             }
             if (!$blocked) {
-                $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
+                $placedState = $blockName === 'redstone_wire' ? $this->wirePlacement([$tx, $ty, $tz]) : $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz);
+                $this->setBlock($tx, $ty, $tz, $placedState);
+                $this->redstonePlaced([$tx, $ty, $tz]);
                 $this->updateNeighbourShapes($tx, $ty, $tz);
                 if ($blockName === 'tripwire_hook') {
                     // TripWireHookBlock.setPlacedBy.
@@ -1916,6 +1940,7 @@ final class Server
                         return;
                     }
                     $this->tickControlledVehicle($c);
+                    $this->tickRecipeAdvancements($c);
                     $this->tickSurvival($c);
                     $this->tickStatistics($c);
                     $this->sendKnockbackMotion($c);
