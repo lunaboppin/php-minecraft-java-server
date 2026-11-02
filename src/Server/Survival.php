@@ -230,16 +230,30 @@ trait Survival
      * Armor, enchantments and effects do not reduce damage yet (#31, #23).
      */
     /** @param ?array{id: int, velocity: array} $projectile the direct entity, when a projectile hits */
-    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null): bool
+    /** @param ?array $mob the mob that caused the damage, when one did */
+    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null, ?array $mob = null): bool
     {
         if ($c->dimension !== $this->world->dimension) {
-            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker, $projectile));
+            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker, $projectile, $mob));
         }
         $type = str_contains($type, ':') ? $type : 'minecraft:' . $type;
         $tags = $this->version->catalog->damageTypes['tags'];
         // Creative and spectator players are invulnerable unless the damage type bypasses it.
         if ($c->dead || (in_array($c->gameMode, [1, 3], true) && !in_array($type, $tags['minecraft:bypasses_invulnerability'], true))) {
             return false;
+        }
+        // Player.hurtServer: damage a mob causes scales with difficulty, and none at all hurts nothing.
+        $scaling = $this->version->catalog->damageTypes['types'][$type]['scaling'] ?? 'never';
+        if ($scaling === 'always' || ($scaling === 'when_caused_by_living_non_player' && $mob !== null)) {
+            $amount = match ($this->config->difficulty) {
+                0 => 0.0,
+                1 => min(Float32::round(Float32::round($amount / 2.0) + 1.0), $amount),
+                3 => Float32::round(Float32::round($amount * 3.0) / 2.0),
+                default => $amount,
+            };
+            if ($amount === 0.0) {
+                return false;
+            }
         }
         // Player.isInvulnerableTo: the damage-type game rules.
         foreach (['minecraft:is_drowning' => 'drowning_damage', 'minecraft:is_fall' => 'fall_damage', 'minecraft:is_fire' => 'fire_damage', 'minecraft:is_freezing' => 'freeze_damage'] as $tag => $rule) {
@@ -293,7 +307,7 @@ trait Survival
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
         // the death event when the hit was lethal.
-        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10), $projectile['id'] ?? null);
+        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? $mob['id'] ?? -1, substr($type, 10), $projectile['id'] ?? null);
         $effects = $this->version->catalog->damageTypes['types'][$type]['effects'] ?? 'hurt';
         $sound = $c->health <= 0 ? 'entity.player.death' : match ($effects) {
             'drowning' => 'entity.player.hurt_drown',
@@ -317,7 +331,7 @@ trait Survival
             }
         }
         if ($fullDamage) {
-            $this->knockbackPlayer($c, $type, $attacker, $projectile);
+            $this->knockbackPlayer($c, $type, $attacker, $projectile, $mob);
         }
         if ($c->health <= 0) {
             $c->dead = true;
@@ -343,7 +357,7 @@ trait Survival
                 [$c->experience, $c->experienceLevel, $c->experienceProgress, $c->score] = [0, 0, 0.0, 0];
             }
             // ServerPlayer.die: the death screen always opens; the message is shared only if the rule allows it.
-            $message = $this->deathMessage($c, $type, $attacker);
+            $message = $this->deathMessage($c, $type, $attacker, $mob);
             if ($this->gameRule('show_death_messages') === 'true') {
                 $c->send($this->version, 'player_combat_kill', Binary::writeVarInt($c->entityId) . Nbt::component($message));
                 // The team's deathMessageVisibility decides who else sees it.
@@ -376,7 +390,7 @@ trait Survival
     }
 
     /** CombatTracker.getDeathMessage for the killing blow. */
-    private function deathMessage(Client $c, string $type, ?Client $attacker): array
+    private function deathMessage(Client $c, string $type, ?Client $attacker, ?array $mob = null): array
     {
         $data = $this->version->catalog->damageTypes['types'][$type] ?? throw new \LogicException('Unknown damage type ' . $type);
         $victim = $this->displayName($c);
@@ -389,6 +403,9 @@ trait Survival
         if ($attacker !== null) {
             return ['translate' => $key, 'with' => [$victim, $this->displayName($attacker)]];
         }
+        if ($mob !== null) {
+            return ['translate' => $key, 'with' => [$victim, $this->entityComponent($mob['kind'], hex2bin($mob['uuid']), $mob['customName'] ?? null)]];
+        }
         // Without a direct attacker, a player who hurt the victim in the last 100 ticks is credited.
         $credit = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
         return $credit === null
@@ -400,7 +417,7 @@ trait Survival
      * LivingEntity.dealDefaultKnockback for a player: away from the attacker (or a random way
      * without one), shown by hurt_animation and, unless the damage makes no impact, the new motion.
      */
-    private function knockbackPlayer(Client $c, string $type, ?Client $attacker, ?array $projectile = null): void
+    private function knockbackPlayer(Client $c, string $type, ?Client $attacker, ?array $projectile = null, ?array $mob = null): void
     {
         $tags = $this->version->catalog->damageTypes['tags'];
         if (in_array($type, $tags['minecraft:no_knockback'] ?? [], true)) {
@@ -410,6 +427,7 @@ trait Survival
         [$dx, $dz] = match (true) {
             $projectile !== null => [-$projectile['velocity'][0], -$projectile['velocity'][2]],
             $attacker !== null => [$attacker->x - $c->x, $attacker->z - $c->z],
+            $mob !== null => [$mob['x'] - $c->x, $mob['z'] - $c->z],
             default => [0.0, 0.0],
         };
         $resistance = $this->playerAttribute($c, 'knockback_resistance');

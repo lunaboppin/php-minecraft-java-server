@@ -719,6 +719,9 @@ trait Animals
             }
             if ($this->mobIsTicking($animal)) {
                 $this->tickAge($animal);
+                if ($this->tickCreeper($animal, !($animal['noAi'] ?? false))) {
+                    continue;
+                }
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {

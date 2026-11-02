@@ -218,7 +218,7 @@ trait Explosions
      * ServerLevel.explode for TNT: ServerExplosion.explode, then the explode packet to players
      * within 64 blocks, carrying the knockback of a player it pushed.
      */
-    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null, bool $fire = false, ?string $damageType = null): void
+    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null, bool $fire = false, ?string $damageType = null, bool $mob = false): void
     {
         $catalog = $this->version->catalog;
         $f = Float32::round(...);
@@ -258,10 +258,11 @@ trait Explosions
         }
         $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType);
         // Level.getDestroyType: TNT and block explosions keep every drop unless their decay rule is on.
-        $decay = $this->gameRule($sourceTnt !== null ? 'tnt_explosion_drop_decay' : 'block_explosion_drop_decay') === 'true';
+        $decay = $this->gameRule($sourceTnt !== null ? 'tnt_explosion_drop_decay' : ($mob ? 'mob_explosion_drop_decay' : 'block_explosion_drop_decay')) === 'true';
         // ServerExplosion.interactWithBlocks: in shuffled order, each block drops its loot (merged
         // into stacks of up to 16 at the first block's position) and is replaced by air.
-        $positions = array_values($blown);
+        // Level.ExplosionInteraction.MOB: a mob's explosion breaks blocks only with mob_griefing.
+        $positions = $mob && $this->gameRule('mob_griefing') !== 'true' ? [] : array_values($blown);
         shuffle($positions);
         $stacks = [];
         $air = $catalog->state('air');
