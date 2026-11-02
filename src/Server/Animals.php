@@ -578,6 +578,8 @@ trait Animals
     private function animalDeathLoot(array &$animal, ?Client $killer = null, ?string $type = null): void
     {
         $animal['deadAt'] = $this->ticks + 20;
+        // LivingEntity.isPushable: a dying mob neither pushes nor counts toward cramming.
+        $this->forgetPushingEntity($animal['id']);
         // LivingEntity.dropAllDeathLoot: loot table drops, then experience when a player hurt it lately.
         $this->dropMobLoot($animal, $killer, $type);
         $playerKilled = $killer !== null || $this->ticks - ($animal['lastHurtByPlayerTick'] ?? -1000) < 100;

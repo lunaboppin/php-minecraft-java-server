@@ -107,7 +107,7 @@ trait MobPushing
     private function preparePushingWorld(): void
     {
         $context = $this->pushingContext();
-        $members = array_fill_keys(array_keys($this->animals), 'mob');
+        $members = array_fill_keys(array_keys(array_filter($this->animals, static fn (array $mob): bool => !isset($mob['deadAt']))), 'mob');
         foreach ($this->localPlayers() as $player) {
             $members[$player->entityId] = 'player';
         }

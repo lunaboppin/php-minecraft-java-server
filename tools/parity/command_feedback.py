@@ -1295,6 +1295,7 @@ SCRIPT = [
     ('!quiet time query gametime', False),
     ('execute if entity @e[type=pig]', False),
     ('kill @e[type=pig]', False),
+    ('!quiet kill @e[type=item]', False),
     ('!quiet gamerule max_entity_cramming 24', False),
     # ItemEntity's and ExperienceOrb's saved data, once they rest on a block.
     ('!quiet setblock 12 99 12 stone', False),
