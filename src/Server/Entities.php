@@ -8,6 +8,7 @@ use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker;
 use PhpMinecraftJavaServer\World\Collision;
+use PhpMinecraftJavaServer\World\Fluids;
 use PhpMinecraftJavaServer\World\Generation\Float32;
 
 trait Entities
@@ -237,12 +238,28 @@ trait Entities
             }
             [$oldX, $oldY, $oldZ] = [$item['x'], $item['y'], $item['z']];
             $oldVelocity = $item['velocity'];
-            $fluid = $this->itemFluid($item);
-            if ($fluid === 'water') {
-                // setUnderwaterMovement.
-                $item['velocity'] = [$item['velocity'][0] * 0.99, $item['velocity'][1] + ($item['velocity'][1] < 0.06 ? 5.0E-4 : 0.0), $item['velocity'][2] * 0.99];
-            } elseif ($fluid === 'lava') {
-                $item['velocity'] = [$item['velocity'][0] * 0.95, $item['velocity'][1] + ($item['velocity'][1] < 0.06 ? 5.0E-4 : 0.0), $item['velocity'][2] * 0.95];
+            // Entity.baseTick: the fluids it is in, and their current.
+            $fluid = $this->entityFluidCurrent([$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125], $item['velocity']);
+            // Entity.isInLava is false on an entity's first tick.
+            $inLava = $item['ticks'] > 1 && $fluid['lava'] > 0.0;
+            // Entity.baseTick: a burning item takes fire damage each second out of lava, unless immune.
+            if (($item['fire'] ?? 0) > 0) {
+                if ($this->itemFireImmune($item)) {
+                    $item['fire'] = 0;
+                } else {
+                    if ($item['fire'] % 20 === 0 && !$inLava && $this->hurtItem($id, 1.0, 'minecraft:on_fire') && !isset($this->itemEntities[$id])) {
+                        unset($item);
+                        continue;
+                    }
+                    --$item['fire'];
+                }
+            }
+            if ($fluid['water'] > 0.10000000149011612) {
+                // setUnderwaterMovement: setFluidMovement(0.99F).
+                $item['velocity'] = [$item['velocity'][0] * 0.9900000095367432, $item['velocity'][1] + ($item['velocity'][1] < 0.05999999865889549 ? 5.000000237487257E-4 : 0.0), $item['velocity'][2] * 0.9900000095367432];
+            } elseif ($inLava && $fluid['lava'] > 0.10000000149011612) {
+                // setUnderLavaMovement: setFluidMovement(0.95F).
+                $item['velocity'] = [$item['velocity'][0] * 0.949999988079071, $item['velocity'][1] + ($item['velocity'][1] < 0.05999999865889549 ? 5.000000237487257E-4 : 0.0), $item['velocity'][2] * 0.949999988079071];
             } else {
                 $item['velocity'][1] -= 0.04;
             }
@@ -269,6 +286,10 @@ trait Entities
                     $item['velocity'][1] = $bounced;
                     $item['syncPosition'] = true;
                 }
+                if (!$this->itemInsideFluids($id, $item, $box)) {
+                    unset($item);
+                    continue;
+                }
                 // getAirDrag and getFriction are floats, multiplied as floats.
                 $drag = 0.9800000190734863;
                 $ground = $drag;
@@ -279,6 +300,10 @@ trait Entities
                 if ($item['ground'] && $item['velocity'][1] < 0.0) {
                     $item['velocity'][1] *= -0.5;
                 }
+            } elseif (!$this->itemInsideFluids($id, $item, [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125])) {
+                // applyEffectsFromBlocksForLastMovements: a resting item still meets the blocks it lies in.
+                unset($item);
+                continue;
             }
             $movedBlock = floor($oldX) !== floor($item['x']) || floor($oldY) !== floor($item['y']) || floor($oldZ) !== floor($item['z']);
             if ($item['ticks'] % ($movedBlock ? 2 : 40) === 0) {
@@ -290,8 +315,11 @@ trait Entities
                 $item = &$this->itemEntities[$id];
             }
             ++$item['age'];
+            // ItemEntity.tick updates its fluids again after moving: their current applies twice,
+            // and an item in any fluid is synced.
+            $after = $this->entityFluidCurrent([$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125], $item['velocity']);
             $change = ($item['velocity'][0] - $oldVelocity[0]) ** 2 + ($item['velocity'][1] - $oldVelocity[1]) ** 2 + ($item['velocity'][2] - $oldVelocity[2]) ** 2;
-            $item['needsSync'] = ($item['needsSync'] ?? false) || $change > 0.01;
+            $item['needsSync'] = ($item['needsSync'] ?? false) || $after['any'] || $change > 0.01;
             if ($item['age'] >= 6000 || $item['y'] < $this->world->minY - 64) {
                 unset($item);
                 $this->removeItem($id);
@@ -325,15 +353,127 @@ trait Entities
     }
 
     /** Entity.isInWater/isInLava with a fluid height above 0.1 in the item's block. */
-    private function itemFluid(array $item): ?string
+    /**
+     * EntityFluidInteraction.update and applyCurrentTo for an entity pushed by fluids: the height
+     * of each fluid it is in, and the current of the water and lava it meets added to its
+     * velocity, normalized for anything but a player, at 0.014 for water and 0.0023333 for lava
+     * (0.007 where lava is fast).
+     *
+     * @return array{water: float, lava: float, any: bool} any is true in any fluid at all
+     */
+    private function entityFluidCurrent(array $box, array &$velocity, bool $player = false): array
     {
-        $state = $this->world->get((int) floor($item['x']), (int) floor($item['y']), (int) floor($item['z']));
-        $catalog = $this->version->catalog;
-        $name = $catalog->blockName($state);
-        if ($name === 'lava') {
-            return 'lava';
+        $fluids = $this->fluids();
+        $block = $this->world->get(...);
+        $inner = [$box[0] + 0.001, $box[1] + 0.001, $box[2] + 0.001, $box[3] - 0.001, $box[4] - 0.001, $box[5] - 0.001];
+        $heights = [];
+        $currents = [];
+        for ($x = (int) floor($inner[0]); $x <= (int) ceil($inner[3]) - 1; ++$x) {
+            for ($y = (int) floor($inner[1]); $y <= (int) ceil($inner[4]) - 1; ++$y) {
+                for ($z = (int) floor($inner[2]); $z <= (int) ceil($inner[5]) - 1; ++$z) {
+                    $fluid = $fluids->fluid($block($x, $y, $z));
+                    if ($fluid === null) {
+                        continue;
+                    }
+                    $top = $y + $fluids->entityHeight($block, $fluid, $x, $y, $z);
+                    if ($top < $inner[1]) {
+                        continue;
+                    }
+                    // Each fluid type (source or flowing) keeps its height; each fluid tag its current.
+                    $type = Fluids::tickType($fluid);
+                    $heights[$type] = max($top - $box[1], $heights[$type] ?? 0.0);
+                    $current = &$currents[$fluid[0]];
+                    $current ??= [0.0, [0.0, 0.0, 0.0], 0];
+                    $current[0] = max($heights[$type], $current[0]);
+                    $flow = $fluids->flow($block, $fluid, $x, $y, $z);
+                    if ($current[0] < 0.4) {
+                        $flow = [$flow[0] * $current[0], $flow[1] * $current[0], $flow[2] * $current[0]];
+                    }
+                    $current[1] = [$current[1][0] + $flow[0], $current[1][1] + $flow[1], $current[1][2] + $flow[2]];
+                    ++$current[2];
+                    unset($current);
+                }
+            }
         }
-        return $name === 'water' || ($catalog->properties($state)['waterlogged'] ?? 'false') === 'true' ? 'water' : null;
+        $height = ['water' => max($heights['water'] ?? 0.0, $heights['flowing_water'] ?? 0.0), 'lava' => max($heights['lava'] ?? 0.0, $heights['flowing_lava'] ?? 0.0), 'any' => $heights !== []];
+        foreach (['water' => 0.014, 'lava' => $this->fastLava() ? 0.007 : 0.0023333333333333335] as $family => $scale) {
+            [, $sum, $count] = $currents[$family] ?? [0.0, [0.0, 0.0, 0.0], 0];
+            if ($height[$family] <= 0.0 || $count === 0 || $sum[0] ** 2 + $sum[1] ** 2 + $sum[2] ** 2 < 9.999999747378752E-6) {
+                continue;
+            }
+            $impulse = $player ? [$sum[0] / $count, $sum[1] / $count, $sum[2] / $count] : Fluids::normalize($sum);
+            $impulse = [$impulse[0] * $scale, $impulse[1] * $scale, $impulse[2] * $scale];
+            if (abs($velocity[0]) < 0.003 && abs($velocity[2]) < 0.003 && sqrt($impulse[0] ** 2 + $impulse[1] ** 2 + $impulse[2] ** 2) < 0.0045000000000000005) {
+                $impulse = Fluids::normalize($impulse);
+                $impulse = [$impulse[0] * 0.0045000000000000005, $impulse[1] * 0.0045000000000000005, $impulse[2] * 0.0045000000000000005];
+            }
+            $velocity = [$velocity[0] + $impulse[0], $velocity[1] + $impulse[1], $velocity[2] + $impulse[2]];
+        }
+        return $height;
+    }
+
+    /** ItemEntity.fireImmune: an item resistant to fire damage. */
+    private function itemFireImmune(array $item): bool
+    {
+        return in_array('minecraft:in_fire', $this->itemReference()['damage_resistant'][$this->version->catalog->itemName($item['stack']['item'])] ?? [], true);
+    }
+
+    /**
+     * Entity.applyEffectsFromBlocks for the bubble columns and fluids an item moved through: a
+     * bubble column it ends inside pushes it; water puts out its fire;
+     * lava sets it alight for 15 seconds and hurts it by 4 (LavaFluid.entityInside, then
+     * Entity.lavaIgnite and lavaHurt), with the burn sound when that destroys it or every tenth
+     * tick. False once the item is gone.
+     */
+    private function itemInsideFluids(int $id, array &$item, array $from): bool
+    {
+        $fluids = $this->fluids();
+        $block = $this->world->get(...);
+        $to = [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125];
+        $swept = [min($from[0], $to[0]) + 1.0E-5, min($from[1], $to[1]) + 1.0E-5, min($from[2], $to[2]) + 1.0E-5, max($from[3], $to[3]) - 1.0E-5, max($from[4], $to[4]) - 1.0E-5, max($from[5], $to[5]) - 1.0E-5];
+        $inside = [];
+        $catalog = $this->version->catalog;
+        $target = [$to[0] + 1.0E-5, $to[1] + 1.0E-5, $to[2] + 1.0E-5, $to[3] - 1.0E-5, $to[4] - 1.0E-5, $to[5] - 1.0E-5];
+        for ($x = (int) floor($swept[0]); $x <= (int) floor($swept[3]); ++$x) {
+            for ($y = (int) floor($swept[1]); $y <= (int) floor($swept[4]); ++$y) {
+                for ($z = (int) floor($swept[2]); $z <= (int) floor($swept[5]); ++$z) {
+                    $state = $block($x, $y, $z);
+                    if ($catalog->blockName($state) === 'bubble_column' && $target[0] < $x + 1 && $target[3] > $x && $target[1] < $y + 1 && $target[4] > $y && $target[2] < $z + 1 && $target[5] > $z) {
+                        // BubbleColumnBlock.entityInside: pushed up, or dragged down, harder at the top.
+                        $above = $block($x, $y + 1, $z);
+                        $down = $catalog->properties($state)['drag'] === 'true';
+                        $vy = $item['velocity'][1];
+                        $item['velocity'][1] = (new Collision($catalog))->shape($above) === [] && $fluids->fluid($above) === null
+                            ? ($down ? max(-0.9, $vy - 0.03) : min(1.8, $vy + 0.1))
+                            : ($down ? max(-0.3, $vy - 0.03) : min(0.7, $vy + 0.06));
+                    }
+                    $fluid = $fluids->fluid($state);
+                    // FluidState.getAABB: the fluid's height in its block.
+                    if ($fluid !== null && $swept[1] < $y + $fluids->entityHeight($block, $fluid, $x, $y, $z)) {
+                        $inside[$fluid[0]] = true;
+                    }
+                }
+            }
+        }
+        if (isset($inside['water'])) {
+            $item['fire'] = 0;
+        }
+        if (!isset($inside['lava']) || $this->itemFireImmune($item)) {
+            return true;
+        }
+        $item['fire'] = max($item['fire'] ?? 0, 300);
+        if ($this->hurtItem($id, 4.0, 'minecraft:lava')) {
+            $health = $this->itemEntities[$id]['health'] ?? 0;
+            if ($health <= 0 || $item['ticks'] % 10 === 0) {
+                $payload = Packets::sound($this->version->blocks['sounds']['entity.generic.burn'], 8, $item['x'], $item['y'], $item['z'], 0.4, Float32::round(2.0 + Float32::round(self::randomUnit() * 0.4)), unpack('J', random_bytes(8))[1]);
+                foreach ($this->localPlayers() as $player) {
+                    if (($player->x - $item['x']) ** 2 + ($player->y - $item['y']) ** 2 + ($player->z - $item['z']) ** 2 < 256.0) {
+                        $player->send($this->version, 'sound', $payload);
+                    }
+                }
+            }
+        }
+        return isset($this->itemEntities[$id]);
     }
 
     private function blockFriction(int $state): float
