@@ -339,7 +339,7 @@ trait InventoryManagement
         if ($slot === -999) {
             if ($c->cursor !== null) {
                 $n = $button === 1 ? 1 : $c->cursor['count'];
-                $this->playerDrop($c, array_replace($c->cursor, ['count' => $n]), false);
+                $this->playerDrop($c, array_replace($c->cursor, ['count' => $n]), false, thrown: true);
                 $c->cursor['count'] -= $n;
                 if ($c->cursor['count'] === 0) {
                     $c->cursor = null;
@@ -397,7 +397,7 @@ trait InventoryManagement
             $c->cursor = array_replace($items[$slot], ['count' => $this->version->catalog->item($items[$slot]['item'])['max_stack']]);
         } elseif ($mode === 4 && $items[$slot] !== null) {
             $n = $button === 0 ? 1 : $items[$slot]['count'];
-            $this->playerDrop($c, array_replace($items[$slot], ['count' => $n]), false);
+            $this->playerDrop($c, array_replace($items[$slot], ['count' => $n]), false, thrown: true);
             Inventory::consume($items, $slot, $n);
         } elseif ($mode === 6 && $c->cursor !== null) {
             $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];

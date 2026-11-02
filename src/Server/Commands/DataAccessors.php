@@ -228,6 +228,9 @@ trait DataAccessors
             ['Age', new NbtTag('short', $item['age'])],
             ['PickupDelay', new NbtTag('short', $item['pickupDelay'])],
         );
+        if (isset($item['thrower'])) {
+            $pairs[] = ['Thrower', self::uuidNbt($item['thrower'])];
+        }
         if ($item['target'] !== null) {
             $pairs[] = ['Owner', self::uuidNbt($item['target'])];
         }

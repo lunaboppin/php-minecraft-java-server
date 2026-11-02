@@ -63,7 +63,7 @@ trait Entities
      * LivingEntity.createItemStackToDrop for a player: from the hand, thrown along the look or
      * scattered at random, picked up after 40 ticks.
      */
-    private function playerDrop(Client $c, array $stack, bool $randomly, int $age = 0): ?int
+    private function playerDrop(Client $c, array $stack, bool $randomly, int $age = 0, bool $thrown = false): ?int
     {
         $eye = $c->y + ($c->sneaking && !$c->flying ? 1.27 : 1.62);
         if ($randomly) {
@@ -79,7 +79,12 @@ trait Entities
         }
         $velocity = array_map(static fn (float $v): float => Float32::round($v), $velocity);
         // getEyeY() - 0.3F subtracts the float 0.3.
-        return $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
+        $id = $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
+        // createItemStackToDrop: a stack thrown from the hand remembers its thrower.
+        if ($id !== null && $thrown) {
+            $this->itemEntities[$id]['thrower'] = $c->uuid;
+        }
+        return $id;
     }
 
     /** Containers.dropItemStack: a broken container's stacks in random parts of 10 to 30, free to take at once. */
@@ -103,7 +108,7 @@ trait Entities
     /** ItemEntity.addAdditionalSaveData: what survives a restart, with its UUID but not its network ID. */
     private function savedItem(array $item): array
     {
-        return ['uuid' => bin2hex($item['uuid']), 'target' => $item['target'] === null ? null : bin2hex($item['target'])]
+        return ['uuid' => bin2hex($item['uuid']), 'target' => $item['target'] === null ? null : bin2hex($item['target']), 'thrower' => isset($item['thrower']) ? bin2hex($item['thrower']) : null]
             + array_intersect_key($item, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'stack', 'age', 'pickupDelay', 'health']));
     }
 
@@ -118,7 +123,8 @@ trait Entities
             $this->itemEntities[$id] = ['id' => $id, 'uuid' => hex2bin($saved['uuid']), 'x' => (float) $saved['x'], 'y' => (float) $saved['y'], 'z' => (float) $saved['z'],
                 'yaw' => (float) ($saved['yaw'] ?? 0.0), 'velocity' => array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), 'stack' => $saved['stack'],
                 'age' => (int) ($saved['age'] ?? 0), 'pickupDelay' => (int) ($saved['pickupDelay'] ?? 0), 'target' => isset($saved['target']) ? hex2bin($saved['target']) : null,
-                'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false, 'created' => $this->ticks, 'dirty' => true];
+                'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false, 'created' => $this->ticks, 'dirty' => true]
+                + (isset($saved['thrower']) ? ['thrower' => hex2bin($saved['thrower'])] : []);
         }
     }
 
