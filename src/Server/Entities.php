@@ -80,9 +80,12 @@ trait Entities
         $velocity = array_map(static fn (float $v): float => Float32::round($v), $velocity);
         // getEyeY() - 0.3F subtracts the float 0.3.
         $id = $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
-        // createItemStackToDrop: a stack thrown from the hand remembers its thrower.
-        if ($id !== null && $thrown) {
+        // createItemStackToDrop: a stack thrown from the hand remembers its thrower, and
+        // ServerPlayer.drop counts it as dropped.
+        if ($thrown && $id !== null) {
             $this->itemEntities[$id]['thrower'] = $c->uuid;
+            $this->awardStat($c, 'dropped', $this->version->catalog->itemName($stack['item']), $stack['count']);
+            $this->awardStat($c, 'custom', 'drop');
         }
         return $id;
     }
@@ -370,6 +373,8 @@ trait Entities
                     $viewer->send($this->version, 'take_item_entity', Binary::writeVarInt($id) . Binary::writeVarInt($player->entityId) . Binary::writeVarInt($count));
                 }
             }
+            // ItemEntity.playerTouch: the whole stack counts as picked up, however much fitted.
+            $this->awardStat($player, 'picked_up', $this->version->catalog->itemName($item['stack']['item']), $count);
             $this->syncInventory($player);
             if ($left === 0) {
                 $this->removeItem($id);

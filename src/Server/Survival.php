@@ -77,6 +77,9 @@ trait Survival
         $c->personalSpawn = $data['personalSpawn'] ?? null;
         $c->tags = array_values(array_filter($data['tags'] ?? [], 'is_string'));
         $c->postEffects = $data['postEffects'] ?? [];
+        $this->loadStatistics($c, is_array($data['stats'] ?? null) ? $data['stats'] : []);
+        $this->loadRecipeBook($c, is_array($data['recipeBook'] ?? null) ? $data['recipeBook'] : []);
+        $c->advancements = array_fill_keys(array_filter($data['advancements'] ?? [], 'is_string'), true);
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
         foreach ($data['enderItems'] ?? [] as $slot => $stack) {
@@ -108,7 +111,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'recipeBook' => $this->savedRecipeBook($c), 'advancements' => array_keys($c->advancements), 'stats' => $this->savedStatistics($c), 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -135,6 +138,7 @@ trait Survival
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
+                $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -225,10 +229,11 @@ trait Survival
      * LivingEntity.hurtServer for players with a vanilla damage type. Returns whether the player was hurt.
      * Armor, enchantments and effects do not reduce damage yet (#31, #23).
      */
-    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null): bool
+    /** @param ?array{id: int, velocity: array} $projectile the direct entity, when a projectile hits */
+    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null): bool
     {
         if ($c->dimension !== $this->world->dimension) {
-            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker));
+            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker, $projectile));
         }
         $type = str_contains($type, ':') ? $type : 'minecraft:' . $type;
         $tags = $this->version->catalog->damageTypes['tags'];
@@ -265,6 +270,10 @@ trait Survival
             $absorbed = min($c->absorption, $amount);
             $this->setAbsorption($c, $c->absorption - $absorbed);
             $amount -= $absorbed;
+            // Player.actuallyHurt: tenths of a heart absorbed and taken.
+            if ($absorbed > 0.0 && $absorbed < 3.4028235E37) {
+                $this->awardStat($c, 'custom', 'damage_absorbed', (int) round($absorbed * 10.0));
+            }
         }
         // CombatTracker.recordDamage, before the health falls: damage from a living attacker starts combat.
         if ($amount != 0.0) {
@@ -277,10 +286,14 @@ trait Survival
             }
         }
         $c->health = max(0, $c->health - $amount);
+        // Below 3.4E37 only, as /kill's damage is not counted.
+        if ($amount != 0.0 && $amount < 3.4028235E37) {
+            $this->awardStat($c, 'custom', 'damage_taken', (int) round($amount * 10.0));
+        }
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
         // the death event when the hit was lethal.
-        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10));
+        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10), $projectile['id'] ?? null);
         $effects = $this->version->catalog->damageTypes['types'][$type]['effects'] ?? 'hurt';
         $sound = $c->health <= 0 ? 'entity.player.death' : match ($effects) {
             'drowning' => 'entity.player.hurt_drown',
@@ -304,7 +317,7 @@ trait Survival
             }
         }
         if ($fullDamage) {
-            $this->knockbackPlayer($c, $type, $attacker);
+            $this->knockbackPlayer($c, $type, $attacker, $projectile);
         }
         if ($c->health <= 0) {
             $c->dead = true;
@@ -345,9 +358,16 @@ trait Survival
             $this->incrementCriteria('deathCount', $c->name);
             $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
             if ($killer !== null && $killer !== $c) {
+                $this->awardStat($c, 'killed_by', 'player');
+                // ServerPlayer.awardKillScore
+                $this->awardStat($killer, 'killed', 'player');
                 $this->incrementCriteria('totalKillCount', $killer->name);
+                $this->awardStat($killer, 'custom', 'player_kills');
                 $this->incrementCriteria('playerKillCount', $killer->name);
             }
+            $this->awardStat($c, 'custom', 'deaths');
+            $this->resetStat($c, 'custom', 'time_since_death');
+            $this->resetStat($c, 'custom', 'time_since_rest');
             // Then it rechecks combat, which a dead player always leaves.
             $this->recheckCombat($c);
             $this->savePlayer($c);
@@ -380,13 +400,18 @@ trait Survival
      * LivingEntity.dealDefaultKnockback for a player: away from the attacker (or a random way
      * without one), shown by hurt_animation and, unless the damage makes no impact, the new motion.
      */
-    private function knockbackPlayer(Client $c, string $type, ?Client $attacker): void
+    private function knockbackPlayer(Client $c, string $type, ?Client $attacker, ?array $projectile = null): void
     {
         $tags = $this->version->catalog->damageTypes['tags'];
         if (in_array($type, $tags['minecraft:no_knockback'] ?? [], true)) {
             return;
         }
-        [$dx, $dz] = $attacker === null ? [0.0, 0.0] : [$attacker->x - $c->x, $attacker->z - $c->z];
+        // Projectile.calculateHorizontalHurtKnockbackDirection: a projectile pushes along its flight.
+        [$dx, $dz] = match (true) {
+            $projectile !== null => [-$projectile['velocity'][0], -$projectile['velocity'][2]],
+            $attacker !== null => [$attacker->x - $c->x, $attacker->z - $c->z],
+            default => [0.0, 0.0],
+        };
         $resistance = $this->playerAttribute($c, 'knockback_resistance');
         $result = \PhpMinecraftJavaServer\World\EntityPhysics::knockback([0.0, $c->velocityY, 0.0], 0.4, $resistance, $c->ground, $dx, $dz, new \PhpMinecraftJavaServer\World\Generation\XoroshiroRandom(random_int(PHP_INT_MIN, PHP_INT_MAX)));
         // ServerPlayer.indicateDamage: the direction of the hit relative to where the player faces.
@@ -594,6 +619,13 @@ trait Survival
             return;
         }
         $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
+        // ItemStack.mineBlock: a tool counts as used; then Block.playerDestroy counts the block mined.
+        if ($tool !== '' && $this->heldTool($c) !== null) {
+            $this->awardStat($c, 'used', $tool);
+        }
+        if ($this->correctToolForDrops($c, $name)) {
+            $this->awardStat($c, 'mined', $name);
+        }
         if ($this->correctToolForDrops($c, $name) && $this->gameRule('block_drops') === 'true') {
             // The block's official loot table, for the held tool.
             $held = $c->inventory[36 + $c->heldSlot] ?? null;
@@ -630,6 +662,7 @@ trait Survival
         if ($held !== null && $wear > 0 && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
             $held['damage'] = ($held['damage'] ?? 0) + $wear;
             if ($held['damage'] >= $max) {
+                $this->awardStat($c, 'broken', $this->version->catalog->itemName($held['item']));
                 unset($c->inventory[$slot]);
             } else {
                 $c->inventory[$slot] = $held;
@@ -792,6 +825,51 @@ trait Survival
         }
     }
 
+    /**
+     * Entity.baseTick's fire countdown for a player, hurting every 20 ticks out of lava, then
+     * applyEffectsFromBlocks: lava lights for 15 seconds and hurts, fire counts up to lighting for
+     * 8 seconds and hurts, water and rain put fire out, and a player neither burning nor just lit
+     * keeps Player's 20 ticks of fire immunity.
+     */
+    private function tickPlayerFire(Client $c): void
+    {
+        if ($c->gameMode === 3 || $c->dead) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $feet = $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y), (int) floor($c->z)));
+        if ($c->fireTicks > 0) {
+            $burning = $c->fireTicks;
+            --$c->fireTicks;
+            if ($burning % 20 === 0 && $feet !== 'lava') {
+                $this->damage($c, 1, 'on_fire');
+            }
+        }
+        if ($c->dead) {
+            return;
+        }
+        $before = $c->fireTicks;
+        if ($feet === 'lava') {
+            // Entity.lavaIgnite and lavaHurt
+            $c->fireTicks = max($c->fireTicks, 300);
+            $this->damage($c, 4, 'lava');
+        } elseif ($feet === 'fire' || $feet === 'soul_fire') {
+            // BaseFireBlock.entityInside
+            if (++$c->fireTicks === 0) {
+                $c->fireTicks = 160;
+            }
+            $this->damage($c, $feet === 'soul_fire' ? 2 : 1, 'in_fire');
+        }
+        $head = $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y + 1.62), (int) floor($c->z)));
+        [$x, $z] = [(int) floor($c->x), (int) floor($c->z)];
+        if ($feet === 'water' || $head === 'water' || $this->rainingAt($x, (int) floor($c->y), $z) || $this->rainingAt($x, (int) floor($c->y + 1.8), $z)) {
+            $c->fireTicks = min(0, $c->fireTicks);
+        }
+        if ($c->fireTicks <= 0 && $c->fireTicks <= $before) {
+            $c->fireTicks = -20;
+        }
+    }
+
     private function tickSurvival(Client $c): void
     {
         // Player.tick: the delay before the next experience orb counts down.
@@ -821,6 +899,8 @@ trait Survival
             $slot = $c->eating['slot'];
             $stack = $c->inventory[$slot] ?? null;
             if ($stack !== null && $stack['item'] === $c->eating['item']) {
+                // Consumable.onConsume: the item counts as used.
+                $this->awardStat($c, 'used', $this->version->catalog->itemName($stack['item']));
                 $food = $this->version->catalog->item($stack['item']);
                 $c->food = min(20, $c->food + $food['nutrition']);
                 $c->saturation = min($c->food, $c->saturation + $food['saturation']);
@@ -842,7 +922,8 @@ trait Survival
             }
         }
         $this->tickFood($c);
-        if ($c->gameMode !== 0 || $this->ticks % 20 !== 0) {
+        $this->tickPlayerFire($c);
+        if ($c->dead || $c->gameMode !== 0 || $this->ticks % 20 !== 0) {
             return;
         }
         // Entity.checkBelowWorld: out_of_world damage starts 64 blocks below the world.
@@ -860,15 +941,6 @@ trait Survival
             }
         } else {
             $c->air = min(300, $c->air + 80);
-        }
-        if ($this->version->catalog->blockName($feet) === 'lava') {
-            $c->fireTicks = 160;
-            $this->damage($c, 4, 'lava');
-        } elseif ($this->version->catalog->blockName($feet) === 'water') {
-            $c->fireTicks = 0;
-        } elseif ($c->fireTicks > 0) {
-            $c->fireTicks -= 20;
-            $this->damage($c, 1, 'on_fire');
         }
     }
 
@@ -954,6 +1026,9 @@ trait Survival
             return;
         }
         if ($this->useSpawnEggInAir($c, $slot)) {
+            return;
+        }
+        if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
             return;
         }
         // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.

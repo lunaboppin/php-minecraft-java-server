@@ -66,6 +66,10 @@ public class ExportBlockBehaviour {
                 if (!Shapes.joinIsNotEmpty(WALL_SIDES.get(sides[i]), down, BooleanOp.ONLY_FIRST)) bits |= 1 << (23 + i);
             }
             if (state.isSolidRender()) bits |= 1 << 27;
+            // Redstone: BlockState.isRedstoneConductor, isSignalSource and hasAnalogOutputSignal.
+            if (state.isRedstoneConductor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) bits |= 1 << 28;
+            if (state.isSignalSource()) bits |= 1 << 29;
+            if (state.hasAnalogOutputSignal()) bits |= 1 << 30;
             flags.putInt(bits);
             // Light and natural spawning: getLightDampening, propagatesSkylightDown and pathfinding on land, then the light
             // emission and the spawn checks generation runs for creatures (a cow stands for those
@@ -79,7 +83,7 @@ public class ExportBlockBehaviour {
         }
         var root = new JsonObject();
         root.addProperty("version", net.minecraft.SharedConstants.getCurrentVersion().id());
-        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves, 4194304 bottom face covers a wall post, 8388608<<s bottom face covers a wall side (s: north, east, south, west), 134217728 solid render");
+        root.addProperty("bits", "1 air, 2 solid, 4 blocks motion in heightmaps, 8 replaceable, 16<<d full sturdy face, 1024<<d center sturdy face (d: down, up, north, south, west, east), 65536 water, 131072 lava, 262144 fluid source, 524288 full collision cube, 1048576 can occlude, 2097152 blocks motion in heightmaps without leaves, 4194304 bottom face covers a wall post, 8388608<<s bottom face covers a wall side (s: north, east, south, west), 134217728 solid render, 268435456 redstone conductor, 536870912 signal source, 1073741824 analog output");
         root.addProperty("states", count);
         root.addProperty("flags", Base64.getEncoder().encodeToString(flags.array()));
         // Block classes decide survival and placement rules; plain blocks are omitted.
