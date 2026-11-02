@@ -145,6 +145,8 @@ final class Server
 
     use Waypoints;
 
+    use Cauldrons;
+
     use Statistics;
 
     use NaturalSpawning;
@@ -1505,6 +1507,13 @@ final class Server
             if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand, true);
                 $this->acknowledge($c, $sequence);
+                return;
+            }
+            // CauldronBlock.useItemOn: buckets and bottles fill and empty cauldrons.
+            if (in_array($name, ['cauldron', 'water_cauldron', 'lava_cauldron', 'powder_snow_cauldron'], true) && !$sneakSkips && $this->useCauldron($c, $x, $y, $z, $slot)) {
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
                 return;
             }
             if (str_ends_with($name, '_bed') && !($c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]))) && $this->useBed($c, $x, $y, $z)) {

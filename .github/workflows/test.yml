@@ -166,7 +166,7 @@ jobs:
         run: |
           scenarios=(
             fluids bubble-columns random-ticks random-ticks-plants sponges copper-weathering powered-rails fire
-            bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep
+            bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep cauldrons
             pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
           )
