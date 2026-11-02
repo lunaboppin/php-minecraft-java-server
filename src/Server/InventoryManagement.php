@@ -138,6 +138,7 @@ trait InventoryManagement
         }
         $revision = $c->windowType === 'player' ? ++$c->inventoryRevision : ++$c->menuRevision;
         $c->send($this->version, 'container_set_content', Packets::inventory($c->windowId, $revision, $this->menuItems($c), $c->cursor, $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
+        $this->inventoryChangedCheck($c);
     }
 
     /** The open container's slots; a double chest's right half fills 0-26 and its left half 27-53. */
@@ -234,6 +235,7 @@ trait InventoryManagement
         $c->windowPosition = $position;
         $c->windowPartner = $partner;
         $c->menuRevision = 0;
+        $c->containerMenuSeen = [];
         $menu = match ($type) {
             'crafting' => 'crafting','furnace','blast_furnace','smoker' => $type,default => $partner === null ? 'generic_9x3' : 'generic_9x6'
         };

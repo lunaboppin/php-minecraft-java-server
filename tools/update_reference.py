@@ -271,7 +271,7 @@ def main():
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
         'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
         'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportMining.java', 'ExportExperience.java', 'ExportItemEntities.java', 'ExportMobDespawn.java', 'ExportNaturalSpawning.java', 'ExportFurnaceFuel.java',
-        'ExportRecipeBook.java',
+        'ExportRecipeBook.java', 'ExportAdvancements.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -308,6 +308,7 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportFurnaceFuel', str(out / 'furnace-fuel.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportNaturalSpawning', str(out / 'natural-spawning.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportRecipeBook', str(out / 'recipe-book.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportAdvancements', str(out / 'advancements.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
     structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)

@@ -143,6 +143,8 @@ final class Server
 
     use RecipeBook;
 
+    use Advancements;
+
     use MobFire;
 
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
@@ -1123,6 +1125,14 @@ final class Server
                 $r->end();
                 $this->changeRecipeBookSettings($c, $type, $open, $filtering);
                 return;
+            case 'seen_advancements':
+                $action = $r->varInt();
+                $tab = $action === 0 ? $r->string() : null;
+                $r->end();
+                if ($action === 0) {
+                    $this->seenAdvancements($c, $tab);
+                }
+                return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
                 return;
@@ -1942,12 +1952,12 @@ final class Server
                         return;
                     }
                     $this->tickControlledVehicle($c);
-                    $this->tickRecipeAdvancements($c);
                     $this->tickSurvival($c);
                     $this->tickStatistics($c);
                     $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
+                    $this->tickAdvancements($c);
                     // ServerPlayer.tick ends by sending changed post effects, the empty list included.
                     if ($c->postEffectsDirty) {
                         $this->sendPostEffects($c);
