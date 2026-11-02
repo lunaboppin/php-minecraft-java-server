@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\Server\Client;
 trait DataAccessors
 {
     /** BlockEntity types with data here, by block. */
-    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace'];
+    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker'];
 
     private static function nbtList(string $type, array $values): NbtTag
     {
@@ -300,13 +300,13 @@ trait DataAccessors
             );
             return self::nbtCompound($pairs);
         }
-        if ($type === 'furnace') {
+        if (isset(self::FURNACES[$type])) {
             array_push(
                 $pairs,
-                ['lit_time_remaining', new NbtTag('int', 0)],
-                ['cooking_time_spent', new NbtTag('int', 0)],
-                ['cooking_total_time', new NbtTag('int', 0)],
-                ['lit_total_time', new NbtTag('int', 0)],
+                ['lit_time_remaining', new NbtTag('int', $data['burn'] ?? 0)],
+                ['cooking_time_spent', new NbtTag('int', $data['cook'] ?? 0)],
+                ['cooking_total_time', new NbtTag('int', $data['cookTotal'] ?? 0)],
+                ['lit_total_time', new NbtTag('int', $data['fuelTotal'] ?? 0)],
             );
         }
         if (isset($data['customName'])) {
@@ -321,8 +321,12 @@ trait DataAccessors
             }
         }
         $pairs[] = ['Items', new NbtTag('list', $items)];
-        if ($type === 'furnace') {
-            array_push($pairs, ['RecipesUsed', NbtTag::compound()], ['speed_multiplier', new NbtTag('float', 1.0)]);
+        if (isset(self::FURNACES[$type])) {
+            $used = [];
+            foreach ($data['recipesUsed'] ?? [] as $recipe => $count) {
+                $used[] = ['minecraft:' . $recipe, new NbtTag('int', $count)];
+            }
+            array_push($pairs, ['RecipesUsed', self::nbtCompound($used)], ['speed_multiplier', new NbtTag('float', (float) ($data['speed'] ?? 1.0))]);
         }
         array_push(
             $pairs,

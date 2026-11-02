@@ -133,17 +133,23 @@ def main():
                 close(a)
                 net.check(total(a, 'wooden_pickaxe') == 1, 'crafted tool placed into player inventory')
                 # A real 200-tick furnace recipe with real fuel consumption.
-                command(a, 'give @s raw_iron 1', 'commands.give.success.single')
+                command(a, 'give @s raw_gold 1', 'commands.give.success.single')
                 command(a, 'give @s coal 1', 'commands.give.success.single')
                 command(a, 'setblock 2 65 2 furnace', 'commands.setblock.success')
                 use_block(a, 2, 65, 2)
-                click(a, find(a, 'raw_iron', 3), mode=1)
+                click(a, find(a, 'raw_gold', 3), mode=1)
                 click(a, find(a, 'coal', 3), mode=1)
-                inventory(a, lambda: a.inventory[2] is not None and a.inventory[2]['item'] == ITEMS['iron_ingot'])
-                net.check(a.inventory[2]['count'] == 1, 'furnace smelts iron using fuel')
+                inventory(a, lambda: a.inventory[2] is not None and a.inventory[2]['item'] == ITEMS['gold_ingot'])
+                net.check(a.inventory[2]['count'] == 1, 'furnace smelts gold using fuel')
+                mark = len(a.seen)
                 click(a, 2, mode=1)
                 close(a)
-                net.check(total(a, 'iron_ingot') == 1, 'furnace output collected')
+                net.check(total(a, 'gold_ingot') == 1, 'furnace output collected')
+                # FurnaceResultSlot.checkTakeAchievements: taking the ingot pops the recipe's one point at the player.
+                is_orb = lambda p: net.read_vi(p, net.read_vi(p)[1] + 16)[0] == net.BLOCKS['entity_types']['experience_orb']
+                if not any(n == 'add_entity' and is_orb(p) for n, p in a.seen[mark:]):
+                    a.until('add_entity', is_orb)
+                net.check(True, 'taking furnace output pops its experience')
                 # Death, respawn, and the extended 26.3 teleport acknowledgement.
                 command(a, 'gamemode survival')
                 a.until('game_event', lambda p: p[0] == 3 and struct.unpack('>f', p[1:])[0] == 0)
@@ -236,7 +242,7 @@ def main():
                 pos = next(p for name, p in a.seen if name == 'player_position')
                 _, off = net.read_vi(pos)
                 net.check(struct.unpack_from('>ddd', pos, off) == (1.5, 65., .5), 'position survives process restart')
-                net.check(total(a, 'wooden_pickaxe') == 1 and total(a, 'iron_ingot') == 1, 'inventory survives process restart')
+                net.check(total(a, 'wooden_pickaxe') == 1 and total(a, 'gold_ingot') == 1, 'inventory survives process restart')
                 command(a, 'time query time', 'commands.time.query.absolute')
                 reply = [p for name, p in a.seen if name == 'system_chat' and b'commands.time.query.absolute' in p][-1]
                 net.check(struct.pack('>q', 13000) in reply, 'the stopped clock survives process restart')

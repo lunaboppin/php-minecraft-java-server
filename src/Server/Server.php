@@ -1392,7 +1392,7 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace' => 'furnace','chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
+                'crafting_table' => 'crafting','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
