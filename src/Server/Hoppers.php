@@ -244,6 +244,10 @@ trait Hoppers
     {
         $state = $this->world->get(...$position);
         $name = $this->version->catalog->blockName($state);
+        if ($name === 'composter') {
+            // ComposterBlock.getContainer: an input below seven layers, the bone meal when ripe, else nothing.
+            return ['name' => $name, 'parts' => [$position], 'size' => 1, 'level' => (int) $this->version->catalog->properties($state)['level']];
+        }
         if (!isset(self::HOPPER_CONTAINERS[$name])) {
             return null;
         }
@@ -260,6 +264,9 @@ trait Hoppers
     /** @return array<int, array> the container's stacks by slot, across both halves of a double chest */
     private function containerStacks(array $container): array
     {
+        if ($container['name'] === 'composter') {
+            return $container['level'] === 8 ? [0 => ['item' => $this->version->blocks['items']['bone_meal'], 'count' => 1]] : [];
+        }
         $stacks = [];
         foreach ($container['parts'] as $index => $position) {
             foreach ($this->world->container($position)['slots'] as $slot => $stack) {
@@ -294,6 +301,11 @@ trait Hoppers
 
     private function takeFromContainer(array $container, int $slot): void
     {
+        if ($container['name'] === 'composter') {
+            // ComposterBlock.OutputContainer.setChanged: taking the bone meal empties it.
+            $this->setBlock(...[...$container['parts'][0], $this->version->catalog->state('composter', ['level' => '0'])]);
+            return;
+        }
         $stacks = $this->containerStacks($container);
         if (--$stacks[$slot]['count'] <= 0) {
             unset($stacks[$slot]);
@@ -304,6 +316,9 @@ trait Hoppers
     /** WorldlyContainer.getSlotsForFace: a furnace's input from above, fuel from the sides, result and fuel from below. */
     private function containerFaceSlots(array $container, ?string $face): array
     {
+        if ($container['name'] === 'composter') {
+            return ($container['level'] < 7 && $face === 'up') || ($container['level'] === 8 && $face === 'down') ? [0] : [];
+        }
         if ($face !== null && $container['parts'] !== [] && isset(self::FURNACES[$container['name']])) {
             return match ($face) {
                 'down' => [2, 1],
@@ -343,6 +358,9 @@ trait Hoppers
     /** AbstractFurnaceBlockEntity.canTakeItemThroughFace: from below, only a bucket leaves the fuel slot. */
     private function canTakeFromContainer(array $container, int $slot, array $stack, string $face): bool
     {
+        if ($container['name'] === 'composter') {
+            return $face === 'down' && $container['level'] === 8;
+        }
         if (!isset(self::FURNACES[$container['name']]) || $face !== 'down' || $slot !== 1) {
             return true;
         }
@@ -357,6 +375,15 @@ trait Hoppers
      */
     private function addToContainer(?string $from, array $container, array $stack, ?string $face): ?array
     {
+        if ($container['name'] === 'composter') {
+            // ComposterBlock.InputContainer: one compostable item through the top, composted at once.
+            if ($this->containerFaceSlots($container, $face) === [] || $this->compostLayers($stack['item'], $container['level']) === null) {
+                return $stack;
+            }
+            $added = $this->addCompostLayer($container['parts'][0], $stack['item']);
+            $this->levelEvent(1500, $container['parts'][0], $added ? 1 : 0);
+            return $stack['count'] > 1 ? array_replace($stack, ['count' => $stack['count'] - 1]) : null;
+        }
         $stacks = $this->containerStacks($container);
         $changed = false;
         foreach ($this->containerFaceSlots($container, $face) as $slot) {

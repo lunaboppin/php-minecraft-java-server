@@ -426,6 +426,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/dispensers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispensers
           python3 tools/parity/verify.py tools/.cache/parity-dispensers/php-packets.json tools/.cache/parity-dispensers/reference-packets.json
+      - name: Compare composters with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/composters.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-composters
+          python3 tools/parity/verify.py tools/.cache/parity-composters/php-packets.json tools/.cache/parity-composters/reference-packets.json
       - name: Compare dispensers shooting arrows and snowballs with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/dispenser-projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispenser-projectiles
@@ -450,6 +454,7 @@ jobs:
             tools/.cache/parity-smithing/
             tools/.cache/parity-hoppers/
             tools/.cache/parity-dispensers/
+            tools/.cache/parity-composters/
             tools/.cache/parity-dispenser-projectiles/
           retention-days: 7
 
