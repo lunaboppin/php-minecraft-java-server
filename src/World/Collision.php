@@ -12,6 +12,9 @@ final class Collision
 {
     private const EPS = 1.0e-7;
 
+    /** PistonMovingBlockEntity.NOCLIP: while a piston pushes, blocks moving this way do not collide. */
+    public ?string $noclip = null;
+
     public function __construct(private readonly Catalog $catalog)
     {
     }
@@ -32,7 +35,11 @@ final class Collision
         for ($x = (int) floor($bounds[0]) - 1; $x <= (int) floor($bounds[3]) + 1; ++$x) {
             for ($z = (int) floor($bounds[2]) - 1; $z <= (int) floor($bounds[5]) + 1; ++$z) {
                 for ($y = max($world->minY, (int) floor($bounds[1]) - 1); $y <= min($world->minY + $world->height - 1, (int) floor($bounds[4]) + 1); ++$y) {
-                    foreach ($this->shape($world->get($x, $y, $z)) as $box) {
+                    $state = $world->get($x, $y, $z);
+                    $moving = $world->movingShapes[$x . ':' . $y . ':' . $z] ?? null;
+                    $shape = $moving === null || $this->catalog->blockName($state) !== 'moving_piston' ? $this->shape($state)
+                        : ($this->noclip !== null && $this->noclip === $moving['movement'] ? $moving['noclip'] : $moving['shape']);
+                    foreach ($shape as $box) {
                         $result[] = [$box[0] + $x, $box[1] + $y, $box[2] + $z, $box[3] + $x, $box[4] + $y, $box[5] + $z];
                     }
                 }

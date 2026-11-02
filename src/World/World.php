@@ -28,6 +28,8 @@ class World
     private ?TerrainGenerator $legacyTerrain=null;
     /** Vanilla 26.3 generation for chunks first generated after it was enabled (generation.legacy=2). */
     public readonly ?Vanilla\ChunkStore $vanilla;
+    /** Collision boxes of moving_piston blocks by "x:y:z": 'shape', 'noclip' (the source head only) and 'movement'. */
+    public array $movingShapes=[];
     public readonly int $minY;
     public readonly int $height;
     public readonly int $globalBits;

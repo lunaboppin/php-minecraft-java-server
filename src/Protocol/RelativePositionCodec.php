@@ -29,11 +29,18 @@ final class RelativePositionCodec
         return (int) ($scaled - $floor >= 0.5 ? $floor + 1.0 : $floor);
     }
 
-    /** @return array{count: int, bytes: string}|null */
+    /** VecDeltaCodec.encodingPrecisionLoss is not zero: the coordinate is not on the 1/4096 grid. */
+    public static function losesPrecision(float $value): bool
+    {
+        return self::coordinate($value) / 4096.0 !== $value;
+    }
+
+    /** @return array{count: int, bytes: string, x: bool, z: bool}|null */
     public function encode(PositionPath $path): ?array
     {
         $base = $this->base;
         $bytes = '';
+        [$hasX, $hasZ] = [false, false];
         $steps = $path->steps ?? [['position' => $path->end, 'ticks' => 0]];
         foreach ($steps as $step) {
             $delta = [];
@@ -47,8 +54,10 @@ final class RelativePositionCodec
                 $bytes .= Binary::writeVarInt($step['ticks']);
             }
             $bytes .= pack('nnn', ...$delta);
+            $hasX = $hasX || $delta[0] !== 0;
+            $hasZ = $hasZ || $delta[2] !== 0;
             $base = $step['position'];
         }
-        return ['count' => $path->steps === null ? 0 : count($steps), 'bytes' => $bytes];
+        return ['count' => $path->steps === null ? 0 : count($steps), 'bytes' => $bytes, 'x' => $hasX, 'z' => $hasZ];
     }
 }
