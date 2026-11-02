@@ -129,8 +129,147 @@
     "damage": "minecraft:damage",
     "enchantments": "minecraft:enchantments",
     "storedEnchantments": "minecraft:stored_enchantments",
-    "enchantability": "minecraft:enchantable"
+    "enchantability": "minecraft:enchantable",
+    "potion": "minecraft:potion_contents"
   },
+  "potions": [
+    "minecraft:water",
+    "minecraft:mundane",
+    "minecraft:thick",
+    "minecraft:awkward",
+    "minecraft:night_vision",
+    "minecraft:long_night_vision",
+    "minecraft:invisibility",
+    "minecraft:long_invisibility",
+    "minecraft:leaping",
+    "minecraft:long_leaping",
+    "minecraft:strong_leaping",
+    "minecraft:fire_resistance",
+    "minecraft:long_fire_resistance",
+    "minecraft:swiftness",
+    "minecraft:long_swiftness",
+    "minecraft:strong_swiftness",
+    "minecraft:slowness",
+    "minecraft:long_slowness",
+    "minecraft:strong_slowness",
+    "minecraft:turtle_master",
+    "minecraft:long_turtle_master",
+    "minecraft:strong_turtle_master",
+    "minecraft:water_breathing",
+    "minecraft:long_water_breathing",
+    "minecraft:healing",
+    "minecraft:strong_healing",
+    "minecraft:harming",
+    "minecraft:strong_harming",
+    "minecraft:poison",
+    "minecraft:long_poison",
+    "minecraft:strong_poison",
+    "minecraft:regeneration",
+    "minecraft:long_regeneration",
+    "minecraft:strong_regeneration",
+    "minecraft:strength",
+    "minecraft:long_strength",
+    "minecraft:strong_strength",
+    "minecraft:weakness",
+    "minecraft:long_weakness",
+    "minecraft:luck",
+    "minecraft:slow_falling",
+    "minecraft:long_slow_falling",
+    "minecraft:wind_charged",
+    "minecraft:weaving",
+    "minecraft:oozing",
+    "minecraft:infested"
+  ],
+  "potion_names": [
+    "water",
+    "mundane",
+    "thick",
+    "awkward",
+    "night_vision",
+    "night_vision",
+    "invisibility",
+    "invisibility",
+    "leaping",
+    "leaping",
+    "leaping",
+    "fire_resistance",
+    "fire_resistance",
+    "swiftness",
+    "swiftness",
+    "swiftness",
+    "slowness",
+    "slowness",
+    "slowness",
+    "turtle_master",
+    "turtle_master",
+    "turtle_master",
+    "water_breathing",
+    "water_breathing",
+    "healing",
+    "healing",
+    "harming",
+    "harming",
+    "poison",
+    "poison",
+    "poison",
+    "regeneration",
+    "regeneration",
+    "regeneration",
+    "strength",
+    "strength",
+    "strength",
+    "weakness",
+    "weakness",
+    "luck",
+    "slow_falling",
+    "slow_falling",
+    "wind_charged",
+    "weaving",
+    "oozing",
+    "infested"
+  ],
+  "mob_effects": [
+    "minecraft:speed",
+    "minecraft:slowness",
+    "minecraft:haste",
+    "minecraft:mining_fatigue",
+    "minecraft:strength",
+    "minecraft:instant_health",
+    "minecraft:instant_damage",
+    "minecraft:jump_boost",
+    "minecraft:nausea",
+    "minecraft:regeneration",
+    "minecraft:resistance",
+    "minecraft:fire_resistance",
+    "minecraft:water_breathing",
+    "minecraft:invisibility",
+    "minecraft:blindness",
+    "minecraft:night_vision",
+    "minecraft:hunger",
+    "minecraft:weakness",
+    "minecraft:poison",
+    "minecraft:wither",
+    "minecraft:health_boost",
+    "minecraft:absorption",
+    "minecraft:saturation",
+    "minecraft:glowing",
+    "minecraft:levitation",
+    "minecraft:luck",
+    "minecraft:unluck",
+    "minecraft:slow_falling",
+    "minecraft:conduit_power",
+    "minecraft:dolphins_grace",
+    "minecraft:bad_omen",
+    "minecraft:hero_of_the_village",
+    "minecraft:darkness",
+    "minecraft:trial_omen",
+    "minecraft:raid_omen",
+    "minecraft:wind_charged",
+    "minecraft:weaving",
+    "minecraft:oozing",
+    "minecraft:infested",
+    "minecraft:breath_of_the_nautilus"
+  ],
   "defaults": {
     "0": {
       "present": [
@@ -26825,7 +26964,13 @@
         "minecraft:use_remainder"
       ],
       "values": {
-        "enchantments": {}
+        "enchantments": {},
+        "potion": {
+          "potion": null,
+          "custom_color": null,
+          "custom_effects": [],
+          "custom_name": null
+        }
       }
     },
     "1272": {
@@ -30450,7 +30595,13 @@
         "minecraft:use_effects"
       ],
       "values": {
-        "enchantments": {}
+        "enchantments": {},
+        "potion": {
+          "potion": null,
+          "custom_color": null,
+          "custom_effects": [],
+          "custom_name": null
+        }
       }
     },
     "1443": {
@@ -30492,7 +30643,13 @@
         "minecraft:use_effects"
       ],
       "values": {
-        "enchantments": {}
+        "enchantments": {},
+        "potion": {
+          "potion": null,
+          "custom_color": null,
+          "custom_effects": [],
+          "custom_name": null
+        }
       }
     },
     "1445": {
@@ -30514,7 +30671,13 @@
         "minecraft:use_effects"
       ],
       "values": {
-        "enchantments": {}
+        "enchantments": {},
+        "potion": {
+          "potion": null,
+          "custom_color": null,
+          "custom_effects": [],
+          "custom_name": null
+        }
       }
     },
     "1446": {
