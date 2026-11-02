@@ -1524,7 +1524,9 @@ def compare(reference, php):
         # Vanilla's kick report and leave message race the network thread closing the channel.
         # ServerChunkCache broadcasts changed chunks from an identity hash set, so a placement
         # spanning several chunks sends their updates in an order that varies between runs.
-        unordered = expected['command'].startswith(('kick ', 'place '))
+        # A dismounted rider's position sync reaches a watcher before or after set_passengers,
+        # depending on whether the command lands before or after the tick's entity tracking.
+        unordered = expected['command'].startswith(('kick ', 'place ')) or (expected['command'].startswith('ride ') and expected['command'].endswith(' dismount'))
         # A summoned entity has a random UUID on each server.
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
