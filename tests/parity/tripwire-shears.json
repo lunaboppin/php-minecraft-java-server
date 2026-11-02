@@ -1,0 +1,492 @@
+{
+  "name": "tripwire-shears",
+  "normalizations": [
+    "Compare two strung tripwire lines: one cut by a survival player holding shears, which disarms the string so the hooks stay quiet, and one broken by hand, which pulses them.",
+    "Entity IDs and UUIDs are left out.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule block_drops false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 64 0 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:tripwire_hook[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 0 minecraft:tripwire_hook[facing=west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 64 4 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 4 minecraft:tripwire_hook[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 64 4 minecraft:tripwire_hook[facing=west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 4 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 4 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 4 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 4 minecraft:tripwire"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 64 2.5 0 0"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "strung",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          -1,
+          64,
+          4
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          4,
+          64,
+          4
+        ],
+        [
+          5,
+          64,
+          4
+        ],
+        [
+          6,
+          64,
+          4
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:shears"
+    },
+    {
+      "action": "dig",
+      "position": [
+        2,
+        64,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "sheared",
+      "fields": [
+        "blocks",
+        "inventory",
+        "entity_packets"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          -1,
+          64,
+          4
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          4,
+          64,
+          4
+        ],
+        [
+          5,
+          64,
+          4
+        ],
+        [
+          6,
+          64,
+          4
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:air"
+    },
+    {
+      "action": "dig",
+      "position": [
+        2,
+        64,
+        4
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "broken",
+      "fields": [
+        "blocks",
+        "inventory",
+        "entity_packets"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          -1,
+          64,
+          4
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          4,
+          64,
+          4
+        ],
+        [
+          5,
+          64,
+          4
+        ],
+        [
+          6,
+          64,
+          4
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "settled",
+      "fields": [
+        "blocks",
+        "entity_packets"
+      ],
+      "positions": [
+        [
+          -1,
+          64,
+          0
+        ],
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          1,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          5,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ],
+        [
+          -1,
+          64,
+          4
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          4,
+          64,
+          4
+        ],
+        [
+          5,
+          64,
+          4
+        ],
+        [
+          6,
+          64,
+          4
+        ]
+      ]
+    }
+  ]
+}

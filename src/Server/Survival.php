@@ -676,10 +676,12 @@ trait Survival
             // TurtleEggBlock.playerDestroy: breaking takes one egg, leaving the rest.
             $this->decreaseTurtleEggs($x, $y, $z, $state);
         }
-        // Item.mineBlock: tools wear by their damage per block on blocks that take time to break.
+        // Item.mineBlock: tools wear by their damage per block on blocks that take time to break;
+        // ShearsItem.mineBlock wears shears on any block but fire.
         $slot = 36 + $c->heldSlot;
         $held = $c->inventory[$slot] ?? null;
-        $wear = ($this->miningReference()['blocks'][$name]['destroy_time'] ?? 0.0) != 0.0 ? ($this->heldTool($c)['damage_per_block'] ?? 0) : 0;
+        $wears = $tool === 'shears' ? !in_array($name, ['fire', 'soul_fire'], true) : ($this->miningReference()['blocks'][$name]['destroy_time'] ?? 0.0) != 0.0;
+        $wear = $wears ? ($this->heldTool($c)['damage_per_block'] ?? 0) : 0;
         if ($held !== null && $wear > 0 && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
             $held['damage'] = ($held['damage'] ?? 0) + $wear;
             if ($held['damage'] >= $max) {

@@ -45,6 +45,9 @@ trait DataAccessors
         if (($stack['damage'] ?? 0) > 0) {
             $components[] = ['minecraft:damage', new NbtTag('int', $stack['damage'])];
         }
+        if (($stack['repairCost'] ?? 0) > 0) {
+            $components[] = ['minecraft:repair_cost', new NbtTag('int', $stack['repairCost'])];
+        }
         if (isset($stack['potion'])) {
             $components[] = ['minecraft:potion_contents', self::potionContentsNbt($stack['potion'])];
         }
