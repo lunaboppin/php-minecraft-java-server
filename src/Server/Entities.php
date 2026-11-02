@@ -80,8 +80,10 @@ trait Entities
         $velocity = array_map(static fn (float $v): float => Float32::round($v), $velocity);
         // getEyeY() - 0.3F subtracts the float 0.3.
         $id = $this->dropStack($c->x, $eye - Float32::round(0.3), $c->z, $stack, $age, $velocity, 40);
-        // ServerPlayer.drop: an item thrown from the hand counts as dropped.
+        // createItemStackToDrop: a stack thrown from the hand remembers its thrower, and
+        // ServerPlayer.drop counts it as dropped.
         if ($thrown && $id !== null) {
+            $this->itemEntities[$id]['thrower'] = $c->uuid;
             $this->awardStat($c, 'dropped', $this->version->catalog->itemName($stack['item']), $stack['count']);
             $this->awardStat($c, 'custom', 'drop');
         }
@@ -109,7 +111,7 @@ trait Entities
     /** ItemEntity.addAdditionalSaveData: what survives a restart, with its UUID but not its network ID. */
     private function savedItem(array $item): array
     {
-        return ['uuid' => bin2hex($item['uuid']), 'target' => $item['target'] === null ? null : bin2hex($item['target'])]
+        return ['uuid' => bin2hex($item['uuid']), 'target' => $item['target'] === null ? null : bin2hex($item['target']), 'thrower' => isset($item['thrower']) ? bin2hex($item['thrower']) : null]
             + array_intersect_key($item, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'stack', 'age', 'pickupDelay', 'health']));
     }
 
@@ -124,7 +126,8 @@ trait Entities
             $this->itemEntities[$id] = ['id' => $id, 'uuid' => hex2bin($saved['uuid']), 'x' => (float) $saved['x'], 'y' => (float) $saved['y'], 'z' => (float) $saved['z'],
                 'yaw' => (float) ($saved['yaw'] ?? 0.0), 'velocity' => array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), 'stack' => $saved['stack'],
                 'age' => (int) ($saved['age'] ?? 0), 'pickupDelay' => (int) ($saved['pickupDelay'] ?? 0), 'target' => isset($saved['target']) ? hex2bin($saved['target']) : null,
-                'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false, 'created' => $this->ticks, 'dirty' => true];
+                'health' => (int) ($saved['health'] ?? 5), 'ticks' => 0, 'ground' => false, 'created' => $this->ticks, 'dirty' => true]
+                + (isset($saved['thrower']) ? ['thrower' => hex2bin($saved['thrower'])] : []);
         }
     }
 
