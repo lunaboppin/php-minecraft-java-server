@@ -28,7 +28,7 @@ trait RecipePlacement
             'player' => ['type' => 'crafting', 'width' => 2, 'input' => range(0, 3), 'clear' => range(0, 3), 'stock' => range(0, 3), 'usable' => true],
             'crafting' => ['type' => 'crafting', 'width' => 3, 'input' => range(0, 8), 'clear' => range(0, 8), 'stock' => range(0, 8), 'usable' => true],
             // AbstractFurnaceMenu: the input, cleared with the result; the block entity counts all three slots.
-            'furnace' => ['type' => 'smelting', 'width' => 1, 'input' => [0], 'clear' => [0, 2], 'stock' => [0, 1, 2], 'usable' => false],
+            'furnace', 'blast_furnace', 'smoker' => ['type' => self::FURNACES[$c->windowType], 'width' => 1, 'input' => [0], 'clear' => [0, 2], 'stock' => [0, 1, 2], 'usable' => false],
             default => null,
         };
     }
@@ -117,8 +117,8 @@ trait RecipePlacement
     /** CraftingMenuAccess.recipeMatches: the recipe the menu's input makes now, if any. */
     private function menuRecipe(Client $c, array $menu, array $grid): ?string
     {
-        if ($menu['type'] === 'smelting') {
-            $name = $grid[0] === null ? null : $this->crafting->smelt($grid[0]['item'])['name'] ?? null;
+        if ($menu['type'] !== 'crafting') {
+            $name = $grid[0] === null ? null : $this->crafting->smelt($grid[0]['item'], $menu['type'])['name'] ?? null;
         } else {
             $name = $this->crafting->match($grid, $menu['width'])['name'] ?? null;
         }
