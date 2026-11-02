@@ -147,6 +147,8 @@ final class Server
 
     use VehicleSteering;
 
+    use BlockInteractions;
+
     use Scaffolding;
 
     use Hoppers;
@@ -1521,6 +1523,13 @@ final class Server
                 $this->acknowledge($c, $sequence);
                 return;
             }
+            if (!$sneakSkips && $c->gameMode !== 3 && $this->editable($c, $x, $y, $z) && ($swing = $this->useInteractiveBlock($c, $hand, $slot, $x, $y, $z, $face, $cursor)) !== null) {
+                if ($swing) {
+                    $this->useSwing($c, $hand);
+                }
+                $this->acknowledge($c, $sequence);
+                return;
+            }
             if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand, true);
                 $this->acknowledge($c, $sequence);
@@ -1574,6 +1583,11 @@ final class Server
             $this->useSwing($c, $hand);
             $this->blockUpdate($c, $x, $y, $z);
             $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        if ($within && $itemName === 'flint_and_steel' && $this->editable($c, $x, $y, $z) && $this->lightWithFlint($c, $slot, $x, $y, $z)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }

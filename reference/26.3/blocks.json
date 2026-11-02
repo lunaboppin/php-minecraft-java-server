@@ -3366,7 +3366,13 @@
     "entity.skeleton.shoot": 1495,
     "entity.generic.burn": 699,
     "block.composter.empty": 384,
-    "block.composter.ready": 387
+    "block.composter.ready": 387,
+    "block.cake.add_candle": 243,
+    "block.sweet_berry_bush.pick_berries": 1621,
+    "block.cave_vines.pick_berries": 311,
+    "block.candle.extinguish": 274,
+    "item.flintandsteel.use": 646,
+    "block.pumpkin.carve": 1352
   },
   "particle_types": {
     "angry_villager": 0,
