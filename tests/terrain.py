@@ -182,9 +182,10 @@ def main():
                             cow_id = entity
                             break
                 net.check(cow_id is not None, 'animal spawn packet received')
-                time.sleep(.6)
+                # An iron sword recharges in 12.5 ticks; a hit sooner deals less and leaves the cow alive.
+                time.sleep(.7)
                 a.send('attack', net.vi(cow_id))
-                time.sleep(.6)
+                time.sleep(.7)
                 a.send('attack', net.vi(cow_id))
                 a.until('entity_event', lambda p: struct.unpack_from('>i', p)[0] == cow_id and p[4] == 3)
                 # The idle second player stands beside the spawn and could pick up the drops brought

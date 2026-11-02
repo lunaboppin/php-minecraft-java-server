@@ -29,7 +29,8 @@ def failure(key, *arguments):
 
 
 def reply(packets):
-    [message] = named(packets, 'system_chat')
+    # Items the commands drop and the operator picks up may complete advancements, as in vanilla.
+    [message] = [payload for payload in named(packets, 'system_chat') if b'chat.type.advancement' not in payload]
     return message
 
 

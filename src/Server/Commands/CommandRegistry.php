@@ -99,6 +99,8 @@ final class CommandRegistry
             new CommandDefinition('jfr', 'executeJfr', true),
             new CommandDefinition('compute', 'executeCompute', true),
             new CommandDefinition('place', 'executePlace', true),
+            new CommandDefinition('recipe', 'executeRecipe', true),
+            new CommandDefinition('advancement', 'executeAdvancement', true),
         ];
     }
 

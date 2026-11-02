@@ -78,6 +78,10 @@ trait Commands
 
     use CommandModules\PlaceCommand;
 
+    use CommandModules\RecipeCommand;
+
+    use CommandModules\AdvancementCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;

@@ -295,6 +295,14 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/item-persistence.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/recipe-book.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
+passthru('python3 ' . escapeshellarg(__DIR__ . '/advancements.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/dimensions.py'), $code);
 if ($code !== 0) {
     exit($code);

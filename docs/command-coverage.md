@@ -2,7 +2,7 @@
 
 Target: the checksum-pinned official Java 26.3 dedicated server. This is an implementation backlog, not a claim of command parity.
 
-The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **89** have an existing PHP handler; **3** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
+The exported dispatcher has **92 roots/aliases** across the default and all-registered-feature profiles. **91** have an existing PHP handler; **1** have none. **Every native acceptance row remains unverified or incomplete.** Registration alone never marks a command complete.
 
 The references preserve every graph node, redirect/fork, executable flag, argument type, JSON/network argument properties, suggestion-provider presence and permission-predicate results for the five official permission levels. These are structural and permission-query observations; no command is executed by the exporter.
 
@@ -15,7 +15,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 
 | Command | PHP module | Native acceptance | Redirect |
 | --- | --- | --- | --- |
-| `/advancement` | — | Unimplemented | — |
+| `/advancement` | [AdvancementCommand.php](../src/Server/Commands/AdvancementCommand.php) | Partial handler; native behavior incomplete | — |
 | `/attribute` | [AttributeCommand.php](../src/Server/Commands/AttributeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban` | [BanCommand.php](../src/Server/Commands/BanCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ban-ip` | [BanIpCommand.php](../src/Server/Commands/BanIpCommand.php) | Partial handler; native behavior incomplete | — |
@@ -63,7 +63,7 @@ Literal-only sibling sets use canonical name order because gamerule registration
 | `/playsound` | [PlaySoundCommand.php](../src/Server/Commands/PlaySoundCommand.php) | Partial handler; native behavior incomplete | — |
 | `/posteffect` | [PostEffectCommand.php](../src/Server/Commands/PostEffectCommand.php) | Partial handler; native behavior incomplete | — |
 | `/random` | [RandomCommand.php](../src/Server/Commands/RandomCommand.php) | Partial handler; native behavior incomplete | — |
-| `/recipe` | — | Unimplemented | — |
+| `/recipe` | [RecipeCommand.php](../src/Server/Commands/RecipeCommand.php) | Partial handler; native behavior incomplete | — |
 | `/reload` | [ReloadCommand.php](../src/Server/Commands/ReloadCommand.php) | Partial handler; native behavior incomplete | — |
 | `/return` | [ReturnCommand.php](../src/Server/Commands/ReturnCommand.php) | Partial handler; native behavior incomplete | — |
 | `/ride` | [RideCommand.php](../src/Server/Commands/RideCommand.php) | Partial handler; native behavior incomplete | — |
