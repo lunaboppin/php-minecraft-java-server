@@ -54,7 +54,7 @@ trait FillCommand
                         $affected = false;
                         if ($mode === 'destroy' && !$this->version->catalog->air($current)) {
                             $name = $this->version->catalog->blockName($current);
-                            $destroyed[] = [[$x, $y, $z], $current, $name, in_array($name, ['chest', 'barrel', 'furnace'], true) ? $this->world->container([$x, $y, $z]) : null];
+                            $destroyed[] = [[$x, $y, $z], $current, $name, in_array($name, ['chest', 'barrel', 'furnace', 'blast_furnace', 'smoker'], true) ? $this->world->container([$x, $y, $z]) : null];
                             $this->world->set($x, $y, $z, 0);
                             $current = 0;
                             $affected = true;

@@ -12,6 +12,9 @@ use PhpMinecraftJavaServer\World\Crafting;
 
 trait InventoryManagement
 {
+    /** The furnace blocks, with the recipe type each cooks (AbstractFurnaceBlockEntity's recipeType). */
+    private const FURNACES = ['furnace' => 'smelting', 'blast_furnace' => 'blasting', 'smoker' => 'smoking'];
+
     private Crafting $crafting;
 
     private function storageSlots(): array
@@ -64,7 +67,7 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'furnace' => 3,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'furnace','blast_furnace','smoker' => 3,default => $c->windowPartner === null ? 27 : 54
             };
             $items = array_fill(0, $count + 36, null);
             $slots = match ($c->windowType) {
@@ -102,7 +105,7 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'furnace' => 3,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'furnace','blast_furnace','smoker' => 3,default => $c->windowPartner === null ? 27 : 54
             };
             $slots = [];
             for ($i = 0; $i < $count; ++$i) {
@@ -155,7 +158,7 @@ trait InventoryManagement
         foreach ($halves as [$position, $offset]) {
             $data = $this->world->container($position);
             // FurnaceResultSlot.checkTakeAchievements: taking any of the output pops the experience.
-            $taken = $c->windowType === 'furnace' && ($slots[2]['count'] ?? 0) < ($data['slots'][2]['count'] ?? 0);
+            $taken = isset(self::FURNACES[$c->windowType]) && ($slots[2]['count'] ?? 0) < ($data['slots'][2]['count'] ?? 0);
             $data['slots'] = [];
             foreach ($slots as $slot => $stack) {
                 if ($slot >= $offset && $slot < $offset + 27) {
@@ -232,11 +235,11 @@ trait InventoryManagement
         $c->windowPartner = $partner;
         $c->menuRevision = 0;
         $menu = match ($type) {
-            'crafting' => 'crafting','furnace' => 'furnace',default => $partner === null ? 'generic_9x3' : 'generic_9x6'
+            'crafting' => 'crafting','furnace','blast_furnace','smoker' => $type,default => $partner === null ? 'generic_9x3' : 'generic_9x6'
         };
         // The block entity's default name, or the crafting table's.
         $title = match ($type) {
-            'crafting' => 'container.crafting','furnace' => 'container.furnace','ender' => 'container.enderchest',
+            'crafting' => 'container.crafting','furnace','blast_furnace','smoker' => 'container.' . $type,'ender' => 'container.enderchest',
             default => $partner !== null ? 'container.chestDouble' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest')
         };
         // The menu's constructor opens the container before the screen is sent.
@@ -248,7 +251,7 @@ trait InventoryManagement
         }
         $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
         $this->syncInventory($c);
-        if ($type === 'furnace') {
+        if (isset(self::FURNACES[$type])) {
             // AbstractContainerMenu.sendAllDataToRemote: every data slot when the menu opens.
             $c->furnaceData = [];
             $this->sendFurnaceData($c, $this->world->container($position));
@@ -269,7 +272,7 @@ trait InventoryManagement
             return false;
         }
         return match ($c->windowType) {
-            'crafting' => $name === 'crafting_table','furnace' => $name === 'furnace','chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
+            'crafting' => $name === 'crafting_table','furnace','blast_furnace','smoker' => $name === $c->windowType,'chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
         };
     }
 
@@ -306,7 +309,7 @@ trait InventoryManagement
             }
             if ($stage === 1 && $c->cursor !== null && $c->dragType === $type && $slot >= 0 && $slot < $count) {
                 $result = in_array($c->windowType, ['player', 'crafting'], true) && $slot === 0;
-                $output = $c->windowType === 'furnace' && $slot === 2;
+                $output = isset(self::FURNACES[$c->windowType]) && $slot === 2;
                 $stack = $items[$slot] ?? null;
                 $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];
                 if (!$result && !$output && ($stack === null || Inventory::same($stack, $c->cursor, $this->version->catalog)) && ($stack['count'] ?? 0) < $max && ($type === 2 || count($c->dragSlots) < $c->cursor['count'])) {
@@ -367,7 +370,7 @@ trait InventoryManagement
             $this->syncInventory($c);
             return;
         }
-        if ($c->windowType === 'furnace' && $slot === 2 && $c->cursor !== null && $mode === 0) {
+        if (isset(self::FURNACES[$c->windowType]) && $slot === 2 && $c->cursor !== null && $mode === 0) {
             $output = $items[2];
             if (Inventory::same($output, $c->cursor, $this->version->catalog)) {
                 $max = $this->version->catalog->item($output['item'])['max_stack'];
@@ -380,7 +383,7 @@ trait InventoryManagement
         } elseif ($mode === 1 && $items[$slot] !== null) {
             $containerSize = $c->windowType === 'player' ? 9 : $count - 36;
             $targets = $slot < $containerSize ? range($containerSize, $count - 1) : ($c->windowType === 'player' ? ($slot < 36 ? range(36, 44) : range(9, 35)) : range(0, $containerSize - 1));
-            if ($c->windowType === 'furnace' && $slot >= 3) {
+            if (isset(self::FURNACES[$c->windowType]) && $slot >= 3) {
                 $targets = $this->fuelTicks($items[$slot]['item']) > 0 ? [1] : [0];
             }
             if ($c->windowType === 'crafting') {
@@ -475,7 +478,8 @@ trait InventoryManagement
         foreach ($this->world->containerKeys() as $key) {
             $position = array_map('intval', explode(':', $key));
             [$x, $y, $z] = $position;
-            if (!$this->mobIsTicking(['x' => $x + 0.5, 'z' => $z + 0.5]) || $catalog->blockName($this->world->get($x, $y, $z)) !== 'furnace') {
+            $type = $catalog->blockName($this->world->get($x, $y, $z));
+            if (!isset(self::FURNACES[$type]) || !$this->mobIsTicking(['x' => $x + 0.5, 'z' => $z + 0.5])) {
                 continue;
             }
             $data = $this->world->container($position);
@@ -489,7 +493,7 @@ trait InventoryManagement
             if ($signature !== ($data['input'] ?? null)) {
                 $data['input'] = $signature;
                 if ($signature !== null) {
-                    $recipe = $this->crafting->smelt($input['item']);
+                    $recipe = $this->crafting->smelt($input['item'], self::FURNACES[$type]);
                     $data['cookTotal'] = $recipe === null ? 200 : $this->furnaceCookTime($recipe, $data['speed']);
                 } else {
                     $data['cookTotal'] = 200;
@@ -504,7 +508,7 @@ trait InventoryManagement
             }
             $fuel = $slots[1] ?? null;
             if ($lit || ($fuel !== null && $input !== null)) {
-                $recipe = $input === null ? null : $this->crafting->smelt($input['item']);
+                $recipe = $input === null ? null : $this->crafting->smelt($input['item'], self::FURNACES[$type]);
                 if ($input === null) {
                     $data['cook'] = 0;
                 } elseif ($recipe !== null) {
@@ -514,7 +518,7 @@ trait InventoryManagement
                     if ($output === null || (Inventory::same($output, $result, $catalog) && $output['count'] + $result['count'] <= $max)) {
                         if (!$lit) {
                             $name = $fuel === null ? '' : ($catalog->itemName($fuel['item']) ?? '');
-                            [$burn, $speed] = $catalog->furnaceFuel['furnace'][$name] ?? [0, 1.0];
+                            [$burn, $speed] = $catalog->furnaceFuel[$type][$name] ?? [0, 1.0];
                             $data['burn'] = $data['fuelTotal'] = $burn;
                             $data['speed'] = $speed;
                             if ($data['cookTotal'] > 0 && $data['cook'] < $data['cookTotal']) {
@@ -563,7 +567,7 @@ trait InventoryManagement
             if ($wasLit !== $lit) {
                 $props = $catalog->properties($this->world->get($x, $y, $z));
                 $props['lit'] = $lit ? 'true' : 'false';
-                $this->setBlock($x, $y, $z, $catalog->state('furnace', $props));
+                $this->setBlock($x, $y, $z, $catalog->state($type, $props));
             }
             $this->syncFurnaceViewers($position, $data, $slots !== $before['slots']);
         }
@@ -579,7 +583,7 @@ trait InventoryManagement
     private function syncFurnaceViewers(array $position, array $data, bool $slotsChanged): void
     {
         foreach ($this->localPlayers() as $p) {
-            if ($p->windowType !== 'furnace' || $p->windowPosition !== $position) {
+            if (!isset(self::FURNACES[$p->windowType]) || $p->windowPosition !== $position) {
                 continue;
             }
             if ($slotsChanged) {

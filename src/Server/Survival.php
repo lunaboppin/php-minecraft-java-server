@@ -556,7 +556,7 @@ trait Survival
         if ($this->version->catalog->air($state)) {
             return;
         }
-        $containerData = in_array($name, ['chest', 'barrel', 'furnace'], true) ? $this->world->container([$x, $y, $z]) : null;
+        $containerData = in_array($name, ['chest', 'barrel', 'furnace', 'blast_furnace', 'smoker'], true) ? $this->world->container([$x, $y, $z]) : null;
         $properties = $this->version->catalog->properties($state);
         $this->setBlock($x, $y, $z, 0);
         $this->updateNeighbourShapes($x, $y, $z);
@@ -1037,7 +1037,7 @@ trait Survival
         foreach ($data['slots'] as $stack) {
             $this->dropContainerStack($x, $y, $z, $stack);
         }
-        if ($name === 'furnace') {
+        if (isset(self::FURNACES[$name])) {
             $this->popFurnaceExperience($data, $x + 0.5, $y + 0.5, $z + 0.5);
         }
         $this->world->deleteContainer([$x, $y, $z]);

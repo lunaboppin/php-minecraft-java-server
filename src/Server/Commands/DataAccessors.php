@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\Server\Client;
 trait DataAccessors
 {
     /** BlockEntity types with data here, by block. */
-    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace'];
+    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker'];
 
     private static function nbtList(string $type, array $values): NbtTag
     {
@@ -300,7 +300,7 @@ trait DataAccessors
             );
             return self::nbtCompound($pairs);
         }
-        if ($type === 'furnace') {
+        if (isset(self::FURNACES[$type])) {
             array_push(
                 $pairs,
                 ['lit_time_remaining', new NbtTag('int', $data['burn'] ?? 0)],
@@ -321,7 +321,7 @@ trait DataAccessors
             }
         }
         $pairs[] = ['Items', new NbtTag('list', $items)];
-        if ($type === 'furnace') {
+        if (isset(self::FURNACES[$type])) {
             $used = [];
             foreach ($data['recipesUsed'] ?? [] as $recipe => $count) {
                 $used[] = ['minecraft:' . $recipe, new NbtTag('int', $count)];
