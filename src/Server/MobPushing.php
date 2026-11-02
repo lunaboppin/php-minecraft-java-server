@@ -147,6 +147,7 @@ trait MobPushing
     private function pushAfterMobTravel(array &$mob): void
     {
         $this->trackPushingMob($mob);
+        $this->crammingDamage($mob);
         if (SharedPushDispatch::supportsSource($this->version->catalog->pushing[$mob['kind']]['doPush'])) {
             $this->applyPushingContacts($mob['id']);
         }
@@ -155,7 +156,31 @@ trait MobPushing
     private function tickPlayerPushing(Client $player): void
     {
         $this->trackPushingPlayer($player);
+        if ($this->crammed($player->entityId, static fn (): int => random_int(0, 3))) {
+            $this->damage($player, 6.0, 'minecraft:cramming');
+        }
         $this->applyPushingContacts($player->entityId);
+    }
+
+    private function crammingDamage(array $mob): void
+    {
+        if ($this->crammed($mob['id'], fn (): int => $this->mobRandom($mob['id'])->nextInt(4))) {
+            $this->hurtMob($mob['id'], 6.0, 'minecraft:cramming');
+        }
+    }
+
+    /**
+     * LivingEntity.pushEntities: with more pushable entities around than max_entity_cramming allows,
+     * one time in four, counting only those riding nothing, the entity is crammed.
+     */
+    private function crammed(int $id, \Closure $roll): bool
+    {
+        $limit = (int) $this->gameRule('max_entity_cramming');
+        if ($limit <= 0) {
+            return false;
+        }
+        [$total, $unmounted] = $this->pushingContext()->phase->pushableCount($id);
+        return $total > $limit - 1 && $roll() === 0 && $unmounted > $limit - 1;
     }
 
     private function forgetPushingEntity(int $id, ?string $dimension = null): void
