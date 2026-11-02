@@ -107,18 +107,13 @@ trait Explosions
             }
             $tnt = &$this->tntEntities[$id];
             $tnt['velocity'][1] -= 0.04;
-            $box = [$tnt['x'] - 0.49, $tnt['y'], $tnt['z'] - 0.49, $tnt['x'] + 0.49, $tnt['y'] + 0.98, $tnt['z'] + 0.49];
-            $moved = $collision->move($this->world, $box, $tnt['velocity']);
-            $tnt['ground'] = $moved[1] !== $tnt['velocity'][1] && $tnt['velocity'][1] < 0.0;
-            // PrimedTnt.setRequiresPrecisePosition: after a collision its position is sent exactly.
-            $tnt['precise'] = $moved !== $tnt['velocity'];
-            [$tnt['x'], $tnt['y'], $tnt['z']] = [$tnt['x'] + $moved[0], $tnt['y'] + $moved[1], $tnt['z'] + $moved[2]];
-            foreach ([0, 1, 2] as $axis) {
-                if ($moved[$axis] !== $tnt['velocity'][$axis]) {
-                    $tnt['velocity'][$axis] = 0.0;
-                }
-            }
-            $tnt['velocity'] = [$tnt['velocity'][0] * 0.98, $tnt['velocity'][1] * 0.98, $tnt['velocity'][2] * 0.98];
+            $box = static fn (array $t): array => [$t['x'] - 0.49, $t['y'], $t['z'] - 0.49, $t['x'] + 0.49, $t['y'] + 0.98, $t['z'] + 0.49];
+            $from = $box($tnt);
+            $this->moveSimpleEntity($tnt, $from, $collision, 0.04);
+            // applyEffectsFromBlocks: primed TNT takes no damage, so fire and lava only set it alight.
+            $this->entityInsideBlocks($tnt, $from, $box($tnt), 'tnt', false, static fn (): bool => false, static fn (): bool => true, static fn (): bool => false);
+            // getAirDrag is a float.
+            $tnt['velocity'] = array_map(static fn (float $v): float => $v * 0.9800000190734863, $tnt['velocity']);
             if ($tnt['ground']) {
                 $tnt['velocity'] = [$tnt['velocity'][0] * 0.7, $tnt['velocity'][1] * -0.5, $tnt['velocity'][2] * 0.7];
             }
@@ -134,6 +129,10 @@ trait Explosions
                 }
                 continue;
             }
+            // updateFluidInteraction: the current of the water and lava it is in.
+            $this->entityFluidCurrent($box($tnt), $tnt['velocity']);
+            // setRequiresPrecisePosition: after a collision its position is sent exactly.
+            $tnt['precise'] = $tnt['horizontalCollision'] || $tnt['verticalCollision'];
             unset($tnt);
         }
     }
@@ -161,13 +160,17 @@ trait Explosions
             }
         }
         $state = ['position' => [$tnt['x'], $tnt['y'], $tnt['z']], 'velocity' => $tnt['velocity'], 'yaw' => 0.0, 'pitch' => 0.0, 'head' => 0.0,
-            'ground' => $tnt['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => false, 'precise' => $tnt['precise'] ?? false,
+            'ground' => $tnt['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => $tnt['syncPosition'] ?? false, 'precise' => $tnt['precise'] ?? false,
             'force_update' => $tnt['dirty']];
         $tracker = $this->tntTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state, false);
         $packets = $tracker->update($state);
+        $this->tntEntities[$id]['syncPosition'] = false;
         if ($tnt['dirty']) {
+            // Ticks frozen (index 7) when powder snow changed it, then the fuse.
+            $frozen = isset($tnt['dataDirty'][7]) ? "\x07\x01" . Binary::writeVarInt($tnt['frozen']) : '';
             $this->tntEntities[$id]['dirty'] = false;
-            $packets[] = ['name' => 'set_entity_data', 'payload' => Binary::writeVarInt($id) . "\x08\x01" . Binary::writeVarInt($tnt['fuse']) . "\xff"];
+            $this->tntEntities[$id]['dataDirty'] = [];
+            $packets[] = ['name' => 'set_entity_data', 'payload' => Binary::writeVarInt($id) . $frozen . "\x08\x01" . Binary::writeVarInt($tnt['fuse']) . "\xff"];
         }
         foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {

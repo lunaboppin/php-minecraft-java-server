@@ -1,0 +1,132 @@
+{
+  "name": "tnt-motion",
+  "normalizations": [
+    "Compare the packets sent about primed TNT and sand set over air, which falls: carried by flowing water, lifted by a bubble column, stuck in a cobweb, slowed on soul sand and bouncing on slime.",
+    "TNT is summoned with a long fuse and tnt_explodes off, so only its movement is compared.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "gamerule tnt_explodes false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 24 60 24 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 24 75 24 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -14.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "fill 12 61 -1 12 63 22 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 3 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 61 6 1 64 8 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 60 7 minecraft:soul_sand"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 7 0 64 7 minecraft:bubble_column[drag=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 10 minecraft:cobweb"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 60 13 11 60 13 minecraft:soul_sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 60 16 minecraft:slime_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 60 16 minecraft:slime_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 0.5 62.0 3.5 {fuse:200,Motion:[0.1d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 0.5 62.0 7.5 {fuse:200}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 3.5 66.0 10.5 {fuse:200}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 8.5 61.0 13.5 {fuse:200,Motion:[1.5d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:tnt 3.5 66.0 16.5 {fuse:200}"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 66 16 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 68 10 minecraft:sand"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_1s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_2s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_3s",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

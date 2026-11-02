@@ -1,0 +1,116 @@
+{
+  "name": "orb-motion",
+  "normalizations": [
+    "Compare the packets sent about experience orbs: falling and bouncing, carried by flowing water, lifted by a bubble column, stuck in a cobweb and slowed on soul sand.",
+    "The player stands more than 8 blocks away so no orb follows it; moving orbs stop against a stone wall.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 24 60 24 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 24 75 24 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -14.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "fill 12 61 -1 12 63 22 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 3 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 61 12 1 64 14 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 60 13 minecraft:soul_sand"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 13 0 64 13 minecraft:bubble_column[drag=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 61 16 minecraft:cobweb"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 60 19 11 60 19 minecraft:soul_sand"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 0.5 64.0 0.5 {Value:3,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 0.5 62.0 3.5 {Value:3,Motion:[0.2d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 3.5 64.0 9.5 {Value:3,Motion:[0.5d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 0.5 62.0 13.5 {Value:3,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 0.5 61.0 16.5 {Value:3,Motion:[1.5d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:experience_orb 8.5 61.0 19.5 {Value:3,Motion:[2.5d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "orbs_1s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "orbs_2s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "orbs_3s",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

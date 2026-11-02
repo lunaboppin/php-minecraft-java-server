@@ -612,7 +612,7 @@ trait Survival
         if ($this->version->catalog->air($state)) {
             return;
         }
-        $containerData = in_array($name, ['chest', 'barrel', 'furnace', 'blast_furnace', 'smoker'], true) ? $this->world->container([$x, $y, $z]) : null;
+        $containerData = in_array($name, ['chest', 'barrel', 'furnace', 'blast_furnace', 'smoker', 'hopper', 'dispenser', 'dropper'], true) ? $this->world->container([$x, $y, $z]) : null;
         $properties = $this->version->catalog->properties($state);
         $this->setBlock($x, $y, $z, 0);
         $this->updateNeighbourShapes($x, $y, $z);

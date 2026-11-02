@@ -77,6 +77,8 @@ final class Server
 
     use Grindstones;
 
+    use SmithingTables;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -148,6 +150,12 @@ final class Server
     use BlockInteractions;
 
     use Scaffolding;
+
+    use Hoppers;
+
+    use Dispensers;
+
+    use Composters;
 
     use Waypoints;
 
@@ -1472,7 +1480,7 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','anvil','chipped_anvil','damaged_anvil' => 'anvil','grindstone' => 'grindstone','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
+                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','anvil','chipped_anvil','damaged_anvil' => 'anvil','grindstone' => 'grindstone','smithing_table' => 'smithing','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender','hopper','dispenser','dropper' => $name,default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
@@ -1510,6 +1518,11 @@ final class Server
             }
             // Sneaking with an item in hand skips the block's own use.
             $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
+            if ($name === 'composter' && !$sneakSkips && $c->gameMode !== 3 && $this->useComposter($c, $x, $y, $z, $slot)) {
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                return;
+            }
             if (!$sneakSkips && $c->gameMode !== 3 && $this->editable($c, $x, $y, $z) && ($swing = $this->useInteractiveBlock($c, $hand, $slot, $x, $y, $z, $face, $cursor)) !== null) {
                 if ($swing) {
                     $this->useSwing($c, $hand);

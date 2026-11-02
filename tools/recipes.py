@@ -1,4 +1,4 @@
-"""Compile ordinary vanilla crafting and cooking recipes with resolved item-tag ingredients."""
+"""Compile ordinary vanilla crafting, cooking and smithing recipes with resolved item-tag ingredients."""
 import json
 import zipfile
 
@@ -27,6 +27,11 @@ def compile_recipes(jar, item_ids):
                 continue
             source = json.loads(archive.read(name))
             kind = source.get('type', '').removeprefix('minecraft:')
+            if kind == 'smithing_trim':
+                # Trims add a component to the base item rather than making a new one.
+                recipes.append({'name': name[len('data/minecraft/recipe/'):-5], 'type': kind,
+                                'ingredients': [ingredient(source[slot]) for slot in ('template', 'base', 'addition')]})
+                continue
             result = source.get('result', {})
             if isinstance(result, str):
                 result = {'id': result}
@@ -44,6 +49,8 @@ def compile_recipes(jar, item_ids):
                 recipe['ingredients'] = [ingredient(entry) for entry in source['ingredients']]
             elif kind in ('smelting', 'blasting', 'smoking'):
                 recipe.update(ingredients=[ingredient(source['ingredient'])], ticks=source.get('cookingtime', 200), experience=source.get('experience', 0))
+            elif kind == 'smithing_transform':
+                recipe['ingredients'] = [ingredient(source[slot]) if slot in source else [] for slot in ('template', 'base', 'addition')]
             else:
                 continue
             recipes.append(recipe)
