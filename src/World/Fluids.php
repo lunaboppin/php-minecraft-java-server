@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\World;
 
+use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 
 /**
@@ -168,6 +169,95 @@ final class Fluids
             $delay *= 4;
         }
         return $delay;
+    }
+
+    /** FlowingFluid.getOwnHeight: the amount over 9, as a float; 0 without fluid. */
+    public static function ownHeight(?array $fluid): float
+    {
+        return $fluid === null ? 0.0 : Float32::round($fluid[1] / 9.0);
+    }
+
+    /**
+     * FluidState.getHeight for entities: 1 under the same fluid, else its own height.
+     *
+     * @param callable(int, int, int): int $block
+     */
+    public function entityHeight(callable $block, array $fluid, int $x, int $y, int $z): float
+    {
+        return ($this->fluid($block($x, $y + 1, $z))[0] ?? null) === $fluid[0] ? 1.0 : self::ownHeight($fluid);
+    }
+
+    /**
+     * FlowingFluid.getFlow: toward lower neighbours by the difference in height, or toward the
+     * fluid below an open neighbour; falling fluid beside a solid face also pulls down. The
+     * result is normalized.
+     *
+     * @param callable(int, int, int): int $block
+     * @return array{float, float, float}
+     */
+    public function flow(callable $block, array $fluid, int $x, int $y, int $z): array
+    {
+        [$flowX, $flowZ] = [0.0, 0.0];
+        $own = self::ownHeight($fluid);
+        $affects = fn (?array $other): bool => $other === null || $other[0] === $fluid[0];
+        foreach (self::HORIZONTAL as [$dx, , $dz]) {
+            $state = $block($x + $dx, $y, $z + $dz);
+            $neighbour = $this->fluid($state);
+            if (!$affects($neighbour)) {
+                continue;
+            }
+            $height = self::ownHeight($neighbour);
+            $distance = 0.0;
+            if ($height === 0.0) {
+                if (!$this->blocks->inTag($state, 'blocks_fluid_flow')) {
+                    $below = $this->fluid($block($x + $dx, $y - 1, $z + $dz));
+                    if ($affects($below)) {
+                        $height = self::ownHeight($below);
+                        if ($height > 0.0) {
+                            $distance = Float32::round($own - Float32::round($height - 0.8888888955116272));
+                        }
+                    }
+                }
+            } elseif ($height > 0.0) {
+                $distance = Float32::round($own - $height);
+            }
+            if ($distance !== 0.0) {
+                $flowX += $dx * $distance;
+                $flowZ += $dz * $distance;
+            }
+        }
+        $flow = [$flowX, 0.0, $flowZ];
+        if ($fluid[2]) {
+            foreach (self::HORIZONTAL as $index => [$dx, , $dz]) {
+                if ($this->solidFace($block, $fluid, $x + $dx, $y, $z + $dz, $index) || $this->solidFace($block, $fluid, $x + $dx, $y + 1, $z + $dz, $index)) {
+                    $flow = self::normalize($flow);
+                    $flow[1] -= 6.0;
+                    break;
+                }
+            }
+        }
+        return self::normalize($flow);
+    }
+
+    /** FlowingFluid.isSolidFace for a horizontal direction: not the same fluid, not ice, and sturdy on that face. */
+    private function solidFace(callable $block, array $fluid, int $x, int $y, int $z, int $direction): bool
+    {
+        $state = $block($x, $y, $z);
+        if (($this->fluid($state)[0] ?? null) === $fluid[0]) {
+            return false;
+        }
+        if (in_array($this->blocks->name($state), ['ice', 'frosted_ice'], true)) {
+            return false;
+        }
+        // Direction.Plane.HORIZONTAL order to Direction's face index: north 2, east 5, south 3, west 4.
+        return $this->blocks->sturdy($state, [2, 5, 3, 4][$direction]);
+    }
+
+    /** Vec3.normalize: zero below a length of 1.0E-5F. */
+    public static function normalize(array $vector): array
+    {
+        $length = sqrt($vector[0] * $vector[0] + $vector[1] * $vector[1] + $vector[2] * $vector[2]);
+        return $length < 9.999999747378752E-6 ? [0.0, 0.0, 0.0] : [$vector[0] / $length, $vector[1] / $length, $vector[2] / $length];
     }
 
     /** FlowingFluid.getHeight: full when the same fluid is above, else its own height. */
