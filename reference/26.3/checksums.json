@@ -43,6 +43,7 @@
   "packets.json": "2f0486311f18b7d3ec232028f3bff82c657d2f0240d2d65a3df40408db926886",
   "push-eligibility-rules.json": "56751dbf224d87367e4589c9eef65c5b1ad3a85d66f66fe2404b3431e21d1016",
   "push-eligibility.json": "81de944432548252048e21f6cd4a44104c1a28494ea1ae330683449e4c6bdaab",
+  "recipe-book.json": "c7665936ef448ff31a7cab449c88a6a632caeeb151c4d8c79fec85ce0271c153",
   "recipes.json": "4f78f2d900f65f579e64583d848d7d8ec40fbe2f70346486675808848ab6300f",
   "registries/banner_pattern.bin": "22f5246148360295e4a12008d30b8f5f402415d91e39cbb350e54c754fbac4d6",
   "registries/block_transformer.bin": "3b878a8e38f042468d9f7fa85f258097c1eb6aace880763f75068a78b62934b1",
