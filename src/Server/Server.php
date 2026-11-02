@@ -79,6 +79,8 @@ final class Server
 
     use SmithingTables;
 
+    use SplashPotions;
+
     use Sleeping;
 
     use WeatherCycle;
