@@ -167,7 +167,7 @@ jobs:
           scenarios=(
             fluids bubble-columns random-ticks random-ticks-plants sponges copper-weathering powered-rails fire
             bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep
-            pressure-plates tripwires weather chorus lightning daylight-detectors precipitation bells bone-meal
+            pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
           )
           # verify.py decodes these scenarios' captured packets with both codecs.
