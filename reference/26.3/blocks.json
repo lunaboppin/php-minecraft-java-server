@@ -3351,7 +3351,10 @@
     "entity.egg.throw": 576,
     "entity.ender_pearl.throw": 608,
     "entity.player.teleport": 1326,
-    "entity.creeper.primed": 481
+    "entity.creeper.primed": 481,
+    "entity.arrow.shoot": 87,
+    "entity.arrow.hit": 85,
+    "block.enchantment_table.use": 586
   },
   "particle_types": {
     "angry_villager": 0,

@@ -65,7 +65,8 @@ trait Entities
      */
     private function playerDrop(Client $c, array $stack, bool $randomly, int $age = 0, bool $thrown = false): ?int
     {
-        $eye = $c->y + ($c->sneaking && !$c->flying ? 1.27 : 1.62);
+        // Entity.getEyeY: the eye height is a float.
+        $eye = $c->y + Float32::round($c->sneaking && !$c->flying ? 1.27 : 1.62);
         if ($randomly) {
             $power = Float32::round(self::randomUnit() * 0.5);
             $direction = Float32::round(self::randomUnit() * (float) Float32::round(M_PI * 2));

@@ -59,7 +59,9 @@ trait EntityTracking
         $flags=($player->fireTicks>0?1:0)|($player->sneaking?2:0)|($player->sprinting?8:0)|($player->gameMode===3?32:0);
         $pose=$player->dead?'dying':($player->sneaking && !$player->flying && $player->gameMode!==3?'crouching':'standing');
         $vitals=Packets::vitals($catalog,$player->entityId,max(0,$player->air),$flags);
-        return substr($vitals,0,-1).chr($tracking['pose_index']).Binary::writeVarInt($tracking['pose_serializer'])
+        // LivingEntity's flags (index 8): drawing a bow, and with which hand.
+        $using=$player->drawing===null?'':"\x08".Binary::writeVarInt(0).chr(1|($player->drawing['hand']===1?2:0));
+        return substr($vitals,0,-1).$using.chr($tracking['pose_index']).Binary::writeVarInt($tracking['pose_serializer'])
             .Binary::writeVarInt($tracking['poses'][$pose])."\xff";
     }
     private function syncPlayerMetadata(Client $player):void {

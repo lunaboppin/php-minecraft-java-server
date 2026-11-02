@@ -118,6 +118,9 @@ final class Client
 
     public ?array $eating = null;
 
+    /** A bow being drawn: the hand, the bow's item and the tick the draw began. */
+    public ?array $drawing = null;
+
     public ?array $cursor = null;
 
     public array $dragSlots = [];
@@ -139,10 +142,19 @@ final class Client
     public string $windowType = 'player';
 
     public ?array $windowPosition = null;
+
     /** The furnace data slots last sent for the open furnace, by index. */
     public array $furnaceData = [];
 
     public array $craftGrid = [];
+
+    /** An open enchanting table's item and lapis slots, and the data slots last sent. */
+    public array $enchantSlots = [];
+
+    public array $enchantData = [];
+
+    /** Player.enchantmentSeed, saved as XpSeed: what the enchanting table offers. */
+    public int $enchantmentSeed = 0;
 
     /** PlayerEnderChestContainer: 27 slots, kept through death. */
     public array $enderItems = [];
@@ -286,6 +298,9 @@ final class Client
 
     /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
     public ?string $knockbackMotion = null;
+
+    /** The motion behind knockbackMotion, for a push in the same tick to add to. */
+    public ?array $knockbackVelocity = null;
 
     /** Whether a position arrived since the client's last client_tick_end. */
     public bool $positionThisTick = false;
