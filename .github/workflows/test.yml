@@ -441,6 +441,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/anvils.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-anvils
           python3 tools/parity/verify.py tools/.cache/parity-anvils/php-packets.json tools/.cache/parity-anvils/reference-packets.json
+      - name: Compare grinding items at a grindstone with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/grindstones.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-grindstones
+          python3 tools/parity/verify.py tools/.cache/parity-grindstones/php-packets.json tools/.cache/parity-grindstones/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -455,6 +459,7 @@ jobs:
             tools/.cache/parity-projectiles/
             tools/.cache/parity-enchanting/
             tools/.cache/parity-anvils/
+            tools/.cache/parity-grindstones/
           retention-days: 7
 
   docker:
