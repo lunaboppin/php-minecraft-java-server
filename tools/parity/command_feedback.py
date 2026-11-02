@@ -1076,7 +1076,6 @@ SCRIPT = [
     ('data get entity @e[type=item,limit=1] Fire', False),
     ('data get entity @e[type=item,limit=1] Air', False),
     ('data get entity @e[type=item,limit=1] OnGround', False),
-    ('data get entity @e[type=item,limit=1] Motion', False),
     ('data get entity @e[type=item,limit=1] Pos', False),
     ('data get entity @e[type=item,limit=1] Invulnerable', False),
     ('data get entity @e[type=item,limit=1] PortalCooldown', False),
