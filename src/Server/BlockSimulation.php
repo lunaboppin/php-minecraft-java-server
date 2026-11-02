@@ -46,6 +46,7 @@ trait BlockSimulation
         $this->redstoneChanged($x,$y,$z);
         $this->scaffoldingChanged($x,$y,$z);
         $this->hopperChanged($x,$y,$z);
+        $this->composterChanged($x,$y,$z);
     }
     private function tickBlocks():void {
         // ServerLevel.tick: the due block ticks run, then the due fluid ticks, each in the order
@@ -69,6 +70,7 @@ trait BlockSimulation
             elseif($kind==='speleothem'){$this->tickSpeleothem($x,$y,$z);}
             elseif($kind==='cauldron'){$this->tickCauldron($x,$y,$z);}
             elseif($kind==='dispense'){$this->dispenseFrom($x,$y,$z);}
+            elseif($kind==='composter'){$this->tickComposter($x,$y,$z);}
             elseif(in_array($kind,['circuit','torch','repeater','comparator','lamp'],true)){$this->tickRedstone($kind,$x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
