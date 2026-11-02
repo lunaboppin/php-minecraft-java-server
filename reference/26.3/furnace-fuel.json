@@ -1,0 +1,4175 @@
+{
+  "version": "26.3",
+  "fuel": {
+    "furnace": {
+      "oak_planks": [
+        300,
+        1.0
+      ],
+      "spruce_planks": [
+        300,
+        1.0
+      ],
+      "birch_planks": [
+        300,
+        1.0
+      ],
+      "jungle_planks": [
+        300,
+        1.0
+      ],
+      "acacia_planks": [
+        300,
+        1.0
+      ],
+      "cherry_planks": [
+        300,
+        1.0
+      ],
+      "dark_oak_planks": [
+        300,
+        1.0
+      ],
+      "pale_oak_planks": [
+        300,
+        1.0
+      ],
+      "mangrove_planks": [
+        300,
+        1.0
+      ],
+      "poplar_planks": [
+        300,
+        1.0
+      ],
+      "bamboo_planks": [
+        300,
+        1.0
+      ],
+      "bamboo_mosaic": [
+        300,
+        1.0
+      ],
+      "oak_sapling": [
+        100,
+        1.0
+      ],
+      "spruce_sapling": [
+        100,
+        1.0
+      ],
+      "birch_sapling": [
+        100,
+        1.0
+      ],
+      "jungle_sapling": [
+        100,
+        1.0
+      ],
+      "acacia_sapling": [
+        100,
+        1.0
+      ],
+      "cherry_sapling": [
+        100,
+        1.0
+      ],
+      "dark_oak_sapling": [
+        100,
+        1.0
+      ],
+      "pale_oak_sapling": [
+        100,
+        1.0
+      ],
+      "mangrove_propagule": [
+        100,
+        1.0
+      ],
+      "poplar_sapling": [
+        100,
+        1.0
+      ],
+      "coal_block": [
+        16000,
+        1.0
+      ],
+      "oak_log": [
+        300,
+        1.0
+      ],
+      "spruce_log": [
+        300,
+        1.0
+      ],
+      "birch_log": [
+        300,
+        1.0
+      ],
+      "jungle_log": [
+        300,
+        1.0
+      ],
+      "acacia_log": [
+        300,
+        1.0
+      ],
+      "cherry_log": [
+        300,
+        1.0
+      ],
+      "pale_oak_log": [
+        300,
+        1.0
+      ],
+      "dark_oak_log": [
+        300,
+        1.0
+      ],
+      "mangrove_log": [
+        300,
+        1.0
+      ],
+      "poplar_log": [
+        300,
+        1.0
+      ],
+      "mangrove_roots": [
+        300,
+        1.0
+      ],
+      "bamboo_block": [
+        300,
+        1.0
+      ],
+      "stripped_oak_log": [
+        300,
+        1.0
+      ],
+      "stripped_spruce_log": [
+        300,
+        1.0
+      ],
+      "stripped_birch_log": [
+        300,
+        1.0
+      ],
+      "stripped_jungle_log": [
+        300,
+        1.0
+      ],
+      "stripped_acacia_log": [
+        300,
+        1.0
+      ],
+      "stripped_cherry_log": [
+        300,
+        1.0
+      ],
+      "stripped_dark_oak_log": [
+        300,
+        1.0
+      ],
+      "stripped_pale_oak_log": [
+        300,
+        1.0
+      ],
+      "stripped_mangrove_log": [
+        300,
+        1.0
+      ],
+      "stripped_poplar_log": [
+        300,
+        1.0
+      ],
+      "stripped_oak_wood": [
+        300,
+        1.0
+      ],
+      "stripped_spruce_wood": [
+        300,
+        1.0
+      ],
+      "stripped_birch_wood": [
+        300,
+        1.0
+      ],
+      "stripped_jungle_wood": [
+        300,
+        1.0
+      ],
+      "stripped_acacia_wood": [
+        300,
+        1.0
+      ],
+      "stripped_cherry_wood": [
+        300,
+        1.0
+      ],
+      "stripped_dark_oak_wood": [
+        300,
+        1.0
+      ],
+      "stripped_pale_oak_wood": [
+        300,
+        1.0
+      ],
+      "stripped_mangrove_wood": [
+        300,
+        1.0
+      ],
+      "stripped_poplar_wood": [
+        300,
+        1.0
+      ],
+      "stripped_bamboo_block": [
+        300,
+        1.0
+      ],
+      "oak_wood": [
+        300,
+        1.0
+      ],
+      "spruce_wood": [
+        300,
+        1.0
+      ],
+      "birch_wood": [
+        300,
+        1.0
+      ],
+      "jungle_wood": [
+        300,
+        1.0
+      ],
+      "acacia_wood": [
+        300,
+        1.0
+      ],
+      "cherry_wood": [
+        300,
+        1.0
+      ],
+      "pale_oak_wood": [
+        300,
+        1.0
+      ],
+      "dark_oak_wood": [
+        300,
+        1.0
+      ],
+      "mangrove_wood": [
+        300,
+        1.0
+      ],
+      "poplar_wood": [
+        300,
+        1.0
+      ],
+      "azalea": [
+        100,
+        1.0
+      ],
+      "flowering_azalea": [
+        100,
+        1.0
+      ],
+      "dead_bush": [
+        100,
+        1.0
+      ],
+      "short_dry_grass": [
+        100,
+        1.0
+      ],
+      "tall_dry_grass": [
+        100,
+        1.0
+      ],
+      "white_wool": [
+        100,
+        1.0
+      ],
+      "orange_wool": [
+        100,
+        1.0
+      ],
+      "magenta_wool": [
+        100,
+        1.0
+      ],
+      "light_blue_wool": [
+        100,
+        1.0
+      ],
+      "yellow_wool": [
+        100,
+        1.0
+      ],
+      "lime_wool": [
+        100,
+        1.0
+      ],
+      "pink_wool": [
+        100,
+        1.0
+      ],
+      "gray_wool": [
+        100,
+        1.0
+      ],
+      "light_gray_wool": [
+        100,
+        1.0
+      ],
+      "cyan_wool": [
+        100,
+        1.0
+      ],
+      "purple_wool": [
+        100,
+        1.0
+      ],
+      "blue_wool": [
+        100,
+        1.0
+      ],
+      "brown_wool": [
+        100,
+        1.0
+      ],
+      "green_wool": [
+        100,
+        1.0
+      ],
+      "red_wool": [
+        100,
+        1.0
+      ],
+      "black_wool": [
+        100,
+        1.0
+      ],
+      "white_wool_stairs": [
+        100,
+        1.0
+      ],
+      "orange_wool_stairs": [
+        100,
+        1.0
+      ],
+      "magenta_wool_stairs": [
+        100,
+        1.0
+      ],
+      "light_blue_wool_stairs": [
+        100,
+        1.0
+      ],
+      "yellow_wool_stairs": [
+        100,
+        1.0
+      ],
+      "lime_wool_stairs": [
+        100,
+        1.0
+      ],
+      "pink_wool_stairs": [
+        100,
+        1.0
+      ],
+      "gray_wool_stairs": [
+        100,
+        1.0
+      ],
+      "light_gray_wool_stairs": [
+        100,
+        1.0
+      ],
+      "cyan_wool_stairs": [
+        100,
+        1.0
+      ],
+      "purple_wool_stairs": [
+        100,
+        1.0
+      ],
+      "blue_wool_stairs": [
+        100,
+        1.0
+      ],
+      "brown_wool_stairs": [
+        100,
+        1.0
+      ],
+      "green_wool_stairs": [
+        100,
+        1.0
+      ],
+      "red_wool_stairs": [
+        100,
+        1.0
+      ],
+      "black_wool_stairs": [
+        100,
+        1.0
+      ],
+      "white_wool_slab": [
+        50,
+        1.0
+      ],
+      "orange_wool_slab": [
+        50,
+        1.0
+      ],
+      "magenta_wool_slab": [
+        50,
+        1.0
+      ],
+      "light_blue_wool_slab": [
+        50,
+        1.0
+      ],
+      "yellow_wool_slab": [
+        50,
+        1.0
+      ],
+      "lime_wool_slab": [
+        50,
+        1.0
+      ],
+      "pink_wool_slab": [
+        50,
+        1.0
+      ],
+      "gray_wool_slab": [
+        50,
+        1.0
+      ],
+      "light_gray_wool_slab": [
+        50,
+        1.0
+      ],
+      "cyan_wool_slab": [
+        50,
+        1.0
+      ],
+      "purple_wool_slab": [
+        50,
+        1.0
+      ],
+      "blue_wool_slab": [
+        50,
+        1.0
+      ],
+      "brown_wool_slab": [
+        50,
+        1.0
+      ],
+      "green_wool_slab": [
+        50,
+        1.0
+      ],
+      "red_wool_slab": [
+        50,
+        1.0
+      ],
+      "black_wool_slab": [
+        50,
+        1.0
+      ],
+      "leaf_litter": [
+        100,
+        1.0
+      ],
+      "bamboo": [
+        50,
+        1.0
+      ],
+      "oak_slab": [
+        150,
+        1.0
+      ],
+      "spruce_slab": [
+        150,
+        1.0
+      ],
+      "birch_slab": [
+        150,
+        1.0
+      ],
+      "jungle_slab": [
+        150,
+        1.0
+      ],
+      "acacia_slab": [
+        150,
+        1.0
+      ],
+      "cherry_slab": [
+        150,
+        1.0
+      ],
+      "dark_oak_slab": [
+        150,
+        1.0
+      ],
+      "pale_oak_slab": [
+        150,
+        1.0
+      ],
+      "mangrove_slab": [
+        150,
+        1.0
+      ],
+      "poplar_slab": [
+        150,
+        1.0
+      ],
+      "bamboo_slab": [
+        150,
+        1.0
+      ],
+      "bamboo_mosaic_slab": [
+        150,
+        1.0
+      ],
+      "acacia_shelf": [
+        300,
+        1.0
+      ],
+      "bamboo_shelf": [
+        300,
+        1.0
+      ],
+      "birch_shelf": [
+        300,
+        1.0
+      ],
+      "cherry_shelf": [
+        300,
+        1.0
+      ],
+      "dark_oak_shelf": [
+        300,
+        1.0
+      ],
+      "jungle_shelf": [
+        300,
+        1.0
+      ],
+      "mangrove_shelf": [
+        300,
+        1.0
+      ],
+      "poplar_shelf": [
+        300,
+        1.0
+      ],
+      "oak_shelf": [
+        300,
+        1.0
+      ],
+      "pale_oak_shelf": [
+        300,
+        1.0
+      ],
+      "spruce_shelf": [
+        300,
+        1.0
+      ],
+      "bookshelf": [
+        300,
+        1.0
+      ],
+      "chiseled_bookshelf": [
+        300,
+        1.0
+      ],
+      "chest": [
+        300,
+        1.0
+      ],
+      "crafting_table": [
+        300,
+        1.0
+      ],
+      "ladder": [
+        300,
+        1.0
+      ],
+      "jukebox": [
+        300,
+        1.0
+      ],
+      "oak_fence": [
+        300,
+        1.0
+      ],
+      "spruce_fence": [
+        300,
+        1.0
+      ],
+      "birch_fence": [
+        300,
+        1.0
+      ],
+      "jungle_fence": [
+        300,
+        1.0
+      ],
+      "acacia_fence": [
+        300,
+        1.0
+      ],
+      "cherry_fence": [
+        300,
+        1.0
+      ],
+      "dark_oak_fence": [
+        300,
+        1.0
+      ],
+      "pale_oak_fence": [
+        300,
+        1.0
+      ],
+      "mangrove_fence": [
+        300,
+        1.0
+      ],
+      "poplar_fence": [
+        300,
+        1.0
+      ],
+      "bamboo_fence": [
+        300,
+        1.0
+      ],
+      "oak_stairs": [
+        300,
+        1.0
+      ],
+      "spruce_stairs": [
+        300,
+        1.0
+      ],
+      "birch_stairs": [
+        300,
+        1.0
+      ],
+      "jungle_stairs": [
+        300,
+        1.0
+      ],
+      "acacia_stairs": [
+        300,
+        1.0
+      ],
+      "cherry_stairs": [
+        300,
+        1.0
+      ],
+      "dark_oak_stairs": [
+        300,
+        1.0
+      ],
+      "pale_oak_stairs": [
+        300,
+        1.0
+      ],
+      "mangrove_stairs": [
+        300,
+        1.0
+      ],
+      "poplar_stairs": [
+        300,
+        1.0
+      ],
+      "bamboo_stairs": [
+        300,
+        1.0
+      ],
+      "bamboo_mosaic_stairs": [
+        300,
+        1.0
+      ],
+      "white_carpet": [
+        67,
+        1.0
+      ],
+      "orange_carpet": [
+        67,
+        1.0
+      ],
+      "magenta_carpet": [
+        67,
+        1.0
+      ],
+      "light_blue_carpet": [
+        67,
+        1.0
+      ],
+      "yellow_carpet": [
+        67,
+        1.0
+      ],
+      "lime_carpet": [
+        67,
+        1.0
+      ],
+      "pink_carpet": [
+        67,
+        1.0
+      ],
+      "gray_carpet": [
+        67,
+        1.0
+      ],
+      "light_gray_carpet": [
+        67,
+        1.0
+      ],
+      "cyan_carpet": [
+        67,
+        1.0
+      ],
+      "purple_carpet": [
+        67,
+        1.0
+      ],
+      "blue_carpet": [
+        67,
+        1.0
+      ],
+      "brown_carpet": [
+        67,
+        1.0
+      ],
+      "green_carpet": [
+        67,
+        1.0
+      ],
+      "red_carpet": [
+        67,
+        1.0
+      ],
+      "black_carpet": [
+        67,
+        1.0
+      ],
+      "scaffolding": [
+        50,
+        1.0
+      ],
+      "lectern": [
+        300,
+        1.0
+      ],
+      "daylight_detector": [
+        300,
+        1.0
+      ],
+      "trapped_chest": [
+        300,
+        1.0
+      ],
+      "note_block": [
+        300,
+        1.0
+      ],
+      "oak_button": [
+        100,
+        1.0
+      ],
+      "spruce_button": [
+        100,
+        1.0
+      ],
+      "birch_button": [
+        100,
+        1.0
+      ],
+      "jungle_button": [
+        100,
+        1.0
+      ],
+      "acacia_button": [
+        100,
+        1.0
+      ],
+      "cherry_button": [
+        100,
+        1.0
+      ],
+      "dark_oak_button": [
+        100,
+        1.0
+      ],
+      "pale_oak_button": [
+        100,
+        1.0
+      ],
+      "mangrove_button": [
+        100,
+        1.0
+      ],
+      "poplar_button": [
+        100,
+        1.0
+      ],
+      "bamboo_button": [
+        100,
+        1.0
+      ],
+      "oak_pressure_plate": [
+        300,
+        1.0
+      ],
+      "spruce_pressure_plate": [
+        300,
+        1.0
+      ],
+      "birch_pressure_plate": [
+        300,
+        1.0
+      ],
+      "jungle_pressure_plate": [
+        300,
+        1.0
+      ],
+      "acacia_pressure_plate": [
+        300,
+        1.0
+      ],
+      "cherry_pressure_plate": [
+        300,
+        1.0
+      ],
+      "dark_oak_pressure_plate": [
+        300,
+        1.0
+      ],
+      "pale_oak_pressure_plate": [
+        300,
+        1.0
+      ],
+      "mangrove_pressure_plate": [
+        300,
+        1.0
+      ],
+      "poplar_pressure_plate": [
+        300,
+        1.0
+      ],
+      "bamboo_pressure_plate": [
+        300,
+        1.0
+      ],
+      "oak_door": [
+        200,
+        1.0
+      ],
+      "spruce_door": [
+        200,
+        1.0
+      ],
+      "birch_door": [
+        200,
+        1.0
+      ],
+      "jungle_door": [
+        200,
+        1.0
+      ],
+      "acacia_door": [
+        200,
+        1.0
+      ],
+      "cherry_door": [
+        200,
+        1.0
+      ],
+      "dark_oak_door": [
+        200,
+        1.0
+      ],
+      "pale_oak_door": [
+        200,
+        1.0
+      ],
+      "mangrove_door": [
+        200,
+        1.0
+      ],
+      "poplar_door": [
+        200,
+        1.0
+      ],
+      "bamboo_door": [
+        200,
+        1.0
+      ],
+      "oak_trapdoor": [
+        300,
+        1.0
+      ],
+      "spruce_trapdoor": [
+        300,
+        1.0
+      ],
+      "birch_trapdoor": [
+        300,
+        1.0
+      ],
+      "jungle_trapdoor": [
+        300,
+        1.0
+      ],
+      "acacia_trapdoor": [
+        300,
+        1.0
+      ],
+      "cherry_trapdoor": [
+        300,
+        1.0
+      ],
+      "dark_oak_trapdoor": [
+        300,
+        1.0
+      ],
+      "pale_oak_trapdoor": [
+        300,
+        1.0
+      ],
+      "mangrove_trapdoor": [
+        300,
+        1.0
+      ],
+      "poplar_trapdoor": [
+        300,
+        1.0
+      ],
+      "bamboo_trapdoor": [
+        300,
+        1.0
+      ],
+      "oak_fence_gate": [
+        300,
+        1.0
+      ],
+      "spruce_fence_gate": [
+        300,
+        1.0
+      ],
+      "birch_fence_gate": [
+        300,
+        1.0
+      ],
+      "jungle_fence_gate": [
+        300,
+        1.0
+      ],
+      "acacia_fence_gate": [
+        300,
+        1.0
+      ],
+      "cherry_fence_gate": [
+        300,
+        1.0
+      ],
+      "dark_oak_fence_gate": [
+        300,
+        1.0
+      ],
+      "pale_oak_fence_gate": [
+        300,
+        1.0
+      ],
+      "mangrove_fence_gate": [
+        300,
+        1.0
+      ],
+      "poplar_fence_gate": [
+        300,
+        1.0
+      ],
+      "bamboo_fence_gate": [
+        300,
+        1.0
+      ],
+      "oak_boat": [
+        1200,
+        1.0
+      ],
+      "oak_chest_boat": [
+        1200,
+        1.0
+      ],
+      "spruce_boat": [
+        1200,
+        1.0
+      ],
+      "spruce_chest_boat": [
+        1200,
+        1.0
+      ],
+      "birch_boat": [
+        1200,
+        1.0
+      ],
+      "birch_chest_boat": [
+        1200,
+        1.0
+      ],
+      "jungle_boat": [
+        1200,
+        1.0
+      ],
+      "jungle_chest_boat": [
+        1200,
+        1.0
+      ],
+      "acacia_boat": [
+        1200,
+        1.0
+      ],
+      "acacia_chest_boat": [
+        1200,
+        1.0
+      ],
+      "cherry_boat": [
+        1200,
+        1.0
+      ],
+      "cherry_chest_boat": [
+        1200,
+        1.0
+      ],
+      "dark_oak_boat": [
+        1200,
+        1.0
+      ],
+      "dark_oak_chest_boat": [
+        1200,
+        1.0
+      ],
+      "pale_oak_boat": [
+        1200,
+        1.0
+      ],
+      "pale_oak_chest_boat": [
+        1200,
+        1.0
+      ],
+      "mangrove_boat": [
+        1200,
+        1.0
+      ],
+      "mangrove_chest_boat": [
+        1200,
+        1.0
+      ],
+      "poplar_boat": [
+        1200,
+        1.0
+      ],
+      "poplar_chest_boat": [
+        1200,
+        1.0
+      ],
+      "bamboo_raft": [
+        1200,
+        1.0
+      ],
+      "bamboo_chest_raft": [
+        1200,
+        1.0
+      ],
+      "bowl": [
+        100,
+        1.0
+      ],
+      "bow": [
+        300,
+        1.0
+      ],
+      "coal": [
+        1600,
+        1.0
+      ],
+      "charcoal": [
+        1600,
+        1.0
+      ],
+      "wooden_sword": [
+        200,
+        1.0
+      ],
+      "wooden_shovel": [
+        200,
+        1.0
+      ],
+      "wooden_pickaxe": [
+        200,
+        1.0
+      ],
+      "wooden_axe": [
+        200,
+        1.0
+      ],
+      "wooden_hoe": [
+        200,
+        1.0
+      ],
+      "stick": [
+        100,
+        1.0
+      ],
+      "oak_sign": [
+        200,
+        1.0
+      ],
+      "spruce_sign": [
+        200,
+        1.0
+      ],
+      "birch_sign": [
+        200,
+        1.0
+      ],
+      "jungle_sign": [
+        200,
+        1.0
+      ],
+      "acacia_sign": [
+        200,
+        1.0
+      ],
+      "cherry_sign": [
+        200,
+        1.0
+      ],
+      "dark_oak_sign": [
+        200,
+        1.0
+      ],
+      "pale_oak_sign": [
+        200,
+        1.0
+      ],
+      "mangrove_sign": [
+        200,
+        1.0
+      ],
+      "poplar_sign": [
+        200,
+        1.0
+      ],
+      "bamboo_sign": [
+        200,
+        1.0
+      ],
+      "oak_hanging_sign": [
+        800,
+        1.0
+      ],
+      "spruce_hanging_sign": [
+        800,
+        1.0
+      ],
+      "birch_hanging_sign": [
+        800,
+        1.0
+      ],
+      "jungle_hanging_sign": [
+        800,
+        1.0
+      ],
+      "acacia_hanging_sign": [
+        800,
+        1.0
+      ],
+      "cherry_hanging_sign": [
+        800,
+        1.0
+      ],
+      "dark_oak_hanging_sign": [
+        800,
+        1.0
+      ],
+      "pale_oak_hanging_sign": [
+        800,
+        1.0
+      ],
+      "mangrove_hanging_sign": [
+        800,
+        1.0
+      ],
+      "poplar_hanging_sign": [
+        800,
+        1.0
+      ],
+      "bamboo_hanging_sign": [
+        800,
+        1.0
+      ],
+      "lava_bucket": [
+        20000,
+        1.0
+      ],
+      "dried_kelp_block": [
+        4001,
+        1.0
+      ],
+      "white_cushion": [
+        50,
+        1.0
+      ],
+      "orange_cushion": [
+        50,
+        1.0
+      ],
+      "magenta_cushion": [
+        50,
+        1.0
+      ],
+      "light_blue_cushion": [
+        50,
+        1.0
+      ],
+      "yellow_cushion": [
+        50,
+        1.0
+      ],
+      "lime_cushion": [
+        50,
+        1.0
+      ],
+      "pink_cushion": [
+        50,
+        1.0
+      ],
+      "gray_cushion": [
+        50,
+        1.0
+      ],
+      "light_gray_cushion": [
+        50,
+        1.0
+      ],
+      "cyan_cushion": [
+        50,
+        1.0
+      ],
+      "purple_cushion": [
+        50,
+        1.0
+      ],
+      "blue_cushion": [
+        50,
+        1.0
+      ],
+      "brown_cushion": [
+        50,
+        1.0
+      ],
+      "green_cushion": [
+        50,
+        1.0
+      ],
+      "red_cushion": [
+        50,
+        1.0
+      ],
+      "black_cushion": [
+        50,
+        1.0
+      ],
+      "fishing_rod": [
+        300,
+        1.0
+      ],
+      "blaze_rod": [
+        2400,
+        1.0
+      ],
+      "white_banner": [
+        300,
+        1.0
+      ],
+      "orange_banner": [
+        300,
+        1.0
+      ],
+      "magenta_banner": [
+        300,
+        1.0
+      ],
+      "light_blue_banner": [
+        300,
+        1.0
+      ],
+      "yellow_banner": [
+        300,
+        1.0
+      ],
+      "lime_banner": [
+        300,
+        1.0
+      ],
+      "pink_banner": [
+        300,
+        1.0
+      ],
+      "gray_banner": [
+        300,
+        1.0
+      ],
+      "light_gray_banner": [
+        300,
+        1.0
+      ],
+      "cyan_banner": [
+        300,
+        1.0
+      ],
+      "purple_banner": [
+        300,
+        1.0
+      ],
+      "blue_banner": [
+        300,
+        1.0
+      ],
+      "brown_banner": [
+        300,
+        1.0
+      ],
+      "green_banner": [
+        300,
+        1.0
+      ],
+      "red_banner": [
+        300,
+        1.0
+      ],
+      "black_banner": [
+        300,
+        1.0
+      ],
+      "wooden_spear": [
+        200,
+        1.0
+      ],
+      "crossbow": [
+        300,
+        1.0
+      ],
+      "loom": [
+        300,
+        1.0
+      ],
+      "composter": [
+        300,
+        1.0
+      ],
+      "barrel": [
+        300,
+        1.0
+      ],
+      "cartography_table": [
+        300,
+        1.0
+      ],
+      "fletching_table": [
+        300,
+        1.0
+      ],
+      "smithing_table": [
+        300,
+        1.0
+      ]
+    },
+    "blast_furnace": {
+      "oak_planks": [
+        150,
+        2.0
+      ],
+      "spruce_planks": [
+        150,
+        2.0
+      ],
+      "birch_planks": [
+        150,
+        2.0
+      ],
+      "jungle_planks": [
+        150,
+        2.0
+      ],
+      "acacia_planks": [
+        150,
+        2.0
+      ],
+      "cherry_planks": [
+        150,
+        2.0
+      ],
+      "dark_oak_planks": [
+        150,
+        2.0
+      ],
+      "pale_oak_planks": [
+        150,
+        2.0
+      ],
+      "mangrove_planks": [
+        150,
+        2.0
+      ],
+      "poplar_planks": [
+        150,
+        2.0
+      ],
+      "bamboo_planks": [
+        150,
+        2.0
+      ],
+      "bamboo_mosaic": [
+        150,
+        2.0
+      ],
+      "oak_sapling": [
+        50,
+        2.0
+      ],
+      "spruce_sapling": [
+        50,
+        2.0
+      ],
+      "birch_sapling": [
+        50,
+        2.0
+      ],
+      "jungle_sapling": [
+        50,
+        2.0
+      ],
+      "acacia_sapling": [
+        50,
+        2.0
+      ],
+      "cherry_sapling": [
+        50,
+        2.0
+      ],
+      "dark_oak_sapling": [
+        50,
+        2.0
+      ],
+      "pale_oak_sapling": [
+        50,
+        2.0
+      ],
+      "mangrove_propagule": [
+        50,
+        2.0
+      ],
+      "poplar_sapling": [
+        50,
+        2.0
+      ],
+      "coal_block": [
+        8000,
+        2.0
+      ],
+      "oak_log": [
+        150,
+        2.0
+      ],
+      "spruce_log": [
+        150,
+        2.0
+      ],
+      "birch_log": [
+        150,
+        2.0
+      ],
+      "jungle_log": [
+        150,
+        2.0
+      ],
+      "acacia_log": [
+        150,
+        2.0
+      ],
+      "cherry_log": [
+        150,
+        2.0
+      ],
+      "pale_oak_log": [
+        150,
+        2.0
+      ],
+      "dark_oak_log": [
+        150,
+        2.0
+      ],
+      "mangrove_log": [
+        150,
+        2.0
+      ],
+      "poplar_log": [
+        150,
+        2.0
+      ],
+      "mangrove_roots": [
+        150,
+        2.0
+      ],
+      "bamboo_block": [
+        150,
+        2.0
+      ],
+      "stripped_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_spruce_log": [
+        150,
+        2.0
+      ],
+      "stripped_birch_log": [
+        150,
+        2.0
+      ],
+      "stripped_jungle_log": [
+        150,
+        2.0
+      ],
+      "stripped_acacia_log": [
+        150,
+        2.0
+      ],
+      "stripped_cherry_log": [
+        150,
+        2.0
+      ],
+      "stripped_dark_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_pale_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_mangrove_log": [
+        150,
+        2.0
+      ],
+      "stripped_poplar_log": [
+        150,
+        2.0
+      ],
+      "stripped_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_spruce_wood": [
+        150,
+        2.0
+      ],
+      "stripped_birch_wood": [
+        150,
+        2.0
+      ],
+      "stripped_jungle_wood": [
+        150,
+        2.0
+      ],
+      "stripped_acacia_wood": [
+        150,
+        2.0
+      ],
+      "stripped_cherry_wood": [
+        150,
+        2.0
+      ],
+      "stripped_dark_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_pale_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_mangrove_wood": [
+        150,
+        2.0
+      ],
+      "stripped_poplar_wood": [
+        150,
+        2.0
+      ],
+      "stripped_bamboo_block": [
+        150,
+        2.0
+      ],
+      "oak_wood": [
+        150,
+        2.0
+      ],
+      "spruce_wood": [
+        150,
+        2.0
+      ],
+      "birch_wood": [
+        150,
+        2.0
+      ],
+      "jungle_wood": [
+        150,
+        2.0
+      ],
+      "acacia_wood": [
+        150,
+        2.0
+      ],
+      "cherry_wood": [
+        150,
+        2.0
+      ],
+      "pale_oak_wood": [
+        150,
+        2.0
+      ],
+      "dark_oak_wood": [
+        150,
+        2.0
+      ],
+      "mangrove_wood": [
+        150,
+        2.0
+      ],
+      "poplar_wood": [
+        150,
+        2.0
+      ],
+      "azalea": [
+        50,
+        2.0
+      ],
+      "flowering_azalea": [
+        50,
+        2.0
+      ],
+      "dead_bush": [
+        50,
+        2.0
+      ],
+      "short_dry_grass": [
+        50,
+        2.0
+      ],
+      "tall_dry_grass": [
+        50,
+        2.0
+      ],
+      "white_wool": [
+        50,
+        2.0
+      ],
+      "orange_wool": [
+        50,
+        2.0
+      ],
+      "magenta_wool": [
+        50,
+        2.0
+      ],
+      "light_blue_wool": [
+        50,
+        2.0
+      ],
+      "yellow_wool": [
+        50,
+        2.0
+      ],
+      "lime_wool": [
+        50,
+        2.0
+      ],
+      "pink_wool": [
+        50,
+        2.0
+      ],
+      "gray_wool": [
+        50,
+        2.0
+      ],
+      "light_gray_wool": [
+        50,
+        2.0
+      ],
+      "cyan_wool": [
+        50,
+        2.0
+      ],
+      "purple_wool": [
+        50,
+        2.0
+      ],
+      "blue_wool": [
+        50,
+        2.0
+      ],
+      "brown_wool": [
+        50,
+        2.0
+      ],
+      "green_wool": [
+        50,
+        2.0
+      ],
+      "red_wool": [
+        50,
+        2.0
+      ],
+      "black_wool": [
+        50,
+        2.0
+      ],
+      "white_wool_stairs": [
+        50,
+        2.0
+      ],
+      "orange_wool_stairs": [
+        50,
+        2.0
+      ],
+      "magenta_wool_stairs": [
+        50,
+        2.0
+      ],
+      "light_blue_wool_stairs": [
+        50,
+        2.0
+      ],
+      "yellow_wool_stairs": [
+        50,
+        2.0
+      ],
+      "lime_wool_stairs": [
+        50,
+        2.0
+      ],
+      "pink_wool_stairs": [
+        50,
+        2.0
+      ],
+      "gray_wool_stairs": [
+        50,
+        2.0
+      ],
+      "light_gray_wool_stairs": [
+        50,
+        2.0
+      ],
+      "cyan_wool_stairs": [
+        50,
+        2.0
+      ],
+      "purple_wool_stairs": [
+        50,
+        2.0
+      ],
+      "blue_wool_stairs": [
+        50,
+        2.0
+      ],
+      "brown_wool_stairs": [
+        50,
+        2.0
+      ],
+      "green_wool_stairs": [
+        50,
+        2.0
+      ],
+      "red_wool_stairs": [
+        50,
+        2.0
+      ],
+      "black_wool_stairs": [
+        50,
+        2.0
+      ],
+      "white_wool_slab": [
+        25,
+        2.0
+      ],
+      "orange_wool_slab": [
+        25,
+        2.0
+      ],
+      "magenta_wool_slab": [
+        25,
+        2.0
+      ],
+      "light_blue_wool_slab": [
+        25,
+        2.0
+      ],
+      "yellow_wool_slab": [
+        25,
+        2.0
+      ],
+      "lime_wool_slab": [
+        25,
+        2.0
+      ],
+      "pink_wool_slab": [
+        25,
+        2.0
+      ],
+      "gray_wool_slab": [
+        25,
+        2.0
+      ],
+      "light_gray_wool_slab": [
+        25,
+        2.0
+      ],
+      "cyan_wool_slab": [
+        25,
+        2.0
+      ],
+      "purple_wool_slab": [
+        25,
+        2.0
+      ],
+      "blue_wool_slab": [
+        25,
+        2.0
+      ],
+      "brown_wool_slab": [
+        25,
+        2.0
+      ],
+      "green_wool_slab": [
+        25,
+        2.0
+      ],
+      "red_wool_slab": [
+        25,
+        2.0
+      ],
+      "black_wool_slab": [
+        25,
+        2.0
+      ],
+      "leaf_litter": [
+        50,
+        2.0
+      ],
+      "bamboo": [
+        25,
+        2.0
+      ],
+      "oak_slab": [
+        75,
+        2.0
+      ],
+      "spruce_slab": [
+        75,
+        2.0
+      ],
+      "birch_slab": [
+        75,
+        2.0
+      ],
+      "jungle_slab": [
+        75,
+        2.0
+      ],
+      "acacia_slab": [
+        75,
+        2.0
+      ],
+      "cherry_slab": [
+        75,
+        2.0
+      ],
+      "dark_oak_slab": [
+        75,
+        2.0
+      ],
+      "pale_oak_slab": [
+        75,
+        2.0
+      ],
+      "mangrove_slab": [
+        75,
+        2.0
+      ],
+      "poplar_slab": [
+        75,
+        2.0
+      ],
+      "bamboo_slab": [
+        75,
+        2.0
+      ],
+      "bamboo_mosaic_slab": [
+        75,
+        2.0
+      ],
+      "acacia_shelf": [
+        150,
+        2.0
+      ],
+      "bamboo_shelf": [
+        150,
+        2.0
+      ],
+      "birch_shelf": [
+        150,
+        2.0
+      ],
+      "cherry_shelf": [
+        150,
+        2.0
+      ],
+      "dark_oak_shelf": [
+        150,
+        2.0
+      ],
+      "jungle_shelf": [
+        150,
+        2.0
+      ],
+      "mangrove_shelf": [
+        150,
+        2.0
+      ],
+      "poplar_shelf": [
+        150,
+        2.0
+      ],
+      "oak_shelf": [
+        150,
+        2.0
+      ],
+      "pale_oak_shelf": [
+        150,
+        2.0
+      ],
+      "spruce_shelf": [
+        150,
+        2.0
+      ],
+      "bookshelf": [
+        150,
+        2.0
+      ],
+      "chiseled_bookshelf": [
+        150,
+        2.0
+      ],
+      "chest": [
+        150,
+        2.0
+      ],
+      "crafting_table": [
+        150,
+        2.0
+      ],
+      "ladder": [
+        150,
+        2.0
+      ],
+      "jukebox": [
+        150,
+        2.0
+      ],
+      "oak_fence": [
+        150,
+        2.0
+      ],
+      "spruce_fence": [
+        150,
+        2.0
+      ],
+      "birch_fence": [
+        150,
+        2.0
+      ],
+      "jungle_fence": [
+        150,
+        2.0
+      ],
+      "acacia_fence": [
+        150,
+        2.0
+      ],
+      "cherry_fence": [
+        150,
+        2.0
+      ],
+      "dark_oak_fence": [
+        150,
+        2.0
+      ],
+      "pale_oak_fence": [
+        150,
+        2.0
+      ],
+      "mangrove_fence": [
+        150,
+        2.0
+      ],
+      "poplar_fence": [
+        150,
+        2.0
+      ],
+      "bamboo_fence": [
+        150,
+        2.0
+      ],
+      "oak_stairs": [
+        150,
+        2.0
+      ],
+      "spruce_stairs": [
+        150,
+        2.0
+      ],
+      "birch_stairs": [
+        150,
+        2.0
+      ],
+      "jungle_stairs": [
+        150,
+        2.0
+      ],
+      "acacia_stairs": [
+        150,
+        2.0
+      ],
+      "cherry_stairs": [
+        150,
+        2.0
+      ],
+      "dark_oak_stairs": [
+        150,
+        2.0
+      ],
+      "pale_oak_stairs": [
+        150,
+        2.0
+      ],
+      "mangrove_stairs": [
+        150,
+        2.0
+      ],
+      "poplar_stairs": [
+        150,
+        2.0
+      ],
+      "bamboo_stairs": [
+        150,
+        2.0
+      ],
+      "bamboo_mosaic_stairs": [
+        150,
+        2.0
+      ],
+      "white_carpet": [
+        33,
+        2.0
+      ],
+      "orange_carpet": [
+        33,
+        2.0
+      ],
+      "magenta_carpet": [
+        33,
+        2.0
+      ],
+      "light_blue_carpet": [
+        33,
+        2.0
+      ],
+      "yellow_carpet": [
+        33,
+        2.0
+      ],
+      "lime_carpet": [
+        33,
+        2.0
+      ],
+      "pink_carpet": [
+        33,
+        2.0
+      ],
+      "gray_carpet": [
+        33,
+        2.0
+      ],
+      "light_gray_carpet": [
+        33,
+        2.0
+      ],
+      "cyan_carpet": [
+        33,
+        2.0
+      ],
+      "purple_carpet": [
+        33,
+        2.0
+      ],
+      "blue_carpet": [
+        33,
+        2.0
+      ],
+      "brown_carpet": [
+        33,
+        2.0
+      ],
+      "green_carpet": [
+        33,
+        2.0
+      ],
+      "red_carpet": [
+        33,
+        2.0
+      ],
+      "black_carpet": [
+        33,
+        2.0
+      ],
+      "scaffolding": [
+        25,
+        2.0
+      ],
+      "lectern": [
+        150,
+        2.0
+      ],
+      "daylight_detector": [
+        150,
+        2.0
+      ],
+      "trapped_chest": [
+        150,
+        2.0
+      ],
+      "note_block": [
+        150,
+        2.0
+      ],
+      "oak_button": [
+        50,
+        2.0
+      ],
+      "spruce_button": [
+        50,
+        2.0
+      ],
+      "birch_button": [
+        50,
+        2.0
+      ],
+      "jungle_button": [
+        50,
+        2.0
+      ],
+      "acacia_button": [
+        50,
+        2.0
+      ],
+      "cherry_button": [
+        50,
+        2.0
+      ],
+      "dark_oak_button": [
+        50,
+        2.0
+      ],
+      "pale_oak_button": [
+        50,
+        2.0
+      ],
+      "mangrove_button": [
+        50,
+        2.0
+      ],
+      "poplar_button": [
+        50,
+        2.0
+      ],
+      "bamboo_button": [
+        50,
+        2.0
+      ],
+      "oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "spruce_pressure_plate": [
+        150,
+        2.0
+      ],
+      "birch_pressure_plate": [
+        150,
+        2.0
+      ],
+      "jungle_pressure_plate": [
+        150,
+        2.0
+      ],
+      "acacia_pressure_plate": [
+        150,
+        2.0
+      ],
+      "cherry_pressure_plate": [
+        150,
+        2.0
+      ],
+      "dark_oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "pale_oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "mangrove_pressure_plate": [
+        150,
+        2.0
+      ],
+      "poplar_pressure_plate": [
+        150,
+        2.0
+      ],
+      "bamboo_pressure_plate": [
+        150,
+        2.0
+      ],
+      "oak_door": [
+        100,
+        2.0
+      ],
+      "spruce_door": [
+        100,
+        2.0
+      ],
+      "birch_door": [
+        100,
+        2.0
+      ],
+      "jungle_door": [
+        100,
+        2.0
+      ],
+      "acacia_door": [
+        100,
+        2.0
+      ],
+      "cherry_door": [
+        100,
+        2.0
+      ],
+      "dark_oak_door": [
+        100,
+        2.0
+      ],
+      "pale_oak_door": [
+        100,
+        2.0
+      ],
+      "mangrove_door": [
+        100,
+        2.0
+      ],
+      "poplar_door": [
+        100,
+        2.0
+      ],
+      "bamboo_door": [
+        100,
+        2.0
+      ],
+      "oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "spruce_trapdoor": [
+        150,
+        2.0
+      ],
+      "birch_trapdoor": [
+        150,
+        2.0
+      ],
+      "jungle_trapdoor": [
+        150,
+        2.0
+      ],
+      "acacia_trapdoor": [
+        150,
+        2.0
+      ],
+      "cherry_trapdoor": [
+        150,
+        2.0
+      ],
+      "dark_oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "pale_oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "mangrove_trapdoor": [
+        150,
+        2.0
+      ],
+      "poplar_trapdoor": [
+        150,
+        2.0
+      ],
+      "bamboo_trapdoor": [
+        150,
+        2.0
+      ],
+      "oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "spruce_fence_gate": [
+        150,
+        2.0
+      ],
+      "birch_fence_gate": [
+        150,
+        2.0
+      ],
+      "jungle_fence_gate": [
+        150,
+        2.0
+      ],
+      "acacia_fence_gate": [
+        150,
+        2.0
+      ],
+      "cherry_fence_gate": [
+        150,
+        2.0
+      ],
+      "dark_oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "pale_oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "mangrove_fence_gate": [
+        150,
+        2.0
+      ],
+      "poplar_fence_gate": [
+        150,
+        2.0
+      ],
+      "bamboo_fence_gate": [
+        150,
+        2.0
+      ],
+      "oak_boat": [
+        600,
+        2.0
+      ],
+      "oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "spruce_boat": [
+        600,
+        2.0
+      ],
+      "spruce_chest_boat": [
+        600,
+        2.0
+      ],
+      "birch_boat": [
+        600,
+        2.0
+      ],
+      "birch_chest_boat": [
+        600,
+        2.0
+      ],
+      "jungle_boat": [
+        600,
+        2.0
+      ],
+      "jungle_chest_boat": [
+        600,
+        2.0
+      ],
+      "acacia_boat": [
+        600,
+        2.0
+      ],
+      "acacia_chest_boat": [
+        600,
+        2.0
+      ],
+      "cherry_boat": [
+        600,
+        2.0
+      ],
+      "cherry_chest_boat": [
+        600,
+        2.0
+      ],
+      "dark_oak_boat": [
+        600,
+        2.0
+      ],
+      "dark_oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "pale_oak_boat": [
+        600,
+        2.0
+      ],
+      "pale_oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "mangrove_boat": [
+        600,
+        2.0
+      ],
+      "mangrove_chest_boat": [
+        600,
+        2.0
+      ],
+      "poplar_boat": [
+        600,
+        2.0
+      ],
+      "poplar_chest_boat": [
+        600,
+        2.0
+      ],
+      "bamboo_raft": [
+        600,
+        2.0
+      ],
+      "bamboo_chest_raft": [
+        600,
+        2.0
+      ],
+      "bowl": [
+        50,
+        2.0
+      ],
+      "bow": [
+        150,
+        2.0
+      ],
+      "coal": [
+        800,
+        2.0
+      ],
+      "charcoal": [
+        800,
+        2.0
+      ],
+      "wooden_sword": [
+        100,
+        2.0
+      ],
+      "wooden_shovel": [
+        100,
+        2.0
+      ],
+      "wooden_pickaxe": [
+        100,
+        2.0
+      ],
+      "wooden_axe": [
+        100,
+        2.0
+      ],
+      "wooden_hoe": [
+        100,
+        2.0
+      ],
+      "stick": [
+        50,
+        2.0
+      ],
+      "oak_sign": [
+        100,
+        2.0
+      ],
+      "spruce_sign": [
+        100,
+        2.0
+      ],
+      "birch_sign": [
+        100,
+        2.0
+      ],
+      "jungle_sign": [
+        100,
+        2.0
+      ],
+      "acacia_sign": [
+        100,
+        2.0
+      ],
+      "cherry_sign": [
+        100,
+        2.0
+      ],
+      "dark_oak_sign": [
+        100,
+        2.0
+      ],
+      "pale_oak_sign": [
+        100,
+        2.0
+      ],
+      "mangrove_sign": [
+        100,
+        2.0
+      ],
+      "poplar_sign": [
+        100,
+        2.0
+      ],
+      "bamboo_sign": [
+        100,
+        2.0
+      ],
+      "oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "spruce_hanging_sign": [
+        400,
+        2.0
+      ],
+      "birch_hanging_sign": [
+        400,
+        2.0
+      ],
+      "jungle_hanging_sign": [
+        400,
+        2.0
+      ],
+      "acacia_hanging_sign": [
+        400,
+        2.0
+      ],
+      "cherry_hanging_sign": [
+        400,
+        2.0
+      ],
+      "dark_oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "pale_oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "mangrove_hanging_sign": [
+        400,
+        2.0
+      ],
+      "poplar_hanging_sign": [
+        400,
+        2.0
+      ],
+      "bamboo_hanging_sign": [
+        400,
+        2.0
+      ],
+      "lava_bucket": [
+        10000,
+        2.0
+      ],
+      "dried_kelp_block": [
+        2000,
+        2.0
+      ],
+      "white_cushion": [
+        25,
+        2.0
+      ],
+      "orange_cushion": [
+        25,
+        2.0
+      ],
+      "magenta_cushion": [
+        25,
+        2.0
+      ],
+      "light_blue_cushion": [
+        25,
+        2.0
+      ],
+      "yellow_cushion": [
+        25,
+        2.0
+      ],
+      "lime_cushion": [
+        25,
+        2.0
+      ],
+      "pink_cushion": [
+        25,
+        2.0
+      ],
+      "gray_cushion": [
+        25,
+        2.0
+      ],
+      "light_gray_cushion": [
+        25,
+        2.0
+      ],
+      "cyan_cushion": [
+        25,
+        2.0
+      ],
+      "purple_cushion": [
+        25,
+        2.0
+      ],
+      "blue_cushion": [
+        25,
+        2.0
+      ],
+      "brown_cushion": [
+        25,
+        2.0
+      ],
+      "green_cushion": [
+        25,
+        2.0
+      ],
+      "red_cushion": [
+        25,
+        2.0
+      ],
+      "black_cushion": [
+        25,
+        2.0
+      ],
+      "fishing_rod": [
+        150,
+        2.0
+      ],
+      "blaze_rod": [
+        1200,
+        2.0
+      ],
+      "white_banner": [
+        150,
+        2.0
+      ],
+      "orange_banner": [
+        150,
+        2.0
+      ],
+      "magenta_banner": [
+        150,
+        2.0
+      ],
+      "light_blue_banner": [
+        150,
+        2.0
+      ],
+      "yellow_banner": [
+        150,
+        2.0
+      ],
+      "lime_banner": [
+        150,
+        2.0
+      ],
+      "pink_banner": [
+        150,
+        2.0
+      ],
+      "gray_banner": [
+        150,
+        2.0
+      ],
+      "light_gray_banner": [
+        150,
+        2.0
+      ],
+      "cyan_banner": [
+        150,
+        2.0
+      ],
+      "purple_banner": [
+        150,
+        2.0
+      ],
+      "blue_banner": [
+        150,
+        2.0
+      ],
+      "brown_banner": [
+        150,
+        2.0
+      ],
+      "green_banner": [
+        150,
+        2.0
+      ],
+      "red_banner": [
+        150,
+        2.0
+      ],
+      "black_banner": [
+        150,
+        2.0
+      ],
+      "wooden_spear": [
+        100,
+        2.0
+      ],
+      "crossbow": [
+        150,
+        2.0
+      ],
+      "loom": [
+        150,
+        2.0
+      ],
+      "composter": [
+        150,
+        2.0
+      ],
+      "barrel": [
+        150,
+        2.0
+      ],
+      "cartography_table": [
+        150,
+        2.0
+      ],
+      "fletching_table": [
+        150,
+        2.0
+      ],
+      "smithing_table": [
+        150,
+        2.0
+      ]
+    },
+    "smoker": {
+      "oak_planks": [
+        150,
+        2.0
+      ],
+      "spruce_planks": [
+        150,
+        2.0
+      ],
+      "birch_planks": [
+        150,
+        2.0
+      ],
+      "jungle_planks": [
+        150,
+        2.0
+      ],
+      "acacia_planks": [
+        150,
+        2.0
+      ],
+      "cherry_planks": [
+        150,
+        2.0
+      ],
+      "dark_oak_planks": [
+        150,
+        2.0
+      ],
+      "pale_oak_planks": [
+        150,
+        2.0
+      ],
+      "mangrove_planks": [
+        150,
+        2.0
+      ],
+      "poplar_planks": [
+        150,
+        2.0
+      ],
+      "bamboo_planks": [
+        150,
+        2.0
+      ],
+      "bamboo_mosaic": [
+        150,
+        2.0
+      ],
+      "oak_sapling": [
+        50,
+        2.0
+      ],
+      "spruce_sapling": [
+        50,
+        2.0
+      ],
+      "birch_sapling": [
+        50,
+        2.0
+      ],
+      "jungle_sapling": [
+        50,
+        2.0
+      ],
+      "acacia_sapling": [
+        50,
+        2.0
+      ],
+      "cherry_sapling": [
+        50,
+        2.0
+      ],
+      "dark_oak_sapling": [
+        50,
+        2.0
+      ],
+      "pale_oak_sapling": [
+        50,
+        2.0
+      ],
+      "mangrove_propagule": [
+        50,
+        2.0
+      ],
+      "poplar_sapling": [
+        50,
+        2.0
+      ],
+      "coal_block": [
+        8000,
+        2.0
+      ],
+      "oak_log": [
+        150,
+        2.0
+      ],
+      "spruce_log": [
+        150,
+        2.0
+      ],
+      "birch_log": [
+        150,
+        2.0
+      ],
+      "jungle_log": [
+        150,
+        2.0
+      ],
+      "acacia_log": [
+        150,
+        2.0
+      ],
+      "cherry_log": [
+        150,
+        2.0
+      ],
+      "pale_oak_log": [
+        150,
+        2.0
+      ],
+      "dark_oak_log": [
+        150,
+        2.0
+      ],
+      "mangrove_log": [
+        150,
+        2.0
+      ],
+      "poplar_log": [
+        150,
+        2.0
+      ],
+      "mangrove_roots": [
+        150,
+        2.0
+      ],
+      "bamboo_block": [
+        150,
+        2.0
+      ],
+      "stripped_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_spruce_log": [
+        150,
+        2.0
+      ],
+      "stripped_birch_log": [
+        150,
+        2.0
+      ],
+      "stripped_jungle_log": [
+        150,
+        2.0
+      ],
+      "stripped_acacia_log": [
+        150,
+        2.0
+      ],
+      "stripped_cherry_log": [
+        150,
+        2.0
+      ],
+      "stripped_dark_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_pale_oak_log": [
+        150,
+        2.0
+      ],
+      "stripped_mangrove_log": [
+        150,
+        2.0
+      ],
+      "stripped_poplar_log": [
+        150,
+        2.0
+      ],
+      "stripped_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_spruce_wood": [
+        150,
+        2.0
+      ],
+      "stripped_birch_wood": [
+        150,
+        2.0
+      ],
+      "stripped_jungle_wood": [
+        150,
+        2.0
+      ],
+      "stripped_acacia_wood": [
+        150,
+        2.0
+      ],
+      "stripped_cherry_wood": [
+        150,
+        2.0
+      ],
+      "stripped_dark_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_pale_oak_wood": [
+        150,
+        2.0
+      ],
+      "stripped_mangrove_wood": [
+        150,
+        2.0
+      ],
+      "stripped_poplar_wood": [
+        150,
+        2.0
+      ],
+      "stripped_bamboo_block": [
+        150,
+        2.0
+      ],
+      "oak_wood": [
+        150,
+        2.0
+      ],
+      "spruce_wood": [
+        150,
+        2.0
+      ],
+      "birch_wood": [
+        150,
+        2.0
+      ],
+      "jungle_wood": [
+        150,
+        2.0
+      ],
+      "acacia_wood": [
+        150,
+        2.0
+      ],
+      "cherry_wood": [
+        150,
+        2.0
+      ],
+      "pale_oak_wood": [
+        150,
+        2.0
+      ],
+      "dark_oak_wood": [
+        150,
+        2.0
+      ],
+      "mangrove_wood": [
+        150,
+        2.0
+      ],
+      "poplar_wood": [
+        150,
+        2.0
+      ],
+      "azalea": [
+        50,
+        2.0
+      ],
+      "flowering_azalea": [
+        50,
+        2.0
+      ],
+      "dead_bush": [
+        50,
+        2.0
+      ],
+      "short_dry_grass": [
+        50,
+        2.0
+      ],
+      "tall_dry_grass": [
+        50,
+        2.0
+      ],
+      "white_wool": [
+        50,
+        2.0
+      ],
+      "orange_wool": [
+        50,
+        2.0
+      ],
+      "magenta_wool": [
+        50,
+        2.0
+      ],
+      "light_blue_wool": [
+        50,
+        2.0
+      ],
+      "yellow_wool": [
+        50,
+        2.0
+      ],
+      "lime_wool": [
+        50,
+        2.0
+      ],
+      "pink_wool": [
+        50,
+        2.0
+      ],
+      "gray_wool": [
+        50,
+        2.0
+      ],
+      "light_gray_wool": [
+        50,
+        2.0
+      ],
+      "cyan_wool": [
+        50,
+        2.0
+      ],
+      "purple_wool": [
+        50,
+        2.0
+      ],
+      "blue_wool": [
+        50,
+        2.0
+      ],
+      "brown_wool": [
+        50,
+        2.0
+      ],
+      "green_wool": [
+        50,
+        2.0
+      ],
+      "red_wool": [
+        50,
+        2.0
+      ],
+      "black_wool": [
+        50,
+        2.0
+      ],
+      "white_wool_stairs": [
+        50,
+        2.0
+      ],
+      "orange_wool_stairs": [
+        50,
+        2.0
+      ],
+      "magenta_wool_stairs": [
+        50,
+        2.0
+      ],
+      "light_blue_wool_stairs": [
+        50,
+        2.0
+      ],
+      "yellow_wool_stairs": [
+        50,
+        2.0
+      ],
+      "lime_wool_stairs": [
+        50,
+        2.0
+      ],
+      "pink_wool_stairs": [
+        50,
+        2.0
+      ],
+      "gray_wool_stairs": [
+        50,
+        2.0
+      ],
+      "light_gray_wool_stairs": [
+        50,
+        2.0
+      ],
+      "cyan_wool_stairs": [
+        50,
+        2.0
+      ],
+      "purple_wool_stairs": [
+        50,
+        2.0
+      ],
+      "blue_wool_stairs": [
+        50,
+        2.0
+      ],
+      "brown_wool_stairs": [
+        50,
+        2.0
+      ],
+      "green_wool_stairs": [
+        50,
+        2.0
+      ],
+      "red_wool_stairs": [
+        50,
+        2.0
+      ],
+      "black_wool_stairs": [
+        50,
+        2.0
+      ],
+      "white_wool_slab": [
+        25,
+        2.0
+      ],
+      "orange_wool_slab": [
+        25,
+        2.0
+      ],
+      "magenta_wool_slab": [
+        25,
+        2.0
+      ],
+      "light_blue_wool_slab": [
+        25,
+        2.0
+      ],
+      "yellow_wool_slab": [
+        25,
+        2.0
+      ],
+      "lime_wool_slab": [
+        25,
+        2.0
+      ],
+      "pink_wool_slab": [
+        25,
+        2.0
+      ],
+      "gray_wool_slab": [
+        25,
+        2.0
+      ],
+      "light_gray_wool_slab": [
+        25,
+        2.0
+      ],
+      "cyan_wool_slab": [
+        25,
+        2.0
+      ],
+      "purple_wool_slab": [
+        25,
+        2.0
+      ],
+      "blue_wool_slab": [
+        25,
+        2.0
+      ],
+      "brown_wool_slab": [
+        25,
+        2.0
+      ],
+      "green_wool_slab": [
+        25,
+        2.0
+      ],
+      "red_wool_slab": [
+        25,
+        2.0
+      ],
+      "black_wool_slab": [
+        25,
+        2.0
+      ],
+      "leaf_litter": [
+        50,
+        2.0
+      ],
+      "bamboo": [
+        25,
+        2.0
+      ],
+      "oak_slab": [
+        75,
+        2.0
+      ],
+      "spruce_slab": [
+        75,
+        2.0
+      ],
+      "birch_slab": [
+        75,
+        2.0
+      ],
+      "jungle_slab": [
+        75,
+        2.0
+      ],
+      "acacia_slab": [
+        75,
+        2.0
+      ],
+      "cherry_slab": [
+        75,
+        2.0
+      ],
+      "dark_oak_slab": [
+        75,
+        2.0
+      ],
+      "pale_oak_slab": [
+        75,
+        2.0
+      ],
+      "mangrove_slab": [
+        75,
+        2.0
+      ],
+      "poplar_slab": [
+        75,
+        2.0
+      ],
+      "bamboo_slab": [
+        75,
+        2.0
+      ],
+      "bamboo_mosaic_slab": [
+        75,
+        2.0
+      ],
+      "acacia_shelf": [
+        150,
+        2.0
+      ],
+      "bamboo_shelf": [
+        150,
+        2.0
+      ],
+      "birch_shelf": [
+        150,
+        2.0
+      ],
+      "cherry_shelf": [
+        150,
+        2.0
+      ],
+      "dark_oak_shelf": [
+        150,
+        2.0
+      ],
+      "jungle_shelf": [
+        150,
+        2.0
+      ],
+      "mangrove_shelf": [
+        150,
+        2.0
+      ],
+      "poplar_shelf": [
+        150,
+        2.0
+      ],
+      "oak_shelf": [
+        150,
+        2.0
+      ],
+      "pale_oak_shelf": [
+        150,
+        2.0
+      ],
+      "spruce_shelf": [
+        150,
+        2.0
+      ],
+      "bookshelf": [
+        150,
+        2.0
+      ],
+      "chiseled_bookshelf": [
+        150,
+        2.0
+      ],
+      "chest": [
+        150,
+        2.0
+      ],
+      "crafting_table": [
+        150,
+        2.0
+      ],
+      "ladder": [
+        150,
+        2.0
+      ],
+      "jukebox": [
+        150,
+        2.0
+      ],
+      "oak_fence": [
+        150,
+        2.0
+      ],
+      "spruce_fence": [
+        150,
+        2.0
+      ],
+      "birch_fence": [
+        150,
+        2.0
+      ],
+      "jungle_fence": [
+        150,
+        2.0
+      ],
+      "acacia_fence": [
+        150,
+        2.0
+      ],
+      "cherry_fence": [
+        150,
+        2.0
+      ],
+      "dark_oak_fence": [
+        150,
+        2.0
+      ],
+      "pale_oak_fence": [
+        150,
+        2.0
+      ],
+      "mangrove_fence": [
+        150,
+        2.0
+      ],
+      "poplar_fence": [
+        150,
+        2.0
+      ],
+      "bamboo_fence": [
+        150,
+        2.0
+      ],
+      "oak_stairs": [
+        150,
+        2.0
+      ],
+      "spruce_stairs": [
+        150,
+        2.0
+      ],
+      "birch_stairs": [
+        150,
+        2.0
+      ],
+      "jungle_stairs": [
+        150,
+        2.0
+      ],
+      "acacia_stairs": [
+        150,
+        2.0
+      ],
+      "cherry_stairs": [
+        150,
+        2.0
+      ],
+      "dark_oak_stairs": [
+        150,
+        2.0
+      ],
+      "pale_oak_stairs": [
+        150,
+        2.0
+      ],
+      "mangrove_stairs": [
+        150,
+        2.0
+      ],
+      "poplar_stairs": [
+        150,
+        2.0
+      ],
+      "bamboo_stairs": [
+        150,
+        2.0
+      ],
+      "bamboo_mosaic_stairs": [
+        150,
+        2.0
+      ],
+      "white_carpet": [
+        33,
+        2.0
+      ],
+      "orange_carpet": [
+        33,
+        2.0
+      ],
+      "magenta_carpet": [
+        33,
+        2.0
+      ],
+      "light_blue_carpet": [
+        33,
+        2.0
+      ],
+      "yellow_carpet": [
+        33,
+        2.0
+      ],
+      "lime_carpet": [
+        33,
+        2.0
+      ],
+      "pink_carpet": [
+        33,
+        2.0
+      ],
+      "gray_carpet": [
+        33,
+        2.0
+      ],
+      "light_gray_carpet": [
+        33,
+        2.0
+      ],
+      "cyan_carpet": [
+        33,
+        2.0
+      ],
+      "purple_carpet": [
+        33,
+        2.0
+      ],
+      "blue_carpet": [
+        33,
+        2.0
+      ],
+      "brown_carpet": [
+        33,
+        2.0
+      ],
+      "green_carpet": [
+        33,
+        2.0
+      ],
+      "red_carpet": [
+        33,
+        2.0
+      ],
+      "black_carpet": [
+        33,
+        2.0
+      ],
+      "scaffolding": [
+        25,
+        2.0
+      ],
+      "lectern": [
+        150,
+        2.0
+      ],
+      "daylight_detector": [
+        150,
+        2.0
+      ],
+      "trapped_chest": [
+        150,
+        2.0
+      ],
+      "note_block": [
+        150,
+        2.0
+      ],
+      "oak_button": [
+        50,
+        2.0
+      ],
+      "spruce_button": [
+        50,
+        2.0
+      ],
+      "birch_button": [
+        50,
+        2.0
+      ],
+      "jungle_button": [
+        50,
+        2.0
+      ],
+      "acacia_button": [
+        50,
+        2.0
+      ],
+      "cherry_button": [
+        50,
+        2.0
+      ],
+      "dark_oak_button": [
+        50,
+        2.0
+      ],
+      "pale_oak_button": [
+        50,
+        2.0
+      ],
+      "mangrove_button": [
+        50,
+        2.0
+      ],
+      "poplar_button": [
+        50,
+        2.0
+      ],
+      "bamboo_button": [
+        50,
+        2.0
+      ],
+      "oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "spruce_pressure_plate": [
+        150,
+        2.0
+      ],
+      "birch_pressure_plate": [
+        150,
+        2.0
+      ],
+      "jungle_pressure_plate": [
+        150,
+        2.0
+      ],
+      "acacia_pressure_plate": [
+        150,
+        2.0
+      ],
+      "cherry_pressure_plate": [
+        150,
+        2.0
+      ],
+      "dark_oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "pale_oak_pressure_plate": [
+        150,
+        2.0
+      ],
+      "mangrove_pressure_plate": [
+        150,
+        2.0
+      ],
+      "poplar_pressure_plate": [
+        150,
+        2.0
+      ],
+      "bamboo_pressure_plate": [
+        150,
+        2.0
+      ],
+      "oak_door": [
+        100,
+        2.0
+      ],
+      "spruce_door": [
+        100,
+        2.0
+      ],
+      "birch_door": [
+        100,
+        2.0
+      ],
+      "jungle_door": [
+        100,
+        2.0
+      ],
+      "acacia_door": [
+        100,
+        2.0
+      ],
+      "cherry_door": [
+        100,
+        2.0
+      ],
+      "dark_oak_door": [
+        100,
+        2.0
+      ],
+      "pale_oak_door": [
+        100,
+        2.0
+      ],
+      "mangrove_door": [
+        100,
+        2.0
+      ],
+      "poplar_door": [
+        100,
+        2.0
+      ],
+      "bamboo_door": [
+        100,
+        2.0
+      ],
+      "oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "spruce_trapdoor": [
+        150,
+        2.0
+      ],
+      "birch_trapdoor": [
+        150,
+        2.0
+      ],
+      "jungle_trapdoor": [
+        150,
+        2.0
+      ],
+      "acacia_trapdoor": [
+        150,
+        2.0
+      ],
+      "cherry_trapdoor": [
+        150,
+        2.0
+      ],
+      "dark_oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "pale_oak_trapdoor": [
+        150,
+        2.0
+      ],
+      "mangrove_trapdoor": [
+        150,
+        2.0
+      ],
+      "poplar_trapdoor": [
+        150,
+        2.0
+      ],
+      "bamboo_trapdoor": [
+        150,
+        2.0
+      ],
+      "oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "spruce_fence_gate": [
+        150,
+        2.0
+      ],
+      "birch_fence_gate": [
+        150,
+        2.0
+      ],
+      "jungle_fence_gate": [
+        150,
+        2.0
+      ],
+      "acacia_fence_gate": [
+        150,
+        2.0
+      ],
+      "cherry_fence_gate": [
+        150,
+        2.0
+      ],
+      "dark_oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "pale_oak_fence_gate": [
+        150,
+        2.0
+      ],
+      "mangrove_fence_gate": [
+        150,
+        2.0
+      ],
+      "poplar_fence_gate": [
+        150,
+        2.0
+      ],
+      "bamboo_fence_gate": [
+        150,
+        2.0
+      ],
+      "oak_boat": [
+        600,
+        2.0
+      ],
+      "oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "spruce_boat": [
+        600,
+        2.0
+      ],
+      "spruce_chest_boat": [
+        600,
+        2.0
+      ],
+      "birch_boat": [
+        600,
+        2.0
+      ],
+      "birch_chest_boat": [
+        600,
+        2.0
+      ],
+      "jungle_boat": [
+        600,
+        2.0
+      ],
+      "jungle_chest_boat": [
+        600,
+        2.0
+      ],
+      "acacia_boat": [
+        600,
+        2.0
+      ],
+      "acacia_chest_boat": [
+        600,
+        2.0
+      ],
+      "cherry_boat": [
+        600,
+        2.0
+      ],
+      "cherry_chest_boat": [
+        600,
+        2.0
+      ],
+      "dark_oak_boat": [
+        600,
+        2.0
+      ],
+      "dark_oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "pale_oak_boat": [
+        600,
+        2.0
+      ],
+      "pale_oak_chest_boat": [
+        600,
+        2.0
+      ],
+      "mangrove_boat": [
+        600,
+        2.0
+      ],
+      "mangrove_chest_boat": [
+        600,
+        2.0
+      ],
+      "poplar_boat": [
+        600,
+        2.0
+      ],
+      "poplar_chest_boat": [
+        600,
+        2.0
+      ],
+      "bamboo_raft": [
+        600,
+        2.0
+      ],
+      "bamboo_chest_raft": [
+        600,
+        2.0
+      ],
+      "bowl": [
+        50,
+        2.0
+      ],
+      "bow": [
+        150,
+        2.0
+      ],
+      "coal": [
+        800,
+        2.0
+      ],
+      "charcoal": [
+        800,
+        2.0
+      ],
+      "wooden_sword": [
+        100,
+        2.0
+      ],
+      "wooden_shovel": [
+        100,
+        2.0
+      ],
+      "wooden_pickaxe": [
+        100,
+        2.0
+      ],
+      "wooden_axe": [
+        100,
+        2.0
+      ],
+      "wooden_hoe": [
+        100,
+        2.0
+      ],
+      "stick": [
+        50,
+        2.0
+      ],
+      "oak_sign": [
+        100,
+        2.0
+      ],
+      "spruce_sign": [
+        100,
+        2.0
+      ],
+      "birch_sign": [
+        100,
+        2.0
+      ],
+      "jungle_sign": [
+        100,
+        2.0
+      ],
+      "acacia_sign": [
+        100,
+        2.0
+      ],
+      "cherry_sign": [
+        100,
+        2.0
+      ],
+      "dark_oak_sign": [
+        100,
+        2.0
+      ],
+      "pale_oak_sign": [
+        100,
+        2.0
+      ],
+      "mangrove_sign": [
+        100,
+        2.0
+      ],
+      "poplar_sign": [
+        100,
+        2.0
+      ],
+      "bamboo_sign": [
+        100,
+        2.0
+      ],
+      "oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "spruce_hanging_sign": [
+        400,
+        2.0
+      ],
+      "birch_hanging_sign": [
+        400,
+        2.0
+      ],
+      "jungle_hanging_sign": [
+        400,
+        2.0
+      ],
+      "acacia_hanging_sign": [
+        400,
+        2.0
+      ],
+      "cherry_hanging_sign": [
+        400,
+        2.0
+      ],
+      "dark_oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "pale_oak_hanging_sign": [
+        400,
+        2.0
+      ],
+      "mangrove_hanging_sign": [
+        400,
+        2.0
+      ],
+      "poplar_hanging_sign": [
+        400,
+        2.0
+      ],
+      "bamboo_hanging_sign": [
+        400,
+        2.0
+      ],
+      "lava_bucket": [
+        10000,
+        2.0
+      ],
+      "dried_kelp_block": [
+        2000,
+        2.0
+      ],
+      "white_cushion": [
+        25,
+        2.0
+      ],
+      "orange_cushion": [
+        25,
+        2.0
+      ],
+      "magenta_cushion": [
+        25,
+        2.0
+      ],
+      "light_blue_cushion": [
+        25,
+        2.0
+      ],
+      "yellow_cushion": [
+        25,
+        2.0
+      ],
+      "lime_cushion": [
+        25,
+        2.0
+      ],
+      "pink_cushion": [
+        25,
+        2.0
+      ],
+      "gray_cushion": [
+        25,
+        2.0
+      ],
+      "light_gray_cushion": [
+        25,
+        2.0
+      ],
+      "cyan_cushion": [
+        25,
+        2.0
+      ],
+      "purple_cushion": [
+        25,
+        2.0
+      ],
+      "blue_cushion": [
+        25,
+        2.0
+      ],
+      "brown_cushion": [
+        25,
+        2.0
+      ],
+      "green_cushion": [
+        25,
+        2.0
+      ],
+      "red_cushion": [
+        25,
+        2.0
+      ],
+      "black_cushion": [
+        25,
+        2.0
+      ],
+      "fishing_rod": [
+        150,
+        2.0
+      ],
+      "blaze_rod": [
+        1200,
+        2.0
+      ],
+      "white_banner": [
+        150,
+        2.0
+      ],
+      "orange_banner": [
+        150,
+        2.0
+      ],
+      "magenta_banner": [
+        150,
+        2.0
+      ],
+      "light_blue_banner": [
+        150,
+        2.0
+      ],
+      "yellow_banner": [
+        150,
+        2.0
+      ],
+      "lime_banner": [
+        150,
+        2.0
+      ],
+      "pink_banner": [
+        150,
+        2.0
+      ],
+      "gray_banner": [
+        150,
+        2.0
+      ],
+      "light_gray_banner": [
+        150,
+        2.0
+      ],
+      "cyan_banner": [
+        150,
+        2.0
+      ],
+      "purple_banner": [
+        150,
+        2.0
+      ],
+      "blue_banner": [
+        150,
+        2.0
+      ],
+      "brown_banner": [
+        150,
+        2.0
+      ],
+      "green_banner": [
+        150,
+        2.0
+      ],
+      "red_banner": [
+        150,
+        2.0
+      ],
+      "black_banner": [
+        150,
+        2.0
+      ],
+      "wooden_spear": [
+        100,
+        2.0
+      ],
+      "crossbow": [
+        150,
+        2.0
+      ],
+      "loom": [
+        150,
+        2.0
+      ],
+      "composter": [
+        150,
+        2.0
+      ],
+      "barrel": [
+        150,
+        2.0
+      ],
+      "cartography_table": [
+        150,
+        2.0
+      ],
+      "fletching_table": [
+        150,
+        2.0
+      ],
+      "smithing_table": [
+        150,
+        2.0
+      ]
+    }
+  }
+}

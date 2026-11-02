@@ -15,7 +15,7 @@ trait ItemCommand
     private const ITEM_ARMOR_WINDOW = [100 => 8, 101 => 7, 102 => 6, 103 => 5];
 
     /** Block containers with stored slots, by their container sizes. */
-    private const ITEM_CONTAINERS = ['chest' => 27, 'barrel' => 27, 'trapped_chest' => 27, 'furnace' => 3];
+    private const ITEM_CONTAINERS = ['chest' => 27, 'barrel' => 27, 'trapped_chest' => 27, 'furnace' => 3, 'blast_furnace' => 3, 'smoker' => 3];
 
     /**
      * ItemCommands replace, fill and override: copies of one item, or of a source's slots, into
