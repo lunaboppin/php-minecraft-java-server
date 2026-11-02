@@ -3365,6 +3365,8 @@
     "item.bottle.fill": 196,
     "entity.skeleton.shoot": 1495,
     "entity.generic.burn": 699,
+    "block.composter.empty": 384,
+    "block.composter.ready": 387,
     "entity.splash_potion.throw": 1587
   },
   "particle_types": {

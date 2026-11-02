@@ -169,10 +169,10 @@ jobs:
             bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep cauldrons
             pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
-            item-fluids item-blocks
+            item-fluids item-blocks orb-motion tnt-motion falling-restart
           )
           # verify.py decodes these scenarios' captured packets with both codecs.
-          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone item-fluids item-blocks "
+          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone item-fluids item-blocks orb-motion tnt-motion "
           packets=()
           for i in "${!scenarios[@]}"; do
             if [ $((i % 2 + 1)) != "$SHARD" ]; then continue; fi
@@ -426,6 +426,14 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/dispensers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispensers
           python3 tools/parity/verify.py tools/.cache/parity-dispensers/php-packets.json tools/.cache/parity-dispensers/reference-packets.json
+      - name: Compare composters with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/composters.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-composters
+          python3 tools/parity/verify.py tools/.cache/parity-composters/php-packets.json tools/.cache/parity-composters/reference-packets.json
+      - name: Compare dispensers shooting arrows and snowballs with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/dispenser-projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispenser-projectiles
+          python3 tools/parity/verify.py tools/.cache/parity-dispenser-projectiles/php-packets.json tools/.cache/parity-dispenser-projectiles/reference-packets.json
       - name: Compare throwing splash potions with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/splash-potions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-splash-potions
@@ -450,6 +458,8 @@ jobs:
             tools/.cache/parity-smithing/
             tools/.cache/parity-hoppers/
             tools/.cache/parity-dispensers/
+            tools/.cache/parity-composters/
+            tools/.cache/parity-dispenser-projectiles/
             tools/.cache/parity-splash-potions/
           retention-days: 7
 
