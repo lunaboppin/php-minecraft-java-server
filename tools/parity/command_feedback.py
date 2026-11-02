@@ -1638,7 +1638,9 @@ def compare(reference, php):
         # spanning several chunks sends their updates in an order that varies between runs.
         # So do advancement announcements for a tree's children, which vanilla keeps in a hash set.
         # Items meet recipe and advancement criteria in the order of vanilla's listener hash map.
-        unordered = expected['command'].startswith(('kick ', 'place ', 'give ', 'clear')) or (expected['command'].startswith('advancement ') and (' from ' in expected['command'] or ' through ' in expected['command']))
+        # A dismounted rider's position sync reaches a watcher before or after set_passengers,
+        # depending on whether the command lands before or after the tick's entity tracking.
+        unordered = expected['command'].startswith(('kick ', 'place ', 'give ', 'clear')) or (expected['command'].startswith('advancement ') and (' from ' in expected['command'] or ' through ' in expected['command'])) or (expected['command'].startswith('ride ') and expected['command'].endswith(' dismount'))
         # A summoned entity has a random UUID on each server.
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
