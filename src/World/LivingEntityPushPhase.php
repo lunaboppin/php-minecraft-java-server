@@ -38,6 +38,36 @@ final class LivingEntityPushPhase
         $this->index->setAccessible($section, $accessible);
     }
 
+    /**
+     * Level.getPushableEntities as LivingEntity.pushEntities counts them for cramming: how many
+     * could be pushed, and how many of those ride nothing.
+     *
+     * @return array{int, int}
+     */
+    public function pushableCount(int $id): array
+    {
+        $caller = $this->entities[$id];
+        $total = 0;
+        $unmounted = 0;
+        foreach ($this->index->query($caller['bounds']) as $otherId) {
+            $other = $this->entities[$otherId];
+            if ($otherId === $id || !EntityPushing::eligible(
+                $other['pushable'],
+                $other['spectator'],
+                $caller['collisionRule'] ?? 'ALWAYS',
+                $other['collisionRule'] ?? 'ALWAYS',
+                ($caller['team'] ?? null) !== null && ($caller['team'] ?? null) === ($other['team'] ?? null)
+            )) {
+                continue;
+            }
+            ++$total;
+            if (($other['rootVehicle'] ?? $otherId) === $otherId) {
+                ++$unmounted;
+            }
+        }
+        return [$total, $unmounted];
+    }
+
     /** @return list<int> IDs touched by eligible contacts. */
     public function pushNeighbors(int $id, ?\Closure $dispatch = null): array
     {

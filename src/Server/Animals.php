@@ -707,6 +707,11 @@ trait Animals
             // Mob.isNoAi: no goals and no travel, so a NoAI mob stays where it is; a passenger's
             // vehicle places it.
             if (!$near || ($animal['noAi'] ?? false) || isset($animal['vehicle'])) {
+                // LivingEntity.aiStep still runs pushEntities, so such a mob can be crammed.
+                if ($near) {
+                    $this->trackPushingMob($animal);
+                    $this->crammingDamage($animal);
+                }
                 continue;
             }
             $this->moveMob($animal, $noise);
