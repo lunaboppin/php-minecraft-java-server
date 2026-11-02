@@ -141,7 +141,8 @@ def main():
                 use_block(a, 2, 65, 2)
                 click(a, find(a, 'raw_gold', 3), mode=1)
                 click(a, find(a, 'coal', 3), mode=1)
-                inventory(a, lambda: a.inventory[2] is not None and a.inventory[2]['item'] == ITEMS['gold_ingot'])
+                # Furnaces send their progress every tick, so allow for the packets of 200 ticks.
+                a.until('container_set_content', lambda payload: a.inventory[2] is not None and a.inventory[2]['item'] == ITEMS['gold_ingot'], limit=20000)
                 net.check(a.inventory[2]['count'] == 1, 'furnace smelts gold using fuel')
                 mark = len(a.seen)
                 click(a, 2, mode=1)
