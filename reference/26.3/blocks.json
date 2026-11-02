@@ -3363,7 +3363,11 @@
     "item.bucket.fill_powder_snow": 234,
     "item.bottle.empty": 195,
     "item.bottle.fill": 196,
-    "entity.skeleton.shoot": 1495
+    "entity.skeleton.shoot": 1495,
+    "entity.sheep.shear": 1445,
+    "entity.cow.milk": 449,
+    "entity.goat.milk": 744,
+    "entity.goat.screaming.milk": 753
   },
   "particle_types": {
     "angry_villager": 0,

@@ -32967,6 +32967,696 @@
         }
       ],
       "random_sequence": "minecraft:entities/zombified_piglin"
+    },
+    "minecraft:shearing/bogged": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "modifier": {
+                "type": "minecraft:set_count",
+                "count": 1
+              },
+              "name": "minecraft:brown_mushroom"
+            },
+            {
+              "type": "minecraft:item",
+              "modifier": {
+                "type": "minecraft:set_count",
+                "count": 1
+              },
+              "name": "minecraft:red_mushroom"
+            }
+          ],
+          "rolls": 2
+        }
+      ],
+      "random_sequence": "minecraft:shearing/bogged"
+    },
+    "minecraft:shearing/mooshroom": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:mooshroom/variant": "red"
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/mooshroom/red"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:mooshroom/variant": "brown"
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/mooshroom/brown"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "minecraft:shearing/mooshroom"
+    },
+    "minecraft:shearing/mooshroom/brown": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:brown_mushroom"
+            }
+          ],
+          "rolls": 5
+        }
+      ],
+      "random_sequence": "minecraft:shearing/mooshroom/brown"
+    },
+    "minecraft:shearing/mooshroom/red": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:red_mushroom"
+            }
+          ],
+          "rolls": 5
+        }
+      ],
+      "random_sequence": "minecraft:shearing/mooshroom/red"
+    },
+    "minecraft:shearing/sheep": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "white"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/white"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "orange"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/orange"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "magenta"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/magenta"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "light_blue"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/light_blue"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "yellow"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/yellow"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "lime"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/lime"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "pink"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/pink"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "gray"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/gray"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "light_gray"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/light_gray"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "cyan"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/cyan"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "purple"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/purple"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "blue"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/blue"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "brown"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/brown"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "green"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/green"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "red"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/red"
+                },
+                {
+                  "type": "minecraft:loot_table",
+                  "condition": {
+                    "type": "minecraft:entity_properties",
+                    "entity": "this",
+                    "predicate": {
+                      "minecraft:components": {
+                        "minecraft:sheep/color": "black"
+                      },
+                      "minecraft:type_specific/sheep": {
+                        "sheared": false
+                      }
+                    }
+                  },
+                  "value": "minecraft:shearing/sheep/black"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep"
+    },
+    "minecraft:shearing/sheep/black": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:black_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/black"
+    },
+    "minecraft:shearing/sheep/blue": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:blue_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/blue"
+    },
+    "minecraft:shearing/sheep/brown": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:brown_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/brown"
+    },
+    "minecraft:shearing/sheep/cyan": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:cyan_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/cyan"
+    },
+    "minecraft:shearing/sheep/gray": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:gray_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/gray"
+    },
+    "minecraft:shearing/sheep/green": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:green_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/green"
+    },
+    "minecraft:shearing/sheep/light_blue": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:light_blue_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/light_blue"
+    },
+    "minecraft:shearing/sheep/light_gray": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:light_gray_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/light_gray"
+    },
+    "minecraft:shearing/sheep/lime": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:lime_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/lime"
+    },
+    "minecraft:shearing/sheep/magenta": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:magenta_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/magenta"
+    },
+    "minecraft:shearing/sheep/orange": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:orange_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/orange"
+    },
+    "minecraft:shearing/sheep/pink": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:pink_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/pink"
+    },
+    "minecraft:shearing/sheep/purple": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:purple_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/purple"
+    },
+    "minecraft:shearing/sheep/red": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:red_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/red"
+    },
+    "minecraft:shearing/sheep/white": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:white_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/white"
+    },
+    "minecraft:shearing/sheep/yellow": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:yellow_wool"
+            }
+          ],
+          "rolls": {
+            "type": "minecraft:uniform",
+            "max": 3,
+            "min": 1
+          }
+        }
+      ],
+      "random_sequence": "minecraft:shearing/sheep/yellow"
+    },
+    "minecraft:shearing/snow_golem": {
+      "type": "minecraft:shearing",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:carved_pumpkin"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "minecraft:shearing/snow_golem"
     }
   },
   "predicates": {
