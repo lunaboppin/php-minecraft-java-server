@@ -166,8 +166,8 @@ jobs:
         run: |
           scenarios=(
             fluids bubble-columns random-ticks random-ticks-plants sponges copper-weathering powered-rails fire
-            bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep
-            pressure-plates tripwires weather chorus lightning daylight-detectors precipitation bells bone-meal
+            bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep cauldrons
+            pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
           )
           # verify.py decodes these scenarios' captured packets with both codecs.
@@ -401,6 +401,14 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/enchanting.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-enchanting
           python3 tools/parity/verify.py tools/.cache/parity-enchanting/php-packets.json tools/.cache/parity-enchanting/reference-packets.json
+      - name: Compare repairing and combining items at an anvil with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/anvils.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-anvils
+          python3 tools/parity/verify.py tools/.cache/parity-anvils/php-packets.json tools/.cache/parity-anvils/reference-packets.json
+      - name: Compare drinking potions and milk and eating stew with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/consumables.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-consumables
+          python3 tools/parity/verify.py tools/.cache/parity-consumables/php-packets.json tools/.cache/parity-consumables/reference-packets.json
       - name: Compare axes, hoes and shovels used on blocks with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/tool-actions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tool-actions
@@ -419,6 +427,8 @@ jobs:
             tools/.cache/parity-projectiles/
             tools/.cache/parity-bows/
             tools/.cache/parity-enchanting/
+            tools/.cache/parity-anvils/
+            tools/.cache/parity-consumables/
             tools/.cache/parity-tool-actions/
           retention-days: 7
 
