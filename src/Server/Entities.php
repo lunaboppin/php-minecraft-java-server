@@ -10,6 +10,7 @@ use PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker;
 use PhpMinecraftJavaServer\World\Collision;
 use PhpMinecraftJavaServer\World\Fluids;
 use PhpMinecraftJavaServer\World\Generation\Float32;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 
 trait Entities
 {
@@ -302,13 +303,19 @@ trait Entities
                 $fall = $delta[1];
                 $moved = $collision->move($this->world, $box, $delta);
                 $below = $moved[1] !== $delta[1] && $delta[1] < 0.0;
-                $item['horizontalCollision'] = abs($moved[0] - $delta[0]) >= 1.0E-5 || abs($moved[2] - $delta[2]) >= 1.0E-5;
+                $item['horizontalCollision'] = abs($moved[0] - $delta[0]) >= 9.999999747378752E-6 || abs($moved[2] - $delta[2]) >= 9.999999747378752E-6;
                 if ($delta[1] !== 0.0) {
                     $item['verticalCollision'] = $moved[1] !== $delta[1];
                 }
-                [$item['x'], $item['y'], $item['z']] = [$item['x'] + $moved[0], $item['y'] + $moved[1], $item['z'] + $moved[2]];
+                // Entity.move keeps its position when the move left is tiny and most of it was blocked.
+                $length = $moved[0] ** 2 + $moved[1] ** 2 + $moved[2] ** 2;
+                if ($length > 1.0E-7 || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 - $length < 1.0E-7) {
+                    [$item['x'], $item['y'], $item['z']] = [$item['x'] + $moved[0], $item['y'] + $moved[1], $item['z'] + $moved[2]];
+                }
+                // Entity.restituteMovementAfterCollisions: stopped across an axis it collided on, sideways
+                // only when the move was cut by at least Mth.equal's 1.0E-5F.
                 foreach ([0, 1, 2] as $axis) {
-                    if ($moved[$axis] !== $delta[$axis]) {
+                    if ($axis === 1 ? $moved[1] !== $delta[1] : abs($moved[$axis] - $delta[$axis]) >= 9.999999747378752E-6) {
                         $item['velocity'][$axis] = 0.0;
                     }
                 }
@@ -328,7 +335,7 @@ trait Entities
                 $drag = 0.9800000190734863;
                 $ground = $drag;
                 if ($item['ground']) {
-                    $ground = Float32::round($drag * Float32::round($this->blockFriction($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.999999), (int) floor($item['z'])))));
+                    $ground = Float32::round($drag * Float32::round($this->blockFriction($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.5000010132789612), (int) floor($item['z'])))));
                 }
                 $item['velocity'] = [$item['velocity'][0] * $ground, $item['velocity'][1] * $drag, $item['velocity'][2] * $ground];
                 if ($item['ground'] && $item['velocity'][1] < 0.0) {
@@ -395,8 +402,9 @@ trait Entities
      *
      * @return array{water: float, lava: float, any: bool} any is true in any fluid at all
      */
-    private function entityFluidCurrent(array $box, array &$velocity, bool $player = false): array
+    private function entityFluidCurrent(array $box, array &$velocity, bool $player = false, ?array $eye = null): array
     {
+        $eyeWater = false;
         $fluids = $this->fluids();
         $block = $this->world->get(...);
         $inner = [$box[0] + 0.001, $box[1] + 0.001, $box[2] + 0.001, $box[3] - 0.001, $box[4] - 0.001, $box[5] - 0.001];
@@ -412,6 +420,12 @@ trait Entities
                     $top = $y + $fluids->entityHeight($block, $fluid, $x, $y, $z);
                     if ($top < $inner[1]) {
                         continue;
+                    }
+                    // The eye, at [x, eye y, z], is in fluid up to FluidState.getHeightForCamera: a source
+                    // under a face sturdy downwards fills its block.
+                    if ($eye !== null && $fluid[0] === 'water' && $x === (int) floor($eye[0]) && $z === (int) floor($eye[2]) && $eye[1] >= $y
+                        && $eye[1] <= $y + ($fluid[3] && $this->fireBlocks()->sturdy($block($x, $y + 1, $z), Blocks::DOWN) ? 1.0 : $fluids->entityHeight($block, $fluid, $x, $y, $z))) {
+                        $eyeWater = true;
                     }
                     // Each fluid type (source or flowing) keeps its height; each fluid tag its current.
                     $type = Fluids::tickType($fluid);
@@ -429,7 +443,7 @@ trait Entities
                 }
             }
         }
-        $height = ['water' => max($heights['water'] ?? 0.0, $heights['flowing_water'] ?? 0.0), 'lava' => max($heights['lava'] ?? 0.0, $heights['flowing_lava'] ?? 0.0), 'any' => $heights !== []];
+        $height = ['water' => max($heights['water'] ?? 0.0, $heights['flowing_water'] ?? 0.0), 'lava' => max($heights['lava'] ?? 0.0, $heights['flowing_lava'] ?? 0.0), 'any' => $heights !== [], 'eye_water' => $eyeWater];
         foreach (['water' => 0.014, 'lava' => $this->fastLava() ? 0.007 : 0.0023333333333333335] as $family => $scale) {
             [, $sum, $count] = $currents[$family] ?? [0.0, [0.0, 0.0, 0.0], 0];
             if ($height[$family] <= 0.0 || $count === 0 || $sum[0] ** 2 + $sum[1] ** 2 + $sum[2] ** 2 < 9.999999747378752E-6) {
@@ -452,16 +466,33 @@ trait Entities
         return in_array('minecraft:in_fire', $this->itemReference()['damage_resistant'][$this->version->catalog->itemName($item['stack']['item'])] ?? [], true);
     }
 
-    /**
-     * Entity.applyEffectsFromBlocks for an item moved from the box $from: bubble columns, cobwebs,
-     * powder snow and honey act at once; fire, lava and water are collected and applied in
-     * InsideBlockEffectType order, each block's damage after its ignition. False once it is destroyed.
-     */
+    /** Entity.applyEffectsFromBlocks for an item moved from the box $from; false once it is destroyed. */
     private function itemInsideBlocks(int $id, array &$item, array $from): bool
+    {
+        return $this->entityInsideBlocks(
+            $item,
+            $from,
+            [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125],
+            'item',
+            $this->itemFireImmune($item),
+            fn (float $amount, string $type): bool => $this->hurtItem($id, $amount, $type),
+            fn (): bool => isset($this->itemEntities[$id]),
+            // ItemEntity.shouldPlayLavaHurtSound: when it dies, or every half second.
+            fn (): bool => ($this->itemEntities[$id]['health'] ?? 0) <= 0 || $item['ticks'] % 10 === 0,
+        );
+    }
+
+    /**
+     * Entity.applyEffectsFromBlocks for an entity moved from the box $from to $to: bubble columns,
+     * cobwebs, powder snow and honey act at once; freezing, fire, lava and water are collected and
+     * applied in InsideBlockEffectType order, each block's damage after its ignition. $hurt deals
+     * damage and says whether it was taken, $alive whether the entity remains, and $lavaSound whether
+     * a lava hurt plays the burn sound. False once it is destroyed.
+     */
+    private function entityInsideBlocks(array &$entity, array $from, array $to, string $type, bool $fireImmune, callable $hurt, callable $alive, callable $lavaSound): bool
     {
         $fluids = $this->fluids();
         $block = $this->world->get(...);
-        $to = [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125];
         $swept = [min($from[0], $to[0]) + 1.0E-5, min($from[1], $to[1]) + 1.0E-5, min($from[2], $to[2]) + 1.0E-5, max($from[3], $to[3]) - 1.0E-5, max($from[4], $to[4]) - 1.0E-5, max($from[5], $to[5]) - 1.0E-5];
         $catalog = $this->version->catalog;
         $target = [$to[0] + 1.0E-5, $to[1] + 1.0E-5, $to[2] + 1.0E-5, $to[3] - 1.0E-5, $to[4] - 1.0E-5, $to[5] - 1.0E-5];
@@ -479,22 +510,22 @@ trait Entities
                         // BubbleColumnBlock.entityInside: pushed up, or dragged down, harder at the top.
                         $above = $block($x, $y + 1, $z);
                         $down = $catalog->properties($state)['drag'] === 'true';
-                        $vy = $item['velocity'][1];
-                        $item['velocity'][1] = (new Collision($catalog))->shape($above) === [] && $fluids->fluid($above) === null
+                        $vy = $entity['velocity'][1];
+                        $entity['velocity'][1] = (new Collision($catalog))->shape($above) === [] && $fluids->fluid($above) === null
                             ? ($down ? max(-0.9, $vy - 0.03) : min(1.8, $vy + 0.1))
                             : ($down ? max(-0.3, $vy - 0.03) : min(0.7, $vy + 0.06));
                     } elseif ($name === 'cobweb') {
                         // WebBlock.entityInside: makeStuckInBlock.
-                        $item['stuck'] = [0.25, 0.05000000074505806, 0.25];
+                        $entity['stuck'] = [0.25, 0.05000000074505806, 0.25];
                     } elseif ($name === 'powder_snow') {
-                        // PowderSnowBlock.entityInside: stuck, frozen (which an item ignores) and put out,
-                        // melting the snow first if it was burning and mobs may grief.
-                        $item['stuck'] = [0.8999999761581421, 1.5, 0.8999999761581421];
+                        // PowderSnowBlock.entityInside: stuck, frozen and put out, melting the snow
+                        // first if it was burning and mobs may grief.
+                        $entity['stuck'] = [0.8999999761581421, 1.5, 0.8999999761581421];
                         $powderSnow[] = [$x, $y, $z];
                         $effects['freeze'] = true;
                         $effects['extinguish'] = true;
                     } elseif ($name === 'honey_block') {
-                        $this->itemHoneySlide($item, $x, $y, $z);
+                        $this->honeySlide($entity, $to[3] - $to[0], $x, $y, $z);
                     } elseif ($name === 'fire' || $name === 'soul_fire') {
                         // BaseFireBlock.entityInside: ignited, then hurt by the fire.
                         $effects['fire_ignite'] = true;
@@ -513,34 +544,41 @@ trait Entities
                 }
             }
         }
-        if (isset($effects['freeze']) && !in_array('item', $this->version->registryTags('minecraft:entity_type')['minecraft:freeze_immune_entity_types'] ?? [], true)) {
+        if (isset($effects['freeze']) && !in_array($type, $this->version->registryTags('minecraft:entity_type')['minecraft:freeze_immune_entity_types'] ?? [], true)) {
             // InsideBlockEffectType.FREEZE: frozen a tick longer, up to getTicksRequiredToFreeze.
-            $frozen = min(140, ($item['frozen'] ?? 0) + 1);
-            if ($frozen !== ($item['frozen'] ?? 0)) {
-                $item['frozen'] = $frozen;
-                $item['dataDirty'][7] = true;
+            $frozen = min(140, ($entity['frozen'] ?? 0) + 1);
+            if ($frozen !== ($entity['frozen'] ?? 0)) {
+                $entity['frozen'] = $frozen;
+                $entity['dataDirty'][7] = true;
             }
         }
-        $immune = $this->itemFireImmune($item);
-        if (isset($effects['fire_ignite']) && !$immune) {
+        if (isset($effects['fire_ignite']) && !$fireImmune) {
             // BaseFireBlock.fireIgnite: igniteForSeconds(8).
-            $item['fire'] = max($item['fire'] ?? 0, 160);
+            $entity['fire'] = max($entity['fire'] ?? 0, 160);
         }
         foreach ($fireDamage as $damage) {
-            if ($this->hurtItem($id, $damage, 'minecraft:in_fire') && !isset($this->itemEntities[$id])) {
+            if ($hurt($damage, 'minecraft:in_fire') && !$alive()) {
                 return false;
             }
         }
-        if (isset($effects['lava_ignite']) && !$immune) {
+        if (isset($effects['lava_ignite']) && !$fireImmune) {
             // Entity.lavaIgnite, then each lava block's lavaHurt.
-            $item['fire'] = max($item['fire'] ?? 0, 300);
+            $entity['fire'] = max($entity['fire'] ?? 0, 300);
             for ($i = 0; $i < $lava; ++$i) {
-                if (!$this->itemLavaHurt($id, $item)) {
+                if ($hurt(4.0, 'minecraft:lava') && $lavaSound()) {
+                    $payload = Packets::sound($this->version->blocks['sounds']['entity.generic.burn'], 8, $entity['x'], $entity['y'], $entity['z'], 0.4, Float32::round(2.0 + Float32::round(self::randomUnit() * 0.4)), unpack('J', random_bytes(8))[1]);
+                    foreach ($this->localPlayers() as $player) {
+                        if (($player->x - $entity['x']) ** 2 + ($player->y - $entity['y']) ** 2 + ($player->z - $entity['z']) ** 2 < 256.0) {
+                            $player->send($this->version, 'sound', $payload);
+                        }
+                    }
+                }
+                if (!$alive()) {
                     return false;
                 }
             }
         }
-        if (($item['fire'] ?? 0) > 0 && $this->gameRule('mob_griefing') === 'true') {
+        if (($entity['fire'] ?? 0) > 0 && $this->gameRule('mob_griefing') === 'true') {
             foreach ($powderSnow as [$x, $y, $z]) {
                 // Level.destroyBlock without drops.
                 $this->levelEvent(2001, [$x, $y, $z], $block($x, $y, $z));
@@ -548,40 +586,24 @@ trait Entities
             }
         }
         if (isset($effects['extinguish'])) {
-            $item['fire'] = 0;
+            $entity['fire'] = 0;
         }
         return true;
     }
 
-    /** LavaFluid's lavaHurt for an item: 4 damage, with the burn sound when it dies or every half second. */
-    private function itemLavaHurt(int $id, array $item): bool
-    {
-        if ($this->hurtItem($id, 4.0, 'minecraft:lava')) {
-            $health = $this->itemEntities[$id]['health'] ?? 0;
-            if ($health <= 0 || $item['ticks'] % 10 === 0) {
-                $payload = Packets::sound($this->version->blocks['sounds']['entity.generic.burn'], 8, $item['x'], $item['y'], $item['z'], 0.4, Float32::round(2.0 + Float32::round(self::randomUnit() * 0.4)), unpack('J', random_bytes(8))[1]);
-                foreach ($this->localPlayers() as $player) {
-                    if (($player->x - $item['x']) ** 2 + ($player->y - $item['y']) ** 2 + ($player->z - $item['z']) ** 2 < 256.0) {
-                        $player->send($this->version, 'sound', $payload);
-                    }
-                }
-            }
-        }
-        return isset($this->itemEntities[$id]);
-    }
-
-    /** HoneyBlock.entityInside: an item falling down the side of honey slides slowly. */
-    private function itemHoneySlide(array &$item, int $x, int $y, int $z): void
+    /** HoneyBlock.entityInside: an entity falling down the side of honey slides slowly. */
+    private function honeySlide(array &$entity, float $width, int $x, int $y, int $z): void
     {
         // getOldDeltaY undoes this tick's drag and gravity.
-        $old = $item['velocity'][1] / 0.9800000190734863 + 0.08;
-        if ($item['ground'] || $item['y'] > $y + 0.9375 - 1.0E-7 || $old >= -0.08
-            || (abs($x + 0.5 - $item['x']) + 1.0E-7 <= 0.5625 && abs($z + 0.5 - $item['z']) + 1.0E-7 <= 0.5625)) {
+        $old = $entity['velocity'][1] / 0.9800000190734863 + 0.08;
+        $overlap = 0.4375 + $width / 2.0;
+        if ($entity['ground'] || $entity['y'] > $y + 0.9375 - 1.0E-7 || $old >= -0.08
+            || (abs($x + 0.5 - $entity['x']) + 1.0E-7 <= $overlap && abs($z + 0.5 - $entity['z']) + 1.0E-7 <= $overlap)) {
             return;
         }
         // doSlideMovement: falling at getNewDeltaY(-0.05), slowed sideways when it was falling fast.
         $scale = $old < -0.13 ? -0.05 / $old : 1.0;
-        $item['velocity'] = [$item['velocity'][0] * $scale, (-0.05 - 0.08) * 0.9800000190734863, $item['velocity'][2] * $scale];
+        $entity['velocity'] = [$entity['velocity'][0] * $scale, (-0.05 - 0.08) * 0.9800000190734863, $entity['velocity'][2] * $scale];
     }
 
     /** Entity.getBlockSpeedFactor: soul sand and honey slow what moves over them. */
@@ -593,8 +615,8 @@ trait Entities
         if ($here === 'water' || $here === 'bubble_column' || $factor($here) !== 1.0) {
             return $factor($here);
         }
-        // getBlockPosBelowThatAffectsMyMovement.
-        return $factor($catalog->blockName($this->world->get((int) floor($x), (int) floor($y - 0.5000001), (int) floor($z))));
+        // getBlockPosBelowThatAffectsMyMovement (getOnPos(0.500001F)).
+        return $factor($catalog->blockName($this->world->get((int) floor($x), (int) floor($y - 0.5000010132789612), (int) floor($z))));
     }
 
     private function blockFriction(int $state): float
