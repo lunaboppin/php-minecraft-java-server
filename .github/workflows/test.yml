@@ -418,6 +418,14 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/smithing.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-smithing
           python3 tools/parity/verify.py tools/.cache/parity-smithing/php-packets.json tools/.cache/parity-smithing/reference-packets.json
+      - name: Compare hoppers moving items between containers with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/hoppers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-hoppers
+          python3 tools/parity/verify.py tools/.cache/parity-hoppers/php-packets.json tools/.cache/parity-hoppers/reference-packets.json
+      - name: Compare dispensers and droppers with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/dispensers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispensers
+          python3 tools/parity/verify.py tools/.cache/parity-dispensers/php-packets.json tools/.cache/parity-dispensers/reference-packets.json
       - name: Compare throwing splash potions with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/splash-potions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-splash-potions
@@ -440,6 +448,8 @@ jobs:
             tools/.cache/parity-consumables/
             tools/.cache/parity-grindstones/
             tools/.cache/parity-smithing/
+            tools/.cache/parity-hoppers/
+            tools/.cache/parity-dispensers/
             tools/.cache/parity-splash-potions/
           retention-days: 7
 

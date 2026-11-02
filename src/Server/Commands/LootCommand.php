@@ -202,6 +202,7 @@ trait LootCommand
         $data['slots'] = $slots;
         $world->container($holder['block'], $data);
         $this->syncContainer($holder['block']);
+        $this->withDimension($holder['dimension'], fn () => $this->containerContentsChanged($holder['block']));
         return $received;
     }
 
