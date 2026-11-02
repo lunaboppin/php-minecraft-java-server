@@ -257,9 +257,10 @@ final class Packets
     }
 
     /** ClientboundDamageEventPacket: the damage type, cause and direct entity ids (plus one), and no position. */
-    public static function damageEvent(Version $version, int $id, int $cause = -1, string $type = 'player_attack'): string
+    /** ClientboundDamageEventPacket: the cause, and the direct entity when it is another (a projectile). */
+    public static function damageEvent(Version $version, int $id, int $cause = -1, string $type = 'player_attack', ?int $direct = null): string
     {
-        return Binary::writeVarInt($id) . Binary::writeVarInt($version->registryId('damage_type', $type)) . Binary::writeVarInt($cause + 1) . Binary::writeVarInt($cause + 1) . "\0";
+        return Binary::writeVarInt($id) . Binary::writeVarInt($version->registryId('damage_type', $type)) . Binary::writeVarInt($cause + 1) . Binary::writeVarInt(($direct ?? $cause) + 1) . "\0";
     }
 
     public static function hurtAnimation(int $id, float $yaw): string

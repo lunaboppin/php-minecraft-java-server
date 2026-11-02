@@ -395,7 +395,7 @@ trait Animals
      * LivingEntity.hurtServer for a mob hurt other than by a melee swing: the cooldown window,
      * armor, the damage event and knockback, then the hurt or death sound. Returns whether it was hurt.
      */
-    private function hurtMob(int $id, float $amount, string $type, ?Client $attacker = null): bool
+    private function hurtMob(int $id, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null): bool
     {
         if (!isset($this->animals[$id])) {
             return false;
@@ -435,13 +435,17 @@ trait Animals
             if (isset($p->entities[$id])) {
                 $p->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $mob['health']));
                 if ($full) {
-                    $p->send($this->version, 'damage_event', Packets::damageEvent($this->version, $id, $attacker?->entityId ?? -1, substr($type, 10)));
+                    $p->send($this->version, 'damage_event', Packets::damageEvent($this->version, $id, $attacker?->entityId ?? -1, substr($type, 10), $projectile['id'] ?? null));
                 }
             }
         }
-        // dealDefaultKnockback: away from the source's position, or a random way without one.
+        // dealDefaultKnockback: along a projectile's flight, away from the source's position, or a random way without one.
         if ($full && !$is('minecraft:no_knockback')) {
-            $this->knockbackMobFrom($mob, $attacker === null ? 0.0 : $attacker->x - $mob['x'], $attacker === null ? 0.0 : $attacker->z - $mob['z']);
+            if ($projectile !== null) {
+                $this->knockbackMobFrom($mob, -$projectile['velocity'][0], -$projectile['velocity'][2]);
+            } else {
+                $this->knockbackMobFrom($mob, $attacker === null ? 0.0 : $attacker->x - $mob['x'], $attacker === null ? 0.0 : $attacker->z - $mob['z']);
+            }
         }
         if ($mob['health'] > 0) {
             if ($full) {

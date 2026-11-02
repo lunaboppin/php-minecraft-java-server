@@ -207,4 +207,112 @@ final class Collision
         }
         return $best;
     }
+
+    /**
+     * BlockGetter.clip with ClipContext.Block.COLLIDER and no fluids: the blocks along the segment
+     * in BlockGetter.traverseBlocks order, each tried with VoxelShape.clip until one is hit.
+     *
+     * @return ?array{location: array, position: array, face: int, inside: bool}
+     */
+    public function clipBlocks(World $world, array $from, array $to): ?array
+    {
+        if ($from === $to) {
+            return null;
+        }
+        $lerp = static fn (float $delta, float $a, float $b): float => $a + $delta * ($b - $a);
+        $end = [$lerp(-1.0E-7, $to[0], $from[0]), $lerp(-1.0E-7, $to[1], $from[1]), $lerp(-1.0E-7, $to[2], $from[2])];
+        $start = [$lerp(-1.0E-7, $from[0], $to[0]), $lerp(-1.0E-7, $from[1], $to[1]), $lerp(-1.0E-7, $from[2], $to[2])];
+        $block = [(int) floor($start[0]), (int) floor($start[1]), (int) floor($start[2])];
+        $hit = $this->clipBlock($world, $from, $to, $block);
+        if ($hit !== null) {
+            return $hit;
+        }
+        $sign = [];
+        $step = [];
+        $next = [];
+        for ($axis = 0; $axis < 3; ++$axis) {
+            $delta = $end[$axis] - $start[$axis];
+            $sign[$axis] = $delta <=> 0.0;
+            $step[$axis] = $sign[$axis] === 0 ? PHP_FLOAT_MAX : $sign[$axis] / $delta;
+            $fraction = $start[$axis] - floor($start[$axis]);
+            $next[$axis] = $step[$axis] * ($sign[$axis] > 0 ? 1.0 - $fraction : $fraction);
+        }
+        while ($next[0] <= 1.0 || $next[1] <= 1.0 || $next[2] <= 1.0) {
+            $axis = $next[0] < $next[1] ? ($next[0] < $next[2] ? 0 : 2) : ($next[1] < $next[2] ? 1 : 2);
+            $block[$axis] += $sign[$axis];
+            $next[$axis] += $step[$axis];
+            $hit = $this->clipBlock($world, $from, $to, $block);
+            if ($hit !== null) {
+                return $hit;
+            }
+        }
+        return null;
+    }
+
+    /** VoxelShape.clip: a start inside the shape hits at once, otherwise the nearest face crossed. */
+    private function clipBlock(World $world, array $from, array $to, array $block): ?array
+    {
+        $boxes = $this->shape($world->get(...$block));
+        $delta = [$to[0] - $from[0], $to[1] - $from[1], $to[2] - $from[2]];
+        if ($boxes === [] || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 < 1.0E-7) {
+            return null;
+        }
+        $test = [$from[0] + $delta[0] * 0.001 - $block[0], $from[1] + $delta[1] * 0.001 - $block[1], $from[2] + $delta[2] * 0.001 - $block[2]];
+        foreach ($boxes as $box) {
+            if ($test[0] >= $box[0] && $test[0] < $box[3] && $test[1] >= $box[1] && $test[1] < $box[4] && $test[2] >= $box[2] && $test[2] < $box[5]) {
+                return ['location' => [$test[0] + $block[0], $test[1] + $block[1], $test[2] + $block[2]], 'position' => $block, 'face' => self::nearestFace(-$delta[0], -$delta[1], -$delta[2]), 'inside' => true];
+            }
+        }
+        $scale = 1.0;
+        $face = null;
+        foreach ($boxes as $box) {
+            $face = self::clipFaces([$box[0] + $block[0], $box[1] + $block[1], $box[2] + $block[2], $box[3] + $block[0], $box[4] + $block[1], $box[5] + $block[2]], $from, $delta, $scale, $face);
+        }
+        return $face === null ? null : ['location' => [$from[0] + $scale * $delta[0], $from[1] + $scale * $delta[1], $from[2] + $scale * $delta[2]], 'position' => $block, 'face' => $face, 'inside' => false];
+    }
+
+    /** AABB.clip: where a segment from outside first enters the box, if it does. */
+    public static function clipBox(array $box, array $from, array $to): ?array
+    {
+        $delta = [$to[0] - $from[0], $to[1] - $from[1], $to[2] - $from[2]];
+        $scale = 1.0;
+        return self::clipFaces($box, $from, $delta, $scale, null) === null ? null : [$from[0] + $scale * $delta[0], $from[1] + $scale * $delta[1], $from[2] + $scale * $delta[2]];
+    }
+
+    /** AABB.getDirection: the faces facing the segment, each tried as AABB.clipPoint does. */
+    private static function clipFaces(array $box, array $from, array $delta, float &$scale, ?int $face): ?int
+    {
+        // Each axis as [the face's coordinate, its face, the two other axes].
+        foreach ([[0, 4, 5, 1, 2], [1, 0, 1, 2, 0], [2, 2, 3, 0, 1]] as [$a, $low, $high, $b, $c]) {
+            if ($delta[$a] > 1.0E-7) {
+                [$point, $newFace] = [$box[$a], $low];
+            } elseif ($delta[$a] < -1.0E-7) {
+                [$point, $newFace] = [$box[$a + 3], $high];
+            } else {
+                continue;
+            }
+            $s = ($point - $from[$a]) / $delta[$a];
+            $pb = $from[$b] + $s * $delta[$b];
+            $pc = $from[$c] + $s * $delta[$c];
+            if (0.0 < $s && $s < $scale && $box[$b] - 1.0E-7 < $pb && $pb < $box[$b + 3] + 1.0E-7 && $box[$c] - 1.0E-7 < $pc && $pc < $box[$c + 3] + 1.0E-7) {
+                $scale = $s;
+                $face = $newFace;
+            }
+        }
+        return $face;
+    }
+
+    /** Direction.getApproximateNearest: the face whose normal best matches, in Direction order. */
+    private static function nearestFace(float $x, float $y, float $z): int
+    {
+        $best = 2;
+        $highest = 1.4E-45;
+        foreach ([[0, 0, -1, 0], [1, 0, 1, 0], [2, 0, 0, -1], [3, 0, 0, 1], [4, -1, 0, 0], [5, 1, 0, 0]] as [$face, $nx, $ny, $nz]) {
+            $dot = Float32::round(Float32::round($x) * $nx + Float32::round($y) * $ny + Float32::round($z) * $nz);
+            if ($dot > $highest) {
+                [$best, $highest] = [$face, $dot];
+            }
+        }
+        return $best;
+    }
 }
