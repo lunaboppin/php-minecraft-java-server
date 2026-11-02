@@ -51,7 +51,8 @@ def main():
                 command(a,text)
             before=a.health
             arrow=wire.BLOCKS['entity_types']['arrow']
-            end=time.monotonic()+15
+            # Arrows spread at random, so give the skeleton several shots before calling it a miss.
+            end=time.monotonic()+30
             while time.monotonic()<end and not (a.health<before and any(s['type']==arrow for s in a.entity_spawns)):wait(a,.5)
             assert any(s['type']==arrow for s in a.entity_spawns),'the skeleton never shot'
             assert a.health<before,('no skeleton arrow hit',before,a.health)
