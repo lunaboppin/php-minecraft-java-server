@@ -13,8 +13,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.*;
 import net.minecraft.world.item.enchantment.*;
 
 /** Actual stack patches and equipment packets for the spawn equipment component bridge. */
@@ -25,13 +27,59 @@ public class ExportEquipmentStacks {
         COMPONENTS.put("enchantments", DataComponents.ENCHANTMENTS);
         COMPONENTS.put("storedEnchantments", DataComponents.STORED_ENCHANTMENTS);
         COMPONENTS.put("enchantability", DataComponents.ENCHANTABLE);
+        COMPONENTS.put("potion", DataComponents.POTION_CONTENTS);
     }
 
     static JsonElement value(Object value) {
         if (value instanceof ItemEnchantments enchantments) return ExportEnchantmentComponents.semantic(enchantments);
         if (value instanceof Enchantable enchantable) return new JsonPrimitive(enchantable.value());
+        if (value instanceof PotionContents contents) return potion(contents);
         if (value instanceof Integer number) return new JsonPrimitive(number);
         throw new IllegalArgumentException("Unexpected supported component value " + value);
+    }
+
+    static JsonElement key(Holder<?> holder) {
+        return new JsonPrimitive(holder.unwrapKey().orElseThrow().identifier().toString());
+    }
+
+    /** PotionContents as its four optional parts, with each custom effect's details. */
+    static JsonObject potion(PotionContents contents) {
+        var result = new JsonObject();
+        result.add("potion", contents.potion().map(ExportEquipmentStacks::key).orElse(JsonNull.INSTANCE));
+        result.add("custom_color", contents.customColor().map(color -> (JsonElement) new JsonPrimitive(color)).orElse(JsonNull.INSTANCE));
+        var effects = new JsonArray();
+        for (var effect : contents.customEffects()) {
+            var row = new JsonObject();
+            row.add("id", key(effect.getEffect()));
+            details(row, effect);
+            effects.add(row);
+        }
+        result.add("custom_effects", effects);
+        result.add("custom_name", contents.customName().map(name -> (JsonElement) new JsonPrimitive(name)).orElse(JsonNull.INSTANCE));
+        return result;
+    }
+
+    /** MobEffectInstance.Details, read through the instance since the record is private. */
+    static void details(JsonObject row, MobEffectInstance effect) {
+        row.addProperty("amplifier", effect.getAmplifier());
+        row.addProperty("duration", effect.getDuration());
+        row.addProperty("ambient", effect.isAmbient());
+        row.addProperty("show_particles", effect.isVisible());
+        row.addProperty("show_icon", effect.showIcon());
+        try {
+            var field = MobEffectInstance.class.getDeclaredField("hiddenEffect");
+            field.setAccessible(true);
+            var hidden = (MobEffectInstance) field.get(effect);
+            if (hidden == null) {
+                row.add("hidden_effect", JsonNull.INSTANCE);
+            } else {
+                var inner = new JsonObject();
+                details(inner, hidden);
+                row.add("hidden_effect", inner);
+            }
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException(failure);
+        }
     }
 
     static String field(DataComponentType<?> type) {
@@ -121,6 +169,12 @@ public class ExportEquipmentStacks {
             }
             COMPONENTS.forEach((name, type) -> fields.addProperty(name, BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(type).toString()));
             rules.add("component_ids", componentIds); rules.add("fields", fields);
+            var potions = new JsonArray();
+            var potionNames = new JsonArray();
+            access.lookupOrThrow(Registries.POTION).listElements().forEach(holder -> { potions.add(key(holder)); potionNames.add(holder.value().name()); });
+            var effects = new JsonArray();
+            access.lookupOrThrow(Registries.MOB_EFFECT).listElements().forEach(holder -> effects.add(key(holder)));
+            rules.add("potions", potions); rules.add("potion_names", potionNames); rules.add("mob_effects", effects);
             var defaults = new JsonObject();
             for (var item : BuiltInRegistries.ITEM) {
                 var row = new JsonObject(); var present = new JsonArray(); var values = new JsonObject();
@@ -185,6 +239,34 @@ public class ExportEquipmentStacks {
                     }
                 }
             }
+            // PotionContents: a potion alone, every optional part, removed or empty.
+            for (String name : List.of("stone", "potion", "splash_potion", "lingering_potion", "tipped_arrow")) {
+                var item = BuiltInRegistries.ITEM.getValue(Identifier.withDefaultNamespace(name));
+                for (int mode = 0; mode < 6; mode++) {
+                    var stack = new ItemStack(item, 1);
+                    switch (mode) {
+                        case 0 -> {}
+                        case 1 -> stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
+                        case 2 -> stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.of(Potions.SWIFTNESS), Optional.of(0x123456),
+                            List.of(new MobEffectInstance(MobEffects.SPEED, 200, 1, true, false, true), new MobEffectInstance(MobEffects.POISON, 30)),
+                            Optional.of("custom")));
+                        case 3 -> stack.remove(DataComponents.POTION_CONTENTS);
+                        case 4 -> stack.set(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+                        case 5 -> stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.of(-1), List.of(), Optional.empty()));
+                    }
+                    byte[] bytes = encode(access, stack);
+                    var row = decode(access, name + "/potion/" + mode, bytes);
+                    row.add("initial", state(stack));
+                    row.addProperty("comparison_index", comparisonStacks.size());
+                    comparisonStacks.add(stack.copy());
+                    cases.add(row);
+                    if (name.equals("potion") && mode == 2) {
+                        for (int length = 3; length < bytes.length; length++) {
+                            cases.add(decode(access, "truncated-potion/" + length, Arrays.copyOf(bytes, length)));
+                        }
+                    }
+                }
+            }
             int sword = BuiltInRegistries.ITEM.getId(Items.IRON_SWORD);
             int damage = BuiltInRegistries.DATA_COMPONENT_TYPE.getId(DataComponents.DAMAGE);
             int enchantable = BuiltInRegistries.DATA_COMPONENT_TYPE.getId(DataComponents.ENCHANTABLE);
@@ -203,6 +285,13 @@ public class ExportEquipmentStacks {
             crafted.put("explicit-empty-enchantments", ExportEnchantmentComponents.entries(1, sword, 1, 0, enchantments, 0));
             crafted.put("remove-absent-component", ExportEnchantmentComponents.entries(1, sword, 0, 1, BuiltInRegistries.DATA_COMPONENT_TYPE.getId(DataComponents.STORED_ENCHANTMENTS)));
             crafted.put("max-count", ExportEnchantmentComponents.entries(Integer.MAX_VALUE, sword, 0, 0));
+            // A custom effect with another hidden beneath it, which in turn hides a third.
+            int potionItem = BuiltInRegistries.ITEM.getId(Items.POTION);
+            int potionContents = BuiltInRegistries.DATA_COMPONENT_TYPE.getId(DataComponents.POTION_CONTENTS);
+            int speed = BuiltInRegistries.MOB_EFFECT.getId(MobEffects.SPEED.value());
+            crafted.put("potion-hidden-effects", ExportEnchantmentComponents.entries(1, potionItem, 1, 0, potionContents, 0, 0, 1, speed, 1, 200, 1, 0, 1, 1, 0, 400, 0, 1, 1, 1, 0, 9000, 0, 0, 0, 0, 0));
+            crafted.put("potion-unknown-effect", ExportEnchantmentComponents.entries(1, potionItem, 1, 0, potionContents, 0, 0, 1, 9999, 0, 1, 0, 1, 1, 0, 0));
+            crafted.put("potion-unknown-potion", ExportEnchantmentComponents.entries(1, potionItem, 1, 0, potionContents, 1, 9999, 0, 0, 0));
             for (var entry : crafted.entrySet()) {
                 cases.add(decode(access, entry.getKey(), entry.getValue()));
             }

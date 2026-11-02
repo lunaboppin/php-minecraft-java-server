@@ -15,8 +15,8 @@ $stackReference = json_decode(file_get_contents($stackPath), true, 512, JSON_THR
 $stackRules = json_decode(file_get_contents(dirname($stackPath) . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR);
 $stackEnchantingRules = json_decode(file_get_contents(__DIR__ . '/../reference/26.3/enchanting-rules.json'), true, 512, JSON_THROW_ON_ERROR);
 if ($stackReference['version'] !== Version::NAME || $stackReference['protocol'] !== Version::PROTOCOL
-    || count($stackReference['cases']) !== 351 || count($stackReference['equipment_packets']) !== 17
-    || count($stackReference['comparison_rows']) !== 216) {
+    || count($stackReference['cases']) !== 418 || count($stackReference['equipment_packets']) !== 17
+    || count($stackReference['comparison_rows']) !== 246) {
     throw new RuntimeException('The pinned actual Java equipment stack reference is required');
 }
 $stackCodec = new ItemStackCodec($stackRules, $stackEnchantingRules);
@@ -71,7 +71,7 @@ foreach ($stackReference['cases'] as $case) {
     }
 }
 foreach ($stackReference['comparison_rows'] as $first => $row) {
-    $stackAssert(strlen($row), 216, 'Complete native equality row');
+    $stackAssert(strlen($row), 246, 'Complete native equality row');
     foreach ($stackComparisons as $second => $stack) {
         $stackAssert(
             $stackCodec->same($stackComparisons[$first], $stack),
