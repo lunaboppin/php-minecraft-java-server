@@ -1,0 +1,310 @@
+{
+  "name": "falling-blocks",
+  "normalizations": [
+    "Compare where falling blocks land after falling from a height: sand, gravel, concrete powder, anvils, the dragon egg and suspicious gravel.",
+    "Blocks land in replaceable blocks, drop as items onto slabs and torches, and concrete powder sets in water or beside it.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 8 75 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 59 -8 8 60 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 61 0 minecraft:torch"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 60 3 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 61 -3 minecraft:stone_slab"
+    },
+    {
+      "action": "command",
+      "text": "setblock -4 61 -4 minecraft:short_grass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 61 4 minecraft:stone_slab"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 70 0 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 70 0 minecraft:gravel"
+    },
+    {
+      "action": "command",
+      "text": "setblock -2 62 0 minecraft:anvil[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 70 3 minecraft:white_concrete_powder"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 70 -3 minecraft:red_sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock -3 70 3 minecraft:dragon_egg"
+    },
+    {
+      "action": "command",
+      "text": "setblock -4 70 -4 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock -5 70 5 minecraft:suspicious_gravel"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 62 4 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 -6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 62 -6 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 -6 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 -6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -6 62 -6 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock -6 61 -6 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock -7 61 -6 minecraft:black_concrete_powder"
+    },
+    {
+      "action": "wait",
+      "seconds": 5
+    },
+    {
+      "action": "snapshot",
+      "name": "landed",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          61,
+          0
+        ],
+        [
+          0,
+          62,
+          0
+        ],
+        [
+          0,
+          63,
+          0
+        ],
+        [
+          0,
+          70,
+          0
+        ],
+        [
+          2,
+          61,
+          0
+        ],
+        [
+          2,
+          62,
+          0
+        ],
+        [
+          2,
+          63,
+          0
+        ],
+        [
+          2,
+          70,
+          0
+        ],
+        [
+          -2,
+          61,
+          0
+        ],
+        [
+          -2,
+          62,
+          0
+        ],
+        [
+          -2,
+          63,
+          0
+        ],
+        [
+          -2,
+          70,
+          0
+        ],
+        [
+          3,
+          61,
+          -3
+        ],
+        [
+          3,
+          62,
+          -3
+        ],
+        [
+          3,
+          63,
+          -3
+        ],
+        [
+          3,
+          70,
+          -3
+        ],
+        [
+          -3,
+          61,
+          3
+        ],
+        [
+          -3,
+          62,
+          3
+        ],
+        [
+          -3,
+          63,
+          3
+        ],
+        [
+          -3,
+          70,
+          3
+        ],
+        [
+          -4,
+          61,
+          -4
+        ],
+        [
+          -4,
+          62,
+          -4
+        ],
+        [
+          -4,
+          63,
+          -4
+        ],
+        [
+          -4,
+          70,
+          -4
+        ],
+        [
+          -5,
+          61,
+          5
+        ],
+        [
+          -5,
+          62,
+          5
+        ],
+        [
+          -5,
+          63,
+          5
+        ],
+        [
+          -5,
+          70,
+          5
+        ],
+        [
+          4,
+          61,
+          4
+        ],
+        [
+          4,
+          62,
+          4
+        ],
+        [
+          4,
+          63,
+          4
+        ],
+        [
+          4,
+          70,
+          4
+        ],
+        [
+          6,
+          61,
+          -6
+        ],
+        [
+          6,
+          62,
+          -6
+        ],
+        [
+          6,
+          63,
+          -6
+        ],
+        [
+          6,
+          70,
+          -6
+        ],
+        [
+          0,
+          60,
+          3
+        ],
+        [
+          0,
+          61,
+          3
+        ],
+        [
+          -7,
+          61,
+          -6
+        ]
+      ]
+    }
+  ]
+}
