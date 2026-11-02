@@ -243,6 +243,26 @@ trait Effects
         }
     }
 
+    /**
+     * PotionContents.applyToLivingEntity: the potion's effects and any custom ones, instant ones
+     * applied at once, the rest added with their durations scaled.
+     */
+    private function applyPotionContents(Client $c, array $contents, float $scale = 1.0): void
+    {
+        static $potions = null;
+        $potions ??= json_decode((string) file_get_contents($this->version->directory . '/mob-effects.json'), true, 512, JSON_THROW_ON_ERROR)['potions'];
+        $effects = [...($contents['potion'] === null ? [] : $potions[$contents['potion']] ?? []), ...$contents['custom_effects']];
+        foreach ($effects as $effect) {
+            if ($this->effectDefinitions()[$effect['id']]['instant']) {
+                $this->applyEffectTick($c, $effect['id'], $effect['amplifier']);
+                continue;
+            }
+            // MobEffectInstance.withScaledDuration: at least a tick, infinite stays infinite.
+            $duration = $effect['duration'] === -1 ? -1 : max((int) floor($effect['duration'] * $scale), 1);
+            $this->giveEffect($c, $effect['id'], $duration, $effect['amplifier'], $effect['ambient'], $effect['show_particles'], $effect['show_icon']);
+        }
+    }
+
     /** Damage after resistance's 20% per level, unless the type bypasses it. */
     private function effectDamage(Client $c, float $amount, string $type): float
     {

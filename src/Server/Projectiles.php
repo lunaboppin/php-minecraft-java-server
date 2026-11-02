@@ -208,7 +208,7 @@ trait Projectiles
             }
         }
         foreach ($this->animals as $id => $mob) {
-            if (isset($mob['deadAt']) || $mob['health'] <= 0) {
+            if (isset($mob['deadAt']) || $mob['health'] <= 0 || ($id === ($projectile['ownerMob'] ?? null) && !$projectile['leftOwner'])) {
                 continue;
             }
             $size = $this->version->catalog->mobs['entities'][$mob['kind']];
