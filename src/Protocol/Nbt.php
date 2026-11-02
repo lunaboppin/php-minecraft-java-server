@@ -41,6 +41,7 @@ final class Nbt
         $name = self::string($key);
         return match (true) {
             is_bool($value) => "\x01" . $name . chr((int) $value),
+            $value instanceof NbtByte => "\x01" . $name . chr($value->value & 0xff),
             // UUIDs are stored as four big-endian ints, the vanilla UUIDUtil codec.
             $key === 'uuid' => "\x0b" . $name . pack('N', 4) . self::uuid($value),
             $value instanceof NbtIntArray => "\x0b" . $name . pack('N', count($value->values)) . pack('N*', ...$value->values),

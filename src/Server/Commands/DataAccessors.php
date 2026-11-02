@@ -45,12 +45,50 @@ trait DataAccessors
         if (($stack['damage'] ?? 0) > 0) {
             $components[] = ['minecraft:damage', new NbtTag('int', $stack['damage'])];
         }
+        if (isset($stack['potion'])) {
+            $components[] = ['minecraft:potion_contents', self::potionContentsNbt($stack['potion'])];
+        }
         $pairs = [['id', new NbtTag('string', $name)], ['count', new NbtTag('int', $stack['count'])]];
         if ($components !== []) {
             $pairs[] = ['components', self::nbtCompound($components)];
         }
         if ($slot !== null) {
             array_unshift($pairs, ['Slot', new NbtTag('byte', $slot)]);
+        }
+        return self::nbtCompound($pairs);
+    }
+
+    /** PotionContents.CODEC as NBT: absent and default parts left out. */
+    private static function potionContentsNbt(array $contents): NbtTag
+    {
+        $pairs = [];
+        if ($contents['potion'] !== null) {
+            $pairs[] = ['potion', new NbtTag('string', $contents['potion'])];
+        }
+        if ($contents['custom_color'] !== null) {
+            $pairs[] = ['custom_color', new NbtTag('int', $contents['custom_color'])];
+        }
+        if ($contents['custom_effects'] !== []) {
+            $pairs[] = ['custom_effects', new NbtTag('list', array_map(static function (array $effect): NbtTag {
+                $fields = [['id', new NbtTag('string', $effect['id'])]];
+                if ($effect['amplifier'] !== 0) {
+                    $fields[] = ['amplifier', new NbtTag('byte', $effect['amplifier'] > 127 ? $effect['amplifier'] - 256 : $effect['amplifier'])];
+                }
+                if ($effect['duration'] !== 0) {
+                    $fields[] = ['duration', new NbtTag('int', $effect['duration'])];
+                }
+                if ($effect['ambient']) {
+                    $fields[] = ['ambient', new NbtTag('byte', 1)];
+                }
+                if (!$effect['show_particles']) {
+                    $fields[] = ['show_particles', new NbtTag('byte', 0)];
+                }
+                $fields[] = ['show_icon', new NbtTag('byte', (int) $effect['show_icon'])];
+                return self::nbtCompound($fields);
+            }, $contents['custom_effects']))];
+        }
+        if ($contents['custom_name'] !== null) {
+            $pairs[] = ['custom_name', new NbtTag('string', $contents['custom_name'])];
         }
         return self::nbtCompound($pairs);
     }

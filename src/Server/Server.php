@@ -1625,22 +1625,27 @@ final class Server
         }if ($slot < 1 || $slot > 45 || $count < 0 || $count > 99) {
             throw new ProtocolException('Invalid creative slot');
         }
-        $item = -1;
+        $stack = null;
         $accepted = true;
         if ($count > 0) {
-            $item = $r->varInt();
-            $added = $r->varInt();
-            $removed = $r->varInt();
-            $info = $this->version->catalog->item($item);
-            $accepted = $info !== null && $count <= $info['max_stack'] && $added === 0 && $removed === 0;
-            if ($added === 0 && $removed === 0) {
-                $r->end();
+            // The stack again from its count, through the codec for the components it can carry.
+            $input = new Binary(Binary::writeVarInt($count) . $r->bytes($r->remaining()));
+            try {
+                $stack = $this->version->catalog->itemStacks->read($input);
+                $input->end();
+            } catch (ProtocolException $e) {
+                if (!str_starts_with($e->getMessage(), 'Unsupported component addition')) {
+                    throw $e;
+                }
+                $accepted = false;
             }
+            $info = $stack === null ? null : $this->version->catalog->item($stack['item']);
+            $accepted = $accepted && $info !== null && $count <= $info['max_stack'];
         } else {
             $r->end();
         }
-        if ($accepted && $count > 0) {
-            $c->inventory[$slot] = ['item' => $item, 'count' => $count];
+        if ($accepted && $stack !== null) {
+            $c->inventory[$slot] = $stack;
         } else {
             unset($c->inventory[$slot]);
         }

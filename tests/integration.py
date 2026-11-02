@@ -67,6 +67,39 @@ def packet_id(state, direction, name):
     return PACKETS[state][direction]['minecraft:' + name]['protocol_id']
 
 
+def read_potion(payload, off):
+    """PotionContents.STREAM_CODEC, keeping no hidden effects as vanilla does."""
+    contents = {'potion': None, 'custom_color': None, 'custom_effects': [], 'custom_name': None}
+    if payload[off]:
+        holder, off = read_vi(payload, off + 1)
+        contents['potion'] = STACK_RULES['potions'][holder]
+    else:
+        off += 1
+    if payload[off]:
+        contents['custom_color'] = struct.unpack('>i', payload[off + 1:off + 5])[0]
+        off += 5
+    else:
+        off += 1
+    count, off = read_vi(payload, off)
+    for _ in range(count):
+        holder, off = read_vi(payload, off)
+        effect = {'id': STACK_RULES['mob_effects'][holder]}
+        while True:
+            amplifier, off = read_vi(payload, off)
+            duration, off = read_vi(payload, off)
+            details = {'amplifier': amplifier, 'duration': duration, 'ambient': bool(payload[off]), 'show_particles': bool(payload[off + 1]), 'show_icon': bool(payload[off + 2]), 'hidden_effect': None}
+            effect = effect if 'amplifier' in effect else effect | details
+            off += 4
+            if not payload[off - 1]:
+                break
+        contents['custom_effects'].append(effect)
+    if payload[off]:
+        contents['custom_name'], off = read_string(payload, off + 1)
+    else:
+        off += 1
+    return contents, off
+
+
 def read_stack(payload, off):
     count, off = read_vi(payload, off)
     if count <= 0:
@@ -88,6 +121,8 @@ def read_stack(payload, off):
             stack[field] = values
         elif field in ('damage', 'enchantability'):
             stack[field], off = read_vi(payload, off)
+        elif field == 'potion':
+            stack[field], off = read_potion(payload, off)
         else:
             raise AssertionError('unexpected stack component ' + str(component))
     if removed:
