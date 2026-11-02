@@ -157,7 +157,17 @@ def enchantments(inner):
         for name in sorted(archive.namelist()):
             if name.startswith('data/minecraft/enchantment/') and name.endswith('.json'):
                 data = json.loads(archive.read(name))
-                result['minecraft:' + Path(name).stem] = {key: data[key] for key in ('description', 'supported_items', 'exclusive_set', 'max_level') if key in data}
+                result['minecraft:' + Path(name).stem] = {key: data[key] for key in ('description', 'supported_items', 'exclusive_set', 'max_level', 'anvil_cost') if key in data}
+    return result
+
+
+def repairable(reports):
+    """The items or item tag that repair each item in an anvil, from its default repairable component."""
+    result = {}
+    for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
+        component = json.loads(path.read_text())['components'].get('minecraft:repairable')
+        if component is not None:
+            result['minecraft:' + path.stem] = component['items']
     return result
 
 
@@ -355,6 +365,7 @@ def main():
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))
     write_json(out / 'enchantments.json', enchantments(inner))
+    write_json(out / 'repairable.json', repairable(reports))
     write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))

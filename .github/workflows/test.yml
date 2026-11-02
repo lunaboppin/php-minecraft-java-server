@@ -437,6 +437,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/enchanting.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-enchanting
           python3 tools/parity/verify.py tools/.cache/parity-enchanting/php-packets.json tools/.cache/parity-enchanting/reference-packets.json
+      - name: Compare repairing and combining items at an anvil with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/anvils.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-anvils
+          python3 tools/parity/verify.py tools/.cache/parity-anvils/php-packets.json tools/.cache/parity-anvils/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -450,6 +454,7 @@ jobs:
             tools/.cache/parity-breeding/
             tools/.cache/parity-projectiles/
             tools/.cache/parity-enchanting/
+            tools/.cache/parity-anvils/
           retention-days: 7
 
   docker:

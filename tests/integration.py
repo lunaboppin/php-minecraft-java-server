@@ -119,7 +119,7 @@ def read_stack(payload, off):
                 level, off = read_vi(payload, off)
                 values[ENCHANTMENTS[holder]] = level
             stack[field] = values
-        elif field in ('damage', 'enchantability'):
+        elif field in ('damage', 'enchantability', 'repairCost'):
             stack[field], off = read_vi(payload, off)
         elif field == 'potion':
             stack[field], off = read_potion(payload, off)

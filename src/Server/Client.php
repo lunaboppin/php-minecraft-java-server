@@ -150,6 +150,13 @@ final class Client
 
     public array $enchantData = [];
 
+    /** An open anvil's two inputs, its worked-out result and the cost last sent. */
+    public array $anvilSlots = [];
+
+    public array $anvilResult = [];
+
+    public int $anvilCost = 0;
+
     /** Player.enchantmentSeed, saved as XpSeed: what the enchanting table offers. */
     public int $enchantmentSeed = 0;
 
