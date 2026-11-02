@@ -25,6 +25,8 @@ def main():
             a=Probe(port,'egg-user').login();b=Probe(port,'egg-observer').login('Observer')
             try:
                 command(a,'gamerule minecraft:spawn_mobs false')
+                # Every egg hatches on one block, where so many mobs would cram each other to death.
+                command(a,'gamerule minecraft:max_entity_cramming 0')
                 # At midnight, so the undead the eggs make do not burn in daylight before the checks.
                 command(a,'gamerule minecraft:advance_time false');command(a,'time set midnight')
                 for index,(egg,kind) in enumerate(MOBS['spawn_eggs'].items()):
