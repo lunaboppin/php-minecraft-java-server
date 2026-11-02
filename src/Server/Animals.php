@@ -411,6 +411,8 @@ trait Animals
             return false;
         }
         $amount = max(0.0, $amount);
+        // Animal.hurtServer: a hurt animal is no longer in love.
+        $mob['inLove'] = 0;
         $mob['noActionTime'] = 0;
         $full = $this->ticks - ($mob['lastHurtTick'] ?? -100) >= 10 || $is('minecraft:bypasses_cooldown');
         if (!$full) {
@@ -688,6 +690,9 @@ trait Animals
                 if (isset($animal['deadAt'])) {
                     continue;
                 }
+            }
+            if ($this->mobIsTicking($animal)) {
+                $this->tickAge($animal);
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {

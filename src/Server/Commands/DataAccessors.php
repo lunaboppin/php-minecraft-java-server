@@ -209,10 +209,10 @@ trait DataAccessors
         if (($this->experienceReference()['mobs'][$mob['kind']]['reward_class'] ?? '') === 'Animal') {
             array_push(
                 $pairs,
-                ['Age', new NbtTag('int', ($mob['baby'] ?? false) ? -24000 : 0)],
-                ['ForcedAge', new NbtTag('int', 0)],
+                ['Age', new NbtTag('int', $this->mobAge($mob))],
+                ['ForcedAge', new NbtTag('int', $mob['forcedAge'] ?? 0)],
                 ['AgeLocked', new NbtTag('byte', 0)],
-                ['InLove', new NbtTag('int', 0)],
+                ['InLove', new NbtTag('int', $mob['inLove'] ?? 0)],
             );
         }
         return self::nbtCompound($pairs);

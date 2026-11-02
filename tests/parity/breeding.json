@@ -1,0 +1,99 @@
+{
+  "name": "breeding",
+  "normalizations": [
+    "Feed two adult cows in a two-block pen with wheat in survival: each falls in love for one wheat, and feeding one already in love uses none. Within seconds they breed: a baby cow and an experience orb appear.",
+    "The thrower stands away while they breed so the orb is not picked up. Where the cows wander and the orb's value are random, so only the tracked entity types and the wheat are compared.",
+    "Use matching flat terrain with natural spawning off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_monsters false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 6 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 6 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 64 2 2 65 5 minecraft:glass hollow"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 64 3 1 65 4 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "summon cow 0.5 64 3.5"
+    },
+    {
+      "action": "command",
+      "text": "summon cow 1.5 64 4.5"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 1.0 66 1.0 0 45"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s wheat 3"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "cow",
+      "index": 0
+    },
+    {
+      "action": "interact",
+      "entity": "cow",
+      "index": 0
+    },
+    {
+      "action": "interact",
+      "entity": "cow",
+      "index": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "fed",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 1.0 64 -30 0 0"
+    },
+    {
+      "action": "wait",
+      "seconds": 6
+    },
+    {
+      "action": "snapshot",
+      "name": "bred",
+      "fields": [
+        "entities"
+      ]
+    }
+  ]
+}
