@@ -160,6 +160,11 @@ final class Client
 
     public int $anvilCost = 0;
 
+    /** An open grindstone's two inputs and its worked-out result. */
+    public array $grindstoneSlots = [];
+
+    public ?array $grindstoneResult = null;
+
     /** Player.enchantmentSeed, saved as XpSeed: what the enchanting table offers. */
     public int $enchantmentSeed = 0;
 
