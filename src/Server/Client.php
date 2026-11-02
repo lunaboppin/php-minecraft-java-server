@@ -160,6 +160,18 @@ final class Client
 
     public int $anvilCost = 0;
 
+    /** An open grindstone's two inputs and its worked-out result. */
+    public array $grindstoneSlots = [];
+
+    public ?array $grindstoneResult = null;
+
+    /** An open smithing table's template, base and addition, its result and the error flag last sent. */
+    public array $smithingSlots = [];
+
+    public ?array $smithingResult = null;
+
+    public int $smithingError = 0;
+
     /** Player.enchantmentSeed, saved as XpSeed: what the enchanting table offers. */
     public int $enchantmentSeed = 0;
 

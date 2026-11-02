@@ -1,0 +1,306 @@
+{
+  "name": "grindstones",
+  "normalizations": [
+    "At a grindstone: grind a cursed, enchanted iron sword with a repair cost, combine two worn diamond swords (one enchanted), grind an enchanted book, and offer stone, which the grindstone refuses.",
+    "Compare the result offered and the inventory after shift-clicking it out and closing: only curses stay, the repair cost is that of the curses, durability adds up with a twentieth more, and a book with nothing left is a plain book. The experience given back is random, so it is not compared.",
+    "Use matching flat terrain with natural spawning off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:grindstone[face=floor]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -2.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s iron_sword[enchantments={sharpness:3,vanishing_curse:1},repair_cost=7]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "cursed_sword_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "cursed_sword_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=1500]"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=1500,enchantments={unbreaking:1}]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000002"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "two_swords_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "02"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "two_swords_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s enchanted_book[stored_enchantments={protection:4}]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000003"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "book_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "03"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "book_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s stone 4"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000004"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "stone_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "04"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "stone_taken",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

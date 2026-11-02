@@ -3,12 +3,17 @@
   "normalizations": [
     "Compare the state each block is placed in, by Block.getStateForPlacement and StandingAndWallBlockItem, the neighbour shape updates that follow, and BlockItem.canPlace refusing plants that cannot survive on stone: on top of stone, against the north face of a stone block, and beside the first one. Rails are placed into a corner, up a step and as straight powered rails, and set by command, joining as RailState does. Slabs, candles, snow layers, sea pickles, turtle eggs and carpets are clicked again to stack (BlockBehaviour.canBeReplaced), doors and stairs are placed side by side, chests pair, and a fence gate sits between walls. Hanging signs go under a block, beside a wall, or nowhere (HangingSignItem). Scaffolding takes its distance from support (ScaffoldingBlock.getDistance).",
     "Use matching flat terrain in creative mode, standing 1.5 blocks north of the floor block (well inside reach), looking south and 30 degrees down; snapshots follow each block so its chunks are still loaded.",
-    "Scaffolding distance updates after placement and falling scaffolding are not covered."
+    "Scaffolding distance updates after placement and falling scaffolding are not covered.",
+    "Random ticks are off, so copper blocks such as the copper bulb cannot weather while the scenario runs."
   ],
   "steps": [
     {
       "action": "command",
       "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
     },
     {
       "action": "command",

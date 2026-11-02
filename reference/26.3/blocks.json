@@ -3363,7 +3363,8 @@
     "item.bucket.fill_powder_snow": 234,
     "item.bottle.empty": 195,
     "item.bottle.fill": 196,
-    "entity.skeleton.shoot": 1495
+    "entity.skeleton.shoot": 1495,
+    "entity.generic.burn": 699
   },
   "particle_types": {
     "angry_villager": 0,
