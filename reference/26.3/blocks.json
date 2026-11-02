@@ -3368,7 +3368,8 @@
     "block.sweet_berry_bush.pick_berries": 1621,
     "block.cave_vines.pick_berries": 311,
     "block.candle.extinguish": 274,
-    "item.flintandsteel.use": 646
+    "item.flintandsteel.use": 646,
+    "block.pumpkin.carve": 1352
   },
   "particle_types": {
     "angry_villager": 0,

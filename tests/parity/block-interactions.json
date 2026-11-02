@@ -2,7 +2,7 @@
   "name": "block-interactions",
   "difficulty": 1,
   "normalizations": [
-    "Compare eating a cake down to nothing when hungry, a candle on a cake lit with flint and steel, blown out and eaten, potting and unpotting a poppy, picking sweet berries and glow berries, blowing out candles, and lighting a campfire and a candle with flint and steel.",
+    "Compare eating a cake down to nothing when hungry, a candle on a cake lit with flint and steel, blown out and eaten, potting and unpotting a poppy, picking sweet berries and glow berries, blowing out candles, lighting a campfire and a candle with flint and steel, and carving pumpkins with shears from the side and from above.",
     "Use matching flat terrain."
   ],
   "steps": [
@@ -553,6 +553,79 @@
           64,
           3
         ],
+        [
+          2,
+          64,
+          3
+        ],
+        [
+          4,
+          64,
+          3
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 64 1.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 3 minecraft:pumpkin"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 3 minecraft:pumpkin"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:shears"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        3
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "carved",
+      "fields": [
+        "blocks",
+        "inventory",
+        "entities"
+      ],
+      "positions": [
         [
           2,
           64,

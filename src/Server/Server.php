@@ -1510,7 +1510,7 @@ final class Server
             }
             // Sneaking with an item in hand skips the block's own use.
             $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
-            if (!$sneakSkips && $c->gameMode !== 3 && $this->editable($c, $x, $y, $z) && ($swing = $this->useInteractiveBlock($c, $hand, $slot, $x, $y, $z, $cursor)) !== null) {
+            if (!$sneakSkips && $c->gameMode !== 3 && $this->editable($c, $x, $y, $z) && ($swing = $this->useInteractiveBlock($c, $hand, $slot, $x, $y, $z, $face, $cursor)) !== null) {
                 if ($swing) {
                     $this->useSwing($c, $hand);
                 }

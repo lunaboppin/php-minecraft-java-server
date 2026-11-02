@@ -30,7 +30,7 @@ trait BlockInteractions
      * blocks here: Block.useItemOn and useWithoutItem. Returns null when neither does anything,
      * else whether to swing.
      */
-    private function useInteractiveBlock(Client $c, int $hand, int $slot, int $x, int $y, int $z, array $cursor): ?bool
+    private function useInteractiveBlock(Client $c, int $hand, int $slot, int $x, int $y, int $z, int $face, array $cursor): ?bool
     {
         $catalog = $this->version->catalog;
         $state = $this->world->get($x, $y, $z);
@@ -46,6 +46,22 @@ trait BlockInteractions
             $this->blockSound($x, $y, $z, 'block.cake.add_candle');
             $this->setBlock($x, $y, $z, $catalog->state($item === 'candle' ? 'candle_cake' : $item . '_cake'));
             $this->awardStat($c, 'used', $item);
+            return true;
+        }
+        if ($name === 'pumpkin' && $item === 'shears') {
+            // PumpkinBlock.useItemOn: carved toward the clicked side (or away from the player from
+            // above or below), four seeds pushed out of that side, and the shears worn.
+            $facing = $faceName = ['down', 'up', 'north', 'south', 'west', 'east'][$face];
+            if ($faceName === 'up' || $faceName === 'down') {
+                $facing = ['north', 'east', 'south', 'west'][((int) floor($c->yaw / 90 + 0.5)) & 3];
+            }
+            [$sx, $sz] = ['north' => [0, -1], 'south' => [0, 1], 'west' => [-1, 0], 'east' => [1, 0]][$facing];
+            $seeds = ['item' => $this->version->blocks['items']['pumpkin_seeds'], 'count' => 4];
+            $this->dropStack($x + 0.5 + $sx * 0.65, $y + 0.1, $z + 0.5 + $sz * 0.65, $seeds, 0, [0.05 * $sx + self::randomUnit() * 0.02, 0.05, 0.05 * $sz + self::randomUnit() * 0.02]);
+            $this->blockSound($x, $y, $z, 'block.pumpkin.carve');
+            $this->setBlock($x, $y, $z, $catalog->state('carved_pumpkin', ['facing' => $facing]));
+            $this->wearHeld($c, $slot);
+            $this->awardStat($c, 'used', 'shears');
             return true;
         }
         if (str_ends_with($name, 'candle_cake') && in_array($item, ['flint_and_steel', 'fire_charge'], true)) {
@@ -167,18 +183,27 @@ trait BlockInteractions
         }
         $this->blockSound($x, $y, $z, 'item.flintandsteel.use', self::randomUnit() * 0.4 + 0.8, $c);
         $this->setBlock($x, $y, $z, $catalog->state($name, ['lit' => 'true'] + $properties));
-        $stack = $c->inventory[$slot];
-        if ($c->gameMode !== 1) {
-            $stack['damage'] = ($stack['damage'] ?? 0) + 1;
-            if ($stack['damage'] >= $catalog->item($stack['item'])['durability']) {
-                $this->awardStat($c, 'broken', $catalog->itemName($stack['item']));
-                unset($c->inventory[$slot]);
-            } else {
-                $c->inventory[$slot] = $stack;
-            }
-            $this->syncInventory($c);
-        }
+        $this->wearHeld($c, $slot);
         $this->awardStat($c, 'used', 'flint_and_steel');
         return true;
+    }
+
+    /** ItemStack.hurtAndBreak by one: none in creative, Unbreaking may spare it, and a worn-out item breaks. */
+    private function wearHeld(Client $c, int $slot): void
+    {
+        $stack = $c->inventory[$slot] ?? null;
+        $max = $stack === null ? 0 : ($this->version->catalog->item($stack['item'])['durability'] ?? 0);
+        $unbreaking = $stack['enchantments']['minecraft:unbreaking'] ?? 0;
+        if ($stack === null || $max <= 0 || $c->gameMode === 1 || ($unbreaking > 0 && random_int(0, $unbreaking) !== 0)) {
+            return;
+        }
+        $stack['damage'] = ($stack['damage'] ?? 0) + 1;
+        if ($stack['damage'] >= $max) {
+            $this->awardStat($c, 'broken', $this->version->catalog->itemName($stack['item']));
+            unset($c->inventory[$slot]);
+        } else {
+            $c->inventory[$slot] = $stack;
+        }
+        $this->syncInventory($c);
     }
 }
