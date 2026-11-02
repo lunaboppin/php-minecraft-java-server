@@ -145,6 +145,8 @@ final class Server
 
     use Dispensers;
 
+    use Composters;
+
     use Waypoints;
 
     use Statistics;
@@ -1496,6 +1498,11 @@ final class Server
             }
             // Sneaking with an item in hand skips the block's own use.
             $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
+            if ($name === 'composter' && !$sneakSkips && $c->gameMode !== 3 && $this->useComposter($c, $x, $y, $z, $slot)) {
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                return;
+            }
             if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand, true);
                 $this->acknowledge($c, $sequence);

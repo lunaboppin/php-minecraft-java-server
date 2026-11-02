@@ -1,0 +1,241 @@
+{
+  "items": {
+    "minecraft:acacia_leaves": "minecraft:compostable/low",
+    "minecraft:acacia_sapling": "minecraft:compostable/low",
+    "minecraft:allium": "minecraft:compostable/medium",
+    "minecraft:apple": "minecraft:compostable/medium",
+    "minecraft:azalea": "minecraft:compostable/medium",
+    "minecraft:azalea_leaves": "minecraft:compostable/low",
+    "minecraft:azure_bluet": "minecraft:compostable/medium",
+    "minecraft:baked_potato": "minecraft:compostable/medium_high",
+    "minecraft:beetroot": "minecraft:compostable/medium",
+    "minecraft:beetroot_seeds": "minecraft:compostable/low",
+    "minecraft:big_dripleaf": "minecraft:compostable/medium",
+    "minecraft:birch_leaves": "minecraft:compostable/low",
+    "minecraft:birch_sapling": "minecraft:compostable/low",
+    "minecraft:blue_orchid": "minecraft:compostable/medium",
+    "minecraft:bread": "minecraft:compostable/medium_high",
+    "minecraft:brown_mushroom": "minecraft:compostable/medium",
+    "minecraft:brown_mushroom_block": "minecraft:compostable/medium_high",
+    "minecraft:bush": "minecraft:compostable/low",
+    "minecraft:cactus": "minecraft:compostable/low_medium",
+    "minecraft:cactus_flower": "minecraft:compostable/low",
+    "minecraft:cake": "minecraft:compostable/always_add_one",
+    "minecraft:carrot": "minecraft:compostable/medium",
+    "minecraft:carved_pumpkin": "minecraft:compostable/medium",
+    "minecraft:cherry_leaves": "minecraft:compostable/low",
+    "minecraft:cherry_sapling": "minecraft:compostable/low",
+    "minecraft:closed_eyeblossom": "minecraft:compostable/medium",
+    "minecraft:cocoa_beans": "minecraft:compostable/medium",
+    "minecraft:cookie": "minecraft:compostable/medium_high",
+    "minecraft:cornflower": "minecraft:compostable/medium",
+    "minecraft:crimson_fungus": "minecraft:compostable/medium",
+    "minecraft:crimson_roots": "minecraft:compostable/medium",
+    "minecraft:dandelion": "minecraft:compostable/medium",
+    "minecraft:dark_oak_leaves": "minecraft:compostable/low",
+    "minecraft:dark_oak_sapling": "minecraft:compostable/low",
+    "minecraft:dried_kelp": "minecraft:compostable/low",
+    "minecraft:dried_kelp_block": "minecraft:compostable/low_medium",
+    "minecraft:fern": "minecraft:compostable/medium",
+    "minecraft:firefly_bush": "minecraft:compostable/low",
+    "minecraft:flowering_azalea": "minecraft:compostable/medium_high",
+    "minecraft:flowering_azalea_leaves": "minecraft:compostable/low_medium",
+    "minecraft:glow_berries": "minecraft:compostable/low",
+    "minecraft:glow_lichen": "minecraft:compostable/low_medium",
+    "minecraft:hanging_roots": "minecraft:compostable/low",
+    "minecraft:hay_block": "minecraft:compostable/medium_high",
+    "minecraft:jungle_leaves": "minecraft:compostable/low",
+    "minecraft:jungle_sapling": "minecraft:compostable/low",
+    "minecraft:kelp": "minecraft:compostable/low",
+    "minecraft:large_fern": "minecraft:compostable/medium",
+    "minecraft:leaf_litter": "minecraft:compostable/low",
+    "minecraft:lilac": "minecraft:compostable/medium",
+    "minecraft:lily_of_the_valley": "minecraft:compostable/medium",
+    "minecraft:lily_pad": "minecraft:compostable/medium",
+    "minecraft:mangrove_leaves": "minecraft:compostable/low",
+    "minecraft:mangrove_propagule": "minecraft:compostable/low",
+    "minecraft:mangrove_roots": "minecraft:compostable/low",
+    "minecraft:melon": "minecraft:compostable/medium",
+    "minecraft:melon_seeds": "minecraft:compostable/low",
+    "minecraft:melon_slice": "minecraft:compostable/low_medium",
+    "minecraft:moss_block": "minecraft:compostable/medium",
+    "minecraft:moss_carpet": "minecraft:compostable/low",
+    "minecraft:mushroom_stem": "minecraft:compostable/medium",
+    "minecraft:nether_sprouts": "minecraft:compostable/low_medium",
+    "minecraft:nether_wart": "minecraft:compostable/medium",
+    "minecraft:nether_wart_block": "minecraft:compostable/medium_high",
+    "minecraft:oak_leaves": "minecraft:compostable/low",
+    "minecraft:oak_sapling": "minecraft:compostable/low",
+    "minecraft:open_eyeblossom": "minecraft:compostable/medium",
+    "minecraft:orange_poplar_leaves": "minecraft:compostable/low",
+    "minecraft:orange_tulip": "minecraft:compostable/medium",
+    "minecraft:oxeye_daisy": "minecraft:compostable/medium",
+    "minecraft:pale_hanging_moss": "minecraft:compostable/low",
+    "minecraft:pale_moss_block": "minecraft:compostable/medium",
+    "minecraft:pale_moss_carpet": "minecraft:compostable/low",
+    "minecraft:pale_oak_leaves": "minecraft:compostable/low",
+    "minecraft:pale_oak_sapling": "minecraft:compostable/low",
+    "minecraft:peony": "minecraft:compostable/medium",
+    "minecraft:pink_petals": "minecraft:compostable/low",
+    "minecraft:pink_tulip": "minecraft:compostable/medium",
+    "minecraft:pitcher_plant": "minecraft:compostable/medium_high",
+    "minecraft:pitcher_pod": "minecraft:compostable/low",
+    "minecraft:poplar_sapling": "minecraft:compostable/low",
+    "minecraft:poppy": "minecraft:compostable/medium",
+    "minecraft:potato": "minecraft:compostable/medium",
+    "minecraft:pumpkin": "minecraft:compostable/medium",
+    "minecraft:pumpkin_pie": "minecraft:compostable/always_add_one",
+    "minecraft:pumpkin_seeds": "minecraft:compostable/low",
+    "minecraft:red_mushroom": "minecraft:compostable/medium",
+    "minecraft:red_mushroom_block": "minecraft:compostable/medium_high",
+    "minecraft:red_poplar_leaves": "minecraft:compostable/low",
+    "minecraft:red_shrub": "minecraft:compostable/low",
+    "minecraft:red_tulip": "minecraft:compostable/medium",
+    "minecraft:rose_bush": "minecraft:compostable/medium",
+    "minecraft:sea_pickle": "minecraft:compostable/medium",
+    "minecraft:seagrass": "minecraft:compostable/low",
+    "minecraft:shelf_mushroom": "minecraft:compostable/medium",
+    "minecraft:short_dry_grass": "minecraft:compostable/low",
+    "minecraft:short_grass": "minecraft:compostable/low",
+    "minecraft:shroomlight": "minecraft:compostable/medium",
+    "minecraft:small_dripleaf": "minecraft:compostable/low",
+    "minecraft:spore_blossom": "minecraft:compostable/medium",
+    "minecraft:spruce_leaves": "minecraft:compostable/low",
+    "minecraft:spruce_sapling": "minecraft:compostable/low",
+    "minecraft:straw_bed": "minecraft:compostable/medium_high",
+    "minecraft:sugar_cane": "minecraft:compostable/low_medium",
+    "minecraft:sunflower": "minecraft:compostable/medium",
+    "minecraft:sweet_berries": "minecraft:compostable/low",
+    "minecraft:tall_dry_grass": "minecraft:compostable/low",
+    "minecraft:tall_grass": "minecraft:compostable/low_medium",
+    "minecraft:torchflower": "minecraft:compostable/medium_high",
+    "minecraft:torchflower_seeds": "minecraft:compostable/low",
+    "minecraft:twisting_vines": "minecraft:compostable/low_medium",
+    "minecraft:vine": "minecraft:compostable/low_medium",
+    "minecraft:warped_fungus": "minecraft:compostable/medium",
+    "minecraft:warped_roots": "minecraft:compostable/medium",
+    "minecraft:warped_wart_block": "minecraft:compostable/medium_high",
+    "minecraft:weeping_vines": "minecraft:compostable/low_medium",
+    "minecraft:wheat": "minecraft:compostable/medium",
+    "minecraft:wheat_seeds": "minecraft:compostable/low",
+    "minecraft:white_tulip": "minecraft:compostable/medium",
+    "minecraft:wildflowers": "minecraft:compostable/low",
+    "minecraft:wither_rose": "minecraft:compostable/medium",
+    "minecraft:yellow_poplar_leaves": "minecraft:compostable/low"
+  },
+  "providers": {
+    "minecraft:compostable/always_add_one": 1,
+    "minecraft:compostable/low": {
+      "type": "minecraft:number_dispatcher",
+      "cases": [
+        {
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "minecraft:composter",
+            "state": {
+              "level": "0"
+            }
+          },
+          "value": 1
+        }
+      ],
+      "default": {
+        "type": "minecraft:weighted_list",
+        "distribution": [
+          {
+            "data": 1,
+            "weight": 30
+          },
+          {
+            "data": 0,
+            "weight": 70
+          }
+        ]
+      }
+    },
+    "minecraft:compostable/low_medium": {
+      "type": "minecraft:number_dispatcher",
+      "cases": [
+        {
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "minecraft:composter",
+            "state": {
+              "level": "0"
+            }
+          },
+          "value": 1
+        }
+      ],
+      "default": {
+        "type": "minecraft:weighted_list",
+        "distribution": [
+          {
+            "data": 1,
+            "weight": 50
+          },
+          {
+            "data": 0,
+            "weight": 50
+          }
+        ]
+      }
+    },
+    "minecraft:compostable/medium": {
+      "type": "minecraft:number_dispatcher",
+      "cases": [
+        {
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "minecraft:composter",
+            "state": {
+              "level": "0"
+            }
+          },
+          "value": 1
+        }
+      ],
+      "default": {
+        "type": "minecraft:weighted_list",
+        "distribution": [
+          {
+            "data": 1,
+            "weight": 65
+          },
+          {
+            "data": 0,
+            "weight": 35
+          }
+        ]
+      }
+    },
+    "minecraft:compostable/medium_high": {
+      "type": "minecraft:number_dispatcher",
+      "cases": [
+        {
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "minecraft:composter",
+            "state": {
+              "level": "0"
+            }
+          },
+          "value": 1
+        }
+      ],
+      "default": {
+        "type": "minecraft:weighted_list",
+        "distribution": [
+          {
+            "data": 1,
+            "weight": 85
+          },
+          {
+            "data": 0,
+            "weight": 15
+          }
+        ]
+      }
+    }
+  }
+}
