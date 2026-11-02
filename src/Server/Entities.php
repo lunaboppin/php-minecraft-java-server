@@ -339,6 +339,13 @@ trait Entities
                 unset($item);
                 continue;
             }
+            unset($item);
+            // ItemEntity.tick's applyEffectsFromBlocks: a hopper the item reaches takes it in.
+            $this->itemInsideHoppers($id);
+            if (!isset($this->itemEntities[$id])) {
+                continue;
+            }
+            $item = &$this->itemEntities[$id];
             $movedBlock = floor($oldX) !== floor($item['x']) || floor($oldY) !== floor($item['y']) || floor($oldZ) !== floor($item['z']);
             if ($item['ticks'] % ($movedBlock ? 2 : 40) === 0) {
                 unset($item);

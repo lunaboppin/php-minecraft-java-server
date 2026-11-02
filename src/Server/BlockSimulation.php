@@ -45,6 +45,7 @@ trait BlockSimulation
         $this->speleothemsChanged($x,$y,$z);
         $this->redstoneChanged($x,$y,$z);
         $this->scaffoldingChanged($x,$y,$z);
+        $this->hopperChanged($x,$y,$z);
     }
     private function tickBlocks():void {
         // ServerLevel.tick: the due block ticks run, then the due fluid ticks, each in the order
