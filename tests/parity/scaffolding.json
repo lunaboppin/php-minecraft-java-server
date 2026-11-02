@@ -1,0 +1,794 @@
+{
+  "name": "scaffolding",
+  "normalizations": [
+    "Compare scaffolding set by command: the distance and bottom states it settles into, what breaks when its support goes, and floating scaffolding that falls.",
+    "Block drops are off; entity IDs are left out.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule block_drops false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -6 14 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 14 75 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 64 -4.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 65 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 66 0 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 65 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 65 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 65 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 65 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 4 minecraft:scaffolding"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 70 6 minecraft:scaffolding[distance=7]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 68 6 minecraft:scaffolding[distance=3]"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "settled",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          0,
+          65,
+          0
+        ],
+        [
+          0,
+          66,
+          0
+        ],
+        [
+          1,
+          66,
+          0
+        ],
+        [
+          2,
+          66,
+          0
+        ],
+        [
+          3,
+          66,
+          0
+        ],
+        [
+          4,
+          66,
+          0
+        ],
+        [
+          5,
+          66,
+          0
+        ],
+        [
+          6,
+          66,
+          0
+        ],
+        [
+          7,
+          66,
+          0
+        ],
+        [
+          8,
+          66,
+          0
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          0,
+          65,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          1,
+          65,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          2,
+          65,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          3,
+          65,
+          4
+        ],
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          6,
+          65,
+          6
+        ],
+        [
+          6,
+          66,
+          6
+        ],
+        [
+          6,
+          67,
+          6
+        ],
+        [
+          6,
+          68,
+          6
+        ],
+        [
+          6,
+          69,
+          6
+        ],
+        [
+          6,
+          70,
+          6
+        ],
+        [
+          8,
+          64,
+          6
+        ],
+        [
+          8,
+          65,
+          6
+        ],
+        [
+          8,
+          66,
+          6
+        ],
+        [
+          8,
+          67,
+          6
+        ],
+        [
+          8,
+          68,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "column-cut",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          0,
+          65,
+          0
+        ],
+        [
+          0,
+          66,
+          0
+        ],
+        [
+          1,
+          66,
+          0
+        ],
+        [
+          2,
+          66,
+          0
+        ],
+        [
+          3,
+          66,
+          0
+        ],
+        [
+          4,
+          66,
+          0
+        ],
+        [
+          5,
+          66,
+          0
+        ],
+        [
+          6,
+          66,
+          0
+        ],
+        [
+          7,
+          66,
+          0
+        ],
+        [
+          8,
+          66,
+          0
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          0,
+          65,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          1,
+          65,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          2,
+          65,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          3,
+          65,
+          4
+        ],
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          6,
+          65,
+          6
+        ],
+        [
+          6,
+          66,
+          6
+        ],
+        [
+          6,
+          67,
+          6
+        ],
+        [
+          6,
+          68,
+          6
+        ],
+        [
+          6,
+          69,
+          6
+        ],
+        [
+          6,
+          70,
+          6
+        ],
+        [
+          8,
+          64,
+          6
+        ],
+        [
+          8,
+          65,
+          6
+        ],
+        [
+          8,
+          66,
+          6
+        ],
+        [
+          8,
+          67,
+          6
+        ],
+        [
+          8,
+          68,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 4 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "arm-held-by-leg",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          0,
+          65,
+          0
+        ],
+        [
+          0,
+          66,
+          0
+        ],
+        [
+          1,
+          66,
+          0
+        ],
+        [
+          2,
+          66,
+          0
+        ],
+        [
+          3,
+          66,
+          0
+        ],
+        [
+          4,
+          66,
+          0
+        ],
+        [
+          5,
+          66,
+          0
+        ],
+        [
+          6,
+          66,
+          0
+        ],
+        [
+          7,
+          66,
+          0
+        ],
+        [
+          8,
+          66,
+          0
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          0,
+          65,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          1,
+          65,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          2,
+          65,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          3,
+          65,
+          4
+        ],
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          6,
+          65,
+          6
+        ],
+        [
+          6,
+          66,
+          6
+        ],
+        [
+          6,
+          67,
+          6
+        ],
+        [
+          6,
+          68,
+          6
+        ],
+        [
+          6,
+          69,
+          6
+        ],
+        [
+          6,
+          70,
+          6
+        ],
+        [
+          8,
+          64,
+          6
+        ],
+        [
+          8,
+          65,
+          6
+        ],
+        [
+          8,
+          66,
+          6
+        ],
+        [
+          8,
+          67,
+          6
+        ],
+        [
+          8,
+          68,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 4 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "leg-cut",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          0,
+          65,
+          0
+        ],
+        [
+          0,
+          66,
+          0
+        ],
+        [
+          1,
+          66,
+          0
+        ],
+        [
+          2,
+          66,
+          0
+        ],
+        [
+          3,
+          66,
+          0
+        ],
+        [
+          4,
+          66,
+          0
+        ],
+        [
+          5,
+          66,
+          0
+        ],
+        [
+          6,
+          66,
+          0
+        ],
+        [
+          7,
+          66,
+          0
+        ],
+        [
+          8,
+          66,
+          0
+        ],
+        [
+          0,
+          64,
+          4
+        ],
+        [
+          0,
+          65,
+          4
+        ],
+        [
+          1,
+          64,
+          4
+        ],
+        [
+          1,
+          65,
+          4
+        ],
+        [
+          2,
+          64,
+          4
+        ],
+        [
+          2,
+          65,
+          4
+        ],
+        [
+          3,
+          64,
+          4
+        ],
+        [
+          3,
+          65,
+          4
+        ],
+        [
+          6,
+          64,
+          6
+        ],
+        [
+          6,
+          65,
+          6
+        ],
+        [
+          6,
+          66,
+          6
+        ],
+        [
+          6,
+          67,
+          6
+        ],
+        [
+          6,
+          68,
+          6
+        ],
+        [
+          6,
+          69,
+          6
+        ],
+        [
+          6,
+          70,
+          6
+        ],
+        [
+          8,
+          64,
+          6
+        ],
+        [
+          8,
+          65,
+          6
+        ],
+        [
+          8,
+          66,
+          6
+        ],
+        [
+          8,
+          67,
+          6
+        ],
+        [
+          8,
+          68,
+          6
+        ]
+      ]
+    }
+  ]
+}
