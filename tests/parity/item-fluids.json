@@ -1,0 +1,111 @@
+{
+  "name": "item-fluids",
+  "normalizations": [
+    "Compare the packets sent about items in fluids: one carried by flowing water against a wall, one burnt up in lava beside a fire-resistant netherite ingot, and two in bubble columns pushing up and dragging down.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 24 60 14 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 24 75 14 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 8.5 61 -4.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 61 -1 6 64 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 0 63 0 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "setblock 15 61 0 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock 15 61 4 minecraft:lava"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 60 8 minecraft:soul_sand"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 8 0 64 8 minecraft:bubble_column[drag=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 60 8 minecraft:magma_block"
+    },
+    {
+      "action": "command",
+      "text": "fill 4 61 8 4 64 8 minecraft:bubble_column[drag=true]"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 0.5 64.0 0.5 {Item:{id:\"minecraft:stone\",count:1},PickupDelay:32767,Motion:[0.2d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 15.5 64.0 0.5 {Item:{id:\"minecraft:stone\",count:1},PickupDelay:32767,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 15.5 64.0 4.5 {Item:{id:\"minecraft:netherite_ingot\",count:1},PickupDelay:32767,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 0.5 63.0 8.5 {Item:{id:\"minecraft:stone\",count:1},PickupDelay:32767,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 4.5 64.5 8.5 {Item:{id:\"minecraft:stone\",count:1},PickupDelay:32767,Motion:[0.0d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "after-1s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "after-2s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "after-3s",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

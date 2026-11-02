@@ -1,0 +1,176 @@
+{
+  "name": "smithing",
+  "normalizations": [
+    "At a smithing table: upgrade a worn, enchanted diamond sword with a repair cost to netherite with the upgrade template and an ingot, and offer stone, which no slot takes.",
+    "Compare the result offered and the inventory after shift-clicking it out and closing: the netherite sword keeps the diamond sword's damage, enchantments and repair cost, and one template and one ingot are used up.",
+    "Use matching flat terrain with natural spawning off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:smithing_table"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -2.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s netherite_upgrade_smithing_template 2"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=100,enchantments={sharpness:2},repair_cost=3]"
+    },
+    {
+      "action": "command",
+      "text": "give @s netherite_ingot 3"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001f00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100002000010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100002100010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "netherite_sword_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100000300010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "netherite_sword_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s stone 4"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000002"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "stone_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200000300010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "02"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "stone_taken",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}
