@@ -373,11 +373,17 @@ trait Survival
             $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
             if ($killer !== null && $killer !== $c) {
                 $this->awardStat($c, 'killed_by', 'player');
-                // ServerPlayer.awardKillScore
+                // Entity.awardKillScore, then ServerPlayer's: the victim was killed by a player.
+                $this->simpleTrigger($c, 'minecraft:entity_killed_player', ['entity' => 'player']);
                 $this->awardStat($killer, 'killed', 'player');
                 $this->incrementCriteria('totalKillCount', $killer->name);
                 $this->awardStat($killer, 'custom', 'player_kills');
                 $this->incrementCriteria('playerKillCount', $killer->name);
+                $this->simpleTrigger($killer, 'minecraft:player_killed_entity', ['entity' => 'player']);
+            } elseif ($killer === null && $mob !== null) {
+                // LivingEntity.getKillCredit falls back to the mob that last hurt the player.
+                $this->awardStat($c, 'killed_by', $mob['kind']);
+                $this->simpleTrigger($c, 'minecraft:entity_killed_player', ['entity' => $mob['kind']]);
             }
             $this->awardStat($c, 'custom', 'deaths');
             $this->resetStat($c, 'custom', 'time_since_death');
@@ -912,6 +918,7 @@ trait Survival
             if ($stack !== null && $stack['item'] === $c->eating['item']) {
                 // Consumable.onConsume: the item counts as used.
                 $this->awardStat($c, 'used', $this->version->catalog->itemName($stack['item']));
+                $this->simpleTrigger($c, 'minecraft:consume_item', ['item' => $this->version->catalog->itemName($stack['item'])]);
                 $food = $this->version->catalog->item($stack['item']);
                 $c->food = min(20, $c->food + $food['nutrition']);
                 $c->saturation = min($c->food, $c->saturation + $food['saturation']);

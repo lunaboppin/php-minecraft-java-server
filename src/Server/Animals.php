@@ -413,6 +413,7 @@ trait Animals
             $this->awardStat($c, 'killed', $animal['kind']);
             $this->incrementCriteria('totalKillCount', $c->name);
             $this->awardStat($c, 'custom', 'mob_kills');
+            $this->simpleTrigger($c, 'minecraft:player_killed_entity', ['entity' => $animal['kind']]);
             $this->animalDeathLoot($animal, $c);
         }
         return true;
@@ -490,6 +491,7 @@ trait Animals
             $this->awardStat($attacker, 'killed', $mob['kind']);
             $this->incrementCriteria('totalKillCount', $attacker->name);
             $this->awardStat($attacker, 'custom', 'mob_kills');
+            $this->simpleTrigger($attacker, 'minecraft:player_killed_entity', ['entity' => $mob['kind']]);
         }
         // LivingEntity.die: the loot and experience, then the death event.
         $this->animalDeathLoot($mob, $attacker, $type);

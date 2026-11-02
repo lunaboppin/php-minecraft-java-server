@@ -151,6 +151,8 @@ final class Server
 
     use MobFire;
 
+    use RecipePlacement;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -1117,6 +1119,14 @@ final class Server
                         $this->syncInventory($c);
                     }
                 }return;
+            case 'place_recipe':
+                $window = $r->varInt();
+                $display = $r->varInt();
+                $useMaxItems = $r->bool();
+                $r->end();
+                $c->lastActionTime = self::now();
+                $this->placeRecipe($c, $window, $display, $useMaxItems);
+                return;
             case 'recipe_book_seen_recipe':
                 $display = $r->varInt();
                 $r->end();

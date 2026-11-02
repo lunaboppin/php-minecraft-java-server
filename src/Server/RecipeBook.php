@@ -23,7 +23,7 @@ trait RecipeBook
     ];
 
     /**
-     * @return array{displays: list<array{string, bool, string}>, byRecipe: array<string, list<int>>, learnable: list<string>, recipes: array<string, int>, updateRecipes: string}
+     * @return array{displays: list<array{string, bool, string}>, byRecipe: array<string, list<int>>, learnable: list<string>, recipes: array<string, int>, updateRecipes: string, ghosts: array<int, string>, placements: array<string, array>}
      */
     private function recipeBookReference(): array
     {
@@ -31,12 +31,14 @@ trait RecipeBook
         if ($reference === null) {
             $data = json_decode((string) file_get_contents($this->version->directory . '/recipe-book.json'), true, 512, JSON_THROW_ON_ERROR);
             $displays = [];
+            $ghosts = [];
             $byRecipe = [];
             foreach ($data['displays'] as $id => $display) {
                 $displays[$id] = [(string) hex2bin($display['entry']), (bool) $display['notification'], $display['recipe']];
                 $byRecipe[$display['recipe']][] = $id;
+                $ghosts[$id] = (string) hex2bin($display['display']);
             }
-            $reference = ['displays' => $displays, 'byRecipe' => $byRecipe, 'learnable' => $data['learnable'], 'recipes' => array_flip($data['recipes']), 'updateRecipes' => (string) hex2bin($data['update_recipes'])];
+            $reference = ['displays' => $displays, 'byRecipe' => $byRecipe, 'learnable' => $data['learnable'], 'recipes' => array_flip($data['recipes']), 'updateRecipes' => (string) hex2bin($data['update_recipes']), 'ghosts' => $ghosts, 'placements' => $data['placements']];
         }
         return $reference;
     }
