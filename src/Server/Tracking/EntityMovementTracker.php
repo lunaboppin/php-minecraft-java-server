@@ -125,6 +125,9 @@ final class EntityMovementTracker
                 $this->teleportDelay = 0;
             }
             $relative = !$fullPosition && $moved ? $this->positions->encode($path) : null;
+            if ($relative !== null && self::fullPrecisionRequired($state, $relative)) {
+                $relative = null;
+            }
             if ($fullPosition || ($moved && $relative === null)) {
                 $movement = $this->packet('entity_position_sync', $path->encode() . pack('GG', $state['yaw'], $state['pitch']) . chr((int) $state['ground']));
                 $hasPosition = $hasRotation = true;
@@ -165,6 +168,19 @@ final class EntityMovementTracker
         }
         $this->ticks = Int64::signed32($this->ticks + 1);
         return $this->velocitySync($state, $packets);
+    }
+
+    /**
+     * ServerEntity.isFullPrecisionEncodingRequired: an item that collided is sent in full when a
+     * relative move would round the coordinate across the collision off the grid.
+     */
+    private static function fullPrecisionRequired(array $state, array $relative): bool
+    {
+        [$x, , $z] = $state['position'];
+        if (($state['vertical_collision'] ?? false) && ($relative['x'] && RelativePositionCodec::losesPrecision($x) || $relative['z'] && RelativePositionCodec::losesPrecision($z))) {
+            return true;
+        }
+        return ($state['horizontal_collision'] ?? false) && ($relative['x'] && RelativePositionCodec::losesPrecision($z) || $relative['z'] && RelativePositionCodec::losesPrecision($x));
     }
 
     private function updateHead(array $state, array &$packets): void

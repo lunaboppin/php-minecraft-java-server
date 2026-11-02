@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Packets;
+use PhpMinecraftJavaServer\World\Collision;
 
 /**
  * PistonBaseBlock, PistonStructureResolver, PistonMovingBlockEntity and PistonHeadBlock: a
@@ -326,6 +327,35 @@ trait Pistons
         $this->setBlockUnseen($pos, $this->version->catalog->state('moving_piston', $properties));
         $this->movingPistons[$this->world->dimension][implode(':', $pos)] = ['position' => $pos, 'moved' => $moved, 'direction' => $facing,
             'extending' => $extending, 'source' => $source, 'progress' => 0.0, 'progressO' => 0.0, 'lastTicked' => -1];
+        $this->refreshMovingShape(implode(':', $pos));
+    }
+
+    /** PistonMovingBlockEntity.getCollisionShape, kept on the world for Collision. */
+    private function refreshMovingShape(string $key): void
+    {
+        $entity = $this->movingPistons[$this->world->dimension][$key] ?? null;
+        if ($entity === null) {
+            unset($this->world->movingShapes[$key]);
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $collision = new Collision($catalog);
+        $movedName = $catalog->blockName($entity['moved']);
+        $head = [];
+        if (!$entity['extending'] && $entity['source'] && $this->isPistonBase($movedName)) {
+            $head = $collision->shape($catalog->state($movedName, ['extended' => 'true'] + $catalog->properties($entity['moved'])));
+        }
+        $state = $entity['source']
+            ? $catalog->state('piston_head', ['facing' => $entity['direction'], 'short' => $entity['extending'] !== (1.0 - $entity['progress'] < 0.25) ? 'true' : 'false', 'type' => 'normal'])
+            : $entity['moved'];
+        $current = $entity['extending'] ? $entity['progress'] - 1.0 : 1.0 - $entity['progress'];
+        [$dx, $dy, $dz] = array_map(static fn (int $step): float => $step * $current, self::PISTON_DIRECTIONS[$entity['direction']]);
+        $shape = $head;
+        foreach ($collision->shape($state) as $box) {
+            $shape[] = [$box[0] + $dx, $box[1] + $dy, $box[2] + $dz, $box[3] + $dx, $box[4] + $dy, $box[5] + $dz];
+        }
+        $this->world->movingShapes[$key] = ['shape' => $shape, 'noclip' => $head,
+            'movement' => $entity['progress'] < 1.0 ? ($entity['extending'] ? $entity['direction'] : self::PISTON_OPPOSITE[$entity['direction']]) : null];
     }
 
     /** PistonBaseBlock.moveBlocks. */
@@ -443,7 +473,7 @@ trait Pistons
         if ($entity === null || $entity['progressO'] >= 1.0) {
             return;
         }
-        unset($this->movingPistons[$this->world->dimension][$key]);
+        unset($this->movingPistons[$this->world->dimension][$key], $this->world->movingShapes[$key]);
         if ($this->version->catalog->blockName($this->world->get(...$pos)) === 'moving_piston') {
             $state = $entity['source'] ? $this->version->catalog->state('air') : $this->connectedState($entity['moved'], ...$pos);
             $this->setBlock(...[...$pos, $state]);
@@ -460,19 +490,21 @@ trait Pistons
         foreach (array_keys($this->movingPistons[$this->world->dimension] ?? []) as $key) {
             $entity = &$this->movingPistons[$this->world->dimension][$key];
             if ($entity === null) {
-                unset($this->movingPistons[$this->world->dimension][$key]);
+                unset($this->movingPistons[$this->world->dimension][$key], $this->world->movingShapes[$key]);
                 continue;
             }
             $entity['lastTicked'] = $this->worldAge;
             $entity['progressO'] = $entity['progress'];
             if ($entity['progressO'] < 1.0) {
+                $this->pistonMoveEntities($entity, $entity['progress'] + 0.5);
                 $entity['progress'] = min(1.0, $entity['progress'] + 0.5);
                 unset($entity);
+                $this->refreshMovingShape($key);
                 continue;
             }
             $pos = $entity['position'];
             $moved = $entity['moved'];
-            unset($entity, $this->movingPistons[$this->world->dimension][$key]);
+            unset($entity, $this->movingPistons[$this->world->dimension][$key], $this->world->movingShapes[$key]);
             if ($catalog->blockName($this->world->get(...$pos)) !== 'moving_piston') {
                 continue;
             }
@@ -495,6 +527,7 @@ trait Pistons
     {
         foreach ($this->world->setting('movingPistons') ?? [] as $entity) {
             $this->movingPistons[$this->world->dimension][implode(':', $entity['position'])] = $entity;
+            $this->refreshMovingShape(implode(':', $entity['position']));
         }
     }
 
@@ -532,6 +565,192 @@ trait Pistons
                     $this->setBlock(...[...$pos, $catalog->state('air')]);
                 }
             }
+        }
+    }
+
+    /** Entities a moving block pushes: the property holding them, and their half width and height. */
+    private const PISTON_PUSHED = ['itemEntities' => [0.125, 0.25], 'experienceOrbs' => [0.25, 0.5], 'tntEntities' => [0.49, 0.98], 'fallingBlocks' => [0.49, 0.98]];
+
+    /** @var array<string, array{int, array<int, float>}> pistonDeltasGameTime and pistonDeltas by "property:id" */
+    private array $pistonDeltas = [];
+
+    private static function pistonBox(array $entity, array $size): array
+    {
+        return [$entity['x'] - $size[0], $entity['y'], $entity['z'] - $size[0], $entity['x'] + $size[0], $entity['y'] + $size[1], $entity['z'] + $size[0]];
+    }
+
+    private static function boxesIntersect(array $a, array $b): bool
+    {
+        return $a[0] < $b[3] && $a[3] > $b[0] && $a[1] < $b[4] && $a[4] > $b[1] && $a[2] < $b[5] && $a[5] > $b[2];
+    }
+
+    /** PistonMath.getMovementArea. */
+    private static function pistonMovementArea(array $box, string $direction, float $amount): array
+    {
+        $delta = $amount * array_sum(self::PISTON_DIRECTIONS[$direction]);
+        [$min, $max] = [min($delta, 0.0), max($delta, 0.0)];
+        return match ($direction) {
+            'west' => [$box[0] + $min, $box[1], $box[2], $box[0] + $max, $box[4], $box[5]],
+            'east' => [$box[3] + $min, $box[1], $box[2], $box[3] + $max, $box[4], $box[5]],
+            'down' => [$box[0], $box[1] + $min, $box[2], $box[3], $box[1] + $max, $box[5]],
+            'up' => [$box[0], $box[4] + $min, $box[2], $box[3], $box[4] + $max, $box[5]],
+            'north' => [$box[0], $box[1], $box[2] + $min, $box[3], $box[4], $box[2] + $max],
+            'south' => [$box[0], $box[1], $box[5] + $min, $box[3], $box[4], $box[5] + $max],
+        };
+    }
+
+    /** PistonMovingBlockEntity.getMovement: how far the entity box must move to leave the other. */
+    private static function pistonOverlap(array $outside, string $direction, array $box): float
+    {
+        return match ($direction) {
+            'east' => $outside[3] - $box[0],
+            'west' => $box[3] - $outside[0],
+            'down' => $box[4] - $outside[1],
+            'south' => $outside[5] - $box[2],
+            'north' => $box[5] - $outside[2],
+            default => $outside[4] - $box[1],
+        };
+    }
+
+    /** moveByPositionAndProgress: a local box where the moving block is drawn now. */
+    private static function pistonShift(array $box, array $entity): array
+    {
+        $current = $entity['extending'] ? $entity['progress'] - 1.0 : 1.0 - $entity['progress'];
+        [$sx, $sy, $sz] = self::PISTON_DIRECTIONS[$entity['direction']];
+        [$x, $y, $z] = [$entity['position'][0] + $current * $sx, $entity['position'][1] + $current * $sy, $entity['position'][2] + $current * $sz];
+        return [$box[0] + $x, $box[1] + $y, $box[2] + $z, $box[3] + $x, $box[4] + $y, $box[5] + $z];
+    }
+
+    /**
+     * PistonMovingBlockEntity.moveCollidedEntities and moveStuckEntities: entities in the way of
+     * the moving block's collision shape are pushed out of it; slime launches them along the
+     * movement and honey drags what stands on it sideways.
+     */
+    private function pistonMoveEntities(array $entity, float $newProgress): void
+    {
+        $catalog = $this->version->catalog;
+        $collision = new Collision($catalog);
+        $movement = $entity['extending'] ? $entity['direction'] : self::PISTON_OPPOSITE[$entity['direction']];
+        $deltaProgress = $newProgress - $entity['progress'];
+        $moved = $entity['moved'];
+        $related = $moved;
+        $movedName = $catalog->blockName($moved);
+        if (!$entity['extending'] && $entity['source'] && $this->isPistonBase($movedName)) {
+            $related = $catalog->state('piston_head', ['facing' => $catalog->properties($moved)['facing'],
+                'short' => $entity['progress'] > 0.25 ? 'true' : 'false', 'type' => $movedName === 'sticky_piston' ? 'sticky' : 'normal']);
+        }
+        $shape = $collision->shape($related);
+        if ($shape !== []) {
+            $bounds = [INF, INF, INF, -INF, -INF, -INF];
+            foreach ($shape as $box) {
+                for ($i = 0; $i < 3; ++$i) {
+                    $bounds[$i] = min($bounds[$i], $box[$i]);
+                    $bounds[$i + 3] = max($bounds[$i + 3], $box[$i + 3]);
+                }
+            }
+            $aabb = self::pistonShift($bounds, $entity);
+            $area = self::pistonMovementArea($aabb, $movement, $deltaProgress);
+            $search = [min($area[0], $aabb[0]), min($area[1], $aabb[1]), min($area[2], $aabb[2]), max($area[3], $aabb[3]), max($area[4], $aabb[4]), max($area[5], $aabb[5])];
+            foreach (self::PISTON_PUSHED as $property => $size) {
+                foreach (array_keys($this->{$property}) as $id) {
+                    if (!isset($this->{$property}[$id]) || !self::boxesIntersect($search, self::pistonBox($this->{$property}[$id], $size))) {
+                        continue;
+                    }
+                    if ($movedName === 'slime_block') {
+                        $axis = ['x' => 0, 'y' => 1, 'z' => 2][match ($movement) {
+                            'east', 'west' => 'x', 'up', 'down' => 'y', default => 'z'
+                        }];
+                        $this->{$property}[$id]['velocity'][$axis] = (float) array_sum(self::PISTON_DIRECTIONS[$movement]);
+                    }
+                    $delta = 0.0;
+                    foreach ($shape as $box) {
+                        $moving = self::pistonMovementArea(self::pistonShift($box, $entity), $movement, $deltaProgress);
+                        $entityBox = self::pistonBox($this->{$property}[$id], $size);
+                        if (self::boxesIntersect($moving, $entityBox)) {
+                            $delta = max($delta, self::pistonOverlap($moving, $movement, $entityBox));
+                            if ($delta >= $deltaProgress) {
+                                break;
+                            }
+                        }
+                    }
+                    if ($delta > 0.0) {
+                        $delta = min($delta, $deltaProgress) + 0.01;
+                        $this->moveEntityByPiston($collision, $property, $id, $movement, $delta);
+                        if (!$entity['extending'] && $entity['source']) {
+                            $this->fixEntityWithinPistonBase($collision, $property, $id, $entity['position'], $movement, $deltaProgress);
+                        }
+                    }
+                }
+            }
+        }
+        if ($movedName !== 'honey_block' || $movement === 'up' || $movement === 'down') {
+            return;
+        }
+        $top = max(array_map(static fn (array $box): float => $box[4], $collision->shape($moved)));
+        $aabb = self::pistonShift([0.0, $top, 0.0, 1.0, 1.5000010000000001, 1.0], $entity);
+        foreach (self::PISTON_PUSHED as $property => $size) {
+            foreach (array_keys($this->{$property}) as $id) {
+                $pushed = $this->{$property}[$id] ?? null;
+                if ($pushed !== null && ($pushed['ground'] ?? false) && self::boxesIntersect($aabb, self::pistonBox($pushed, $size))
+                    && $pushed['x'] >= $aabb[0] && $pushed['x'] <= $aabb[3] && $pushed['z'] >= $aabb[2] && $pushed['z'] <= $aabb[5]) {
+                    $this->moveEntityByPiston($collision, $property, $id, $movement, $deltaProgress);
+                }
+            }
+        }
+    }
+
+    /** moveEntityByPiston: Entity.move(MoverType.PISTON), at most 0.51 along each axis a tick. */
+    private function moveEntityByPiston(Collision $collision, string $property, int $id, string $movement, float $delta, ?string $noclip = null): void
+    {
+        $size = self::PISTON_PUSHED[$property];
+        $key = $property . ':' . $id;
+        if (($this->pistonDeltas[$key][0] ?? null) !== $this->worldAge) {
+            $this->pistonDeltas[$key] = [$this->worldAge, [0.0, 0.0, 0.0]];
+        }
+        $step = self::PISTON_DIRECTIONS[$movement];
+        $axis = $step[0] !== 0 ? 0 : ($step[1] !== 0 ? 1 : 2);
+        $amount = $delta * $step[$axis];
+        if (abs($amount) <= 1.0E-7) {
+            return;
+        }
+        $limited = max(-0.51, min(0.51, $amount + $this->pistonDeltas[$key][1][$axis]));
+        $amount = $limited - $this->pistonDeltas[$key][1][$axis];
+        $this->pistonDeltas[$key][1][$axis] = $limited;
+        if (abs($amount) <= 1.0E-5) {
+            return;
+        }
+        $wanted = [0.0, 0.0, 0.0];
+        $wanted[$axis] = $amount;
+        $pushed = &$this->{$property}[$id];
+        $collision->noclip = $noclip ?? $movement;
+        $moved = $collision->move($this->world, self::pistonBox($pushed, $size), $wanted);
+        $collision->noclip = null;
+        [$pushed['x'], $pushed['y'], $pushed['z']] = [$pushed['x'] + $moved[0], $pushed['y'] + $moved[1], $pushed['z'] + $moved[2]];
+        if ($moved[$axis] !== $amount) {
+            // restituteMovementAfterCollisions: these entities do not bounce.
+            $pushed['velocity'][$axis] = 0.0;
+        }
+        $pushed['horizontalCollision'] = abs($moved[0] - $wanted[0]) >= 1.0E-5 || abs($moved[2] - $wanted[2]) >= 1.0E-5;
+        // isLocalInstanceAuthoritative: the server's own entities update their ground state on every move.
+        $pushed['verticalCollision'] = $moved[1] !== $wanted[1];
+        $pushed['ground'] = $pushed['verticalCollision'] && $wanted[1] < 0.0;
+        unset($pushed);
+        $this->pistonDeltas = array_filter($this->pistonDeltas, fn (array $entry): bool => $entry[0] === $this->worldAge);
+    }
+
+    /** fixEntityWithinPistonBase: a retracting head drags no entity into its base. */
+    private function fixEntityWithinPistonBase(Collision $collision, string $property, int $id, array $pos, string $direction, float $deltaProgress): void
+    {
+        $box = self::pistonBox($this->{$property}[$id], self::PISTON_PUSHED[$property]);
+        $base = [$pos[0], $pos[1], $pos[2], $pos[0] + 1.0, $pos[1] + 1.0, $pos[2] + 1.0];
+        if (!self::boxesIntersect($box, $base)) {
+            return;
+        }
+        $opposite = self::PISTON_OPPOSITE[$direction];
+        $intersection = [max($box[0], $base[0]), max($box[1], $base[1]), max($box[2], $base[2]), min($box[3], $base[3]), min($box[4], $base[4]), min($box[5], $base[5])];
+        $delta = self::pistonOverlap($base, $opposite, $box) + 0.01;
+        if (abs($delta - (self::pistonOverlap($base, $opposite, $intersection) + 0.01)) < 0.01) {
+            $this->moveEntityByPiston($collision, $property, $id, $opposite, min($delta, $deltaProgress) + 0.01, $direction);
         }
     }
 }

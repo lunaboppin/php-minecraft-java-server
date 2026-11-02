@@ -1,0 +1,545 @@
+{
+  "name": "piston-entities",
+  "normalizations": [
+    "Compare the distinct packets sent about item entities as pistons push them: sideways, upwards, launched by slime, dragged by honey, and near a retracting sticky piston.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 16 75 16 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 59 -8 16 60 16 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 3 minecraft:piston[facing=up]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 6 minecraft:sticky_piston[facing=up]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 6 minecraft:slime_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 9 minecraft:sticky_piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 61 9 minecraft:honey_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 0 minecraft:piston[facing=south]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 4 minecraft:sticky_piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 1.5 61.0 0.5 {Item:{id:\"minecraft:gravel\",count:1},PickupDelay:32767}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 0.5 62.0 3.5 {Item:{id:\"minecraft:stick\",count:1},PickupDelay:32767}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 0.5 63.0 6.5 {Item:{id:\"minecraft:apple\",count:1},PickupDelay:32767}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 1.5 62.0 9.5 {Item:{id:\"minecraft:cobblestone\",count:1},PickupDelay:32767}"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "summoned",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          7,
+          61,
+          -1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          7,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          2
+        ],
+        [
+          7,
+          61,
+          3
+        ],
+        [
+          7,
+          61,
+          4
+        ],
+        [
+          7,
+          61,
+          5
+        ],
+        [
+          8,
+          61,
+          -1
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          1
+        ],
+        [
+          8,
+          61,
+          2
+        ],
+        [
+          8,
+          61,
+          3
+        ],
+        [
+          8,
+          61,
+          4
+        ],
+        [
+          8,
+          61,
+          5
+        ],
+        [
+          9,
+          61,
+          -1
+        ],
+        [
+          9,
+          61,
+          0
+        ],
+        [
+          9,
+          61,
+          1
+        ],
+        [
+          9,
+          61,
+          2
+        ],
+        [
+          9,
+          61,
+          3
+        ],
+        [
+          9,
+          61,
+          4
+        ],
+        [
+          9,
+          61,
+          5
+        ],
+        [
+          0,
+          61,
+          3
+        ],
+        [
+          0,
+          61,
+          6
+        ],
+        [
+          0,
+          62,
+          3
+        ],
+        [
+          0,
+          62,
+          6
+        ],
+        [
+          0,
+          63,
+          3
+        ],
+        [
+          0,
+          63,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 3 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 6 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 9 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 -1 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 61 4 minecraft:redstone_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "extended",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          7,
+          61,
+          -1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          7,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          2
+        ],
+        [
+          7,
+          61,
+          3
+        ],
+        [
+          7,
+          61,
+          4
+        ],
+        [
+          7,
+          61,
+          5
+        ],
+        [
+          8,
+          61,
+          -1
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          1
+        ],
+        [
+          8,
+          61,
+          2
+        ],
+        [
+          8,
+          61,
+          3
+        ],
+        [
+          8,
+          61,
+          4
+        ],
+        [
+          8,
+          61,
+          5
+        ],
+        [
+          9,
+          61,
+          -1
+        ],
+        [
+          9,
+          61,
+          0
+        ],
+        [
+          9,
+          61,
+          1
+        ],
+        [
+          9,
+          61,
+          2
+        ],
+        [
+          9,
+          61,
+          3
+        ],
+        [
+          9,
+          61,
+          4
+        ],
+        [
+          9,
+          61,
+          5
+        ],
+        [
+          0,
+          61,
+          3
+        ],
+        [
+          0,
+          61,
+          6
+        ],
+        [
+          0,
+          62,
+          3
+        ],
+        [
+          0,
+          62,
+          6
+        ],
+        [
+          0,
+          63,
+          3
+        ],
+        [
+          0,
+          63,
+          6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:item 10.5 61.0 4.5 {Item:{id:\"minecraft:feather\",count:1},PickupDelay:32767}"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 61 4 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "pushed",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          7,
+          61,
+          -1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          7,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          2
+        ],
+        [
+          7,
+          61,
+          3
+        ],
+        [
+          7,
+          61,
+          4
+        ],
+        [
+          7,
+          61,
+          5
+        ],
+        [
+          8,
+          61,
+          -1
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          1
+        ],
+        [
+          8,
+          61,
+          2
+        ],
+        [
+          8,
+          61,
+          3
+        ],
+        [
+          8,
+          61,
+          4
+        ],
+        [
+          8,
+          61,
+          5
+        ],
+        [
+          9,
+          61,
+          -1
+        ],
+        [
+          9,
+          61,
+          0
+        ],
+        [
+          9,
+          61,
+          1
+        ],
+        [
+          9,
+          61,
+          2
+        ],
+        [
+          9,
+          61,
+          3
+        ],
+        [
+          9,
+          61,
+          4
+        ],
+        [
+          9,
+          61,
+          5
+        ],
+        [
+          0,
+          61,
+          3
+        ],
+        [
+          0,
+          61,
+          6
+        ],
+        [
+          0,
+          62,
+          3
+        ],
+        [
+          0,
+          62,
+          6
+        ],
+        [
+          0,
+          63,
+          3
+        ],
+        [
+          0,
+          63,
+          6
+        ]
+      ]
+    }
+  ]
+}
