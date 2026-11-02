@@ -3363,6 +3363,7 @@
     "item.bucket.fill_powder_snow": 234,
     "item.bottle.empty": 195,
     "item.bottle.fill": 196,
+    "entity.skeleton.shoot": 1495,
     "entity.splash_potion.throw": 1587
   },
   "particle_types": {

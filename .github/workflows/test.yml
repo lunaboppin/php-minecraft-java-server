@@ -409,6 +409,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/consumables.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-consumables
           python3 tools/parity/verify.py tools/.cache/parity-consumables/php-packets.json tools/.cache/parity-consumables/reference-packets.json
+      - name: Compare grinding items at a grindstone with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/grindstones.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-grindstones
+          python3 tools/parity/verify.py tools/.cache/parity-grindstones/php-packets.json tools/.cache/parity-grindstones/reference-packets.json
       - name: Compare throwing splash potions with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/splash-potions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-splash-potions
@@ -429,6 +433,7 @@ jobs:
             tools/.cache/parity-enchanting/
             tools/.cache/parity-anvils/
             tools/.cache/parity-consumables/
+            tools/.cache/parity-grindstones/
             tools/.cache/parity-splash-potions/
           retention-days: 7
 
