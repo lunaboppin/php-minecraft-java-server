@@ -25,6 +25,8 @@ def main():
             a=Probe(port,'egg-user').login();b=Probe(port,'egg-observer').login('Observer')
             try:
                 command(a,'gamerule minecraft:spawn_mobs false')
+                # Every egg hatches on one block, where so many mobs would cram each other to death.
+                command(a,'gamerule minecraft:max_entity_cramming 0')
                 for index,(egg,kind) in enumerate(MOBS['spawn_eggs'].items()):
                     edit(a,egg);use(a,[2,63,0],500+index)
                     assert MOBS['entities'][kind]['id'] in a.entities.values(),(egg,kind)
