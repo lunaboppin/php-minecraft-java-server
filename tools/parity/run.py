@@ -107,7 +107,10 @@ def observe(controller,scenario,output):
             elif action=='wait':
                 deadline=time.monotonic()+step['seconds']
                 while time.monotonic()<deadline:probe.barrier();time.sleep(.05)
-            elif action=='packet':probe.send(step['name'],bytes.fromhex(step['hex']));probe.tick_barrier()
+            elif action=='packet':
+                probe.send(step['name'],bytes.fromhex(step['hex']));probe.tick_barrier()
+                # Closing a menu leaves the player's own inventory open again.
+                if step['name']=='container_close':probe.window=0
             elif action=='observer_packet':
                 if observer is None:raise ValueError('Observer packet requires an observer')
                 observer.send(step['name'],bytes.fromhex(step['hex']));observer.tick_barrier()

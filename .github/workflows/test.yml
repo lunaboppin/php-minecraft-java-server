@@ -433,6 +433,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-projectiles
           python3 tools/parity/verify.py tools/.cache/parity-projectiles/php-packets.json tools/.cache/parity-projectiles/reference-packets.json
+      - name: Compare enchanting at an enchanting table with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/enchanting.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-enchanting
+          python3 tools/parity/verify.py tools/.cache/parity-enchanting/php-packets.json tools/.cache/parity-enchanting/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -445,6 +449,7 @@ jobs:
             tools/.cache/parity-player-falls/
             tools/.cache/parity-breeding/
             tools/.cache/parity-projectiles/
+            tools/.cache/parity-enchanting/
           retention-days: 7
 
   docker:

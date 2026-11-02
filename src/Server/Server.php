@@ -69,6 +69,8 @@ final class Server
 
     use Projectiles;
 
+    use EnchantingTables;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -1107,6 +1109,14 @@ final class Server
                 }return;
             case 'container_click': $this->inventoryClick($c, $r);
                 return;
+            case 'container_button_click': $window = $r->varInt();
+                $button = $r->varInt();
+                $r->end();
+                // ServerGamePacketListenerImpl.handleContainerButtonClick: the open menu's button.
+                if ($window === $c->windowId && $c->gameMode !== 3) {
+                    $this->enchantButton($c, $button);
+                }
+                return;
             case 'container_close': $window = $r->varInt();
                 $r->end();
                 if ($window === $c->windowId) {
@@ -1448,7 +1458,7 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
+                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender',default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
