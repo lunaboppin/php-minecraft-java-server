@@ -90,7 +90,7 @@ trait Animals
     }
 
     /** @param array<string, mixed> $state saved mob fields set before the mob is first shown, such as yaw */
-    private function spawnAnimal(string $kind, float $x, float $y, float $z, array $state = []): ?int
+    private function spawnAnimal(string $kind, float $x, float $y, float $z, array $state = [], bool $finalize = true, bool $show = true): ?int
     {
         $info = $this->version->catalog->mobs['entities'][$kind] ?? null;
         if ($info === null || in_array($kind, ['player', 'armor_stand', 'mannequin'], true) || !isset($info['attributes']['max_health']) || !$info['summonable'] || !$info['enabled'] || ($this->config->difficulty === 0 && !$info['peaceful']) || count($this->animals) >= 256) {
@@ -101,14 +101,14 @@ trait Animals
             $this->nextEntity += 8;
         }
         $this->animals[$id] = ['id' => $id, 'uuid' => bin2hex(random_bytes(16)), 'kind' => $kind, 'health' => $info['attributes']['max_health'], 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => 0.0, 'targetX' => $x, 'targetY' => $y, 'targetZ' => $z, 'nextWander' => 0, 'velocity' => [0.0, 0.0, 0.0]];
-        $this->animals[$id]['equipment'] = $this->mobEquipment($kind);
+        $this->animals[$id]['equipment'] = $finalize ? $this->mobEquipment($kind) : [];
         $this->animals[$id] = $state + $this->animals[$id];
         $this->trackPushingMob($this->animals[$id]);
-        $variant = $this->chooseMobSoundVariant($kind);
+        $variant = $finalize ? $this->chooseMobSoundVariant($kind) : null;
         if ($variant !== null) {
             $this->animals[$id]['soundVariant'] = $variant;
         }
-        foreach ($this->localPlayers() as $p) {
+        foreach ($show ? $this->localPlayers() : [] as $p) {
             $this->showAnimal($p, $this->animals[$id]);
         }
         return $id;
@@ -193,6 +193,28 @@ trait Animals
         return Binary::writeVarInt($animal['id']) . $entries . "\xff";
     }
 
+    /** ServerEntity.sendPairingData: every non-default entity data value in one packet, by index. */
+    private function mobPairingData(array $animal): string
+    {
+        $entries = ($animal['onFire'] ?? false) ? "\0" . Binary::writeVarInt(0) . "\1" : '';
+        if (isset($animal['customName'])) {
+            $entries .= "\x02" . Binary::writeVarInt(6) . "\1" . Nbt::component($animal['customName']);
+        }
+        foreach ([3 => 'customNameVisible', 4 => 'silent'] as $index => $field) {
+            if ($animal[$field] ?? false) {
+                $entries .= chr($index) . Binary::writeVarInt(8) . "\1";
+            }
+        }
+        $entries .= substr(Packets::mobHealth($this->version->catalog, $animal['id'], $animal['health']), strlen(Binary::writeVarInt($animal['id'])), -1);
+        if ($animal['noAi'] ?? false) {
+            $entries .= "\x0f" . Binary::writeVarInt(0) . "\1";
+        }
+        if (($animal['baby'] ?? false) && in_array($animal['kind'], self::BABY_INDEX_TYPES, true)) {
+            $entries .= "\x10" . Binary::writeVarInt(8) . "\1";
+        }
+        return Binary::writeVarInt($animal['id']) . $entries . "\xff";
+    }
+
     private function showAnimal(Client $c, array $animal): void
     {
         $id = $animal['id'];
@@ -205,15 +227,9 @@ trait Animals
             : Packets::addPlayer($id, hex2bin($animal['uuid']), $type, $animal['x'], $animal['y'], $animal['z'], $animal['yaw'], 0, $animal['velocity'] ?? [0.0, 0.0, 0.0]);
         $c->send($this->version, 'add_entity', $spawn);
         $c->entities[$id] = true;
-        $c->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $animal['health']));
-        if (array_intersect_key($animal, array_flip(['customName', 'customNameVisible', 'silent', 'noAi', 'baby'])) !== []) {
-            $c->send($this->version, 'set_entity_data', $this->mobState($animal));
-        }
+        $c->send($this->version, 'set_entity_data', $this->mobPairingData($animal));
         if (isset($animal['soundVariant'])) {
             $c->send($this->version, 'set_entity_data', Packets::mobSoundVariant($this->version, $id, $animal['kind'], $animal['soundVariant']));
-        }
-        if ($animal['onFire'] ?? false) {
-            $c->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . "\0" . Binary::writeVarInt(0) . "\1\xff");
         }
         $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $id, $this->mobAttributeEntries($animal)));
         if (($animal['equipment'] ?? []) !== []) {
@@ -580,6 +596,8 @@ trait Animals
     private function animalDeathLoot(array &$animal, ?Client $killer = null, ?string $type = null): void
     {
         $animal['deadAt'] = $this->ticks + 20;
+        // LivingEntity.isPushable: a dying mob neither pushes nor counts toward cramming.
+        $this->forgetPushingEntity($animal['id']);
         // LivingEntity.dropAllDeathLoot: loot table drops, then experience when a player hurt it lately.
         $this->dropMobLoot($animal, $killer, $type);
         $playerKilled = $killer !== null || $this->ticks - ($animal['lastHurtByPlayerTick'] ?? -1000) < 100;
@@ -721,6 +739,9 @@ trait Animals
             }
             if ($this->mobIsTicking($animal)) {
                 $this->tickAge($animal);
+                if ($this->tickCreeper($animal, !($animal['noAi'] ?? false))) {
+                    continue;
+                }
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {

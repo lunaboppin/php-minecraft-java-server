@@ -1335,6 +1335,7 @@ SCRIPT = [
     ('!quiet time query gametime', False),
     ('execute if entity @e[type=pig]', False),
     ('kill @e[type=pig]', False),
+    ('!quiet kill @e[type=item]', False),
     ('!quiet gamerule max_entity_cramming 24', False),
     # ItemEntity's and ExperienceOrb's saved data, once they rest on a block.
     ('!quiet setblock 12 99 12 stone', False),
@@ -1760,7 +1761,8 @@ def compare(reference, php):
         # A summoned entity has a random UUID on each server.
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
-            key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
+            ids = normalize_uuids if random_ids else (lambda items: items)
+            key = (lambda items: sorted(item['hex'] for item in ids(items))) if unordered else ids
             if key(normalize_recipe_book(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))))))) != key(normalize_recipe_book(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences

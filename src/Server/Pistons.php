@@ -569,7 +569,18 @@ trait Pistons
     }
 
     /** Entities a moving block pushes: the property holding them, and their half width and height. */
-    private const PISTON_PUSHED = ['itemEntities' => [0.125, 0.25], 'experienceOrbs' => [0.25, 0.5], 'tntEntities' => [0.49, 0.98], 'fallingBlocks' => [0.49, 0.98]];
+    private const PISTON_PUSHED = ['itemEntities' => [0.125, 0.25], 'experienceOrbs' => [0.25, 0.5], 'tntEntities' => [0.49, 0.98], 'fallingBlocks' => [0.49, 0.98], 'animals' => null];
+
+    /** An entity's half width and height; mobs take theirs from their kind and age. */
+    private function pistonSize(string $property, array $entity): array
+    {
+        if (self::PISTON_PUSHED[$property] !== null) {
+            return self::PISTON_PUSHED[$property];
+        }
+        $size = $this->version->catalog->mobs['entities'][$entity['kind']];
+        $scale = ($entity['baby'] ?? false) ? 0.5 : 1.0;
+        return [$size['width'] * $scale / 2, $size['height'] * $scale];
+    }
 
     /** @var array<string, array{int, array<int, float>}> pistonDeltasGameTime and pistonDeltas by "property:id" */
     private array $pistonDeltas = [];
@@ -651,9 +662,13 @@ trait Pistons
             $aabb = self::pistonShift($bounds, $entity);
             $area = self::pistonMovementArea($aabb, $movement, $deltaProgress);
             $search = [min($area[0], $aabb[0]), min($area[1], $aabb[1]), min($area[2], $aabb[2]), max($area[3], $aabb[3]), max($area[4], $aabb[4]), max($area[5], $aabb[5])];
-            foreach (self::PISTON_PUSHED as $property => $size) {
+            foreach (array_keys(self::PISTON_PUSHED) as $property) {
                 foreach (array_keys($this->{$property}) as $id) {
-                    if (!isset($this->{$property}[$id]) || !self::boxesIntersect($search, self::pistonBox($this->{$property}[$id], $size))) {
+                    if (!isset($this->{$property}[$id]) || isset($this->{$property}[$id]['deadAt'])) {
+                        continue;
+                    }
+                    $size = $this->pistonSize($property, $this->{$property}[$id]);
+                    if (!self::boxesIntersect($search, self::pistonBox($this->{$property}[$id], $size))) {
                         continue;
                     }
                     if ($movedName === 'slime_block') {
@@ -688,10 +703,10 @@ trait Pistons
         }
         $top = max(array_map(static fn (array $box): float => $box[4], $collision->shape($moved)));
         $aabb = self::pistonShift([0.0, $top, 0.0, 1.0, 1.5000010000000001, 1.0], $entity);
-        foreach (self::PISTON_PUSHED as $property => $size) {
+        foreach (array_keys(self::PISTON_PUSHED) as $property) {
             foreach (array_keys($this->{$property}) as $id) {
                 $pushed = $this->{$property}[$id] ?? null;
-                if ($pushed !== null && ($pushed['ground'] ?? false) && self::boxesIntersect($aabb, self::pistonBox($pushed, $size))
+                if ($pushed !== null && !isset($pushed['deadAt']) && ($pushed['ground'] ?? false) && self::boxesIntersect($aabb, self::pistonBox($pushed, $this->pistonSize($property, $pushed)))
                     && $pushed['x'] >= $aabb[0] && $pushed['x'] <= $aabb[3] && $pushed['z'] >= $aabb[2] && $pushed['z'] <= $aabb[5]) {
                     $this->moveEntityByPiston($collision, $property, $id, $movement, $deltaProgress);
                 }
@@ -702,7 +717,7 @@ trait Pistons
     /** moveEntityByPiston: Entity.move(MoverType.PISTON), at most 0.51 along each axis a tick. */
     private function moveEntityByPiston(Collision $collision, string $property, int $id, string $movement, float $delta, ?string $noclip = null): void
     {
-        $size = self::PISTON_PUSHED[$property];
+        $size = $this->pistonSize($property, $this->{$property}[$id]);
         $key = $property . ':' . $id;
         if (($this->pistonDeltas[$key][0] ?? null) !== $this->worldAge) {
             $this->pistonDeltas[$key] = [$this->worldAge, [0.0, 0.0, 0.0]];
@@ -723,7 +738,9 @@ trait Pistons
         $wanted[$axis] = $amount;
         $pushed = &$this->{$property}[$id];
         $collision->noclip = $noclip ?? $movement;
-        $moved = $collision->move($this->world, self::pistonBox($pushed, $size), $wanted);
+        $moved = $property === 'animals'
+            ? $collision->moveWithStep($this->world, self::pistonBox($pushed, $size), $wanted, (float) ($this->mobAttributes($pushed)['step_height'] ?? 0.6), $pushed['ground'] ?? false)
+            : $collision->move($this->world, self::pistonBox($pushed, $size), $wanted);
         $collision->noclip = null;
         [$pushed['x'], $pushed['y'], $pushed['z']] = [$pushed['x'] + $moved[0], $pushed['y'] + $moved[1], $pushed['z'] + $moved[2]];
         if ($moved[$axis] !== $amount) {
@@ -741,7 +758,7 @@ trait Pistons
     /** fixEntityWithinPistonBase: a retracting head drags no entity into its base. */
     private function fixEntityWithinPistonBase(Collision $collision, string $property, int $id, array $pos, string $direction, float $deltaProgress): void
     {
-        $box = self::pistonBox($this->{$property}[$id], self::PISTON_PUSHED[$property]);
+        $box = self::pistonBox($this->{$property}[$id], $this->pistonSize($property, $this->{$property}[$id]));
         $base = [$pos[0], $pos[1], $pos[2], $pos[0] + 1.0, $pos[1] + 1.0, $pos[2] + 1.0];
         if (!self::boxesIntersect($box, $base)) {
             return;
