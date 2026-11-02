@@ -414,6 +414,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/grindstones.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-grindstones
           python3 tools/parity/verify.py tools/.cache/parity-grindstones/php-packets.json tools/.cache/parity-grindstones/reference-packets.json
+      - name: Compare upgrading gear at a smithing table with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/smithing.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-smithing
+          python3 tools/parity/verify.py tools/.cache/parity-smithing/php-packets.json tools/.cache/parity-smithing/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -431,6 +435,7 @@ jobs:
             tools/.cache/parity-anvils/
             tools/.cache/parity-consumables/
             tools/.cache/parity-grindstones/
+            tools/.cache/parity-smithing/
           retention-days: 7
 
   docker:
