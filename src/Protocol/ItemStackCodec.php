@@ -52,6 +52,7 @@ final class ItemStackCodec
                 'enchantments', 'storedEnchantments' => $this->enchantments->read($input),
                 'damage' => $input->varInt(),
                 'enchantability' => $this->readEnchantability($input),
+                'potion' => $this->readPotion($input),
             };
         }
         for ($index = 0; $index < $removed; ++$index) {
@@ -75,6 +76,7 @@ final class ItemStackCodec
             $payload = match ($field) {
                 'enchantments', 'storedEnchantments' => $this->enchantments->write($value),
                 'damage', 'enchantability' => Binary::writeVarInt($value),
+                'potion' => $this->writePotion($value),
             };
             $additions[] = Binary::writeVarInt($this->rules['component_ids'][$name]) . $payload;
         }
@@ -120,6 +122,8 @@ final class ItemStackCodec
             if (in_array($field, ['enchantments', 'storedEnchantments'], true)) {
                 $this->enchantments->write($stack[$field]);
                 ksort($stack[$field]);
+            } elseif ($field === 'potion') {
+                $stack[$field] = $this->readPotion(new Binary($this->writePotion($stack[$field])));
             } elseif (!is_int($stack[$field]) || ($field === 'enchantability' && $stack[$field] <= 0)) {
                 throw new \InvalidArgumentException('Invalid ' . $field . ' component');
             }
@@ -185,6 +189,62 @@ final class ItemStackCodec
     private function componentName(int $id): string
     {
         return $this->componentNames[$id] ?? throw new ProtocolException('Unknown component holder');
+    }
+
+    /**
+     * PotionContents.STREAM_CODEC: an optional potion, colour, custom effects and name. Vanilla
+     * reads an effect's hidden effects but does not keep them.
+     */
+    private function readPotion(Binary $input): array
+    {
+        $potion = $input->bool() ? ($this->rules['potions'][$input->varInt()] ?? throw new ProtocolException('Unknown potion')) : null;
+        $color = $input->bool() ? $input->int() : null;
+        $count = $input->varInt();
+        // Each effect takes at least six bytes.
+        if ($count < 0 || $count * 6 > $input->remaining()) {
+            throw new ProtocolException('Invalid custom effect count');
+        }
+        $effects = [];
+        for ($index = 0; $index < $count; ++$index) {
+            $effects[] = ['id' => $this->rules['mob_effects'][$input->varInt()] ?? throw new ProtocolException('Unknown mob effect')] + $this->readEffectDetails($input);
+        }
+        $name = $input->bool() ? $input->string() : null;
+        return ['potion' => $potion, 'custom_color' => $color, 'custom_effects' => $effects, 'custom_name' => $name];
+    }
+
+    /** MobEffectInstance.Details.STREAM_CODEC, with its hidden effects read and dropped. */
+    private function readEffectDetails(Binary $input): array
+    {
+        $details = ['amplifier' => $input->varInt(), 'duration' => $input->varInt(), 'ambient' => $input->bool(), 'show_particles' => $input->bool(), 'show_icon' => $input->bool()];
+        if ($input->bool()) {
+            $this->readEffectDetails($input);
+        }
+        return $details + ['hidden_effect' => null];
+    }
+
+    private function writePotion(array $contents): string
+    {
+        $optional = static fn (mixed $value, callable $write): string => $value === null ? "\0" : "\1" . $write($value);
+        $output = $optional($contents['potion'], fn (string $potion): string => Binary::writeVarInt($this->registryId('potions', $potion)));
+        $output .= $optional($contents['custom_color'], static fn (int $color): string => pack('N', $color & 0xffffffff));
+        $output .= Binary::writeVarInt(count($contents['custom_effects']));
+        foreach ($contents['custom_effects'] as $effect) {
+            $output .= Binary::writeVarInt($this->registryId('mob_effects', $effect['id'])) . Binary::writeVarInt($effect['amplifier']) . Binary::writeVarInt($effect['duration']);
+            $output .= chr((int) $effect['ambient']) . chr((int) $effect['show_particles']) . chr((int) $effect['show_icon']) . "\0";
+        }
+        return $output . $optional($contents['custom_name'], static fn (string $name): string => Binary::writeString($name));
+    }
+
+    /** Each potion's base name, as Potion.name gives it, by its registry name. */
+    public function potionNames(): array
+    {
+        return array_combine($this->rules['potions'], $this->rules['potion_names']);
+    }
+
+    private function registryId(string $registry, string $name): int
+    {
+        $id = array_search($name, $this->rules[$registry], true);
+        return $id === false ? throw new \InvalidArgumentException('Unknown ' . $registry . ' entry ' . $name) : $id;
     }
 
     private function readEnchantability(Binary $input): int
