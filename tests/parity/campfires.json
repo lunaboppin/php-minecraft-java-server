@@ -1,0 +1,207 @@
+{
+  "name": "campfires",
+  "normalizations": [
+    "Compare putting raw beef on a lit campfire, where it cooks and drops after 30 seconds to be picked up beside it, and potatoes on an unlit one (four fit, the fifth stays in hand, none cook), which /setblock removes without dropping them.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 8 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 8 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:campfire"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:campfire[lit=false]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -3.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:beef 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 64 -3.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:potato 5"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "placed",
+      "fields": [
+        "inventory",
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 32
+    },
+    {
+      "action": "snapshot",
+      "name": "cooked",
+      "fields": [
+        "entities"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -0.5 0 20"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "picked-up",
+      "fields": [
+        "inventory",
+        "entities"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -3.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "broken",
+      "fields": [
+        "entities"
+      ]
+    }
+  ]
+}

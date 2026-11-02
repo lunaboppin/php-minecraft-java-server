@@ -663,6 +663,21 @@
     "experience": 0.35
   },
   {
+    "name": "baked_potato_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1380,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1379
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.35
+  },
+  {
     "name": "baked_potato_from_smoking",
     "type": "smoking",
     "result": {
@@ -6368,6 +6383,21 @@
     "experience": 0.35
   },
   {
+    "name": "cooked_beef_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1261,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1260
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.35
+  },
+  {
     "name": "cooked_beef_from_smoking",
     "type": "smoking",
     "result": {
@@ -6395,6 +6425,21 @@
       ]
     ],
     "ticks": 200,
+    "experience": 0.35
+  },
+  {
+    "name": "cooked_chicken_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1263,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1262
+      ]
+    ],
+    "ticks": 600,
     "experience": 0.35
   },
   {
@@ -6428,6 +6473,21 @@
     "experience": 0.35
   },
   {
+    "name": "cooked_cod_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1194,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1190
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.35
+  },
+  {
     "name": "cooked_cod_from_smoking",
     "type": "smoking",
     "result": {
@@ -6455,6 +6515,21 @@
       ]
     ],
     "ticks": 200,
+    "experience": 0.35
+  },
+  {
+    "name": "cooked_mutton_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1416,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1415
+      ]
+    ],
+    "ticks": 600,
     "experience": 0.35
   },
   {
@@ -6488,6 +6563,21 @@
     "experience": 0.35
   },
   {
+    "name": "cooked_porkchop_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1098,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1097
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.35
+  },
+  {
     "name": "cooked_porkchop_from_smoking",
     "type": "smoking",
     "result": {
@@ -6518,6 +6608,21 @@
     "experience": 0.35
   },
   {
+    "name": "cooked_rabbit_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1401,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1400
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.35
+  },
+  {
     "name": "cooked_rabbit_from_smoking",
     "type": "smoking",
     "result": {
@@ -6545,6 +6650,21 @@
       ]
     ],
     "ticks": 200,
+    "experience": 0.35
+  },
+  {
+    "name": "cooked_salmon_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1195,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        1191
+      ]
+    ],
+    "ticks": 600,
     "experience": 0.35
   },
   {
@@ -10179,6 +10299,21 @@
         1257
       ]
     ]
+  },
+  {
+    "name": "dried_kelp_from_campfire_cooking",
+    "type": "campfire_cooking",
+    "result": {
+      "item": 1257,
+      "count": 1
+    },
+    "ingredients": [
+      [
+        328
+      ]
+    ],
+    "ticks": 600,
+    "experience": 0.1
   },
   {
     "name": "dried_kelp_from_smelting",
