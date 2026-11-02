@@ -100,6 +100,9 @@ def observe(controller,scenario,output):
         controller.start()
         probe=Probe(controller.port,controller.kind).login()
         if scenario.get('observer'):observer=Probe(controller.port,controller.kind+'-observer').login('ParityObserver')
+        # Natural spawning is random on both servers; a mob that wanders in refuses placements or
+        # adds entities, so scenarios run without it unless they ask for it.
+        if not scenario.get('natural_spawning'):probe.step='setup';probe.send('chat_command',wire.string('gamerule spawn_mobs false'));probe.tick_barrier()
         for index,step in enumerate(scenario['steps']):
             probe.step=f'{index}:{step["action"]}'
             action=step['action']
