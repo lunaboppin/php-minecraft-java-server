@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server;
 
+use PhpMinecraftJavaServer\World\Generation\Float32;
+
 /**
  * Dispensers and droppers (DispenserBlock and DropperBlock): a rising redstone signal, at the
  * block or the one above it, fires one item from a random slot four ticks later. A dropper passes
@@ -22,7 +24,7 @@ trait Dispensers
      * not dispense yet: they stay in the dispenser.
      */
     private const SPECIAL_DISPENSES = [
-        'arrow', 'tipped_arrow', 'spectral_arrow', 'egg', 'blue_egg', 'brown_egg', 'snowball', 'experience_bottle', 'splash_potion', 'lingering_potion',
+        'experience_bottle', 'splash_potion', 'lingering_potion',
         'firework_rocket', 'fire_charge', 'wind_charge', 'armor_stand', 'chest', 'lava_bucket', 'water_bucket', 'powder_snow_bucket', 'salmon_bucket', 'cod_bucket',
         'pufferfish_bucket', 'tropical_fish_bucket', 'axolotl_bucket', 'sulfur_cube_bucket', 'tadpole_bucket', 'bucket', 'flint_and_steel', 'bone_meal',
         'wither_skeleton_skull', 'carved_pumpkin', 'glass_bottle', 'glowstone', 'shears', 'brush', 'honeycomb', 'potion', 'minecart', 'chest_minecart',
@@ -102,11 +104,47 @@ trait Dispensers
             $this->levelEvent(2000, [$x, $y, $z], self::DISPENSE_DATA[$facing]);
             return;
         }
+        if (in_array($item, ['arrow', 'tipped_arrow', 'spectral_arrow', 'snowball', 'egg', 'blue_egg', 'brown_egg'], true)) {
+            $this->dispenseProjectile($x, $y, $z, $facing, $stack);
+            $this->takeFromContainer($container, $slot);
+            return;
+        }
         if (in_array($item, self::SPECIAL_DISPENSES, true)) {
             return;
         }
         $this->dispenseItem($x, $y, $z, $facing, $stack);
         $this->takeFromContainer($container, $slot);
+    }
+
+    /**
+     * ProjectileDispenseBehavior with ProjectileItem.DispenseConfig.DEFAULT: the arrow, snowball or
+     * egg from just inside the front face, shot along it at 1.1 with an uncertainty of 6, owned by
+     * no one (a dispensed arrow may be picked up), with level events 1002 and 2000.
+     */
+    private function dispenseProjectile(int $x, int $y, int $z, string $facing, array $stack): void
+    {
+        [$dx, $dy, $dz] = self::DISPENSE_FACING[$facing];
+        $velocity = [];
+        foreach ([$dx, $dy, $dz] as $axis => $step) {
+            $velocity[$axis] = ($step + 0.0172275 * 6.0 * (self::randomUnit() - self::randomUnit())) * 1.100000023841858;
+        }
+        $item = $this->version->catalog->itemName($stack['item']);
+        $id = $this->nextEntity++;
+        $projectile = ['id' => $id, 'uuid' => random_bytes(16), 'type' => $item === 'spectral_arrow' ? 'spectral_arrow' : (str_ends_with($item, 'arrow') ? 'arrow' : self::THROWN[$item]),
+            'stack' => array_replace($stack, ['count' => 1]), 'owner' => null, 'x' => $x + 0.5 + 0.7 * $dx, 'y' => $y + 0.5 + 0.7 * $dy, 'z' => $z + 0.5 + 0.7 * $dz,
+            'velocity' => $velocity, 'yaw' => Float32::round(self::mthAtan2($velocity[0], $velocity[2]) * 180.0 / Float32::round(M_PI)),
+            'pitch' => Float32::round(self::mthAtan2($velocity[1], sqrt($velocity[0] ** 2 + $velocity[2] ** 2)) * 180.0 / Float32::round(M_PI)),
+            'ticks' => 0, 'leftOwner' => true, 'water' => false, 'needsSync' => true, 'dirty' => !isset(self::ARROW_TYPES[$item === 'tipped_arrow' ? 'arrow' : $item])];
+        if (str_ends_with($item, 'arrow')) {
+            $projectile += ['critical' => false, 'inGround' => false, 'shake' => 0, 'life' => 0, 'pickup' => 'allowed', 'lastState' => null, 'changed' => [],
+                'damage' => 2.0, 'punch' => 0.0, 'fire' => 0, 'burning' => false, 'effects' => []];
+        }
+        $this->projectiles[$id] = $projectile;
+        foreach ($this->localPlayers() as $player) {
+            $this->showProjectile($player, $id);
+        }
+        $this->levelEvent(1002, [$x, $y, $z], 0);
+        $this->levelEvent(2000, [$x, $y, $z], self::DISPENSE_DATA[$facing]);
     }
 
     /**
