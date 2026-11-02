@@ -183,6 +183,8 @@ class World
         if($data!==null){unset($this->cache[($position[0]>>4).':'.($position[2]>>4)]);$this->containerPositions[$key]=true;$q=$this->db->prepare('INSERT INTO containers(position,data) VALUES(?,?) ON CONFLICT(position) DO UPDATE SET data=excluded.data');$q->execute([$key,json_encode($data,JSON_THROW_ON_ERROR)]);return $data;}
         $q=$this->db->prepare('SELECT data FROM containers WHERE position=?');$q->execute([$key]);$bytes=$q->fetchColumn();return $bytes===false?['slots'=>[],'burn'=>0,'cook'=>0,'fuelTotal'=>0,'position'=>$position]:json_decode($bytes,true,512,JSON_THROW_ON_ERROR);
     }
+    /** @return list<string> the x:y:z of every block with stored container contents */
+    public function containerKeys():array {return array_keys($this->containerPositions);}
     public function deleteContainer(array $position):void {unset($this->containerPositions[implode(':',$position)]);$q=$this->db->prepare('DELETE FROM containers WHERE position=?');$q->execute([implode(':',$position)]);}
     public function transaction(callable $action):void {
         $containers=$this->containerPositions;$this->db->beginTransaction();
