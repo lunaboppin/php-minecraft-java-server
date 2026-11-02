@@ -50,7 +50,7 @@ final class ItemStackCodec
             $field = $this->componentFields[$name] ?? throw new ProtocolException('Unsupported component addition: ' . $name);
             $stack[$field] = match ($field) {
                 'enchantments', 'storedEnchantments' => $this->enchantments->read($input),
-                'damage' => $input->varInt(),
+                'damage', 'repairCost' => $input->varInt(),
                 'enchantability' => $this->readEnchantability($input),
                 'potion' => $this->readPotion($input),
             };
@@ -75,7 +75,7 @@ final class ItemStackCodec
             $value = $stack[$field];
             $payload = match ($field) {
                 'enchantments', 'storedEnchantments' => $this->enchantments->write($value),
-                'damage', 'enchantability' => Binary::writeVarInt($value),
+                'damage', 'enchantability', 'repairCost' => Binary::writeVarInt($value),
                 'potion' => $this->writePotion($value),
             };
             $additions[] = Binary::writeVarInt($this->rules['component_ids'][$name]) . $payload;

@@ -241,6 +241,13 @@ trait Mining
         if ($c->gameMode === 1 && !($this->heldTool($c)['can_destroy_blocks_in_creative'] ?? true)) {
             return false;
         }
+        $state = $this->world->get($x, $y, $z);
+        $catalog = $this->version->catalog;
+        if ($catalog->blockName($state) === 'tripwire' && $catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) === 'shears') {
+            // TripWireBlock.playerWillDestroy: shears disarm the string first, without updates, so
+            // its removal does not trip the hooks.
+            $this->world->set($x, $y, $z, $catalog->state('tripwire', ['disarmed' => 'true'] + $catalog->properties($state)));
+        }
         // Block.playerWillDestroy: the break particles for everyone else within 64 blocks.
         $payload = pack('N', 2001) . Binary::writePosition($x, $y, $z) . pack('N', $this->world->get($x, $y, $z)) . "\0";
         foreach ($this->localPlayers() as $player) {

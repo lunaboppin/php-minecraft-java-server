@@ -71,6 +71,10 @@ final class Server
 
     use Arrows;
 
+    use EnchantingTables;
+
+    use Anvils;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -144,6 +148,8 @@ final class Server
     use Hoppers;
 
     use Waypoints;
+
+    use Cauldrons;
 
     use Statistics;
 
@@ -1113,6 +1119,14 @@ final class Server
                 }return;
             case 'container_click': $this->inventoryClick($c, $r);
                 return;
+            case 'container_button_click': $window = $r->varInt();
+                $button = $r->varInt();
+                $r->end();
+                // ServerGamePacketListenerImpl.handleContainerButtonClick: the open menu's button.
+                if ($window === $c->windowId && $c->gameMode !== 3) {
+                    $this->enchantButton($c, $button);
+                }
+                return;
             case 'container_close': $window = $r->varInt();
                 $r->end();
                 if ($window === $c->windowId) {
@@ -1456,7 +1470,7 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender','hopper' => 'hopper',default => null
+                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','anvil','chipped_anvil','damaged_anvil' => 'anvil','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender','hopper' => 'hopper',default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
@@ -1497,6 +1511,13 @@ final class Server
             if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand, true);
                 $this->acknowledge($c, $sequence);
+                return;
+            }
+            // CauldronBlock.useItemOn: buckets and bottles fill and empty cauldrons.
+            if (in_array($name, ['cauldron', 'water_cauldron', 'lava_cauldron', 'powder_snow_cauldron'], true) && !$sneakSkips && $this->useCauldron($c, $x, $y, $z, $slot)) {
+                $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                $this->resendUsedBlocks($c, $x, $y, $z, $face);
                 return;
             }
             if (str_ends_with($name, '_bed') && !($c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]))) && $this->useBed($c, $x, $y, $z)) {

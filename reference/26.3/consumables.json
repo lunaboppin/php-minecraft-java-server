@@ -7,6 +7,36 @@
     "minecraft:suspicious_stew",
     "minecraft:honey_bottle"
   ],
+  "use_remainders": {
+    "minecraft:mushroom_stew": {
+      "id": "minecraft:bowl",
+      "count": 1
+    },
+    "minecraft:milk_bucket": {
+      "id": "minecraft:bucket",
+      "count": 1
+    },
+    "minecraft:potion": {
+      "id": "minecraft:glass_bottle",
+      "count": 1
+    },
+    "minecraft:rabbit_stew": {
+      "id": "minecraft:bowl",
+      "count": 1
+    },
+    "minecraft:beetroot_soup": {
+      "id": "minecraft:bowl",
+      "count": 1
+    },
+    "minecraft:suspicious_stew": {
+      "id": "minecraft:bowl",
+      "count": 1
+    },
+    "minecraft:honey_bottle": {
+      "id": "minecraft:glass_bottle",
+      "count": 1
+    }
+  },
   "items": {
     "minecraft:apple": {},
     "minecraft:mushroom_stew": {},

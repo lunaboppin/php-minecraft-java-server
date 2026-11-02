@@ -163,6 +163,46 @@ trait Arrows
     }
 
     /**
+     * AbstractSkeleton.performRangedAttack: an arrow from the eyes less 0.1 at the target's lower
+     * third, aimed higher by a fifth of the distance, at 1.6 with a spread that narrows with the
+     * difficulty. Its damage is twice the draw's power with a random spread (setBaseDamageFromMob),
+     * and strays, bogged and parched tip it with slowness, poison and weakness.
+     */
+    private function shootMobArrow(array $mob, Client $target, float $power): int
+    {
+        $id = $this->nextEntity++;
+        $difficulty = $this->config->difficulty;
+        $eye = $this->version->catalog->mobs['entities'][$mob['kind']]['eye_height'];
+        $y = $mob['y'] + Float32::round($eye) - Float32::round(0.1);
+        $dx = $target->x - $mob['x'];
+        $dy = $target->y + ($target->sneaking && !$target->flying ? 1.5 : 1.8) * 0.3333333333333333 - $y;
+        $dz = $target->z - $mob['z'];
+        $distance = sqrt($dx * $dx + $dz * $dz);
+        $dy += $distance * Float32::round(0.2);
+        $length = sqrt($dx * $dx + $dy * $dy + $dz * $dz);
+        $spread = 0.0172275 * Float32::round(14 - $difficulty * 4);
+        $velocity = [];
+        foreach ([$dx, $dy, $dz] as $axis => $value) {
+            $velocity[$axis] = (($length < 1.0E-4 ? 0.0 : $value / $length) + $spread * (self::randomUnit() - self::randomUnit())) * Float32::round(1.6);
+        }
+        $effect = ['stray' => ['minecraft:slowness', 600], 'bogged' => ['minecraft:poison', 100], 'parched' => ['minecraft:weakness', 600]][$mob['kind']] ?? null;
+        $this->projectiles[$id] = ['id' => $id, 'uuid' => random_bytes(16), 'type' => 'arrow', 'stack' => ['item' => $this->version->catalog->items['arrow']['id'], 'count' => 1],
+            'owner' => null, 'ownerMob' => $mob['id'], 'x' => $mob['x'], 'y' => $y, 'z' => $mob['z'], 'velocity' => $velocity,
+            'yaw' => Float32::round(self::mthAtan2($velocity[0], $velocity[2]) * 180.0 / Float32::round(M_PI)),
+            'pitch' => Float32::round(self::mthAtan2($velocity[1], sqrt($velocity[0] ** 2 + $velocity[2] ** 2)) * 180.0 / Float32::round(M_PI)),
+            'ticks' => 0, 'leftOwner' => false, 'water' => false, 'needsSync' => true, 'dirty' => false,
+            'critical' => false, 'inGround' => false, 'shake' => 0, 'life' => 0, 'pickup' => 'disallowed', 'lastState' => null, 'changed' => [],
+            'damage' => Float32::round($power * 2.0) + $difficulty * 0.11 + 0.57425 * (self::randomUnit() - self::randomUnit()),
+            'punch' => 0.0, 'fire' => 0, 'burning' => false, 'effects' => $effect === null ? [] : [$effect]];
+        foreach ($this->localPlayers() as $player) {
+            $this->showProjectile($player, $id);
+        }
+        $pitch = Float32::round(1.0 / Float32::round(Float32::round(self::randomUnit() * 0.4) + 0.8));
+        $this->arrowSound('entity.skeleton.shoot', 5, $mob['x'], $mob['y'], $mob['z'], $pitch);
+        return $id;
+    }
+
+    /**
      * AbstractArrow.tick: an arrow inside a block's shape is in the ground, where it despawns after
      * a minute or falls once the block goes; in flight it turns toward its motion, moves to the first
      * entity or block on its way, then slows and falls.
@@ -212,7 +252,13 @@ trait Arrows
         $arrow['yaw'] = self::lerpRotation($arrow['yaw'], Float32::round(self::mthAtan2($velocity[0], $velocity[2]) * 180.0 / Float32::round(M_PI)));
         if (!$arrow['leftOwner']) {
             $search = self::inflate(self::expandTowards($this->projectileBox($arrow), $velocity), 1.0);
-            $arrow['leftOwner'] = $owner === null || $owner->dead || $owner->dimension !== $this->world->dimension || !self::intersects($search, $this->playerBox($owner));
+            $shooter = $this->animals[$arrow['ownerMob'] ?? -1] ?? null;
+            if ($shooter !== null) {
+                $size = $this->version->catalog->mobs['entities'][$shooter['kind']];
+                $arrow['leftOwner'] = !self::intersects($search, Collision::bounds($shooter['x'], $shooter['y'], $shooter['z'], $size['width'], $size['height']));
+            } else {
+                $arrow['leftOwner'] = $owner === null || $owner->dead || $owner->dimension !== $this->world->dimension || !self::intersects($search, $this->playerBox($owner));
+            }
         }
         // stepMoveAndHit: the nearest entity along the move by its position, else the block.
         $end = [$position[0] + $velocity[0], $position[1] + $velocity[1], $position[2] + $velocity[2]];
@@ -286,11 +332,15 @@ trait Arrows
             if ($burning) {
                 $target['player']->fireTicks = max($fire, 100);
             }
-            $hurt = $this->damage($target['player'], (float) $damage, 'minecraft:arrow', $owner, $source);
+            $hurt = $this->damage($target['player'], (float) $damage, 'minecraft:arrow', $owner, $source, $this->animals[$arrow['ownerMob'] ?? -1] ?? null);
             if (!$hurt) {
                 $target['player']->fireTicks = $fire;
             } elseif ($arrow['punch'] > 0.0) {
                 $this->punchPlayer($target['player'], $arrow);
+            }
+            // Arrow.doPostHurtEffects: a tipped arrow's effects, at their full duration.
+            foreach ($hurt ? $arrow['effects'] ?? [] : [] as [$effect, $duration]) {
+                $this->giveEffect($target['player'], $effect, $duration, 0);
             }
             // The shooter hears its arrow hit another player.
             if ($hurt && $owner !== null && $owner !== $target['player']) {
@@ -416,6 +466,11 @@ trait Arrows
         }
         if ($changedOnly ? isset($arrow['changed'][10]) : $arrow['inGround']) {
             $entries .= "\x0a" . Binary::writeVarInt(8) . ($arrow['inGround'] ? "\1" : "\0");
+        }
+        // Arrow's effect colour (index 11): the effects' colours, opaque.
+        if (!$changedOnly && ($arrow['effects'] ?? []) !== []) {
+            $color = $this->effectDefinitions()[$arrow['effects'][0][0]]['color'];
+            $entries .= "\x0b" . Binary::writeVarInt(1) . Binary::writeVarInt((0xFF000000 | $color) - 0x100000000);
         }
         return $entries === '' ? '' : Binary::writeVarInt($arrow['id']) . $entries . "\xff";
     }
