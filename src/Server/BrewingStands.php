@@ -236,12 +236,20 @@ trait BrewingStands
             $swapped = $c->inventory[$button === 40 ? 45 : 36 + $button] ?? null;
             return $swapped !== null && (!$mayPlace($slot, $swapped) || ($slot <= 2 && $swapped['count'] > 1));
         }
+        // BrewingStandMenu.PotionSlot.onTake: taking a potion counts as brewing it.
+        $brewed = $slot <= 2 && isset($items[$slot]['potion']);
+        if ($brewed && $mode === 0 && $c->cursor === null) {
+            $this->simpleTrigger($c, 'minecraft:brewed_potion', []);
+        }
         if ($mode !== 1 || $items[$slot] === null) {
             return false;
         }
         $original = $items[$slot];
         // AbstractContainerMenu.doClick repeats quickMoveStack while it moves the same item.
         while ($this->brewingQuickMove($items, $slot, $mayPlace) && $items[$slot] !== null && $items[$slot]['item'] === $original['item']) {
+        }
+        if ($brewed && $items[$slot] !== $original) {
+            $this->simpleTrigger($c, 'minecraft:brewed_potion', []);
         }
         return true;
     }

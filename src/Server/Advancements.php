@@ -222,7 +222,7 @@ trait Advancements
             }
             $tests[$key] = $test;
         }
-        return in_array($trigger, ['minecraft:player_killed_entity', 'minecraft:entity_killed_player', 'minecraft:consume_item', 'minecraft:changed_dimension', 'minecraft:slept_in_bed'], true) ? $tests : null;
+        return in_array($trigger, ['minecraft:player_killed_entity', 'minecraft:entity_killed_player', 'minecraft:consume_item', 'minecraft:changed_dimension', 'minecraft:slept_in_bed', 'minecraft:brewed_potion'], true) ? $tests : null;
     }
 
     /**
