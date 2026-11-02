@@ -145,6 +145,8 @@ final class Server
 
     use VehicleSteering;
 
+    use BlockInteractions;
+
     use Scaffolding;
 
     use Waypoints;
@@ -1508,6 +1510,13 @@ final class Server
             }
             // Sneaking with an item in hand skips the block's own use.
             $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
+            if (!$sneakSkips && $c->gameMode !== 3 && $this->editable($c, $x, $y, $z) && ($swing = $this->useInteractiveBlock($c, $hand, $slot, $x, $y, $z, $cursor)) !== null) {
+                if ($swing) {
+                    $this->useSwing($c, $hand);
+                }
+                $this->acknowledge($c, $sequence);
+                return;
+            }
             if ($name === 'respawn_anchor' && !$sneakSkips && $this->useRespawnAnchor($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand, true);
                 $this->acknowledge($c, $sequence);
@@ -1561,6 +1570,11 @@ final class Server
             $this->useSwing($c, $hand);
             $this->blockUpdate($c, $x, $y, $z);
             $this->blockUpdate($c, $x + $dx, $y + $dy, $z + $dz);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        if ($within && $itemName === 'flint_and_steel' && $this->editable($c, $x, $y, $z) && $this->lightWithFlint($c, $slot, $x, $y, $z)) {
+            $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;
         }

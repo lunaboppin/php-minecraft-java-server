@@ -1,0 +1,569 @@
+{
+  "name": "block-interactions",
+  "difficulty": 1,
+  "normalizations": [
+    "Compare eating a cake down to nothing when hungry, a candle on a cake lit with flint and steel, blown out and eaten, potting and unpotting a poppy, picking sweet berries and glow berries, blowing out candles, and lighting a campfire and a candle with flint and steel.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 10 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 10 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 3.5 64 -2.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:hunger 12 255"
+    },
+    {
+      "action": "wait",
+      "seconds": 13
+    },
+    {
+      "action": "command",
+      "text": "effect clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:cake"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with air"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "cake",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:cake"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:candle"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "candle-on-cake",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:flint_and_steel"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "candle-cake-lit",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with air"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.7,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "candle-cake-out",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.2,
+        0
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "candle-cake-eaten",
+      "fields": [
+        "blocks",
+        "entities",
+        "inventory"
+      ],
+      "positions": [
+        [
+          2,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:flower_pot"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:poppy"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "potted",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          4,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with air"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "unpotted",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          4,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:sweet_berry_bush[age=2]"
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "berries",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 66 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 65 0 minecraft:cave_vines[berries=true]"
+    },
+    {
+      "action": "place",
+      "position": [
+        8,
+        65,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "glow-berries",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          8,
+          65,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 3 minecraft:candle[lit=true,candles=2]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 3 minecraft:campfire[lit=false]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 3 minecraft:candle"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 64 0.5 0 30"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:flint_and_steel"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        3
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.3,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "lighting",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          3
+        ],
+        [
+          2,
+          64,
+          3
+        ],
+        [
+          4,
+          64,
+          3
+        ]
+      ]
+    }
+  ]
+}
