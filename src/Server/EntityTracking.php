@@ -42,6 +42,9 @@ trait EntityTracking
         foreach(array_keys($this->tntEntities) as $id){
             if($this->showTnt($viewer,$id)){$wanted[$id]=true;}
         }
+        foreach(array_keys($this->fallingBlocks) as $id){
+            if($this->showFallingBlock($viewer,$id)){$wanted[$id]=true;}
+        }
         foreach($this->experienceOrbs as $orb){
             if($this->tracksPosition($viewer,$orb['x'],$orb['z'],'experience_orb')){$wanted[$orb['id']]=true;$this->showOrb($viewer,$orb);}
         }
