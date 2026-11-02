@@ -452,6 +452,7 @@ trait Survival
         // Entity.markHurt: the server entity sends the new motion to the player and its trackers.
         [$vx, $vy, $vz] = $result['velocity'];
         $c->velocityY = $vy;
+        $c->knockbackVelocity = [$vx, $vy, $vz];
         $c->knockbackMotion = Binary::writeVarInt($c->entityId) . \PhpMinecraftJavaServer\Protocol\LowPrecisionVector::encode($vx, $vy, $vz);
     }
 
@@ -465,7 +466,7 @@ trait Survival
             return;
         }
         $packet = $c->knockbackMotion;
-        $c->knockbackMotion = null;
+        $c->knockbackMotion = $c->knockbackVelocity = null;
         foreach ($this->localPlayers() as $player) {
             if ($player === $c || isset($player->entities[$c->entityId])) {
                 $player->send($this->version, 'set_entity_motion', $packet);
@@ -675,10 +676,12 @@ trait Survival
             // TurtleEggBlock.playerDestroy: breaking takes one egg, leaving the rest.
             $this->decreaseTurtleEggs($x, $y, $z, $state);
         }
-        // Item.mineBlock: tools wear by their damage per block on blocks that take time to break.
+        // Item.mineBlock: tools wear by their damage per block on blocks that take time to break;
+        // ShearsItem.mineBlock wears shears on any block but fire.
         $slot = 36 + $c->heldSlot;
         $held = $c->inventory[$slot] ?? null;
-        $wear = ($this->miningReference()['blocks'][$name]['destroy_time'] ?? 0.0) != 0.0 ? ($this->heldTool($c)['damage_per_block'] ?? 0) : 0;
+        $wears = $tool === 'shears' ? !in_array($name, ['fire', 'soul_fire'], true) : ($this->miningReference()['blocks'][$name]['destroy_time'] ?? 0.0) != 0.0;
+        $wear = $wears ? ($this->heldTool($c)['damage_per_block'] ?? 0) : 0;
         if ($held !== null && $wear > 0 && ($max = $this->version->catalog->item($held['item'])['durability']) > 0) {
             $held['damage'] = ($held['damage'] ?? 0) + $wear;
             if ($held['damage'] >= $max) {
@@ -892,6 +895,7 @@ trait Survival
 
     private function tickSurvival(Client $c): void
     {
+        $this->tickBowUse($c);
         // Player.tick: the delay before the next experience orb counts down.
         if ($c->takeXpDelay > 0) {
             --$c->takeXpDelay;
@@ -1050,6 +1054,9 @@ trait Survival
             return;
         }
         if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
+            return;
+        }
+        if ($this->drawBow($c, $hand, $slot)) {
             return;
         }
         // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.

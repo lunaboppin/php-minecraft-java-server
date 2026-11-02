@@ -1,0 +1,350 @@
+{
+  "name": "bows",
+  "normalizations": [
+    "Draw a bow and let go a step later: even a draw of a few ticks shoots an arrow, used up and picked up again.",
+    "Draw a bow for a second and a half straight down from survival: one arrow is used, the bow wears by one, and the arrow sticks in the ground at the archer's feet, where the archer picks it up again once it stops shaking.",
+    "Shoot from creative: no arrow is needed or used, the bow does not wear, and the arrow is picked up without giving one back.",
+    "Shoot level at an iron golem without AI six blocks away: the arrow hits it and is gone. Where each arrow spawns is compared; the spread of a shot and a critical arrow's extra damage are random, so where arrows land and the golem's health are not.",
+    "Draw a bow from survival with no arrows: nothing is shot and the bow does not wear.",
+    "Shoot an Infinity bow from survival with one arrow: the arrow is kept, and the one shot lies where it landed, since only a player with infinite materials could pick it up.",
+    "Shoot a Flame bow down at TNT under the archer: the burning arrow primes it and the block is gone; the TNT is removed before it explodes.",
+    "Use matching flat terrain with natural spawning and regeneration off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_monsters false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 4 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 4 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 90"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow 1"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 4"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00010000000042b40000"
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "quick_draw",
+      "fields": [
+        "inventory",
+        "entities",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00020000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.1
+    },
+    {
+      "action": "snapshot",
+      "name": "arrow_stuck",
+      "fields": [
+        "inventory",
+        "entities",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "arrow_picked_up",
+      "fields": [
+        "inventory",
+        "entities",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow 1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00030000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "creative_shot",
+      "fields": [
+        "inventory",
+        "entities",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow 1"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 2"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "summon iron_golem 0.5 64 6.5 {NoAI:1b}"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00040000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "golem_hit",
+      "fields": [
+        "inventory",
+        "entities",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s arrow"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00050000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "no_arrows",
+      "fields": [
+        "inventory",
+        "entity_spawns"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamerule mob_drops false"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=iron_golem]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 90"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow[enchantments={infinity:1}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 1"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand from entity @s hotbar.1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00060000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "infinity_shot",
+      "fields": [
+        "inventory",
+        "entities"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=arrow]"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 0 minecraft:tnt"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow[enchantments={flame:1}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00070000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "flame_tnt",
+      "fields": [
+        "inventory",
+        "entities",
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=tnt]"
+    }
+  ]
+}
