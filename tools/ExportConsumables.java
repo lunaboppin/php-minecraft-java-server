@@ -34,6 +34,19 @@ public class ExportConsumables {
                 if (food != null && food.canAlwaysEat()) alwaysEdible.add(BuiltInRegistries.ITEM.getKey(item).toString());
             }
             root.add("always_edible", alwaysEdible);
+            // UseRemainder: what an item leaves behind once used, such as a stew's bowl.
+            var remainders = new JsonObject();
+            for (var item : BuiltInRegistries.ITEM) {
+                var remainder = item.components().get(DataComponents.USE_REMAINDER);
+                if (remainder != null) {
+                    var stack = remainder.convertInto();
+                    var entry = new JsonObject();
+                    entry.addProperty("id", stack.item().unwrapKey().orElseThrow().identifier().toString());
+                    entry.addProperty("count", stack.count());
+                    remainders.add(BuiltInRegistries.ITEM.getKey(item).toString(), entry);
+                }
+            }
+            root.add("use_remainders", remainders);
         }
         root.add("items", items);
         Field absorption = Player.class.getDeclaredField("DATA_PLAYER_ABSORPTION_ID");

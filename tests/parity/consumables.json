@@ -1,0 +1,156 @@
+{
+  "name": "consumables",
+  "normalizations": [
+    "Drink a potion of healing after 6 damage and a potion of harming, comparing health and the glass bottle each leaves.",
+    "Drink milk while under speed, leaving a bucket, and eat a mushroom stew once hunger has lowered the food level, leaving a bowl.",
+    "Use matching flat terrain with natural spawning and regeneration off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 63 -3 3 63 3 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 0"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "command",
+      "text": "damage @s 6 minecraft:generic"
+    },
+    {
+      "action": "command",
+      "text": "give @s potion[potion_contents={potion:\"minecraft:healing\"}]"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00010000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2.5
+    },
+    {
+      "action": "snapshot",
+      "name": "healing",
+      "fields": [
+        "inventory",
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s potion[potion_contents={potion:\"minecraft:harming\"}]"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00020000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2.5
+    },
+    {
+      "action": "snapshot",
+      "name": "harming",
+      "fields": [
+        "inventory",
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:speed 60"
+    },
+    {
+      "action": "command",
+      "text": "give @s milk_bucket"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00030000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2.5
+    },
+    {
+      "action": "snapshot",
+      "name": "milk",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "effect give @s minecraft:hunger 3 255"
+    },
+    {
+      "action": "wait",
+      "seconds": 3.5
+    },
+    {
+      "action": "command",
+      "text": "effect clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s mushroom_stew"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00040000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2.5
+    },
+    {
+      "action": "snapshot",
+      "name": "stew",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}
