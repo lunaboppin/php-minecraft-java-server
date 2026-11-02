@@ -171,7 +171,21 @@ def repairable(reports):
     return result
 
 
-<<<<<<< HEAD
+def compostables(inner, reports):
+    """The layers each compostable item adds to a composter: the item's provider, and the providers themselves."""
+    items = {}
+    for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
+        component = json.loads(path.read_text())['components'].get('minecraft:compostable')
+        if component is not None:
+            items['minecraft:' + path.stem] = component['layers']
+    providers = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(set(items.values())):
+            namespace, key = name.split(':')
+            providers[name] = json.loads(archive.read('data/' + namespace + '/context_int_provider/' + key + '.json'))
+    return {'items': items, 'providers': providers}
+
+
 def block_transformers(inner, reports):
     """The block transformers (axe, hoe and shovel uses on blocks) and the items that carry each."""
     items = {}
@@ -191,21 +205,6 @@ def block_transformers(inner, reports):
     sounds = json.loads((reports / 'registries.json').read_text())['minecraft:sound_event']['entries']
     used = sorted({transform['sound'] for transforms in transformers.values() for transform in transforms if 'sound' in transform})
     return {'items': items, 'transformers': transformers, 'loot': loot, 'sounds': {name: sounds[name]['protocol_id'] for name in used}}
-=======
-def compostables(inner, reports):
-    """The layers each compostable item adds to a composter: the item's provider, and the providers themselves."""
-    items = {}
-    for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
-        component = json.loads(path.read_text())['components'].get('minecraft:compostable')
-        if component is not None:
-            items['minecraft:' + path.stem] = component['layers']
-    providers = {}
-    with zipfile.ZipFile(inner) as archive:
-        for name in sorted(set(items.values())):
-            namespace, key = name.split(':')
-            providers[name] = json.loads(archive.read('data/' + namespace + '/context_int_provider/' + key + '.json'))
-    return {'items': items, 'providers': providers}
->>>>>>> origin/main
 
 
 def english_names(inner):
@@ -403,11 +402,8 @@ def main():
     write_json(out / 'loot.json', loot(inner))
     write_json(out / 'enchantments.json', enchantments(inner))
     write_json(out / 'repairable.json', repairable(reports))
-<<<<<<< HEAD
-    write_json(out / 'block-transformers.json', block_transformers(inner, reports))
-=======
     write_json(out / 'compostables.json', compostables(inner, reports))
->>>>>>> origin/main
+    write_json(out / 'block-transformers.json', block_transformers(inner, reports))
     write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
