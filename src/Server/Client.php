@@ -148,6 +148,14 @@ final class Client
 
     public array $craftGrid = [];
 
+    /** An open enchanting table's item and lapis slots, and the data slots last sent. */
+    public array $enchantSlots = [];
+
+    public array $enchantData = [];
+
+    /** Player.enchantmentSeed, saved as XpSeed: what the enchanting table offers. */
+    public int $enchantmentSeed = 0;
+
     /** PlayerEnderChestContainer: 27 slots, kept through death. */
     public array $enderItems = [];
 

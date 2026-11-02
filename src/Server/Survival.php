@@ -47,6 +47,8 @@ trait Survival
     private function restorePlayer(Client $c): void
     {
         $c->gameMode = $this->config->defaultGameMode;
+        // A new player's enchantment seed is 0 until an enchantment draws another; a saved player keeps theirs.
+        $c->enchantmentSeed = 0;
         $data = $this->worlds['overworld']->loadPlayer($c->uuid, $c->authenticated);
         // A new player starts where PlayerSpawnFinder puts them around the world spawn.
         [$c->x, $c->y, $c->z] = $data === null ? $this->sharedSpawn() : $this->world->spawn();
@@ -72,6 +74,9 @@ trait Survival
         $c->experience = max(0, (int) ($data['experience'] ?? 0));
         [$c->experienceLevel, $c->experienceProgress] = isset($data['experienceLevel']) ? [max(0, (int) $data['experienceLevel']), max(0.0, min(1.0, (float) $data['experienceProgress']))] : self::experienceFromTotal($c->experience);
         $c->score = (int) ($data['score'] ?? 0);
+        if (isset($data['enchantmentSeed'])) {
+            $c->enchantmentSeed = (int) $data['enchantmentSeed'];
+        }
         $c->heldSlot = max(0, min(8, (int) ($data['heldSlot'] ?? 0)));
         $c->dead = (bool) ($data['dead'] ?? false);
         $c->personalSpawn = $data['personalSpawn'] ?? null;
@@ -111,7 +116,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'recipeBook' => $this->savedRecipeBook($c), 'advancements' => $this->savedAdvancements($c), 'stats' => $this->savedStatistics($c), 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'enchantmentSeed' => $c->enchantmentSeed, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'recipeBook' => $this->savedRecipeBook($c), 'advancements' => $this->savedAdvancements($c), 'stats' => $this->savedStatistics($c), 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
