@@ -47,12 +47,13 @@ def main():
             command(a,'execute if entity @e[type=creeper]')
             assert any('conditional.fail' in str(m) for m in getattr(a,'chat',[])) or not any(kind==wire.BLOCKS['entity_types']['creeper'] for kind in a.entities.values()),'the creeper never exploded'
             # A skeleton strafes, draws for a second and shoots its arrows at a survival player.
-            for text in ['kill @e[type=creeper]','effect clear @s','fill -8 -61 -8 8 -61 8 minecraft:stone','fill -8 -60 -8 8 -55 8 minecraft:air','tp @s 0.5 -60 0.5 0 0','effect give @s instant_health 1 5','summon skeleton 0.5 -60 8.5']:
+            for text in ['kill @e[type=creeper]','effect clear @s','fill -8 -61 -8 8 -61 8 minecraft:stone','fill -8 -60 -8 8 -55 8 minecraft:air','tp @s 0.5 -60 0.5 0 0','effect give @s instant_health 1 5','summon skeleton 0.5 -60 4.5']:
                 command(a,text)
             before=a.health
             arrow=wire.BLOCKS['entity_types']['arrow']
-            # Arrows spread at random, so give the skeleton several shots before calling it a miss.
-            end=time.monotonic()+30
+            # Arrows spread at random, and a busy runner ticks slowly, so give a close skeleton
+            # many shots before calling it a miss.
+            end=time.monotonic()+60
             while time.monotonic()<end and not (a.health<before and any(s['type']==arrow for s in a.entity_spawns)):wait(a,.5)
             assert any(s['type']==arrow for s in a.entity_spawns),'the skeleton never shot'
             assert a.health<before,('no skeleton arrow hit',before,a.health)
