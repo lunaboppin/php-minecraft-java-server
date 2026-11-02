@@ -23,6 +23,10 @@ final class Blocks
     public const MOTION_NO_LEAVES = 2097152;
     /** BlockState.isSolidRender: an opaque full-block occlusion shape. */
     public const SOLID_RENDER = 134217728;
+    /** BlockState.isRedstoneConductor, isSignalSource and hasAnalogOutputSignal. */
+    public const REDSTONE_CONDUCTOR = 268435456;
+    public const SIGNAL_SOURCE = 536870912;
+    public const ANALOG_OUTPUT = 1073741824;
     /** Direction indexes of Direction.get3DDataValue. */
     public const DOWN = 0;
     public const UP = 1;
