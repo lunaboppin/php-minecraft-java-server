@@ -212,7 +212,7 @@ trait Advancements
         $tests = [];
         foreach ($conditions as $key => $value) {
             $test = match ([$trigger, $key]) {
-                ['minecraft:player_killed_entity', 'entity'] => $entity($value),
+                ['minecraft:player_killed_entity', 'entity'], ['minecraft:entity_killed_player', 'entity'] => $entity($value),
                 ['minecraft:consume_item', 'item'] => array_keys($value) === ['items'] ? $names($value['items'], 'minecraft:item') : null,
                 ['minecraft:changed_dimension', 'from'], ['minecraft:changed_dimension', 'to'] => [substr($value, strlen('minecraft:')) => true],
                 default => null,
@@ -222,7 +222,7 @@ trait Advancements
             }
             $tests[$key] = $test;
         }
-        return in_array($trigger, ['minecraft:player_killed_entity', 'minecraft:consume_item', 'minecraft:changed_dimension', 'minecraft:slept_in_bed'], true) ? $tests : null;
+        return in_array($trigger, ['minecraft:player_killed_entity', 'minecraft:entity_killed_player', 'minecraft:consume_item', 'minecraft:changed_dimension', 'minecraft:slept_in_bed'], true) ? $tests : null;
     }
 
     /**

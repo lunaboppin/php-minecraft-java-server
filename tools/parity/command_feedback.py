@@ -1633,6 +1633,50 @@ def normalize_advancements(items):
     return [{**item, 'hex': canonical(item['hex'])} if item['packet'] == 'update_advancements' else item for item in items]
 
 
+RECIPE_DISPLAYS = None
+
+
+def normalize_recipe_book(items):
+    """Sort recipe_book_add's entries.
+
+    Vanilla sends a player's known recipes from a hash set of identity-hashed keys, so their order
+    changes between runs; each entry must still be the official server's display with its flags.
+    """
+    global RECIPE_DISPLAYS
+    if RECIPE_DISPLAYS is None:
+        data = json.loads((Path(__file__).resolve().parents[2] / 'reference/26.3/recipe-book.json').read_text())
+        displays = data['displays'].items() if isinstance(data['displays'], dict) else enumerate(data['displays'])
+        RECIPE_DISPLAYS = {int(key): bytes.fromhex(display['entry']) for key, display in displays}
+
+    def varint(data, at):
+        value = shift = 0
+        while True:
+            byte = data[at]
+            at += 1
+            value |= (byte & 0x7f) << shift
+            shift += 7
+            if byte < 0x80:
+                return value, at
+
+    def canonical(payload):
+        data = bytes.fromhex(payload)
+        try:
+            count, start = varint(data, 0)
+            at = start
+            entries = []
+            for _ in range(count):
+                display, _ = varint(data, at)
+                entry = RECIPE_DISPLAYS.get(display)
+                if entry is None or data[at:at + len(entry)] != entry:
+                    return payload
+                entries.append(data[at:at + len(entry) + 1])
+                at += len(entry) + 1
+        except IndexError:
+            return payload
+        return (data[:start] + b''.join(sorted(entries)) + data[at:]).hex()
+    return [{**item, 'hex': canonical(item['hex'])} if item['packet'] == 'recipe_book_add' else item for item in items]
+
+
 def normalize_registry_maps(items):
     """Sort update_tags' registries and tags and update_recipes' property sets and their items.
 
@@ -1717,7 +1761,7 @@ def compare(reference, php):
         random_ids = expected['command'].startswith(('summon ', 'ride ')) or ' summon ' in expected['command'] or '@e' in expected['command'] or '@n' in expected['command']
         for role in ('operator', 'witness'):
             key = (lambda items: sorted(item['hex'] for item in items)) if unordered else (normalize_uuids if random_ids else (lambda items: items))
-            if key(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role])))))))) != key(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role])))))))):
+            if key(normalize_recipe_book(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(expected[role]))))))))) != key(normalize_recipe_book(normalize_registry_maps(normalize_advancements(normalize_riding(normalize_boss_bars(normalize_seeds(normalize_attribute_order(normalize_entity_ids(actual[role]))))))))):
                 differences.append({'command': expected['command'], 'role': role, 'reference': expected[role], 'php': actual[role]})
     return differences
 

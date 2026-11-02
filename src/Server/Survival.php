@@ -359,11 +359,13 @@ trait Survival
             $killer = $c->lastHurtByPlayer !== null && $this->ticks - $c->lastHurtByPlayerTick <= 100 && in_array($c->lastHurtByPlayer, $this->players(), true) ? $c->lastHurtByPlayer : null;
             if ($killer !== null && $killer !== $c) {
                 $this->awardStat($c, 'killed_by', 'player');
-                // ServerPlayer.awardKillScore
+                // Entity.awardKillScore, then ServerPlayer's: the victim was killed by a player.
+                $this->simpleTrigger($c, 'minecraft:entity_killed_player', ['entity' => 'player']);
                 $this->awardStat($killer, 'killed', 'player');
                 $this->incrementCriteria('totalKillCount', $killer->name);
                 $this->awardStat($killer, 'custom', 'player_kills');
                 $this->incrementCriteria('playerKillCount', $killer->name);
+                $this->simpleTrigger($killer, 'minecraft:player_killed_entity', ['entity' => 'player']);
             }
             $this->awardStat($c, 'custom', 'deaths');
             $this->resetStat($c, 'custom', 'time_since_death');
