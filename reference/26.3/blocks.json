@@ -3353,7 +3353,18 @@
     "entity.player.teleport": 1326,
     "entity.creeper.primed": 481,
     "entity.arrow.shoot": 87,
-    "entity.arrow.hit": 85
+    "entity.arrow.hit": 85,
+    "block.enchantment_table.use": 586,
+    "item.bucket.empty": 223,
+    "item.bucket.fill": 230,
+    "item.bucket.empty_lava": 226,
+    "item.bucket.fill_lava": 233,
+    "item.bucket.empty_powder_snow": 227,
+    "item.bucket.fill_powder_snow": 234,
+    "item.bottle.empty": 195,
+    "item.bottle.fill": 196,
+    "entity.skeleton.shoot": 1495,
+    "entity.generic.burn": 699
   },
   "particle_types": {
     "angry_villager": 0,

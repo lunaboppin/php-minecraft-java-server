@@ -1,0 +1,113 @@
+{
+  "name": "enchanting",
+  "normalizations": [
+    "Open an enchanting table surrounded by bookshelves on two layers, with 30 levels, a diamond sword and 5 lapis lazuli; shift-click both in and take the third offer. A new player's enchantment seed is 0, so the offer, the enchantments and the lapis left are the same on both servers.",
+    "Close the table: the enchanted sword and the lapis left go back to the player.",
+    "Use matching flat terrain with natural spawning off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 2 65 2 minecraft:bookshelf"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 64 -1 1 65 1 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:enchanting_table"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -3.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "xp add @s 30 levels"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword"
+    },
+    {
+      "action": "command",
+      "text": "give @s lapis_lazuli 5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001d00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001e00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_button_click",
+      "hex": "0102"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "enchanted",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "closed",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

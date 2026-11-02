@@ -1,0 +1,338 @@
+{
+  "name": "anvils",
+  "normalizations": [
+    "With 30 levels at an anvil: repair a worn diamond sword with diamonds, combine an iron sword with an enchanted book (one enchantment upgraded, one added), combine two worn diamond swords, and offer an iron sword a book of an enchantment exclusive with its own.",
+    "Compare the result offered and the inventory after shift-clicking it out and closing the anvil: durability, enchantments, repair cost and what is left of the inputs. Whether the anvil wears down is random, so it is replaced before each use.",
+    "Use matching flat terrain with natural spawning off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -2.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "xp add @s 30 levels"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=1000]"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond 2"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000001"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "repair_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0100000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "repair_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "give @s iron_sword[enchantments={sharpness:2}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s enchanted_book[stored_enchantments={sharpness:2,fire_aspect:1}]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000002"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "combine_book_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0200000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "02"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "combine_book_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=1500]"
+    },
+    {
+      "action": "command",
+      "text": "give @s diamond_sword[damage=1500,enchantments={unbreaking:1}]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000003"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "combine_swords_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0300000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "03"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "combine_swords_taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:anvil"
+    },
+    {
+      "action": "command",
+      "text": "give @s iron_sword[enchantments={sharpness:3}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s enchanted_book[stored_enchantments={smite:2}]"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "use_item_on",
+      "hex": "000000000000000040013f0000003f8000003f000000000004"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400001e00010000"
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400001f00010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "incompatible_offered",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_click",
+      "hex": "0400000200010000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "04"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "incompatible_taken",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

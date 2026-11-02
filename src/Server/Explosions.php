@@ -76,7 +76,7 @@ trait Explosions
             if (!isset($saved['uuid'], $saved['x'], $saved['y'], $saved['z'], $saved['fuse'])) {
                 continue;
             }
-            $id = $this->addTnt((float) $saved['x'], (float) $saved['y'], (float) $saved['z'], array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), (int) $saved['fuse'], $saved['owner'] ?? null);
+            $id = $this->addTnt((float) $saved['x'], (float) $saved['y'], (float) $saved['z'], array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]), (int) $saved['fuse'], isset($saved['owner']) ? (string) hex2bin($saved['owner']) : null);
             $this->tntEntities[$id]['uuid'] = hex2bin($saved['uuid']);
         }
     }
