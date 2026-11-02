@@ -447,6 +447,7 @@ trait Survival
         // Entity.markHurt: the server entity sends the new motion to the player and its trackers.
         [$vx, $vy, $vz] = $result['velocity'];
         $c->velocityY = $vy;
+        $c->knockbackVelocity = [$vx, $vy, $vz];
         $c->knockbackMotion = Binary::writeVarInt($c->entityId) . \PhpMinecraftJavaServer\Protocol\LowPrecisionVector::encode($vx, $vy, $vz);
     }
 
@@ -460,7 +461,7 @@ trait Survival
             return;
         }
         $packet = $c->knockbackMotion;
-        $c->knockbackMotion = null;
+        $c->knockbackMotion = $c->knockbackVelocity = null;
         foreach ($this->localPlayers() as $player) {
             if ($player === $c || isset($player->entities[$c->entityId])) {
                 $player->send($this->version, 'set_entity_motion', $packet);
@@ -887,6 +888,7 @@ trait Survival
 
     private function tickSurvival(Client $c): void
     {
+        $this->tickBowUse($c);
         // Player.tick: the delay before the next experience orb counts down.
         if ($c->takeXpDelay > 0) {
             --$c->takeXpDelay;
@@ -1045,6 +1047,9 @@ trait Survival
             return;
         }
         if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
+            return;
+        }
+        if ($this->drawBow($c, $hand, $slot)) {
             return;
         }
         // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.

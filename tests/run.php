@@ -395,6 +395,10 @@ passthru('python3 ' . escapeshellarg(__DIR__ . '/hostile-mobs.py'), $code);
 if ($code !== 0) {
     exit($code);
 }
+passthru('python3 ' . escapeshellarg(__DIR__ . '/bows.py'), $code);
+if ($code !== 0) {
+    exit($code);
+}
 passthru('python3 ' . escapeshellarg(__DIR__ . '/mob-movement.py'), $code);
 if ($code !== 0) {
     exit($code);

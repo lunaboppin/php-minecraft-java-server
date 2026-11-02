@@ -23,6 +23,8 @@ trait KillCommand
                 $this->removeItem($target['item']);
             } elseif (isset($target['orb'])) {
                 $this->removeOrb($target['orb']);
+            } elseif (isset($target['projectile'])) {
+                $this->removeProjectile($target['projectile']);
             } else {
                 $this->killAnimal($target['mob']);
             }
