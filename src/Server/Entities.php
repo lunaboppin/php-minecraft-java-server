@@ -292,41 +292,7 @@ trait Entities
             // Resting items move only every fourth tick, staggered by their ID.
             if (!($item['ground'] && $horizontal <= 9.999999747378752E-6 && ($item['ticks'] + $id) % 4 !== 0)) {
                 $box = [$item['x'] - 0.125, $item['y'], $item['z'] - 0.125, $item['x'] + 0.125, $item['y'] + 0.25, $item['z'] + 0.125];
-                $delta = $item['velocity'];
-                // Entity.move: a cobweb or powder snow slows this move and stops the item.
-                $stuck = $item['stuck'] ?? [0.0, 0.0, 0.0];
-                if ($stuck[0] ** 2 + $stuck[1] ** 2 + $stuck[2] ** 2 > 1.0E-7) {
-                    $delta = [$delta[0] * $stuck[0], $delta[1] * $stuck[1], $delta[2] * $stuck[2]];
-                    $item['stuck'] = [0.0, 0.0, 0.0];
-                    $item['velocity'] = [0.0, 0.0, 0.0];
-                }
-                $fall = $delta[1];
-                $moved = $collision->move($this->world, $box, $delta);
-                $below = $moved[1] !== $delta[1] && $delta[1] < 0.0;
-                $item['horizontalCollision'] = abs($moved[0] - $delta[0]) >= 9.999999747378752E-6 || abs($moved[2] - $delta[2]) >= 9.999999747378752E-6;
-                if ($delta[1] !== 0.0) {
-                    $item['verticalCollision'] = $moved[1] !== $delta[1];
-                }
-                // Entity.move keeps its position when the move left is tiny and most of it was blocked.
-                $length = $moved[0] ** 2 + $moved[1] ** 2 + $moved[2] ** 2;
-                if ($length > 1.0E-7 || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 - $length < 1.0E-7) {
-                    [$item['x'], $item['y'], $item['z']] = [$item['x'] + $moved[0], $item['y'] + $moved[1], $item['z'] + $moved[2]];
-                }
-                // Entity.restituteMovementAfterCollisions: stopped across an axis it collided on, sideways
-                // only when the move was cut by at least Mth.equal's 1.0E-5F.
-                foreach ([0, 1, 2] as $axis) {
-                    if ($axis === 1 ? $moved[1] !== $delta[1] : abs($moved[$axis] - $delta[$axis]) >= 9.999999747378752E-6) {
-                        $item['velocity'][$axis] = 0.0;
-                    }
-                }
-                $item['ground'] = $below;
-                $bounced = $below ? $this->itemBounce($item, $fall, $moved[1]) : null;
-                if ($bounced !== null) {
-                    $item['velocity'][1] = $bounced;
-                    $item['syncPosition'] = true;
-                }
-                $speed = $this->blockSpeedFactor($item['x'], $item['y'], $item['z']);
-                $item['velocity'] = [$item['velocity'][0] * $speed, $item['velocity'][1], $item['velocity'][2] * $speed];
+                $this->moveSimpleEntity($item, $box, $collision, 0.04);
                 if (!$this->itemInsideBlocks($id, $item, $box)) {
                     unset($item);
                     continue;
@@ -372,15 +338,58 @@ trait Entities
     }
 
     /**
-     * Entity.restituteMovementAfterCollisions for an item landing on slime, a bed or a shelf
-     * mushroom faster than gravity: the bounce, or null when it does not bounce.
+     * Entity.move for an entity with the box $box and gravity $gravity: a cobweb or powder snow it
+     * was stuck in slows this move and stops it; it moves as far as blocks allow, but keeps its
+     * position when the move left is tiny and most of it was blocked; it stops across the axes it
+     * collided on (sideways only past Mth.equal's 1.0E-5F), bounces off slime, beds and shelf
+     * mushrooms, and is slowed by soul sand and honey. Returns the move made and the move wanted.
+     *
+     * @return array{0: array{float, float, float}, 1: array{float, float, float}}
      */
-    private function itemBounce(array $item, float $fall, float $movedY): ?float
+    private function moveSimpleEntity(array &$entity, array $box, Collision $collision, float $gravity): array
     {
-        if (-$fall <= 0.04) {
+        $delta = $entity['velocity'];
+        $stuck = $entity['stuck'] ?? [0.0, 0.0, 0.0];
+        if ($stuck[0] ** 2 + $stuck[1] ** 2 + $stuck[2] ** 2 > 1.0E-7) {
+            $delta = [$delta[0] * $stuck[0], $delta[1] * $stuck[1], $delta[2] * $stuck[2]];
+            $entity['stuck'] = [0.0, 0.0, 0.0];
+            $entity['velocity'] = [0.0, 0.0, 0.0];
+        }
+        $moved = $collision->move($this->world, $box, $delta);
+        $length = $moved[0] ** 2 + $moved[1] ** 2 + $moved[2] ** 2;
+        if ($length > 1.0E-7 || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 - $length < 1.0E-7) {
+            [$entity['x'], $entity['y'], $entity['z']] = [$entity['x'] + $moved[0], $entity['y'] + $moved[1], $entity['z'] + $moved[2]];
+        }
+        $entity['horizontalCollision'] = abs($moved[0] - $delta[0]) >= 9.999999747378752E-6 || abs($moved[2] - $delta[2]) >= 9.999999747378752E-6;
+        $entity['verticalCollision'] = $moved[1] !== $delta[1];
+        $entity['ground'] = $entity['verticalCollision'] && $delta[1] < 0.0;
+        // Entity.restituteMovementAfterCollisions.
+        foreach ([0, 1, 2] as $axis) {
+            if ($axis === 1 ? $moved[1] !== $delta[1] : abs($moved[$axis] - $delta[$axis]) >= 9.999999747378752E-6) {
+                $entity['velocity'][$axis] = 0.0;
+            }
+        }
+        $bounce = $delta[1] < 0.0 && $moved[1] !== $delta[1] ? $this->entityBounce($entity, $delta[1], $moved[1], $gravity) : null;
+        if ($bounce !== null) {
+            $entity['velocity'][1] = $bounce;
+            $entity['syncPosition'] = true;
+        }
+        $speed = $this->blockSpeedFactor($entity['x'], $entity['y'], $entity['z']);
+        $entity['velocity'] = [$entity['velocity'][0] * $speed, $entity['velocity'][1], $entity['velocity'][2] * $speed];
+        return [$moved, $delta];
+    }
+
+    /**
+     * Entity.restituteMovementAfterCollisions for an entity landing on slime, a bed or a shelf
+     * mushroom faster than its gravity: the bounce, or null when it does not bounce.
+     */
+    private function entityBounce(array $entity, float $fall, float $movedY, float $gravity): ?float
+    {
+        if (-$fall <= $gravity) {
             return null;
         }
-        $name = $this->version->catalog->blockName($this->world->get((int) floor($item['x']), (int) floor($item['y'] - 0.2), (int) floor($item['z'])));
+        // getOnPosLegacy: the block 0.2 below.
+        $name = $this->version->catalog->blockName($this->world->get((int) floor($entity['x']), (int) floor($entity['y'] - 0.2), (int) floor($entity['z'])));
         $restitution = match ($name) {
             'slime_block' => 0.800000011920929,
             'shelf_mushroom' => 0.6000000238418579,
@@ -390,10 +399,9 @@ trait Entities
             return null;
         }
         $portion = $movedY / $fall;
-        return ($portion * 0.04 - $fall) * (1.0 + $portion * (0.9800000190734863 - 1.0)) * $restitution;
+        return ($portion * $gravity - $fall) * (1.0 + $portion * (0.9800000190734863 - 1.0)) * $restitution;
     }
 
-    /** Entity.isInWater/isInLava with a fluid height above 0.1 in the item's block. */
     /**
      * EntityFluidInteraction.update and applyCurrentTo for an entity pushed by fluids: the height
      * of each fluid it is in, and the current of the water and lava it meets added to its

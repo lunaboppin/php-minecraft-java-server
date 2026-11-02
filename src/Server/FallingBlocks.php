@@ -172,16 +172,13 @@ trait FallingBlocks
             $block = &$this->fallingBlocks[$id];
             ++$block['time'];
             $block['velocity'][1] -= 0.04;
-            $box = [$block['x'] - 0.49, $block['y'], $block['z'] - 0.49, $block['x'] + 0.49, $block['y'] + 0.98, $block['z'] + 0.49];
-            $moved = $collision->move($this->world, $box, $block['velocity']);
-            $block['ground'] = $moved[1] !== $block['velocity'][1] && $block['velocity'][1] < 0.0;
-            $block['precise'] = $moved !== $block['velocity'];
-            [$block['x'], $block['y'], $block['z']] = [$block['x'] + $moved[0], $block['y'] + $moved[1], $block['z'] + $moved[2]];
-            foreach ([0, 1, 2] as $axis) {
-                if ($moved[$axis] !== $block['velocity'][$axis]) {
-                    $block['velocity'][$axis] = 0.0;
-                }
-            }
+            $box = static fn (array $b): array => [$b['x'] - 0.49, $b['y'], $b['z'] - 0.49, $b['x'] + 0.49, $b['y'] + 0.98, $b['z'] + 0.49];
+            $from = $box($block);
+            [$moved] = $this->moveSimpleEntity($block, $from, $collision, 0.04);
+            // applyEffectsFromBlocks: a falling block takes no damage.
+            $this->entityInsideBlocks($block, $from, $box($block), 'falling_block', false, static fn (): bool => false, static fn (): bool => true, static fn (): bool => false);
+            // setRequiresPrecisePosition: after a collision its position is sent exactly.
+            $block['precise'] = $block['horizontalCollision'] || $block['verticalCollision'];
             $position = [(int) floor($block['x']), (int) floor($block['y']), (int) floor($block['z'])];
             $inWater = $this->fireBlocks()->isWater($this->world->get(...$position));
             // Entity.checkFallDamage: the distance fallen adds up, each move cast to float, out of water until it lands.
@@ -210,7 +207,8 @@ trait FallingBlocks
                 continue;
             }
             $block = &$this->fallingBlocks[$id];
-            $block['velocity'] = [$block['velocity'][0] * 0.98, $block['velocity'][1] * 0.98, $block['velocity'][2] * 0.98];
+            // getAirDrag is a float.
+            $block['velocity'] = array_map(static fn (float $v): float => $v * 0.9800000190734863, $block['velocity']);
             unset($block);
         }
     }
@@ -366,7 +364,7 @@ trait FallingBlocks
     private function fallingTrackerState(array $block): array
     {
         return ['position' => [$block['x'], $block['y'], $block['z']], 'velocity' => $block['velocity'], 'yaw' => 0.0, 'pitch' => 0.0, 'head' => 0.0,
-            'ground' => $block['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => false, 'precise' => $block['precise'] ?? false];
+            'ground' => $block['ground'], 'needs_sync' => false, 'sync_velocity' => false, 'sync_position' => $block['syncPosition'] ?? false, 'precise' => $block['precise'] ?? false];
     }
 
     /** The start position, FallingBlockEntity's only tracked data: index 8, a block position. */
@@ -389,6 +387,7 @@ trait FallingBlocks
         $state = $this->fallingTrackerState($block);
         $tracker = $this->fallingTrackers[$id] ??= new EntityMovementTracker($id, 20, true, $state, false);
         $packets = $tracker->update($state);
+        $this->fallingBlocks[$id]['syncPosition'] = false;
         if ($block['dirty']) {
             $this->fallingBlocks[$id]['dirty'] = false;
             $packets[] = ['name' => 'set_entity_data', 'payload' => $this->fallingBlockData($block)];

@@ -231,32 +231,8 @@ trait ExperienceOrbs
                 }
             }
             $from = $box($orb);
-            $delta = $orb['velocity'];
-            // Entity.move: a cobweb or powder snow slows this move and stops the orb.
-            $stuck = $orb['stuck'] ?? [0.0, 0.0, 0.0];
-            if ($stuck[0] ** 2 + $stuck[1] ** 2 + $stuck[2] ** 2 > 1.0E-7) {
-                $delta = [$delta[0] * $stuck[0], $delta[1] * $stuck[1], $delta[2] * $stuck[2]];
-                $orb['stuck'] = [0.0, 0.0, 0.0];
-                $orb['velocity'] = [0.0, 0.0, 0.0];
-            }
             $fall = $orb['velocity'][1];
-            $moved = $collision->move($this->world, $from, $delta);
-            $below = $moved[1] !== $delta[1] && $delta[1] < 0.0;
-            // Entity.move keeps its position when the move left is tiny and most of it was blocked.
-            $length = $moved[0] ** 2 + $moved[1] ** 2 + $moved[2] ** 2;
-            if ($length > 1.0E-7 || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 - $length < 1.0E-7) {
-                [$orb['x'], $orb['y'], $orb['z']] = [$orb['x'] + $moved[0], $orb['y'] + $moved[1], $orb['z'] + $moved[2]];
-            }
-            // Entity.restituteMovementAfterCollisions: stopped across an axis it collided on, sideways
-            // only when the move was cut by at least Mth.equal's 1.0E-5F.
-            foreach ([0, 1, 2] as $axis) {
-                if ($axis === 1 ? $moved[1] !== $delta[1] : abs($moved[$axis] - $delta[$axis]) >= 9.999999747378752E-6) {
-                    $orb['velocity'][$axis] = 0.0;
-                }
-            }
-            $orb['ground'] = $below;
-            $speed = $this->blockSpeedFactor($orb['x'], $orb['y'], $orb['z']);
-            $orb['velocity'] = [$orb['velocity'][0] * $speed, $orb['velocity'][1], $orb['velocity'][2] * $speed];
+            $this->moveSimpleEntity($orb, $from, $collision, 0.03);
             $alive = fn (): bool => isset($this->experienceOrbs[$id]);
             if (!$this->entityInsideBlocks($orb, $from, $box($orb), 'experience_orb', false, fn (float $amount): bool => $this->hurtOrb($id, $amount), $alive, static fn (): bool => true)) {
                 unset($orb);
@@ -268,7 +244,7 @@ trait ExperienceOrbs
                 $friction = Float32::round($friction * Float32::round($this->blockFriction($this->world->get((int) floor($orb['x']), (int) floor($orb['y'] - 0.5000010132789612), (int) floor($orb['z'])))));
             }
             $orb['velocity'] = array_map(static fn (float $v): float => $v * $friction, $orb['velocity']);
-            if ($below && $fall < -0.03) {
+            if ($orb['ground'] && $fall < -0.03) {
                 $orb['velocity'][1] = -$fall * 0.4;
             }
             if (++$orb['age'] >= 6000 || $orb['y'] < $this->world->minY - 64) {
