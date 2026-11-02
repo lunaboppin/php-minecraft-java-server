@@ -8,6 +8,10 @@
   "steps": [
     {
       "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
       "text": "fill -2 63 -6 172 63 6 minecraft:stone"
     },
     {

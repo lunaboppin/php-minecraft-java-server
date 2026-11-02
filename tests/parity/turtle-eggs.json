@@ -8,6 +8,10 @@
   "steps": [
     {
       "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
       "text": "gamerule advance_time false"
     },
     {
