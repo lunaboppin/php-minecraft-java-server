@@ -74,8 +74,8 @@ final class Server
     use EnchantingTables;
 
     use Anvils;
-    use SplashPotions;
 
+    use SplashPotions;
 
     use Sleeping;
 
