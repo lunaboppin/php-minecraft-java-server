@@ -46,6 +46,23 @@ public class ExportMobEffects {
             effects.add(BuiltInRegistries.MOB_EFFECT.getKey(effect).toString(), row);
         }
         root.add("effects", effects);
+        // Each potion's effects, as PotionContents applies them.
+        var potions = new JsonObject();
+        for (var potion : BuiltInRegistries.POTION) {
+            var list = new JsonArray();
+            for (var instance : potion.getEffects()) {
+                var entry = new JsonObject();
+                entry.addProperty("id", instance.getEffect().unwrapKey().orElseThrow().identifier().toString());
+                entry.addProperty("amplifier", instance.getAmplifier());
+                entry.addProperty("duration", instance.getDuration());
+                entry.addProperty("ambient", instance.isAmbient());
+                entry.addProperty("show_particles", instance.isVisible());
+                entry.addProperty("show_icon", instance.showIcon());
+                list.add(entry);
+            }
+            potions.add(BuiltInRegistries.POTION.getKey(potion).toString(), list);
+        }
+        root.add("potions", potions);
         Files.writeString(Path.of(args[0]), new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n");
     }
 }

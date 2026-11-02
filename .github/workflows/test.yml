@@ -433,6 +433,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-projectiles
           python3 tools/parity/verify.py tools/.cache/parity-projectiles/php-packets.json tools/.cache/parity-projectiles/reference-packets.json
+      - name: Compare drinking potions and milk and eating stew with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/consumables.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-consumables
+          python3 tools/parity/verify.py tools/.cache/parity-consumables/php-packets.json tools/.cache/parity-consumables/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -445,6 +449,7 @@ jobs:
             tools/.cache/parity-player-falls/
             tools/.cache/parity-breeding/
             tools/.cache/parity-projectiles/
+            tools/.cache/parity-consumables/
           retention-days: 7
 
   docker:
