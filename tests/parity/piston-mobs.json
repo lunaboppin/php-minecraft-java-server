@@ -1,0 +1,159 @@
+{
+  "name": "piston-mobs",
+  "normalizations": [
+    "Compare the distinct packets sent about NoAI, silent mobs as pistons push them: sideways, upwards, launched by slime, dragged by honey, against a slab step, and a baby.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 16 75 20 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 59 -8 16 60 20 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 3 minecraft:piston[facing=up]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 6 minecraft:sticky_piston[facing=up]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 6 minecraft:slime_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 9 minecraft:sticky_piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 61 9 minecraft:honey_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 12 minecraft:piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 61 12 minecraft:stone_slab"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 15 minecraft:piston[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:pig 1.5 61.0 0.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:cow 0.5 62.0 3.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:sheep 0.5 63.0 6.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:chicken 1.5 62.0 9.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:pig 1.5 61.0 12.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:cow 1.5 61.0 15.5 {NoAI:1b,Silent:1b,Rotation:[0f,0f],Age:-24000}"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "summoned",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 3 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 6 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 9 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 12 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 15 minecraft:redstone_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "extended",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 9 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 15 minecraft:air"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "retracted",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}
