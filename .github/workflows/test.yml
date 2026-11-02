@@ -401,6 +401,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/enchanting.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-enchanting
           python3 tools/parity/verify.py tools/.cache/parity-enchanting/php-packets.json tools/.cache/parity-enchanting/reference-packets.json
+      - name: Compare axes, hoes and shovels used on blocks with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/tool-actions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tool-actions
+          python3 tools/parity/verify.py tools/.cache/parity-tool-actions/php-packets.json tools/.cache/parity-tool-actions/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -415,6 +419,7 @@ jobs:
             tools/.cache/parity-projectiles/
             tools/.cache/parity-bows/
             tools/.cache/parity-enchanting/
+            tools/.cache/parity-tool-actions/
           retention-days: 7
 
   docker:

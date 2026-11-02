@@ -1,0 +1,348 @@
+{
+  "name": "tool-actions",
+  "normalizations": [
+    "Compare axes stripping a log, scraping copper stairs and unwaxing copper (and doing nothing to stone), hoes tilling grass, coarse dirt and rooted dirt (which drops hanging roots) but not dirt under a slab, shovels flattening grass and podzol into paths and putting out a campfire, the wear each use takes, and none in creative.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 8 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 8 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 64 -2.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:oak_log[axis=x]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 0 minecraft:exposed_cut_copper_stairs[facing=east,half=top]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:waxed_copper_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:iron_axe"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "axe",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          2,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 2 minecraft:grass_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 63 2 minecraft:coarse_dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 2 minecraft:rooted_dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 2 minecraft:dirt"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 2 minecraft:oak_slab"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:iron_hoe"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        2
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        63,
+        2
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        63,
+        2
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "hoe",
+      "fields": [
+        "blocks",
+        "inventory",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          2
+        ],
+        [
+          2,
+          63,
+          2
+        ],
+        [
+          4,
+          63,
+          2
+        ],
+        [
+          6,
+          63,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 4 minecraft:grass_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 63 4 minecraft:podzol"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 4 minecraft:campfire"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 3.5 64 2.5 0 50"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:iron_shovel"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "shovel",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          4
+        ],
+        [
+          2,
+          63,
+          4
+        ],
+        [
+          4,
+          64,
+          4
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 63 4 minecraft:grass_block"
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        63,
+        4
+      ],
+      "face": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "creative",
+      "fields": [
+        "blocks",
+        "inventory"
+      ],
+      "positions": [
+        [
+          6,
+          63,
+          4
+        ]
+      ]
+    }
+  ]
+}
