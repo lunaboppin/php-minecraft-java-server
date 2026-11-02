@@ -30,12 +30,23 @@ trait BlockSimulation
     }
     private function changedSimulation(int $x,int $y,int $z):void {
         $this->fluidsChanged($x,$y,$z);
+        $this->spongesChanged($x,$y,$z);
         $this->randomTickChanged($x,$y,$z,$this->world->get($x,$y,$z));
         $this->leavesChanged($x,$y,$z);
+        $this->poweredRailsChanged($x,$y,$z);
         $this->fireChanged($x,$y,$z);
         $this->heightChanged($x,$z);
         $this->tntChanged($x,$y,$z);
+        $this->bellsChanged($x,$y,$z);
+        $this->tripwiresChanged($x,$y,$z);
         $this->coralsChanged($x,$y,$z);
+        $this->turtleEggPlaced($x,$y,$z);
+        $this->pistonsChanged($x,$y,$z);
+        $this->observersChanged($x,$y,$z);
+        $this->daylightDetectorChanged($x,$y,$z);
+        $this->chorusChanged($x,$y,$z);
+        $this->fallingChanged($x,$y,$z);
+        $this->speleothemsChanged($x,$y,$z);
         $catalog=$this->version->catalog;
         foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
             $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
@@ -51,13 +62,21 @@ trait BlockSimulation
         uasort($this->blockTicks,static fn(array $a,array $b):int=>$a[0]<=>$b[0]);
         $due=array_filter($this->blockTicks,fn(array $t):bool=>$t[0]<=$this->worldAge);
         $fluid=array_filter($due,static fn(array $t):bool=>in_array($t[1],self::FLUID_TICKS,true));
+        $this->handlingBlockTicks=true;
         foreach([array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)] as $batch)foreach($batch as $key=>[,$kind,$position]){
             unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
             if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
             elseif($kind==='water_block' || $kind==='bubble_column'){$this->tickColumn($kind,$x,$y,$z);}
             elseif($kind==='leaves'){$this->tickLeaves($x,$y,$z);}
             elseif($kind==='fire'){$this->tickFire($x,$y,$z);}
+            elseif($kind==='tripwire' || $kind==='tripwire_hook'){$this->tickTripwire($kind,$x,$y,$z);}
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
+            elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
+            elseif($kind==='plate'){$this->tickPressurePlate($x,$y,$z);}
+            elseif($kind==='chorus'){$this->tickChorus($x,$y,$z);}
+            elseif($kind==='falling'){$this->tickFallingBlock($x,$y,$z);}
+            elseif($kind==='speleothem'){$this->tickSpeleothem($x,$y,$z);}
+            elseif($kind==='cauldron'){$this->tickCauldron($x,$y,$z);}
             elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
@@ -65,6 +84,7 @@ trait BlockSimulation
             }elseif($kind==='repeater'){$this->tickCircuit($x,$y,$z,true);}
             elseif($kind==='lightning_rod'){$this->unpowerLightningRod($x,$y,$z);}
         }
+        $this->handlingBlockTicks=false;
         foreach($this->jukeboxes as $key=>&$record){
             if($record['remaining']>0 && --$record['remaining']===0){$this->levelEvent(1011,$record['position'],0);$this->world->container($record['position'],$record);}
         }unset($record);
@@ -82,6 +102,7 @@ trait BlockSimulation
     private function useSpecialBlock(Client $c,int $x,int $y,int $z,int $slot):bool {
         if(!$this->editable($c,$x,$y,$z)){return false;}$catalog=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$catalog->blockName($state);$props=$catalog->properties($state);
         if(str_ends_with($name,'_sign')){return $this->openSign($c,$x,$y,$z,$this->signSide($c,$x,$y,$z));}
+        if($name==='daylight_detector'){return $this->useDaylightDetector($c,$x,$y,$z);}
         if($name==='jukebox'){
             $position=[$x,$y,$z];$data=$this->world->container($position);
             if(isset($data['slots'][0])){$this->ejectJukebox($position);return true;}
@@ -121,6 +142,10 @@ trait BlockSimulation
     private function directSignal(int $x,int $y,int $z,array $target,bool $wires=true):int {
         $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);
         if($name==='redstone_block'){return 15;}
+        if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
+        if($name==='daylight_detector'){return (int)$p['power'];}
+        if($name==='tripwire_hook'){return $this->hookSignal($state);}
+        if($this->isPressurePlate($name)){return $this->plateSignal($state);}
         if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
         if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
         if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
@@ -135,17 +160,22 @@ trait BlockSimulation
         }
         return 0;
     }
-    private function powerAt(int $x,int $y,int $z,bool $wires=true):int {
+    private function powerAt(int $x,int $y,int $z,bool $wires=true,?array $exclude=null):int {
         $power=0;$c=$this->version->catalog;
         foreach(self::NEIGHBORS as [$dx,$dy,$dz]){
+            if([$dx,$dy,$dz]===$exclude){continue;}
             $a=$x+$dx;$b=$y+$dy;$d=$z+$dz;$power=max($power,$this->directSignal($a,$b,$d,[$x,$y,$z],$wires));
             $state=$this->world->get($a,$b,$d);$name=$c->blockName($state);
             if($c->blocks[$name]['full_cube'] && !$this->circuit($name)){
                 foreach(self::NEIGHBORS as [$ex,$ey,$ez]){
                     if([$a+$ex,$b+$ey,$d+$ez]===[$x,$y,$z]){continue;}
                     $source=$c->blockName($this->world->get($a+$ex,$b+$ey,$d+$ez));
-                    if(in_array($source,['redstone_block','lever','repeater','comparator'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
+                    if(in_array($source,['redstone_block','lever','repeater','comparator','observer'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
                     // LightningRodBlock.getDirectSignal: a struck rod strongly powers the block it is on.
+                    // BasePressurePlateBlock.getDirectSignal: a pressed plate strongly powers the block it is on.
+                    elseif($this->isPressurePlate($source) && [$ex,$ey,$ez]===[0,1,0]){$power=max($power,$this->plateSignal($this->world->get($a,$b+1,$d)));}
+                    // TripWireHookBlock.getDirectSignal: a powered hook strongly powers the block it hangs on.
+                    elseif($source==='tripwire_hook' && $this->hookSignal($this->world->get($a+$ex,$b+$ey,$d+$ez))>0 && self::TRIPWIRE_SIDES[$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez))['facing']]===[$ex,$ey,$ez]){$power=15;}
                     elseif($this->lightningRod($source)){$rod=$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez));if($rod['powered']==='true' && self::ROD_FACES[$rod['facing']]===[$ex,$ey,$ez]){$power=15;}}
                 }
             }
@@ -170,7 +200,7 @@ trait BlockSimulation
             foreach(array_combine(['north','east','south','west'],self::SIDES) as $direction=>[$dx,$dy,$dz]){
                 $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
                 if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
-                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind);
+                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector' || $this->isPressurePlate($kind) || $kind==='tripwire_hook';
             }
             if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
             if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}

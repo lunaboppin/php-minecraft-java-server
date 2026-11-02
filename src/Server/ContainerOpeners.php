@@ -268,10 +268,13 @@ trait ContainerOpeners
                 $this->recheckOpeners($key, $position);
             }
         }
-        $events = $this->blockEvents[$this->world->dimension] ?? [];
-        unset($this->blockEvents[$this->world->dimension]);
-        foreach ($events as [$position, $name, $type, $data]) {
+        // ServerLevel.runBlockEvents: events queued while running run in the same pass.
+        while (($this->blockEvents[$this->world->dimension] ?? []) !== []) {
+            [$position, $name, $type, $data] = array_shift($this->blockEvents[$this->world->dimension]);
             if ($this->version->catalog->blockName($this->world->get(...$position)) !== $name) {
+                continue;
+            }
+            if (($name === 'piston' || $name === 'sticky_piston') && !$this->pistonEvent($position, $name, $type, $data)) {
                 continue;
             }
             if ($name === 'barrel') {
