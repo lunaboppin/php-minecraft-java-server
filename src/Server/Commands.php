@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Binary;
+use PhpMinecraftJavaServer\Protocol\NbtByte;
 use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Server\Commands as CommandModules;
 
@@ -768,6 +769,30 @@ trait Commands
         return $position;
     }
 
+    /** PotionContents.CODEC's full form: empty parts left out, each effect's details as their codec writes them. */
+    private static function potionContentsJson(array $contents): array|\stdClass
+    {
+        $json = [];
+        if ($contents['potion'] !== null) {
+            $json['potion'] = $contents['potion'];
+        }
+        if ($contents['custom_color'] !== null) {
+            $json['custom_color'] = $contents['custom_color'];
+        }
+        if ($contents['custom_effects'] !== []) {
+            $json['custom_effects'] = array_map(static fn (array $effect): array => ['id' => $effect['id']] + array_filter([
+                'amplifier' => $effect['amplifier'] === 0 ? null : new NbtByte($effect['amplifier']),
+                'duration' => $effect['duration'] === 0 ? null : $effect['duration'],
+                'ambient' => $effect['ambient'] ? true : null,
+                'show_particles' => $effect['show_particles'] ? null : false,
+            ], static fn (mixed $value): bool => $value !== null) + ['show_icon' => $effect['show_icon']], $contents['custom_effects']);
+        }
+        if ($contents['custom_name'] !== null) {
+            $json['custom_name'] = $contents['custom_name'];
+        }
+        return $json === [] ? new \stdClass() : $json;
+    }
+
     /**
      * ItemStack.getDisplayName: the bracketed hover name in the rarity colour (raised for enchanted
      * items, as ItemStack.getRarity does), hovering the item with its component patch.
@@ -779,6 +804,16 @@ trait Commands
             return ['translate' => 'chat.square_brackets', 'with' => [['text' => '', 'extra' => [['translate' => 'block.minecraft.air']]]]];
         }
         $display = $this->version->catalog->displayNames['items']['minecraft:' . $item];
+        // PotionContents.getName: the potion items' names follow their custom name or potion.
+        $potion = $components['minecraft:potion_contents'] ?? null;
+        if ($potion !== null && str_ends_with($display['name']['translate'] ?? '', '.effect.empty')) {
+            $names = $this->version->catalog->itemStacks->potionNames();
+            $suffix = $potion['custom_name'] ?? ($potion['potion'] === null ? 'empty' : $names[$potion['potion']]);
+            $display['name'] = ['translate' => substr($display['name']['translate'], 0, -5) . $suffix];
+        }
+        if ($potion !== null) {
+            $components['minecraft:potion_contents'] = self::potionContentsJson($potion);
+        }
         $color = ($components['minecraft:enchantments'] ?? []) === [] ? $display['color'] : match ($display['color']) {
             'white', 'yellow' => 'aqua',
             'aqua' => 'light_purple',

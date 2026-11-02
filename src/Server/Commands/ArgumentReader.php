@@ -41,6 +41,7 @@ final class ArgumentReader
             // Each block's properties and their values.
             'block' => array_combine(array_map(static fn (string $name): string => 'minecraft:' . $name, array_keys($version->catalog->blocks)), array_map(static fn (array $block): array => array_map(static fn (array $property): array => array_map('strval', $property['values']), $block['properties']), $version->catalog->blocks)),
             'minecraft:data_component_type' => array_flip(array_keys(json_decode((string) file_get_contents($version->directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR)['component_ids'])),
+            'minecraft:potion' => array_fill_keys(json_decode((string) file_get_contents($version->directory . '/equipment-stack-rules.json'), true, 512, JSON_THROW_ON_ERROR)['potions'], true),
             'minecraft:entity_type' => $ids(array_keys($version->blocks['entity_types'])),
             'minecraft:dialog' => array_fill_keys($version->registryEntries('minecraft:dialog'), true),
             'minecraft:particle_type' => $ids(array_keys($version->blocks['particle_types'])),

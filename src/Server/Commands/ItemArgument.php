@@ -105,8 +105,70 @@ final class ItemArgument
                     $levels[$id] = (int) $level['value'];
                 }
                 return [$levels];
+            case 'minecraft:potion_contents':
+                return self::potionContents($tag, $registries);
         }
         return [self::plain($tag)];
+    }
+
+    /** PotionContents.CODEC: a potion's name alone, or the full record. */
+    public static function potionContents(array $tag, array $registries): array|string
+    {
+        $registryId = static function (array $tag, string $registry) use ($registries): string|array {
+            if ($tag['type'] !== 'string') {
+                return 'Not a string';
+            }
+            $id = str_contains($tag['value'], ':') ? $tag['value'] : 'minecraft:' . $tag['value'];
+            return isset($registries[$registry][$id]) ? [$id] : 'Unknown registry key in ResourceKey[minecraft:root / ' . $registry . ']: ' . $id;
+        };
+        $contents = ['potion' => null, 'custom_color' => null, 'custom_effects' => [], 'custom_name' => null];
+        // Codec.withAlternative: the record, then the potion's name alone.
+        if ($tag['type'] !== 'compound') {
+            $potion = $registryId($tag, 'minecraft:potion');
+            return is_string($potion) ? 'Failed to parse either. First: Not a map: ' . Snbt::toText($tag) . '; Second: ' . ($tag['type'] === 'string' ? $potion : 'Not a string') : [['potion' => $potion[0]] + $contents];
+        }
+        $fields = $tag['value'];
+        if (isset($fields['potion'])) {
+            $potion = $registryId($fields['potion'], 'minecraft:potion');
+            if (is_string($potion)) {
+                return $potion;
+            }
+            $contents['potion'] = $potion[0];
+        }
+        $number = static fn (array $tag): ?int => in_array($tag['type'], ['byte', 'short', 'int', 'long', 'float', 'double'], true) ? (int) $tag['value'] : null;
+        if (isset($fields['custom_color'])) {
+            $contents['custom_color'] = $number($fields['custom_color']) ?? 'Not a number';
+            if (is_string($contents['custom_color'])) {
+                return $contents['custom_color'];
+            }
+        }
+        foreach (isset($fields['custom_effects']) ? ($fields['custom_effects']['type'] === 'list' ? $fields['custom_effects']['value'] : null) ?? [] : [] as $effect) {
+            if ($effect['type'] !== 'compound' || !isset($effect['value']['id'])) {
+                return 'No key id in MapLike';
+            }
+            $id = $registryId($effect['value']['id'], 'minecraft:mob_effect');
+            if (is_string($id)) {
+                return $id;
+            }
+            $details = $effect['value'];
+            $flag = static fn (string $name, bool $default): bool => isset($details[$name]) ? (bool) $details[$name]['value'] : $default;
+            $contents['custom_effects'][] = [
+                'id' => $id[0],
+                'amplifier' => isset($details['amplifier']) ? ($number($details['amplifier']) ?? 0) & 0xff : 0,
+                'duration' => isset($details['duration']) ? ($number($details['duration']) ?? 0) : 0,
+                'ambient' => $flag('ambient', false),
+                'show_particles' => $flag('show_particles', true),
+                'show_icon' => $flag('show_icon', $flag('show_particles', true)),
+                'hidden_effect' => null,
+            ];
+        }
+        if (isset($fields['custom_name'])) {
+            if ($fields['custom_name']['type'] !== 'string') {
+                return 'Not a string: ' . Snbt::toText($fields['custom_name']);
+            }
+            $contents['custom_name'] = $fields['custom_name']['value'];
+        }
+        return [$contents];
     }
 
     private static function plain(array $tag): mixed
