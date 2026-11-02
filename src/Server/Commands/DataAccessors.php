@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\Server\Client;
 trait DataAccessors
 {
     /** BlockEntity types with data here, by block. */
-    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker', 'hopper' => 'hopper'];
+    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker', 'hopper' => 'hopper', 'dispenser' => 'dispenser', 'dropper' => 'dropper'];
 
     private static function nbtList(string $type, array $values): NbtTag
     {

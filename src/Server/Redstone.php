@@ -618,6 +618,9 @@ trait Redstone
             case $name === 'hopper':
                 $this->checkHopperPowered($pos);
                 break;
+            case $name === 'dispenser' || $name === 'dropper':
+                $this->dispenserNeighborChanged($pos);
+                break;
             case $name === 'note_block' || str_ends_with($name, '_door') || str_ends_with($name, '_trapdoor'):
                 $this->tickCircuit($pos[0], $pos[1], $pos[2]);
                 break;
@@ -626,7 +629,7 @@ trait Redstone
 
     private function isRedstoneComponent(string $name): bool
     {
-        return in_array($name, ['redstone_wire', 'redstone_torch', 'redstone_wall_torch', 'repeater', 'comparator', 'redstone_lamp', 'note_block', 'hopper'], true)
+        return in_array($name, ['redstone_wire', 'redstone_torch', 'redstone_wall_torch', 'repeater', 'comparator', 'redstone_lamp', 'note_block', 'hopper', 'dispenser', 'dropper'], true)
             || str_ends_with($name, '_door') || str_ends_with($name, '_trapdoor');
     }
 
