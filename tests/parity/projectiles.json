@@ -1,0 +1,146 @@
+{
+  "name": "projectiles",
+  "normalizations": [
+    "Throw an ender pearl straight down from survival: the thrower is brought to where the pearl was when its tick began and takes 5 damage, with one fewer pearl; a second throw after the second-long cooldown does the same. The spread of the throw is random, so where the thrower lands is not compared.",
+    "Throw a snowball 20 degrees down at a pig without AI three blocks away, and an egg at the thrower's feet; each is used up. Where knocked-back mobs or hatched chicks end up is random, so the pig's motion and the egg's chicks are not compared.",
+    "Use matching flat terrain with natural spawning and regeneration off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_monsters false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 63 -4 4 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -4 4 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 90"
+    },
+    {
+      "action": "command",
+      "text": "give @s ender_pearl 2"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00010000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "pearl_landed",
+      "fields": [
+        "health",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00020000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.3
+    },
+    {
+      "action": "snapshot",
+      "name": "pearl_cooling_down",
+      "fields": [
+        "health",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "summon pig 0.5 64 3.5 {NoAI:1b}"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s snowball 3"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00030000000041a00000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "snowball_thrown",
+      "fields": [
+        "inventory",
+        "entities"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=pig]"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "give @s egg 1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00040000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "egg_thrown",
+      "fields": [
+        "inventory",
+        "position"
+      ]
+    }
+  ]
+}

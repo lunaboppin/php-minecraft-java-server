@@ -14,14 +14,6 @@ trait Observers
         'down' => [0, -1, 0], 'up' => [0, 1, 0], 'north' => [0, 0, -1], 'south' => [0, 0, 1], 'west' => [-1, 0, 0], 'east' => [1, 0, 0],
     ];
 
-    /** ObserverBlock.getSignal: a powered observer signals only the block behind its face. */
-    private function observerSignal(int $state, int $x, int $y, int $z, array $target): int
-    {
-        $p = $this->version->catalog->properties($state);
-        [$dx, $dy, $dz] = self::OBSERVER_FACES[$p['facing']];
-        return $p['powered'] === 'true' && $target === [$x - $dx, $y - $dy, $z - $dz] ? 15 : 0;
-    }
-
     /**
      * ObserverBlock.updateShape for the observers around a changed block, and onPlace for one
      * just set: an unpowered observer facing the change schedules its pulse unless one is due;

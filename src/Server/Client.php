@@ -162,6 +162,12 @@ final class Client
 
     public bool $postEffectsDirty = true;
 
+    /** @var array<string, array<string, int>> ServerStatsCounter: statistics by type and value */
+    public array $stats = [];
+
+    /** @var array<string, true> statistics changed since the client last asked, as type|value */
+    public array $statsDirty = [];
+
     /** @var array<string, true> ServerRecipeBook.known, in the order learned */
     public array $knownRecipes = [];
 
@@ -269,6 +275,12 @@ final class Client
 
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
+
+    /** ServerPlayer.getKnownMovement: how far the last movement packet moved the player. */
+    public array $knownMovement = [0.0, 0.0, 0.0];
+
+    /** ItemCooldowns: each cooldown group's end tick. */
+    public array $cooldowns = [];
 
     /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
     public ?string $knockbackMotion = null;
