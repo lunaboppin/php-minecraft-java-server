@@ -69,6 +69,8 @@ final class Server
 
     use Lightning;
 
+    use Redstone;
+
     use PoweredRails;
 
     use RespawnPoints;
@@ -183,6 +185,7 @@ final class Server
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreTnt();
+                $this->restoreRedstone();
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
@@ -1577,7 +1580,9 @@ final class Server
                 $blocked = true;
             }
             if (!$blocked) {
-                $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
+                $placedState = $blockName === 'redstone_wire' ? $this->wirePlacement([$tx, $ty, $tz]) : $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz);
+                $this->setBlock($tx, $ty, $tz, $placedState);
+                $this->redstonePlaced([$tx, $ty, $tz]);
                 $this->updateNeighbourShapes($tx, $ty, $tz);
                 if ($blockName === 'tripwire_hook') {
                     // TripWireHookBlock.setPlacedBy.
