@@ -69,6 +69,8 @@ final class Server
 
     use Projectiles;
 
+    use SplashPotions;
+
     use Sleeping;
 
     use WeatherCycle;

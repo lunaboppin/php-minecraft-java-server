@@ -249,10 +249,7 @@ trait Effects
      */
     private function applyPotionContents(Client $c, array $contents, float $scale = 1.0): void
     {
-        static $potions = null;
-        $potions ??= json_decode((string) file_get_contents($this->version->directory . '/mob-effects.json'), true, 512, JSON_THROW_ON_ERROR)['potions'];
-        $effects = [...($contents['potion'] === null ? [] : $potions[$contents['potion']] ?? []), ...$contents['custom_effects']];
-        foreach ($effects as $effect) {
+        foreach ($this->potionEffects($contents) as $effect) {
             if ($this->effectDefinitions()[$effect['id']]['instant']) {
                 $this->applyEffectTick($c, $effect['id'], $effect['amplifier']);
                 continue;

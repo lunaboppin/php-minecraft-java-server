@@ -1,0 +1,129 @@
+{
+  "name": "splash-potions",
+  "normalizations": [
+    "Throw splash potions straight down from survival: healing after 8 damage, then harming, each landing at the thrower's feet with its full effect, and each used up.",
+    "A water splash potion puts out fire beside the block it lands on.",
+    "Use matching flat terrain with natural spawning, regeneration and fire spread off."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule natural_health_regeneration false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule fire_spread_radius_around_player 0"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 63 -3 3 63 3 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -3 64 -3 3 66 3 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 90"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "command",
+      "text": "damage @s 8 minecraft:generic"
+    },
+    {
+      "action": "command",
+      "text": "give @s splash_potion[potion_contents={potion:\"minecraft:healing\"}]"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00010000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "healing",
+      "fields": [
+        "inventory",
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "give @s splash_potion[potion_contents={potion:\"minecraft:harming\"}] 2"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00020000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "harming",
+      "fields": [
+        "inventory",
+        "health"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 0 minecraft:fire"
+    },
+    {
+      "action": "command",
+      "text": "give @s splash_potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00030000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "water",
+      "fields": [
+        "inventory",
+        "health",
+        "blocks"
+      ],
+      "positions": [
+        [
+          1,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}
