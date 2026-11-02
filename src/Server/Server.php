@@ -135,6 +135,8 @@ final class Server
 
     use Waypoints;
 
+    use Statistics;
+
     use NaturalSpawning;
 
     use RecipeBook;
@@ -1091,6 +1093,9 @@ final class Server
                 $r->end();
                 if ($action === 0) {
                     $this->respawnPlayer($c);
+                } elseif ($action === 1) {
+                    // ServerGamePacketListenerImpl.handleClientCommand: REQUEST_STATS
+                    $this->sendStats($c);
                 }return;
             case 'container_click': $this->inventoryClick($c, $r);
                 return;
@@ -1245,7 +1250,7 @@ final class Server
             return;
         }
         $oldYaw = $c->yaw;
-        $oldY = $c->y;
+        [$oldX, $oldY, $oldZ] = [$c->x, $c->y, $c->z];
         $distance = sqrt(($x - $c->x) ** 2 + ($z - $c->z) ** 2);
         // handlePlayerKnownMovement: real movement shows the player is not idle.
         if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 1.0E-5) {
@@ -1261,8 +1266,11 @@ final class Server
         // handlePlayerPositionChange: leaving the ground upwards is a jump in the server's own simulation.
         if ($c->ground && !$ground && $y > $oldY) {
             $c->velocityY = max(0.42, $c->velocityY);
+            // Player.jumpFromGround
+            $this->awardStat($c, 'custom', 'jump');
         }
         $c->ground = $ground;
+        $this->movementStatistics($c, $x - $oldX, $y - $oldY, $z - $oldZ);
         $this->survivalMovement($c, $oldY, $distance);
         $this->trackPushingPlayer($c);
         if ($y < -80 && in_array($c->gameMode, [1, 3], true)) {
@@ -1320,7 +1328,7 @@ final class Server
             if (isset($c->inventory[$slot]) && $c->gameMode !== 3) {
                 $stack = $c->inventory[$slot];
                 $count = $action === 4 ? $stack['count'] : 1;
-                $this->playerDrop($c, array_replace($stack, ['count' => $count]), false);
+                $this->playerDrop($c, array_replace($stack, ['count' => $count]), false, 0, true);
                 \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot, $count);
                 $this->syncInventory($c);
             }
@@ -1513,6 +1521,7 @@ final class Server
                 } else {
                     $c->inventory[$slot]['damage'] = ($c->inventory[$slot]['damage'] ?? 0) + 1;
                     if ($c->inventory[$slot]['damage'] >= $this->version->catalog->item($c->inventory[$slot]['item'])['durability']) {
+                        $this->awardStat($c, 'broken', $this->version->catalog->itemName($c->inventory[$slot]['item']));
                         unset($c->inventory[$slot]);
                     }
                 }
@@ -1627,6 +1636,8 @@ final class Server
                     $properties['half'] = 'upper';
                     $this->setBlock($tx, $ty + 1, $tz, $this->version->catalog->state($blockName, $properties));
                 }
+                // ItemStack.useOn: a placed block's item counts as used.
+                $this->awardStat($c, 'used', $itemName);
                 if ($c->gameMode === 0) {
                     \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot);
                     if (str_ends_with($itemName, '_bucket')) {
@@ -1931,6 +1942,7 @@ final class Server
                     $this->tickControlledVehicle($c);
                     $this->tickRecipeAdvancements($c);
                     $this->tickSurvival($c);
+                    $this->tickStatistics($c);
                     $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
                     $this->tickPlayerPushing($c);
@@ -2026,6 +2038,8 @@ final class Server
         }
         if ($c->state === 'play') {
             $this->closeWindow($c);
+            // PlayerList.remove counts the leaving before saving.
+            $this->awardStat($c, 'custom', 'leave_game');
             $this->savePlayer($c);
         }
         fclose($c->socket);
