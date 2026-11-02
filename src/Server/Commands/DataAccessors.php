@@ -45,6 +45,9 @@ trait DataAccessors
         if (($stack['damage'] ?? 0) > 0) {
             $components[] = ['minecraft:damage', new NbtTag('int', $stack['damage'])];
         }
+        if (($stack['repairCost'] ?? 0) > 0) {
+            $components[] = ['minecraft:repair_cost', new NbtTag('int', $stack['repairCost'])];
+        }
         if (isset($stack['potion'])) {
             $components[] = ['minecraft:potion_contents', self::potionContentsNbt($stack['potion'])];
         }
@@ -170,7 +173,7 @@ trait DataAccessors
             ['XpP', new NbtTag('float', $player->experienceProgress)],
             ['XpLevel', new NbtTag('int', $player->experienceLevel)],
             ['XpTotal', new NbtTag('int', $player->experience)],
-            ['XpSeed', new NbtTag('int', 0)],
+            ['XpSeed', new NbtTag('int', $player->enchantmentSeed)],
             ['Score', new NbtTag('int', $player->score)],
             ['foodLevel', new NbtTag('int', $player->food)],
             ['foodTickTimer', new NbtTag('int', $player->foodTimer)],

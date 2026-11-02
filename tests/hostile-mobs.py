@@ -46,7 +46,28 @@ def main():
             wait(a,5)
             command(a,'execute if entity @e[type=creeper]')
             assert any('conditional.fail' in str(m) for m in getattr(a,'chat',[])) or not any(kind==wire.BLOCKS['entity_types']['creeper'] for kind in a.entities.values()),'the creeper never exploded'
-    print('PASS: zombies leave creative players alone and hit survival ones for difficulty-scaled damage; creepers swell and explode')
+            # A skeleton strafes, draws for a second and shoots its arrows at a survival player.
+            for text in ['kill @e[type=creeper]','effect clear @s','fill -8 -61 -8 8 -61 8 minecraft:stone','fill -8 -60 -8 8 -55 8 minecraft:air','tp @s 0.5 -60 0.5 0 0','effect give @s instant_health 1 5','summon skeleton 0.5 -60 4.5']:
+                command(a,text)
+            before=a.health
+            arrow=wire.BLOCKS['entity_types']['arrow']
+            # Arrows spread at random, and a busy runner ticks slowly, so give a close skeleton
+            # many shots before calling it a miss.
+            end=time.monotonic()+60
+            while time.monotonic()<end and not (a.health<before and any(s['type']==arrow for s in a.entity_spawns)):wait(a,.5)
+            assert any(s['type']==arrow for s in a.entity_spawns),'the skeleton never shot'
+            assert a.health<before,('no skeleton arrow hit',before,a.health)
+            # A stray's arrows slow what they hit.
+            for text in ['kill @e[type=skeleton]','kill @e[type=arrow]','effect give @s instant_health 1 5','summon stray 0.5 -60 8.5']:
+                command(a,text)
+            slowed=False
+            end=time.monotonic()+15
+            while time.monotonic()<end and not slowed:
+                wait(a,.5)
+                a.send('chat_command',wire.string('effect clear @s slowness'))
+                slowed=b'commands.effect.clear.specific.success' in a.until('system_chat',lambda p:b'commands.effect.clear' in p,timeout=10)
+            assert slowed,'no stray arrow slowed the player'
+    print('PASS: zombies leave creative players alone and hit survival ones for difficulty-scaled damage; creepers swell and explode; skeletons and strays shoot')
 
 
 if __name__=='__main__':main()

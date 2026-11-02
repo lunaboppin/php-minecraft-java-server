@@ -42,7 +42,8 @@ trait FillCommand
         $max = array_map(max(...), $start, $end);
         $changed = 0;
         $destroyed = [];
-        $this->world->transaction(function () use ($min, $max, $state, $mode, $filter, &$changed, &$destroyed) {
+        $placed = [];
+        $this->world->transaction(function () use ($min, $max, $state, $mode, $filter, &$changed, &$destroyed, &$placed) {
             // BlockPos.betweenClosed: X varies fastest, then Y, then Z.
             for ($z = $min[2]; $z <= $max[2]; ++$z) {
                 for ($y = $min[1]; $y <= $max[1]; ++$y) {
@@ -71,6 +72,7 @@ trait FillCommand
                         }
                         if ($affected) {
                             ++$changed;
+                            $placed[] = [$x, $y, $z];
                             $this->blockChanged($x, $y, $z);
                         }
                     }
@@ -84,6 +86,11 @@ trait FillCommand
             if ($container !== null) {
                 $this->removeContainer(...$position, name: $name, data: $container);
             }
+        }
+        // Block.onPlace for each block set, then Level.updateNeighborsAt for each: fluids flow,
+        // falling blocks fall and other blocks react as they would to any change.
+        foreach ($placed as $position) {
+            $this->changedSimulation(...$position);
         }
         if ($changed === 0) {
             throw new CommandFailure(['translate' => 'commands.fill.failed']);
