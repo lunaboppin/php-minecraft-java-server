@@ -44,6 +44,7 @@ trait BlockSimulation
         $this->fallingChanged($x,$y,$z);
         $this->speleothemsChanged($x,$y,$z);
         $this->redstoneChanged($x,$y,$z);
+        $this->scaffoldingChanged($x,$y,$z);
     }
     private function tickBlocks():void {
         // ServerLevel.tick: the due block ticks run, then the due fluid ticks, each in the order
@@ -72,6 +73,7 @@ trait BlockSimulation
                 if(str_ends_with($name,'_button')){$p=$this->version->catalog->properties($state);$p['powered']='false';$this->setBlock($x,$y,$z,$this->version->catalog->state($name,$p));}
             }
             elseif($kind==='lightning_rod'){$this->unpowerLightningRod($x,$y,$z);}
+            elseif($kind==='scaffolding'){$this->tickScaffolding($x,$y,$z);}
         }
         $this->handlingBlockTicks=false;
         foreach($this->jukeboxes as $key=>&$record){
