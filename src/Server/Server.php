@@ -69,7 +69,13 @@ final class Server
 
     use Lightning;
 
+    use PoweredRails;
+
     use RespawnPoints;
+
+    use FallingBlocks;
+
+    use Speleothems;
 
     use Bells;
 
@@ -92,6 +98,8 @@ final class Server
     use BlockPlacement;
 
     use Rails;
+
+    use Sponges;
 
     use Precipitation;
 
@@ -179,6 +187,7 @@ final class Server
                 $this->restoreTnt();
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
+                $this->restoreFallingBlocks();
                 $this->restoreBlockSimulation();
             });
         }

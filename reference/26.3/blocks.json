@@ -3344,7 +3344,9 @@
     "block.tripwire.attach": 1637,
     "block.tripwire.click_off": 1638,
     "block.tripwire.click_on": 1639,
-    "block.tripwire.detach": 1640
+    "block.tripwire.detach": 1640,
+    "block.sponge.absorb": 1593,
+    "block.wet_sponge.dries": 1771
   },
   "particle_types": {
     "angry_villager": 0,
