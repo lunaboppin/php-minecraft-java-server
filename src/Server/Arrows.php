@@ -74,13 +74,14 @@ trait Arrows
         if ($power < 0.1) {
             return;
         }
-        // ProjectileWeaponItem.useAmmo: players with infinite materials shoot a copy they cannot pick up.
+        // ProjectileWeaponItem.useAmmo: players with infinite materials, and Infinity's plain arrows,
+        // shoot a copy that cannot be picked up for another.
         $arrow = $arrowSlot === null ? ['item' => $this->version->catalog->items['arrow']['id'], 'count' => 1] : ['count' => 1] + $c->inventory[$arrowSlot];
-        $pickup = $c->gameMode === 1 ? 'creative_only' : 'allowed';
-        if ($c->gameMode !== 1) {
+        $free = $c->gameMode === 1 || (isset($bow['enchantments']['minecraft:infinity']) && $this->version->catalog->itemName($arrow['item']) === 'arrow');
+        if (!$free) {
             \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $arrowSlot, 1);
         }
-        $this->shootArrow($c, $arrow, Float32::round($power * 3.0), $power === 1.0, $pickup);
+        $this->shootArrow($c, $arrow, Float32::round($power * 3.0), $power === 1.0, $free ? 'creative_only' : 'allowed', $bow);
         // ItemStack.hurtAndBreak: players with infinite materials do not wear their tools.
         if ($c->gameMode !== 1 && ($durability = $this->version->catalog->item($bow['item'])['durability'] ?? 0) > 0) {
             $bow['damage'] = ($bow['damage'] ?? 0) + 1;
@@ -124,8 +125,9 @@ trait Arrows
      * AbstractArrow from a shooter, shot by Projectile.shootFromRotation: at the eyes less 0.1,
      * along the look with a spread of 1 at the given speed, plus the shooter's own movement.
      */
-    private function shootArrow(Client $owner, array $stack, float $speed, bool $critical, string $pickup): int
+    private function shootArrow(Client $owner, array $stack, float $speed, bool $critical, string $pickup, array $bow): int
     {
+        $enchantments = $bow['enchantments'] ?? [];
         $id = $this->nextEntity++;
         $type = self::ARROW_ITEMS[$this->version->catalog->itemName($stack['item'])];
         $eye = $owner->sneaking && !$owner->flying ? 1.27 : 1.62;
@@ -149,7 +151,11 @@ trait Arrows
             'yaw' => Float32::round(self::mthAtan2($velocity[0], $velocity[2]) * 180.0 / Float32::round(M_PI)),
             'pitch' => Float32::round(self::mthAtan2($velocity[1], sqrt($velocity[0] ** 2 + $velocity[2] ** 2)) * 180.0 / Float32::round(M_PI)),
             'ticks' => 0, 'leftOwner' => false, 'water' => false, 'needsSync' => true, 'dirty' => false,
-            'critical' => $critical, 'inGround' => false, 'shake' => 0, 'life' => 0, 'pickup' => $pickup, 'lastState' => null, 'changed' => []];
+            'critical' => $critical, 'inGround' => false, 'shake' => 0, 'life' => 0, 'pickup' => $pickup, 'lastState' => null, 'changed' => [],
+            // Power adds 1 to the base damage of 2 and half for each level above the first, Punch
+            // knocks back by its level, and Flame sets the arrow alight for 100 ticks.
+            'damage' => 2.0 + (isset($enchantments['minecraft:power']) ? 1.0 + 0.5 * ($enchantments['minecraft:power'] - 1) : 0.0),
+            'punch' => (float) ($enchantments['minecraft:punch'] ?? 0), 'fire' => isset($enchantments['minecraft:flame']) ? 100 : 0, 'burning' => isset($enchantments['minecraft:flame'])];
         foreach ($this->localPlayers() as $player) {
             $this->showProjectile($player, $id);
         }
@@ -246,6 +252,12 @@ trait Arrows
             $arrow['velocity'][1] -= 0.05;
         }
         $arrow['water'] = $this->version->catalog->blockName($this->world->get((int) floor($arrow['x']), (int) floor($arrow['y']), (int) floor($arrow['z']))) === 'water';
+        // Entity.baseTick: the fire burns down in flight, water puts it out, and the flag follows.
+        $arrow['fire'] = $arrow['water'] ? 0 : max(0, $arrow['fire'] - 1);
+        if ($arrow['burning'] !== $arrow['fire'] > 0) {
+            $arrow['burning'] = $arrow['fire'] > 0;
+            $arrow['changed'][0] = true;
+        }
         if ($arrow['y'] < $this->world->minY - 64) {
             unset($arrow);
             $this->removeProjectile($id);
@@ -261,20 +273,42 @@ trait Arrows
         $arrow = $this->projectiles[$id];
         $owner = $this->projectileOwner($arrow);
         $speed = Float32::round(sqrt($arrow['velocity'][0] ** 2 + $arrow['velocity'][1] ** 2 + $arrow['velocity'][2] ** 2));
-        $damage = (int) ceil(min(max($speed * 2.0, 0.0), 2.147483647E9));
+        $damage = (int) ceil(min(max($speed * Float32::round($arrow['damage']), 0.0), 2.147483647E9));
         if ($arrow['critical']) {
             $damage = min($damage + random_int(0, intdiv($damage, 2) + 1), 2147483647);
         }
         $source = ['id' => $id, 'velocity' => $arrow['velocity']];
         $hurt = false;
+        // A burning arrow sets what it hits alight for 5 seconds, which a failed hit takes back.
+        $burning = $arrow['fire'] > 0;
         if (isset($target['player'])) {
+            $fire = $target['player']->fireTicks;
+            if ($burning) {
+                $target['player']->fireTicks = max($fire, 100);
+            }
             $hurt = $this->damage($target['player'], (float) $damage, 'minecraft:arrow', $owner, $source);
+            if (!$hurt) {
+                $target['player']->fireTicks = $fire;
+            } elseif ($arrow['punch'] > 0.0) {
+                $this->punchPlayer($target['player'], $arrow);
+            }
             // The shooter hears its arrow hit another player.
             if ($hurt && $owner !== null && $owner !== $target['player']) {
                 $owner->send($this->version, 'game_event', "\x06" . pack('G', 0.0));
             }
         } elseif (isset($target['mob'])) {
+            $fire = $this->animals[$target['mob']]['fire'] ?? 0;
+            if ($burning) {
+                $this->animals[$target['mob']]['fire'] = max($fire, 100);
+            }
             $hurt = $this->hurtMob($target['mob'], (float) $damage, 'minecraft:arrow', $owner, $source);
+            if (isset($this->animals[$target['mob']])) {
+                if (!$hurt) {
+                    $this->animals[$target['mob']]['fire'] = $fire;
+                } elseif ($arrow['punch'] > 0.0) {
+                    $this->punchMob($this->animals[$target['mob']], $arrow);
+                }
+            }
         }
         if ($hurt) {
             $this->arrowSound('entity.arrow.hit', 6, $arrow['x'], $arrow['y'], $arrow['z'], $this->arrowHitPitch());
@@ -307,8 +341,13 @@ trait Arrows
         $arrow = &$this->projectiles[$id];
         [$x, $y, $z] = $hit['position'];
         $arrow['lastState'] = $this->world->get($x, $y, $z);
-        if ($this->version->catalog->blockName($arrow['lastState']) === 'bell') {
+        $name = $this->version->catalog->blockName($arrow['lastState']);
+        if ($name === 'bell') {
             $this->useBell($x, $y, $z, $hit['face'], $hit['location'][1] - $y);
+        } elseif ($name === 'tnt' && $arrow['fire'] > 0 && $this->gameRule('tnt_explodes') === 'true') {
+            // TntBlock.onProjectileHit: a burning arrow primes it.
+            $this->primeTnt($x, $y, $z, $this->projectileOwner($arrow));
+            $this->setBlock($x, $y, $z, $this->version->catalog->state('air'));
         }
         $back = Float32::round(0.05);
         foreach (['x', 'y', 'z'] as $axis => $key) {
@@ -369,6 +408,9 @@ trait Arrows
     private function arrowMetadata(array $arrow, bool $changedOnly): string
     {
         $entries = '';
+        if ($changedOnly ? isset($arrow['changed'][0]) : $arrow['burning']) {
+            $entries .= "\0" . Binary::writeVarInt(0) . ($arrow['burning'] ? "\1" : "\0");
+        }
         if ($changedOnly ? isset($arrow['changed'][8]) : $arrow['critical']) {
             $entries .= "\x08" . Binary::writeVarInt(0) . ($arrow['critical'] ? "\1" : "\0");
         }
@@ -376,6 +418,45 @@ trait Arrows
             $entries .= "\x0a" . Binary::writeVarInt(8) . ($arrow['inGround'] ? "\1" : "\0");
         }
         return $entries === '' ? '' : Binary::writeVarInt($arrow['id']) . $entries . "\xff";
+    }
+
+    /**
+     * AbstractArrow.doKnockback: Punch pushes along the arrow's flight by its level times 0.6, less
+     * the knockback resistance, and lifts by 0.1.
+     */
+    private function punchVector(array $arrow, float $resistance): ?array
+    {
+        [$x, , $z] = $arrow['velocity'];
+        $length = sqrt($x * $x + $z * $z);
+        $scale = $arrow['punch'] * 0.6 * max(0.0, 1.0 - $resistance);
+        if ($length < 1.0E-5 || $scale <= 0.0) {
+            return null;
+        }
+        return [$x / $length * $scale, 0.1, $z / $length * $scale];
+    }
+
+    private function punchMob(array &$mob, array $arrow): void
+    {
+        $push = $this->punchVector($arrow, (float) ($this->mobAttributes($mob)['knockback_resistance'] ?? 0.0));
+        if ($push !== null) {
+            $mob['velocity'] = [$mob['velocity'][0] + $push[0], $mob['velocity'][1] + $push[1], $mob['velocity'][2] + $push[2]];
+            $mob['needsSync'] = true;
+            $mob['syncVelocity'] = true;
+        }
+    }
+
+    /** Entity.push on a player marks it hurt, so its motion with the push goes out with the knockback. */
+    private function punchPlayer(Client $c, array $arrow): void
+    {
+        $push = $this->punchVector($arrow, $this->playerAttribute($c, 'knockback_resistance'));
+        if ($push === null) {
+            return;
+        }
+        [$vx, $vy, $vz] = $c->knockbackVelocity ?? [0.0, $c->velocityY, 0.0];
+        [$vx, $vy, $vz] = [$vx + $push[0], $vy + $push[1], $vz + $push[2]];
+        $c->velocityY = $vy;
+        $c->knockbackVelocity = [$vx, $vy, $vz];
+        $c->knockbackMotion = Binary::writeVarInt($c->entityId) . \PhpMinecraftJavaServer\Protocol\LowPrecisionVector::encode($vx, $vy, $vz);
     }
 
     private function arrowHitPitch(): float

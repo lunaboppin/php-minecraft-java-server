@@ -6,6 +6,8 @@
     "Shoot from creative: no arrow is needed or used, the bow does not wear, and the arrow is picked up without giving one back.",
     "Shoot level at an iron golem without AI six blocks away: the arrow hits it and is gone. Where each arrow spawns is compared; the spread of a shot and a critical arrow's extra damage are random, so where arrows land and the golem's health are not.",
     "Draw a bow from survival with no arrows: nothing is shot and the bow does not wear.",
+    "Shoot an Infinity bow from survival with one arrow: the arrow is kept, and the one shot lies where it landed, since only a player with infinite materials could pick it up.",
+    "Shoot a Flame bow down at TNT under the archer: the burning arrow primes it and the block is gone; the TNT is removed before it explodes.",
     "Use matching flat terrain with natural spawning and regeneration off."
   ],
   "steps": [
@@ -235,6 +237,114 @@
         "inventory",
         "entity_spawns"
       ]
+    },
+    {
+      "action": "command",
+      "text": "gamerule mob_drops false"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=iron_golem]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 0.5 0 90"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow[enchantments={infinity:1}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 1"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand from entity @s hotbar.1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00060000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "snapshot",
+      "name": "infinity_shot",
+      "fields": [
+        "inventory",
+        "entities"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=arrow]"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 0 minecraft:tnt"
+    },
+    {
+      "action": "command",
+      "text": "give @s bow[enchantments={flame:1}]"
+    },
+    {
+      "action": "command",
+      "text": "give @s arrow 1"
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00070000000042b40000"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.5
+    },
+    {
+      "action": "packet",
+      "name": "player_action",
+      "hex": "0600000000000000000000"
+    },
+    {
+      "action": "wait",
+      "seconds": 0.5
+    },
+    {
+      "action": "snapshot",
+      "name": "flame_tnt",
+      "fields": [
+        "inventory",
+        "entities",
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          63,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=tnt]"
     }
   ]
 }

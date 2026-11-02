@@ -291,6 +291,11 @@ trait Commands
             foreach ($this->experienceOrbs as $id => $orb) {
                 $items[] = ['orb' => $id, 'x' => $orb['x'], 'y' => $orb['y'], 'z' => $orb['z'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:experience_orb', 'width' => 0.5, 'height' => 0.5, 'id' => $id, 'uuid' => $orb['uuid']];
             }
+            // Thrown items and arrows.
+            foreach ($this->projectiles as $id => $projectile) {
+                $size = isset(self::ARROW_TYPES[$projectile['type']]) ? 0.5 : 0.25;
+                $items[] = ['projectile' => $id, 'x' => $projectile['x'], 'y' => $projectile['y'], 'z' => $projectile['z'], 'yaw' => $projectile['yaw'], 'pitch' => $projectile['pitch'], 'type' => 'minecraft:' . $projectile['type'], 'width' => $size, 'height' => $size, 'id' => $id, 'uuid' => $projectile['uuid']];
+            }
             // A dying mob stays in the level, and selectable, until its death animation ends.
             foreach ($this->animals as $id => $animal) {
                 $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -451,6 +456,9 @@ trait Commands
     {
         if (isset($entity['orb'])) {
             return $this->entityComponent('experience_orb', $entity['uuid'], null);
+        }
+        if (isset($entity['projectile'])) {
+            return $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], null);
         }
         if (isset($entity['item'])) {
             // ItemEntity.getName: the item's name, air once emptied.

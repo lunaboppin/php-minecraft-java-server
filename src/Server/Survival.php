@@ -441,6 +441,7 @@ trait Survival
         // Entity.markHurt: the server entity sends the new motion to the player and its trackers.
         [$vx, $vy, $vz] = $result['velocity'];
         $c->velocityY = $vy;
+        $c->knockbackVelocity = [$vx, $vy, $vz];
         $c->knockbackMotion = Binary::writeVarInt($c->entityId) . \PhpMinecraftJavaServer\Protocol\LowPrecisionVector::encode($vx, $vy, $vz);
     }
 
@@ -454,7 +455,7 @@ trait Survival
             return;
         }
         $packet = $c->knockbackMotion;
-        $c->knockbackMotion = null;
+        $c->knockbackMotion = $c->knockbackVelocity = null;
         foreach ($this->localPlayers() as $player) {
             if ($player === $c || isset($player->entities[$c->entityId])) {
                 $player->send($this->version, 'set_entity_motion', $packet);
