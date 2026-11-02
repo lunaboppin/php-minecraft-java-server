@@ -79,6 +79,8 @@ trait Commands
 
     use CommandModules\PlaceCommand;
 
+    use CommandModules\RecipeCommand;
+
     use CommandModules\LocateCommand;
 
     use CommandModules\GameModeCommand;
