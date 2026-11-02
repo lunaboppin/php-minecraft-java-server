@@ -117,6 +117,7 @@ class Probe(wire.Client):
         self.player_metadata={}
         self.entity_spawns=[]
         self.entity_packets=set()
+        self.block_packets=[]
         self.spawned_profiles=set()
 
     def observe_spawn(self,payload):
@@ -233,8 +234,9 @@ class Probe(wire.Client):
                 cz,cx=struct.unpack_from('>ii',p);self.chunks.pop((cx,cz),None);self.light.pop((cx,cz),None)
                 self.blocks={pos:state for pos,state in self.blocks.items() if (pos[0]>>4,pos[2]>>4)!=(cx,cz)}
             elif name=='block_update':
-                pos=block_pos(struct.unpack_from('>q',p)[0]);state,_=wire.read_vi(p,8);self.blocks[pos]=state
+                pos=block_pos(struct.unpack_from('>q',p)[0]);state,_=wire.read_vi(p,8);self.blocks[pos]=state;self.block_packets.append(f'{name} {p.hex()}')
             elif name=='section_blocks_update':
+                self.block_packets.append(f'{name} {p.hex()}')
                 packed=struct.unpack_from('>q',p)[0]
                 sx=packed>>42;sz=(packed>>20)&0x3fffff;sy=packed&0xfffff
                 if sz>=1<<21:sz-=1<<22
@@ -324,6 +326,8 @@ class Probe(wire.Client):
             elif field=='inventory':output[field]=[None if s is None else {k:v for k,v in sorted(s.items()) if k!='damage' or v!=0} for s in self.inventory]
             elif field=='entities':output[field]=sorted(self.entities.values())
             elif field=='entity_packets':output[field]=sorted(self.entity_packets);self.entity_packets=set()
+            # ChunkMap broadcasts changed chunks in hash-set order, so packets are compared as a multiset.
+            elif field=='block_packets':output[field]=sorted(self.block_packets);self.block_packets=[]
             elif field=='registries':output[field]=sum(name=='registry_data' for name,_ in self.seen)
             elif field=='chunk_sections':output[field]=sorted(set(len(x[1]) for x in self.chunks.values()))
             elif field in ('health','food','mode','dimension','cursor','deaths','position','appearance','notes','records','entity_spawns','weather'):output[field]=getattr(self,field)

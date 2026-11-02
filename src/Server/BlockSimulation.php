@@ -56,8 +56,12 @@ trait BlockSimulation
         $due=array_filter($this->blockTicks,fn(array $t):bool=>$t[0]<=$this->worldAge);
         $fluid=array_filter($due,static fn(array $t):bool=>in_array($t[1],self::FLUID_TICKS,true));
         $this->handlingBlockTicks=true;
-        foreach([array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)] as $batch)foreach($batch as $key=>[,$kind,$position]){
-            unset($this->blockTicks[$key]);[$x,$y,$z]=$position;
+        $batches=[array_slice(array_diff_key($due,$fluid),0,65536,true),array_slice($fluid,0,65536,true)];
+        // LevelTicks.collectTicks takes this tick's ticks out of their containers before any runs,
+        // so a position scheduled again while they run gets a new tick rather than being skipped.
+        foreach($batches as $batch)foreach($batch as $key=>$tick){unset($this->blockTicks[$key]);}
+        foreach($batches as $batch)foreach($batch as $key=>[,$kind,$position]){
+            [$x,$y,$z]=$position;
             if(in_array($kind,self::FLUID_TICKS,true)){$this->tickFluid($kind,$x,$y,$z);}
             elseif($kind==='water_block' || $kind==='bubble_column'){$this->tickColumn($kind,$x,$y,$z);}
             elseif($kind==='leaves'){$this->tickLeaves($x,$y,$z);}
