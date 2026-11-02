@@ -46,8 +46,13 @@ trait ItemCommand
                 'damage' => $parsed['components']['minecraft:damage'] ?? null,
                 'enchantments' => $parsed['components']['minecraft:enchantments'] ?? null,
                 'storedEnchantments' => $parsed['components']['minecraft:stored_enchantments'] ?? null,
+                'potion' => $parsed['components']['minecraft:potion_contents'] ?? null,
                 'removedComponents' => $parsed['removed'] === [] ? null : $parsed['removed'],
             ], static fn (mixed $value): bool => $value !== null);
+            // DataComponentPatch: contents equal to the item's own are no change.
+            if (isset($stack['potion']) && !isset($this->version->catalog->itemStacks->canonical($stack)['potion'])) {
+                unset($stack['potion'], $parsed['components']['minecraft:potion_contents']);
+            }
             // ItemStack.isEmpty: an air stack empties the slot.
             $items = [$itemName === 'air' ? null : $stack];
             $known = $this->itemComponent($itemName, $parsed['components'], $parsed['removed'], $count);

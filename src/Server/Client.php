@@ -164,6 +164,24 @@ final class Client
 
     public bool $postEffectsDirty = true;
 
+    /** @var array<string, array<string, int>> ServerStatsCounter: statistics by type and value */
+    public array $stats = [];
+
+    /** @var array<string, true> statistics changed since the client last asked, as type|value */
+    public array $statsDirty = [];
+
+    /** @var array<string, true> ServerRecipeBook.known, in the order learned */
+    public array $knownRecipes = [];
+
+    /** @var array<string, true> ServerRecipeBook.highlight: known recipes not yet seen in the book */
+    public array $highlightedRecipes = [];
+
+    /** @var array<string, true> advancements completed, of those this server grants */
+    public array $advancements = [];
+
+    /** @var list<bool> RecipeBookSettings: open and filtering for crafting, furnace, blast furnace and smoker */
+    public array $recipeBookSettings = [false, false, false, false, false, false, false, false];
+
     public string $state = 'handshake';
 
     public bool $bufferedWork = false;
@@ -238,6 +256,12 @@ final class Client
 
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
+
+    /** ServerPlayer.getKnownMovement: how far the last movement packet moved the player. */
+    public array $knownMovement = [0.0, 0.0, 0.0];
+
+    /** ItemCooldowns: each cooldown group's end tick. */
+    public array $cooldowns = [];
 
     /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
     public ?string $knockbackMotion = null;
