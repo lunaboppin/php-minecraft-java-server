@@ -63,6 +63,8 @@ final class Server
 
     use Explosions;
 
+    use Projectiles;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -1228,6 +1230,7 @@ final class Server
         if (($x - $c->x) ** 2 + ($y - $c->y) ** 2 + ($z - $c->z) ** 2 > 1.0E-5) {
             $c->lastActionTime = self::now();
         }
+        $c->knownMovement = [$x - $c->x, $y - $c->y, $z - $c->z];
         $c->x = $x;
         $c->y = $y;
         $c->z = $z;

@@ -3346,7 +3346,11 @@
     "block.tripwire.click_on": 1639,
     "block.tripwire.detach": 1640,
     "block.sponge.absorb": 1593,
-    "block.wet_sponge.dries": 1771
+    "block.wet_sponge.dries": 1771,
+    "entity.snowball.throw": 1571,
+    "entity.egg.throw": 576,
+    "entity.ender_pearl.throw": 608,
+    "entity.player.teleport": 1326
   },
   "particle_types": {
     "angry_villager": 0,

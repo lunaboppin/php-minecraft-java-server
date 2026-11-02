@@ -237,6 +237,12 @@ final class Client
     /** The player's server-side vertical movement, which vanilla's own travel step simulates each tick. */
     public float $velocityY = 0.0;
 
+    /** ServerPlayer.getKnownMovement: how far the last movement packet moved the player. */
+    public array $knownMovement = [0.0, 0.0, 0.0];
+
+    /** ItemCooldowns: each cooldown group's end tick. */
+    public array $cooldowns = [];
+
     /** The set_entity_motion payload a knockback leaves for the player's next tick, or null. */
     public ?string $knockbackMotion = null;
 

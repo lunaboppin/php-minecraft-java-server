@@ -225,10 +225,11 @@ trait Survival
      * LivingEntity.hurtServer for players with a vanilla damage type. Returns whether the player was hurt.
      * Armor, enchantments and effects do not reduce damage yet (#31, #23).
      */
-    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null): bool
+    /** @param ?array{id: int, velocity: array} $projectile the direct entity, when a projectile hits */
+    private function damage(Client $c, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null): bool
     {
         if ($c->dimension !== $this->world->dimension) {
-            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker));
+            return $this->withDimension($c->dimension, fn () => $this->damage($c, $amount, $type, $attacker, $projectile));
         }
         $type = str_contains($type, ':') ? $type : 'minecraft:' . $type;
         $tags = $this->version->catalog->damageTypes['tags'];
@@ -280,7 +281,7 @@ trait Survival
         $this->health($c);
         // Level.broadcastDamageEvent; the hurt or death sound, which the player hears locally; then
         // the death event when the hit was lethal.
-        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10));
+        $event = Packets::damageEvent($this->version, $c->entityId, $attacker?->entityId ?? -1, substr($type, 10), $projectile['id'] ?? null);
         $effects = $this->version->catalog->damageTypes['types'][$type]['effects'] ?? 'hurt';
         $sound = $c->health <= 0 ? 'entity.player.death' : match ($effects) {
             'drowning' => 'entity.player.hurt_drown',
@@ -304,7 +305,7 @@ trait Survival
             }
         }
         if ($fullDamage) {
-            $this->knockbackPlayer($c, $type, $attacker);
+            $this->knockbackPlayer($c, $type, $attacker, $projectile);
         }
         if ($c->health <= 0) {
             $c->dead = true;
@@ -380,13 +381,18 @@ trait Survival
      * LivingEntity.dealDefaultKnockback for a player: away from the attacker (or a random way
      * without one), shown by hurt_animation and, unless the damage makes no impact, the new motion.
      */
-    private function knockbackPlayer(Client $c, string $type, ?Client $attacker): void
+    private function knockbackPlayer(Client $c, string $type, ?Client $attacker, ?array $projectile = null): void
     {
         $tags = $this->version->catalog->damageTypes['tags'];
         if (in_array($type, $tags['minecraft:no_knockback'] ?? [], true)) {
             return;
         }
-        [$dx, $dz] = $attacker === null ? [0.0, 0.0] : [$attacker->x - $c->x, $attacker->z - $c->z];
+        // Projectile.calculateHorizontalHurtKnockbackDirection: a projectile pushes along its flight.
+        [$dx, $dz] = match (true) {
+            $projectile !== null => [-$projectile['velocity'][0], -$projectile['velocity'][2]],
+            $attacker !== null => [$attacker->x - $c->x, $attacker->z - $c->z],
+            default => [0.0, 0.0],
+        };
         $resistance = $this->playerAttribute($c, 'knockback_resistance');
         $result = \PhpMinecraftJavaServer\World\EntityPhysics::knockback([0.0, $c->velocityY, 0.0], 0.4, $resistance, $c->ground, $dx, $dz, new \PhpMinecraftJavaServer\World\Generation\XoroshiroRandom(random_int(PHP_INT_MIN, PHP_INT_MAX)));
         // ServerPlayer.indicateDamage: the direction of the hit relative to where the player faces.
@@ -954,6 +960,9 @@ trait Survival
             return;
         }
         if ($this->useSpawnEggInAir($c, $slot)) {
+            return;
+        }
+        if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
             return;
         }
         // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.
