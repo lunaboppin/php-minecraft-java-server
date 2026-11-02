@@ -53,6 +53,7 @@ trait Dimensions
                 // TickRateManager.isEntityFrozen: only players tick while the game is frozen.
                 if ($this->runGameElements) {
                     $this->tickBlocks();
+                    $this->tickNaturalSpawning();
                     $this->tickRandomBlocks();
                 }
                 $this->broadcastChangedBlocks();

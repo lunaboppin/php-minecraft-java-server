@@ -135,6 +135,8 @@ final class Server
 
     use Waypoints;
 
+    use NaturalSpawning;
+
     use RecipeBook;
 
     use MobFire;
