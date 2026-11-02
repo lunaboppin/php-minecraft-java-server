@@ -74,11 +74,20 @@ trait SummonCommand
     private function summonItem(Client $sender, array $arguments, string $text): void
     {
         $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
-        $tag = (count($arguments) > 4 ? $this->summonNbt($text) : [])['Item']['value'] ?? [];
+        $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+        $tag = $nbt['Item']['value'] ?? [];
         $name = preg_replace('/^minecraft:/', '', (string) ($tag['id']['value'] ?? ''));
         $count = (int) ($tag['count']['value'] ?? 1);
         $item = $this->version->blocks['items'][$name] ?? null;
-        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0], 0, null, 0.0]);
+        // Entity.load: Motion, each part over 10 dropped to 0, and Rotation; ItemEntity's Age and PickupDelay.
+        $motion = [0.0, 0.0, 0.0];
+        foreach (array_slice($nbt['Motion']['value'] ?? [], 0, 3) as $axis => $part) {
+            $motion[$axis] = abs((float) $part['value']) > 10.0 ? 0.0 : (float) $part['value'];
+        }
+        $yaw = (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0);
+        $age = (int) ($nbt['Age']['value'] ?? 0);
+        $delay = (int) ($nbt['PickupDelay']['value'] ?? 0);
+        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], $age, $motion, $delay, null, $yaw]);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
         }

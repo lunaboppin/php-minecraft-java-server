@@ -169,9 +169,10 @@ jobs:
             bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep cauldrons
             pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
+            item-fluids item-blocks
           )
           # verify.py decodes these scenarios' captured packets with both codecs.
-          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone "
+          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone item-fluids item-blocks "
           packets=()
           for i in "${!scenarios[@]}"; do
             if [ $((i % 2 + 1)) != "$SHARD" ]; then continue; fi
