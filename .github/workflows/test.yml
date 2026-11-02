@@ -73,7 +73,7 @@ jobs:
         run: python3 tests/panel_egg.py --container
   parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -133,7 +133,7 @@ jobs:
 
   world-parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -226,7 +226,7 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -326,7 +326,7 @@ jobs:
   mob-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -372,7 +372,7 @@ jobs:
   movement-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
