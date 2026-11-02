@@ -169,9 +169,10 @@ jobs:
             bone-meal-fungi explosion pistons tnt-restart piston-entities piston-mobs observers redstone sleep cauldrons
             pressure-plates tripwires tripwire-shears weather chorus lightning daylight-detectors precipitation bells bone-meal
             coral light turtle-eggs respawn-anchor falling-blocks scaffolding pointed-dripstone
+            item-fluids item-blocks orb-motion tnt-motion falling-restart
           )
           # verify.py decodes these scenarios' captured packets with both codecs.
-          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone "
+          verified=" fluids bubble-columns random-ticks random-ticks-plants copper-weathering fire explosion tnt-restart sleep weather lightning precipitation bone-meal light respawn-anchor falling-blocks pointed-dripstone item-fluids item-blocks orb-motion tnt-motion "
           packets=()
           for i in "${!scenarios[@]}"; do
             if [ $((i % 2 + 1)) != "$SHARD" ]; then continue; fi
@@ -417,6 +418,26 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/grindstones.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-grindstones
           python3 tools/parity/verify.py tools/.cache/parity-grindstones/php-packets.json tools/.cache/parity-grindstones/reference-packets.json
+      - name: Compare upgrading gear at a smithing table with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/smithing.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-smithing
+          python3 tools/parity/verify.py tools/.cache/parity-smithing/php-packets.json tools/.cache/parity-smithing/reference-packets.json
+      - name: Compare hoppers moving items between containers with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/hoppers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-hoppers
+          python3 tools/parity/verify.py tools/.cache/parity-hoppers/php-packets.json tools/.cache/parity-hoppers/reference-packets.json
+      - name: Compare dispensers and droppers with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/dispensers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispensers
+          python3 tools/parity/verify.py tools/.cache/parity-dispensers/php-packets.json tools/.cache/parity-dispensers/reference-packets.json
+      - name: Compare composters with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/composters.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-composters
+          python3 tools/parity/verify.py tools/.cache/parity-composters/php-packets.json tools/.cache/parity-composters/reference-packets.json
+      - name: Compare dispensers shooting arrows and snowballs with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/dispenser-projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispenser-projectiles
+          python3 tools/parity/verify.py tools/.cache/parity-dispenser-projectiles/php-packets.json tools/.cache/parity-dispenser-projectiles/reference-packets.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -435,6 +456,11 @@ jobs:
             tools/.cache/parity-anvils/
             tools/.cache/parity-consumables/
             tools/.cache/parity-grindstones/
+            tools/.cache/parity-smithing/
+            tools/.cache/parity-hoppers/
+            tools/.cache/parity-dispensers/
+            tools/.cache/parity-composters/
+            tools/.cache/parity-dispenser-projectiles/
           retention-days: 7
 
   docker:

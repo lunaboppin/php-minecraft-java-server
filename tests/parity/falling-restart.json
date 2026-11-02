@@ -1,0 +1,95 @@
+{
+  "name": "falling-restart",
+  "normalizations": [
+    "Compare where falling blocks land after a restart saved them partway through their fall: sand, gravel onto a torch (dropping as an item) and an anvil.",
+    "Covers FallingBlockEntity saving its block state, time and motion with the level; only the blocks they leave are compared, as where each was when saved depends on restart timing.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "fill -4 60 -4 4 64 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -4 4 64 4 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 61 0 minecraft:torch"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 200 0 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 200 0 minecraft:gravel"
+    },
+    {
+      "action": "command",
+      "text": "setblock -2 200 0 minecraft:anvil[facing=east]"
+    },
+    {
+      "action": "restart"
+    },
+    {
+      "action": "wait",
+      "seconds": 8
+    },
+    {
+      "action": "snapshot",
+      "name": "after",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          61,
+          0
+        ],
+        [
+          0,
+          62,
+          0
+        ],
+        [
+          2,
+          61,
+          0
+        ],
+        [
+          2,
+          62,
+          0
+        ],
+        [
+          -2,
+          61,
+          0
+        ],
+        [
+          -2,
+          62,
+          0
+        ],
+        [
+          0,
+          200,
+          0
+        ],
+        [
+          2,
+          200,
+          0
+        ],
+        [
+          -2,
+          200,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -26,11 +26,12 @@ trait SummonCommand
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
             if ($kind === 'experience_orb') {
                 // ExperienceOrb.readAdditionalSaveData: the value, count, age and health from the tag.
-                $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5)]]);
+                $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5),
+                    'velocity' => self::summonMotion($nbt), 'yaw' => (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0)]]);
                 $uuid = $this->experienceOrbs[$id]['uuid'];
             } elseif ($kind === 'tnt') {
                 // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
-                $id = $this->addTnt(...[...$position, [0.0, 0.0, 0.0], $tag('fuse', 80)]);
+                $id = $this->addTnt(...[...$position, self::summonMotion($nbt), $tag('fuse', 80)]);
                 foreach ($this->localPlayers() as $player) {
                     $this->showTnt($player, $id);
                 }
@@ -74,11 +75,17 @@ trait SummonCommand
     private function summonItem(Client $sender, array $arguments, string $text): void
     {
         $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
-        $tag = (count($arguments) > 4 ? $this->summonNbt($text) : [])['Item']['value'] ?? [];
+        $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
+        $tag = $nbt['Item']['value'] ?? [];
         $name = preg_replace('/^minecraft:/', '', (string) ($tag['id']['value'] ?? ''));
         $count = (int) ($tag['count']['value'] ?? 1);
         $item = $this->version->blocks['items'][$name] ?? null;
-        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], 0, [0.0, 0.0, 0.0], 0, null, 0.0]);
+        // Entity.load: Motion, each part over 10 dropped to 0, and Rotation; ItemEntity's Age and PickupDelay.
+        $motion = self::summonMotion($nbt);
+        $yaw = (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0);
+        $age = (int) ($nbt['Age']['value'] ?? 0);
+        $delay = (int) ($nbt['PickupDelay']['value'] ?? 0);
+        $id = $item === null || $name === 'air' || $count <= 0 ? null : $this->dropStack(...[...$position, ['item' => $item, 'count' => $count], $age, $motion, $delay, null, $yaw]);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
         }
@@ -132,5 +139,15 @@ trait SummonCommand
             $animal['baby'] = (int) $nbt['Age']['value'] < 0;
             $animal['age'] = (int) $nbt['Age']['value'];
         }
+    }
+
+    /** Entity.load: Motion from the tag, each part over 10 dropped to 0. */
+    private static function summonMotion(array $nbt): array
+    {
+        $motion = [0.0, 0.0, 0.0];
+        foreach (array_slice($nbt['Motion']['value'] ?? [], 0, 3) as $axis => $part) {
+            $motion[$axis] = abs((float) $part['value']) > 10.0 ? 0.0 : (float) $part['value'];
+        }
+        return $motion;
     }
 }

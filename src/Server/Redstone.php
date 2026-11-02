@@ -479,6 +479,24 @@ trait Redstone
         return $input > $side || ($input === $side && $p['mode'] === 'compare');
     }
 
+    /**
+     * Level.updateNeighbourForOutputSignal after a container's contents change: a comparator
+     * beside it, or beyond a conductor beside it, reads it again.
+     */
+    private function containerContentsChanged(array $pos): void
+    {
+        foreach (self::RS_HORIZONTAL as $side) {
+            $at = self::rsStep($pos, $side);
+            $state = $this->world->get(...$at);
+            if ($this->version->catalog->blockName($state) !== 'comparator' && $this->rsConductor($state)) {
+                $at = self::rsStep($at, $side);
+            }
+            if ($this->version->catalog->blockName($this->world->get(...$at)) === 'comparator') {
+                $this->diodeNeighborChanged($at);
+            }
+        }
+    }
+
     /** DiodeBlock.checkTickOnNeighbor and ComparatorBlock's: schedule a change when one is due. */
     private function diodeNeighborChanged(array $pos): void
     {
@@ -597,6 +615,12 @@ trait Redstone
             case $name === 'redstone_lamp':
                 $this->lampChanged($pos, false);
                 break;
+            case $name === 'hopper':
+                $this->checkHopperPowered($pos);
+                break;
+            case $name === 'dispenser' || $name === 'dropper':
+                $this->dispenserNeighborChanged($pos);
+                break;
             case $name === 'note_block' || str_ends_with($name, '_door') || str_ends_with($name, '_trapdoor'):
                 $this->tickCircuit($pos[0], $pos[1], $pos[2]);
                 break;
@@ -605,7 +629,7 @@ trait Redstone
 
     private function isRedstoneComponent(string $name): bool
     {
-        return in_array($name, ['redstone_wire', 'redstone_torch', 'redstone_wall_torch', 'repeater', 'comparator', 'redstone_lamp', 'note_block'], true)
+        return in_array($name, ['redstone_wire', 'redstone_torch', 'redstone_wall_torch', 'repeater', 'comparator', 'redstone_lamp', 'note_block', 'hopper', 'dispenser', 'dropper'], true)
             || str_ends_with($name, '_door') || str_ends_with($name, '_trapdoor');
     }
 

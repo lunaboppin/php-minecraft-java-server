@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker;
 use PhpMinecraftJavaServer\World\Collision;
+use PhpMinecraftJavaServer\World\Generation\Float32;
 
 /**
  * ExperienceOrb: experience dropped in the world as orbs that fall, drift towards the nearest
@@ -104,7 +105,7 @@ trait ExperienceOrbs
     private function orbState(array $orb): array
     {
         return ['position' => [$orb['x'], $orb['y'], $orb['z']], 'velocity' => $orb['velocity'], 'yaw' => $orb['yaw'], 'pitch' => 0.0, 'head' => 0.0,
-            'ground' => $orb['ground'], 'needs_sync' => $orb['needsSync'] ?? false, 'sync_velocity' => false, 'sync_position' => false];
+            'ground' => $orb['ground'], 'needs_sync' => $orb['needsSync'] ?? false, 'sync_velocity' => $orb['syncVelocity'] ?? false, 'sync_position' => false];
     }
 
     private function orbTracker(array $orb): EntityMovementTracker
@@ -133,17 +134,35 @@ trait ExperienceOrbs
         if (!isset($this->experienceOrbs[$id])) {
             return false;
         }
-        $health = (int) \PhpMinecraftJavaServer\World\Generation\Float32::round($this->experienceOrbs[$id]['health'] - $amount);
+        $health = (int) Float32::round($this->experienceOrbs[$id]['health'] - $amount);
         $this->experienceOrbs[$id]['health'] = $health;
+        // Entity.markHurt: its motion is sent with the next changes.
+        $this->experienceOrbs[$id]['syncVelocity'] = true;
         if ($health <= 0) {
             $this->removeOrb($id);
         }
         return true;
     }
 
-    private function orbData(array $orb): string
+    /**
+     * An orb's entity data: the shared flags (on fire) and ticks frozen when not their defaults,
+     * then its value; or, for SynchedEntityData.packDirty, only the entries in $dirty.
+     */
+    private function orbData(array $orb, ?array $dirty = null): string
     {
-        return Binary::writeVarInt($orb['id']) . chr($this->experienceReference()['orb']['value_index']) . Binary::writeVarInt($this->version->catalog->entityMetadata['int_serializer']) . Binary::writeVarInt($orb['value']) . "\xff";
+        $index = $this->experienceReference()['orb']['value_index'];
+        $entries = [
+            0 => [$orb['onFire'] ?? false, "\x00\x00" . chr(($orb['onFire'] ?? false) ? 1 : 0)],
+            7 => [($orb['frozen'] ?? 0) > 0, "\x07\x01" . Binary::writeVarInt($orb['frozen'] ?? 0)],
+            $index => [true, chr($index) . Binary::writeVarInt($this->version->catalog->entityMetadata['int_serializer']) . Binary::writeVarInt($orb['value'])],
+        ];
+        $payload = Binary::writeVarInt($orb['id']);
+        foreach ($entries as $entry => [$changed, $bytes]) {
+            if ($dirty === null ? $changed : isset($dirty[$entry])) {
+                $payload .= $bytes;
+            }
+        }
+        return $payload . "\xff";
     }
 
     private function removeOrb(int $id): void
@@ -172,40 +191,60 @@ trait ExperienceOrbs
             $orb = &$this->experienceOrbs[$id];
             ++$orb['ticks'];
             $box = static fn (array $o): array => [$o['x'] - 0.25, $o['y'], $o['z'] - 0.25, $o['x'] + 0.25, $o['y'] + 0.5, $o['z'] + 0.25];
+            // Entity.baseTick: the fluids it is in and their current, with its eye 0.425 up.
+            $fluid = $this->entityFluidCurrent($box($orb), $orb['velocity'], false, [$orb['x'], $orb['y'] + 0.425, $orb['z']]);
+            // Entity.isInLava is false on an entity's first tick.
+            $inLava = $orb['ticks'] > 1 && $fluid['lava'] > 0.0;
+            if (($orb['fire'] ?? 0) > 0) {
+                if ($orb['fire'] % 20 === 0 && !$inLava && $this->hurtOrb($id, 1.0) && !isset($this->experienceOrbs[$id])) {
+                    unset($orb);
+                    continue;
+                }
+                --$orb['fire'];
+            }
+            // The shared flag shows whether it is still burning.
+            if ((($orb['fire'] ?? 0) > 0) !== ($orb['onFire'] ?? false)) {
+                $orb['onFire'] = ($orb['fire'] ?? 0) > 0;
+                $orb['dataDirty'][0] = true;
+            }
             $colliding = $this->boxCollides($collision, $box($orb));
-            if ($this->waterHeightAt($orb['x'], $orb['y'] + 0.425, $orb['z'])) {
+            if ($fluid['eye_water']) {
                 // setUnderwaterMovement.
-                $orb['velocity'] = [$orb['velocity'][0] * 0.99, min($orb['velocity'][1] + 5.0E-4, 0.06), $orb['velocity'][2] * 0.99];
+                $orb['velocity'] = [$orb['velocity'][0] * 0.9900000095367432, min($orb['velocity'][1] + 5.000000237487257E-4, 0.05999999865889549), $orb['velocity'][2] * 0.9900000095367432];
             } elseif (!$colliding) {
                 $orb['velocity'][1] -= 0.03;
             }
-            if ($this->version->catalog->blockName($this->world->get((int) floor($orb['x']), (int) floor($orb['y']), (int) floor($orb['z']))) === 'lava') {
-                $random = static fn (): float => mt_rand() / mt_getrandmax();
-                $orb['velocity'] = [($random() - $random()) * 0.2, 0.2, ($random() - $random()) * 0.2];
+            $catalog = $this->version->catalog;
+            if (($this->fluids()->fluid($this->world->get((int) floor($orb['x']), (int) floor($orb['y']), (int) floor($orb['z'])))[0] ?? null) === 'lava') {
+                $orb['velocity'] = [Float32::round(Float32::round(self::randomUnit() - self::randomUnit()) * 0.2), 0.20000000298023224, Float32::round(Float32::round(self::randomUnit() - self::randomUnit()) * 0.2)];
             }
             if ($orb['ticks'] % 20 === 1) {
                 $this->scanForOrbMerges($orb);
             }
             $this->followNearestPlayer($orb);
-            $fall = $orb['velocity'][1];
-            $moved = $collision->move($this->world, $box($orb), $orb['velocity']);
-            $below = $moved[1] !== $orb['velocity'][1] && $orb['velocity'][1] < 0.0;
-            [$orb['x'], $orb['y'], $orb['z']] = [$orb['x'] + $moved[0], $orb['y'] + $moved[1], $orb['z'] + $moved[2]];
-            foreach ([0, 2] as $axis) {
-                if ($moved[$axis] !== $orb['velocity'][$axis]) {
-                    $orb['velocity'][$axis] = 0.0;
+            if ($orb['following'] === null && $colliding) {
+                $moved = $box($orb);
+                $next = [$moved[0] + $orb['velocity'][0], $moved[1] + $orb['velocity'][1], $moved[2] + $orb['velocity'][2], $moved[3] + $orb['velocity'][0], $moved[4] + $orb['velocity'][1], $moved[5] + $orb['velocity'][2]];
+                if ($this->boxCollides($collision, $next)) {
+                    $this->moveTowardsClosestSpace($orb);
+                    $orb['needsSync'] = true;
                 }
             }
-            if ($moved[1] !== $orb['velocity'][1]) {
-                $orb['velocity'][1] = 0.0;
+            $from = $box($orb);
+            $fall = $orb['velocity'][1];
+            $this->moveSimpleEntity($orb, $from, $collision, 0.03);
+            $alive = fn (): bool => isset($this->experienceOrbs[$id]);
+            if (!$this->entityInsideBlocks($orb, $from, $box($orb), 'experience_orb', false, fn (float $amount): bool => $this->hurtOrb($id, $amount), $alive, static fn (): bool => true)) {
+                unset($orb);
+                continue;
             }
-            $orb['ground'] = $below;
-            $friction = 0.98;
+            // getAirDrag, times the friction of the block below on the ground, as floats.
+            $friction = 0.9800000190734863;
             if ($orb['ground']) {
-                $friction *= $this->blockFriction($this->world->get((int) floor($orb['x']), (int) floor($orb['y'] - 0.999999), (int) floor($orb['z'])));
+                $friction = Float32::round($friction * Float32::round($this->blockFriction($this->world->get((int) floor($orb['x']), (int) floor($orb['y'] - 0.5000010132789612), (int) floor($orb['z'])))));
             }
             $orb['velocity'] = array_map(static fn (float $v): float => $v * $friction, $orb['velocity']);
-            if ($below && $fall < -0.03) {
+            if ($orb['ground'] && $fall < -0.03) {
                 $orb['velocity'][1] = -$fall * 0.4;
             }
             if (++$orb['age'] >= 6000 || $orb['y'] < $this->world->minY - 64) {
@@ -218,6 +257,31 @@ trait ExperienceOrbs
         }
     }
 
+    /** Entity.moveTowardsClosestSpace: an orb stuck in a block is nudged out its nearest open side. */
+    private function moveTowardsClosestSpace(array &$orb): void
+    {
+        $collision = new Collision($this->version->catalog);
+        $point = [$orb['x'], $orb['y'] + 0.25, $orb['z']];
+        $cell = array_map(static fn (float $v): int => (int) floor($v), $point);
+        $closest = [1, 1, PHP_FLOAT_MAX];
+        // North, south, west, east, then up; up when every side is a full block.
+        foreach ([[2, -1], [2, 1], [0, -1], [0, 1], [1, 1]] as [$axis, $step]) {
+            $neighbour = $cell;
+            $neighbour[$axis] += $step;
+            if ($collision->shape($this->world->get(...$neighbour)) !== [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]]) {
+                $offset = $point[$axis] - $cell[$axis];
+                $distance = $step > 0 ? 1.0 - $offset : $offset;
+                if ($distance < $closest[2]) {
+                    $closest = [$axis, $step, $distance];
+                }
+            }
+        }
+        $speed = Float32::round(Float32::round(self::randomUnit() * 0.2) + 0.1);
+        $velocity = array_map(static fn (float $v): float => $v * 0.75, $orb['velocity']);
+        $velocity[$closest[0]] = $closest[1] * $speed;
+        $orb['velocity'] = $velocity;
+    }
+
     private function boxCollides(Collision $collision, array $box): bool
     {
         foreach ($collision->boxes($this->world, $box) as $solid) {
@@ -226,12 +290,6 @@ trait ExperienceOrbs
             }
         }
         return false;
-    }
-
-    private function waterHeightAt(float $x, float $y, float $z): bool
-    {
-        $state = $this->world->get((int) floor($x), (int) floor($y), (int) floor($z));
-        return $this->version->catalog->blockName($state) === 'water' || ($this->version->catalog->properties($state)['waterlogged'] ?? 'false') === 'true';
     }
 
     /** ExperienceOrb.scanForMerges: orbs of the same value and group within half a block join this one. */
@@ -347,14 +405,26 @@ trait ExperienceOrbs
                 $this->forgetEntity($player, $id);
             }
         }
-        // Changed data forces ServerEntity.sendChanges and goes after the movement; needsSync clears once acted on.
-        $state = $this->orbState($orb) + ['force_update' => $orb['dirty']];
-        $packets = $this->orbTracker($orb)->update($state);
+        // ServerEntity.sendChanges: changed data (its value, burning, freezing) forces the update and is
+        // sent after the movement but before the motion of a hurt orb; needsSync clears once acted on.
+        $dirty = $orb['dataDirty'] ?? [];
         if ($orb['dirty']) {
+            $dirty[$this->experienceReference()['orb']['value_index']] = true;
+        }
+        $state = $this->orbState($orb) + ['force_update' => $dirty !== []];
+        $hurt = $state['sync_velocity'];
+        $packets = $this->orbTracker($orb)->update($state);
+        if ($dirty !== []) {
             $this->experienceOrbs[$id]['dirty'] = false;
-            $packets[] = ['name' => 'set_entity_data', 'payload' => $this->orbData($orb)];
+            $this->experienceOrbs[$id]['dataDirty'] = [];
+            $motion = $hurt ? array_pop($packets) : null;
+            $packets[] = ['name' => 'set_entity_data', 'payload' => $this->orbData($orb, $dirty)];
+            if ($motion !== null) {
+                $packets[] = $motion;
+            }
         }
         $this->experienceOrbs[$id]['needsSync'] = $state['needs_sync'];
+        $this->experienceOrbs[$id]['syncVelocity'] = $state['sync_velocity'];
         foreach ($packets as $packet) {
             foreach ($this->localPlayers() as $player) {
                 if (isset($player->entities[$id])) {

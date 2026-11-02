@@ -67,11 +67,11 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'enchanting' => 2,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
             };
             $items = array_fill(0, $count + 36, null);
             $slots = match ($c->windowType) {
-                'crafting' => $c->craftGrid, 'enchanting' => $c->enchantSlots, 'anvil' => $c->anvilSlots + (isset($c->anvilResult['result']) ? [2 => $c->anvilResult['result']] : []), 'grindstone' => $c->grindstoneSlots + ($c->grindstoneResult === null ? [] : [2 => $c->grindstoneResult]), 'ender' => $c->enderItems, default => $this->windowContainerSlots($c)
+                'crafting' => $c->craftGrid, 'enchanting' => $c->enchantSlots, 'anvil' => $c->anvilSlots + (isset($c->anvilResult['result']) ? [2 => $c->anvilResult['result']] : []), 'grindstone' => $c->grindstoneSlots + ($c->grindstoneResult === null ? [] : [2 => $c->grindstoneResult]), 'smithing' => $c->smithingSlots + ($c->smithingResult === null ? [] : [3 => $c->smithingResult]), 'ender' => $c->enderItems, default => $this->windowContainerSlots($c)
             };
             foreach ($slots as $slot => $stack) {
                 if ($slot >= 0 && $slot < $count) {
@@ -105,11 +105,11 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'enchanting' => 2,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
             };
             $slots = [];
             for ($i = 0; $i < $count; ++$i) {
-                if (isset($items[$i]) && !($c->windowType === 'crafting' && $i === 0) && !(in_array($c->windowType, ['anvil', 'grindstone'], true) && $i === 2)) {
+                if (isset($items[$i]) && !($c->windowType === 'crafting' && $i === 0) && !(in_array($c->windowType, ['anvil', 'grindstone'], true) && $i === 2) && !($c->windowType === 'smithing' && $i === 3)) {
                     $slots[$i] = $items[$i];
                 }
             }
@@ -121,6 +121,8 @@ trait InventoryManagement
                 $c->anvilSlots = $slots;
             } elseif ($c->windowType === 'grindstone') {
                 $c->grindstoneSlots = $slots;
+            } elseif ($c->windowType === 'smithing') {
+                $c->smithingSlots = $slots;
             } elseif ($c->windowType === 'ender') {
                 $c->enderItems = $slots;
             } else {
@@ -176,6 +178,7 @@ trait InventoryManagement
                 $this->popFurnaceExperience($data, $c->x, $c->y, $c->z);
             }
             $this->world->container($position, $data);
+            $this->containerContentsChanged($position);
         }
     }
 
@@ -211,6 +214,9 @@ trait InventoryManagement
         }
         if ($c->windowType === 'grindstone') {
             $this->returnGrindstoneItems($c);
+        }
+        if ($c->windowType === 'smithing') {
+            $this->returnSmithingItems($c);
         }
         if ($c->cursor !== null) {
             $left = $this->giveStack($c, $c->cursor);
@@ -252,11 +258,11 @@ trait InventoryManagement
         $c->menuRevision = 0;
         $c->containerMenuSeen = [];
         $menu = match ($type) {
-            'crafting' => 'crafting','enchanting' => 'enchantment','anvil' => 'anvil','grindstone' => 'grindstone','furnace','blast_furnace','smoker' => $type,default => $partner === null ? 'generic_9x3' : 'generic_9x6'
+            'crafting' => 'crafting','enchanting' => 'enchantment','anvil' => 'anvil','grindstone' => 'grindstone','smithing' => 'smithing','furnace','blast_furnace','smoker','hopper' => $type,'dispenser','dropper' => 'generic_3x3',default => $partner === null ? 'generic_9x3' : 'generic_9x6'
         };
         // The block entity's default name, or the crafting table's.
         $title = match ($type) {
-            'crafting' => 'container.crafting','enchanting' => 'container.enchant','anvil' => 'container.repair','grindstone' => 'container.grindstone_title','furnace','blast_furnace','smoker' => 'container.' . $type,'ender' => 'container.enderchest',
+            'crafting' => 'container.crafting','enchanting' => 'container.enchant','anvil' => 'container.repair','grindstone' => 'container.grindstone_title','smithing' => 'container.upgrade','furnace','blast_furnace','smoker','hopper','dispenser','dropper' => 'container.' . $type,'ender' => 'container.enderchest',
             default => $partner !== null ? 'container.chestDouble' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest')
         };
         // The menu's constructor opens the container before the screen is sent.
@@ -272,13 +278,20 @@ trait InventoryManagement
             'enchanting' => null,
             'anvil' => 'interact_with_anvil',
             'grindstone' => 'interact_with_grindstone',
-            'crafting' => 'interact_with_crafting_table', 'furnace', 'blast_furnace', 'smoker' => 'interact_with_' . $type, 'ender' => 'open_enderchest',
+            'smithing' => 'interact_with_smithing_table',
+            'crafting' => 'interact_with_crafting_table', 'furnace', 'blast_furnace', 'smoker' => 'interact_with_' . $type, 'ender' => 'open_enderchest', 'hopper' => 'inspect_hopper', 'dispenser' => 'inspect_dispenser', 'dropper' => 'inspect_dropper',
             default => $this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'open_barrel' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'trapped_chest' ? 'trigger_trapped_chest' : 'open_chest'),
         };
         if ($stat !== null) {
             $this->awardStat($c, 'custom', $stat);
         }
         $this->syncInventory($c);
+        if ($type === 'smithing') {
+            // hasRecipeError, the smithing table's only data slot.
+            $c->smithingError = 0;
+            $c->smithingResult = null;
+            $c->send($this->version, 'container_set_data', Binary::writeVarInt($c->windowId) . pack('n', 0) . pack('n', 0));
+        }
         if ($type === 'anvil') {
             // The cost, the anvil's only data slot.
             $c->anvilCost = 0;
@@ -311,7 +324,7 @@ trait InventoryManagement
             return false;
         }
         return match ($c->windowType) {
-            'crafting' => $name === 'crafting_table','enchanting' => $name === 'enchanting_table','anvil' => in_array($name, self::ANVILS, true),'grindstone' => $name === 'grindstone','furnace','blast_furnace','smoker' => $name === $c->windowType,'chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest',default => true
+            'crafting' => $name === 'crafting_table','enchanting' => $name === 'enchanting_table','anvil' => in_array($name, self::ANVILS, true),'grindstone' => $name === 'grindstone','smithing' => $name === 'smithing_table','furnace','blast_furnace','smoker' => $name === $c->windowType,'chest' => in_array($name, ['chest', 'trapped_chest', 'barrel'], true),'ender' => $name === 'ender_chest','hopper','dispenser','dropper' => $name === $c->windowType,default => true
         };
     }
 
@@ -348,12 +361,13 @@ trait InventoryManagement
             }
             if ($stage === 1 && $c->cursor !== null && $c->dragType === $type && $slot >= 0 && $slot < $count) {
                 $result = in_array($c->windowType, ['player', 'crafting'], true) && $slot === 0;
-                $output = (isset(self::FURNACES[$c->windowType]) || in_array($c->windowType, ['anvil', 'grindstone'], true)) && $slot === 2;
+                $output = ((isset(self::FURNACES[$c->windowType]) || in_array($c->windowType, ['anvil', 'grindstone'], true)) && $slot === 2) || ($c->windowType === 'smithing' && $slot === 3);
                 $stack = $items[$slot] ?? null;
                 $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];
                 // An enchanting table's item slot holds one, and its lapis slot only lapis.
                 $refused = ($c->windowType === 'enchanting' && $slot <= 1 && ($slot === 0 ? $stack !== null : $c->cursor['item'] !== $this->version->blocks['items']['lapis_lazuli']))
-                    || ($c->windowType === 'grindstone' && $slot <= 1 && !$this->grindable($c->cursor));
+                    || ($c->windowType === 'grindstone' && $slot <= 1 && !$this->grindable($c->cursor))
+                    || ($c->windowType === 'smithing' && $slot <= 2 && !$this->smithingSlotAccepts($slot, $c->cursor['item']));
                 if (!$result && !$output && !$refused && ($stack === null || Inventory::same($stack, $c->cursor, $this->version->catalog)) && ($stack['count'] ?? 0) < $max && ($type === 2 || count($c->dragSlots) < $c->cursor['count'])) {
                     $c->dragSlots[$slot] = true;
                 }return;
@@ -391,7 +405,11 @@ trait InventoryManagement
                 $this->updateGrindstone($c);
                 $this->syncInventory($c);
             }
-            if ($c->windowPosition !== null && !in_array($c->windowType, ['crafting', 'enchanting', 'anvil', 'grindstone'], true)) {
+            if ($c->windowType === 'smithing') {
+                $this->updateSmithing($c);
+                $this->syncInventory($c);
+            }
+            if ($c->windowPosition !== null && !in_array($c->windowType, ['crafting', 'enchanting', 'anvil', 'grindstone', 'smithing'], true)) {
                 $this->syncContainer($c->windowPosition);
             }return;
         }
@@ -420,6 +438,12 @@ trait InventoryManagement
         if ($crafting && $slot === 0) {
             $this->takeCraftResult($c, $items, $mode === 1);
             $this->writeMenu($c, $items);
+            $this->syncInventory($c);
+            return;
+        }
+        if ($c->windowType === 'smithing' && ($mode <= 2 || $slot === 3) && $this->smithingClick($c, $items, $slot, $mode, $button)) {
+            $this->writeMenu($c, $items);
+            $this->updateSmithing($c);
             $this->syncInventory($c);
             return;
         }
@@ -481,7 +505,7 @@ trait InventoryManagement
         } elseif ($mode === 6 && $c->cursor !== null) {
             $max = $this->version->catalog->item($c->cursor['item'])['max_stack'];
             foreach ($items as $i => $stack) {
-                if (($crafting && $i === 0) || (in_array($c->windowType, ['anvil', 'grindstone'], true) && $i === 2) || !Inventory::same($stack, $c->cursor, $this->version->catalog)) {
+                if (($crafting && $i === 0) || (in_array($c->windowType, ['anvil', 'grindstone'], true) && $i === 2) || ($c->windowType === 'smithing' && $i === 3) || !Inventory::same($stack, $c->cursor, $this->version->catalog)) {
                     continue;
                 }$take = min($max - $c->cursor['count'], $stack['count']);
                 if ($take > 0) {
@@ -503,7 +527,11 @@ trait InventoryManagement
             $this->updateGrindstone($c);
             $this->syncInventory($c);
         }
-        if ($c->windowPosition !== null && !in_array($c->windowType, ['crafting', 'enchanting', 'anvil', 'grindstone'], true)) {
+        if ($c->windowType === 'smithing') {
+            $this->updateSmithing($c);
+            $this->syncInventory($c);
+        }
+        if ($c->windowPosition !== null && !in_array($c->windowType, ['crafting', 'enchanting', 'anvil', 'grindstone', 'smithing'], true)) {
             $this->syncContainer($c->windowPosition);
         }
     }
@@ -654,6 +682,9 @@ trait InventoryManagement
                 $this->setBlock($x, $y, $z, $catalog->state($type, $props));
             }
             $this->syncFurnaceViewers($position, $data, $slots !== $before['slots']);
+            if ($slots !== $before['slots']) {
+                $this->containerContentsChanged($position);
+            }
         }
     }
 
