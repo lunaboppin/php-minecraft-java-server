@@ -380,6 +380,10 @@ trait Survival
                 $this->awardStat($killer, 'custom', 'player_kills');
                 $this->incrementCriteria('playerKillCount', $killer->name);
                 $this->simpleTrigger($killer, 'minecraft:player_killed_entity', ['entity' => 'player']);
+            } elseif ($killer === null && $mob !== null) {
+                // LivingEntity.getKillCredit falls back to the mob that last hurt the player.
+                $this->awardStat($c, 'killed_by', $mob['kind']);
+                $this->simpleTrigger($c, 'minecraft:entity_killed_player', ['entity' => $mob['kind']]);
             }
             $this->awardStat($c, 'custom', 'deaths');
             $this->resetStat($c, 'custom', 'time_since_death');
