@@ -118,6 +118,9 @@ final class Client
 
     public ?array $eating = null;
 
+    /** A bow being drawn: the hand, the bow's item and the tick the draw began. */
+    public ?array $drawing = null;
+
     public ?array $cursor = null;
 
     public array $dragSlots = [];
@@ -139,6 +142,7 @@ final class Client
     public string $windowType = 'player';
 
     public ?array $windowPosition = null;
+
     /** The furnace data slots last sent for the open furnace, by index. */
     public array $furnaceData = [];
 

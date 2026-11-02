@@ -21,6 +21,9 @@ trait Projectiles
     /** The items thrown, by the entity type each throws. */
     private const THROWN = ['snowball' => 'snowball', 'egg' => 'egg', 'blue_egg' => 'egg', 'brown_egg' => 'egg', 'ender_pearl' => 'ender_pearl'];
 
+    /** Arrows, which AbstractArrow ticks, and their tracking interval of a second. */
+    private const ARROW_TYPES = ['arrow' => true, 'spectral_arrow' => true];
+
     /** @var array<int, array> */
     private array $projectiles = [];
 
@@ -115,6 +118,10 @@ trait Projectiles
         $collision = new Collision($this->version->catalog);
         foreach (array_keys($this->projectiles) as $id) {
             if (!isset($this->projectiles[$id])) {
+                continue;
+            }
+            if (isset(self::ARROW_TYPES[$this->projectiles[$id]['type']])) {
+                $this->tickArrow($id, $collision);
                 continue;
             }
             $projectile = &$this->projectiles[$id];
@@ -316,9 +323,13 @@ trait Projectiles
             }
         }
         $state = $this->projectileState($projectile);
-        $tracker = $this->projectileTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $state, false);
+        $tracker = $this->projectileTrackers[$id] ??= new EntityMovementTracker($id, isset(self::ARROW_TYPES[$projectile['type']]) ? 20 : 10, true, $state, false);
         $packets = $tracker->update($state);
         $this->projectiles[$id]['needsSync'] = $state['needs_sync'];
+        if (($projectile['changed'] ?? []) !== []) {
+            $this->projectiles[$id]['changed'] = [];
+            $packets[] = ['name' => 'set_entity_data', 'payload' => $this->arrowMetadata($projectile, true)];
+        }
         if ($projectile['dirty']) {
             $this->projectiles[$id]['dirty'] = false;
             $packets[] = ['name' => 'set_entity_data', 'payload' => $this->itemMetadata($projectile)];
@@ -342,11 +353,16 @@ trait Projectiles
         if (isset($player->entities[$id]) || !$this->tracksPosition($player, $projectile['x'], $projectile['z'], $projectile['type'])) {
             return isset($player->entities[$id]);
         }
-        $tracker = $this->projectileTrackers[$id] ??= new EntityMovementTracker($id, 10, true, $this->projectileState($projectile), false);
+        $arrow = isset(self::ARROW_TYPES[$projectile['type']]);
+        $tracker = $this->projectileTrackers[$id] ??= new EntityMovementTracker($id, $arrow ? 20 : 10, true, $this->projectileState($projectile), false);
         $owner = $this->projectileOwner($projectile);
         $player->send($this->version, 'bundle_delimiter', '');
         $player->send($this->version, 'add_entity', $tracker->spawnPacket($projectile['uuid'], $this->version->blocks['entity_types'][$projectile['type']], $owner?->entityId ?? 0));
-        $player->send($this->version, 'set_entity_data', $this->itemMetadata($projectile));
+        // An arrow's tracked data is sent only where it differs from the defaults.
+        $metadata = $arrow ? $this->arrowMetadata($projectile, false) : $this->itemMetadata($projectile);
+        if ($metadata !== '') {
+            $player->send($this->version, 'set_entity_data', $metadata);
+        }
         $player->send($this->version, 'bundle_delimiter', '');
         $player->entities[$id] = true;
         return true;
@@ -354,7 +370,8 @@ trait Projectiles
 
     private function projectileBox(array $projectile): array
     {
-        return Collision::bounds($projectile['x'], $projectile['y'], $projectile['z'], 0.25, 0.25);
+        $size = isset(self::ARROW_TYPES[$projectile['type']]) ? 0.5 : 0.25;
+        return Collision::bounds($projectile['x'], $projectile['y'], $projectile['z'], $size, $size);
     }
 
     /** Player.getDefaultDimensions: 0.6 wide, 1.8 tall standing and 1.5 sneaking. */

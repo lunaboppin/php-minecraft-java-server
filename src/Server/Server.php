@@ -69,6 +69,8 @@ final class Server
 
     use Projectiles;
 
+    use Arrows;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -1337,6 +1339,8 @@ final class Server
             $this->acknowledge($c, $sequence);
         } elseif ($action === 6) {
             $c->eating = null;
+            // ServerPlayer.releaseUsingItem.
+            $this->releaseBow($c);
         } elseif ($action === 4 || $action === 5) {
             $slot = 36 + $c->heldSlot;
             if (isset($c->inventory[$slot]) && $c->gameMode !== 3) {

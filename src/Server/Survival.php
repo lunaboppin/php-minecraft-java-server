@@ -881,6 +881,7 @@ trait Survival
 
     private function tickSurvival(Client $c): void
     {
+        $this->tickBowUse($c);
         // Player.tick: the delay before the next experience orb counts down.
         if ($c->takeXpDelay > 0) {
             --$c->takeXpDelay;
@@ -1038,6 +1039,9 @@ trait Survival
             return;
         }
         if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
+            return;
+        }
+        if ($this->drawBow($c, $hand, $slot)) {
             return;
         }
         // FoodOnAStickItem.use succeeds on the server, which swings the hand for everyone.
