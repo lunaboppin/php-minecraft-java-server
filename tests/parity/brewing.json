@@ -1,0 +1,290 @@
+{
+  "name": "brewing",
+  "normalizations": [
+    "Compare brewing water into awkward potions in stands filled by command, by hoppers (reagent from above, fuel and bottles from the side) and through the menu (shift-clicks to the fuel, bottle and reagent slots, and items a slot refuses), then taking a potion out.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival @s"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 63 -2 10 63 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -2 10 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:brewing_stand"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 0 64 0 container.0 with minecraft:potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 0 64 0 container.3 with minecraft:nether_wart 2"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 0 64 0 container.4 with minecraft:blaze_powder 1"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:brewing_stand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 65 0 minecraft:hopper"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:hopper[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 4 65 0 container.0 with minecraft:nether_wart 1"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 3 64 0 container.0 with minecraft:blaze_powder 1"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 3 64 0 container.1 with minecraft:potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 3 64 0 container.2 with minecraft:potion[potion_contents={potion:\"minecraft:water\"}]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 64 0 minecraft:brewing_stand"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 8.5 64 -1.5 0 40"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:blaze_powder 2"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:potion[potion_contents={potion:\"minecraft:water\"}] 3"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:nether_wart 2"
+    },
+    {
+      "action": "command",
+      "text": "give @s minecraft:dirt 1"
+    },
+    {
+      "action": "place",
+      "position": [
+        8,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "click",
+      "slot": 32,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 33,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 34,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 35,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 36,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 37,
+      "mode": 0,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 0,
+      "mode": 0,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 4,
+      "mode": 0,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 3,
+      "mode": 0,
+      "button": 0
+    },
+    {
+      "action": "click",
+      "slot": 37,
+      "mode": 0,
+      "button": 0
+    },
+    {
+      "action": "snapshot",
+      "name": "menu-filled",
+      "fields": [
+        "inventory",
+        "cursor"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 22
+    },
+    {
+      "action": "snapshot",
+      "name": "menu-brewed",
+      "fields": [
+        "inventory",
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          8,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "click",
+      "slot": 0,
+      "mode": 1,
+      "button": 0
+    },
+    {
+      "action": "snapshot",
+      "name": "taken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "01"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 64 -1.5 0 40"
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "command-stand",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "02"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 64 -1.5 0 40"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        64,
+        0
+      ],
+      "face": 2,
+      "cursor": [
+        0.5,
+        0.5,
+        0
+      ]
+    },
+    {
+      "action": "snapshot",
+      "name": "hopper-stand",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "container_close",
+      "hex": "03"
+    }
+  ]
+}

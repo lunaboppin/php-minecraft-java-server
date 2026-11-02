@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\World\Inventory;
 trait Hoppers
 {
     /** Each container block's slot count, per block (a double chest has two). */
-    private const HOPPER_CONTAINERS = ['chest' => 27, 'trapped_chest' => 27, 'barrel' => 27, 'furnace' => 3, 'blast_furnace' => 3, 'smoker' => 3, 'hopper' => 5, 'dispenser' => 9, 'dropper' => 9];
+    private const HOPPER_CONTAINERS = ['chest' => 27, 'trapped_chest' => 27, 'barrel' => 27, 'furnace' => 3, 'blast_furnace' => 3, 'smoker' => 3, 'hopper' => 5, 'dispenser' => 9, 'dropper' => 9, 'brewing_stand' => 5];
 
     private const HOPPER_FACING = ['down' => [0, -1, 0], 'north' => [0, 0, -1], 'south' => [0, 0, 1], 'west' => [-1, 0, 0], 'east' => [1, 0, 0]];
 
@@ -319,6 +319,14 @@ trait Hoppers
         if ($container['name'] === 'composter') {
             return ($container['level'] < 7 && $face === 'up') || ($container['level'] === 8 && $face === 'down') ? [0] : [];
         }
+        if ($face !== null && $container['name'] === 'brewing_stand') {
+            // BrewingStandBlockEntity.getSlotsForFace: the reagent from above, bottles and fuel from the sides, bottles and the reagent from below.
+            return match ($face) {
+                'up' => [3],
+                'down' => [0, 1, 2, 3],
+                default => [0, 1, 2, 4],
+            };
+        }
         if ($face !== null && $container['parts'] !== [] && isset(self::FURNACES[$container['name']])) {
             return match ($face) {
                 'down' => [2, 1],
@@ -345,6 +353,9 @@ trait Hoppers
     /** Container.canPlaceItem: a furnace takes nothing into its result and only fuel, or one bucket, as fuel. */
     private function canPlaceInContainer(array $container, array $stacks, int $slot, array $stack): bool
     {
+        if ($container['name'] === 'brewing_stand') {
+            return $this->brewingCanPlace($stacks, $slot, $stack);
+        }
         if (!isset(self::FURNACES[$container['name']]) || $slot === 0) {
             return true;
         }
@@ -358,6 +369,10 @@ trait Hoppers
     /** AbstractFurnaceBlockEntity.canTakeItemThroughFace: from below, only a bucket leaves the fuel slot. */
     private function canTakeFromContainer(array $container, int $slot, array $stack, string $face): bool
     {
+        if ($container['name'] === 'brewing_stand') {
+            // Only an emptied reagent's bottle leaves the reagent slot.
+            return $slot !== 3 || $this->version->catalog->itemName($stack['item']) === 'glass_bottle';
+        }
         if ($container['name'] === 'composter') {
             return $face === 'down' && $container['level'] === 8;
         }

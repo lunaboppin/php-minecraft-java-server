@@ -176,6 +176,26 @@ def compostables(inner, reports):
     return {'items': items, 'providers': providers}
 
 
+def brewing(inner, reports):
+    """Brewing recipes in recipe ID order (input item and potion, reagent, output item and potion), and brewing fuels."""
+    recipes = []
+    fuels = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(archive.namelist()):
+            if name.startswith('data/minecraft/recipe/') and name.endswith('.json'):
+                data = json.loads(archive.read(name))
+                if data.get('type') == 'minecraft:brewing':
+                    recipes.append([data['input']['item'], data['input']['potion_contents']['potions'], data['reagent']['item'],
+                                    data['output']['id'], data['output']['components']['minecraft:potion_contents']['potion']])
+        for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
+            component = json.loads(path.read_text())['components'].get('minecraft:brewing_fuel')
+            if component is not None:
+                uses = json.loads(archive.read('data/minecraft/context_int_provider/' + component['uses'].split(':')[1] + '.json'))
+                speed = json.loads(archive.read('data/minecraft/context_float_provider/' + component['speed_multiplier'].split(':')[1] + '.json'))
+                fuels['minecraft:' + path.stem] = {'uses': uses, 'speed_multiplier': speed}
+    return {'recipes': recipes, 'fuels': fuels}
+
+
 def english_names(inner):
     """The en_us names of items, blocks and entities, which some command errors print as plain text."""
     with zipfile.ZipFile(inner) as archive:
@@ -370,6 +390,7 @@ def main():
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))
     write_json(out / 'enchantments.json', enchantments(inner))
+    write_json(out / 'brewing.json', brewing(inner, reports))
     write_json(out / 'compostables.json', compostables(inner, reports))
     write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes

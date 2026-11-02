@@ -415,10 +415,10 @@ trait Redstone
             $stack = $this->world->container($pos)['slots'][0] ?? null;
             return $stack === null ? 0 : ($catalog->simulation['songs'][$catalog->itemName($stack['item'])]['comparator'] ?? 0);
         }
-        if (in_array($name, ['chest', 'trapped_chest', 'barrel', 'furnace', 'blast_furnace', 'smoker', 'hopper', 'dispenser', 'dropper'], true) || str_ends_with($name, 'shulker_box')) {
+        if (in_array($name, ['chest', 'trapped_chest', 'barrel', 'furnace', 'blast_furnace', 'smoker', 'hopper', 'dispenser', 'dropper', 'brewing_stand'], true) || str_ends_with($name, 'shulker_box')) {
             $size = match (true) {
                 $name === 'furnace', $name === 'blast_furnace', $name === 'smoker' => 3,
-                $name === 'hopper' => 5,
+                $name === 'hopper', $name === 'brewing_stand' => 5,
                 $name === 'dispenser', $name === 'dropper' => 9,
                 default => 27,
             };
