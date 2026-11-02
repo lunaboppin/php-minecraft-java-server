@@ -64,7 +64,11 @@ trait MobMovement
         $mob['noActionTime'] = ($mob['noActionTime'] ?? 0) + 1;
         // Preserve the existing target chooser until native goal/navigation
         // stacks are implemented; feed its intent into actual travel physics.
-        if ($this->ticks >= $mob['nextWander'] && $mob['noActionTime'] < 100) {
+        // BreedGoal outranks wandering: an animal in love heads for its partner.
+        $partner = $this->breedingPartner($mob);
+        if ($partner !== null) {
+            [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$partner['x'], $partner['z'], $this->ticks + 20];
+        } elseif ($this->ticks >= $mob['nextWander'] && $mob['noActionTime'] < 100) {
             $hash = $noise->hash($mob['id'], $this->ticks >> 5, 0, 121);
             $mob['targetX'] = $mob['x'] + $hash % 17 - 8;
             $mob['targetZ'] = $mob['z'] + intdiv($hash, 19) % 17 - 8;

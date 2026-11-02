@@ -1062,6 +1062,19 @@ SCRIPT = [
     ('execute if entity @e[type=zombie]', False),
     ('summon zombie ~ ~ ~3', False),
     ('difficulty hard', False),
+    # AgeableMob.aiStep: a baby's age climbs to 0 and a parent's falls to 0, one a tick, AI or not.
+    ('summon cow 0.5 64 6.5 {Age:-3,NoAI:1b,Tags:["agetest"]}', False),
+    ('summon pig 2.5 64 6.5 {Age:3,NoAI:1b,Tags:["agetest"]}', False),
+    ('!quiet time query gametime', False),
+    ('!quiet time query gametime', False),
+    ('!quiet time query gametime', False),
+    ('!quiet time query gametime', False),
+    ('!quiet time query gametime', False),
+    ('data get entity @e[type=cow,tag=agetest,limit=1] Age', False),
+    ('data get entity @e[type=pig,tag=agetest,limit=1] Age', False),
+    ('data get entity @e[type=cow,tag=agetest,limit=1] InLove', False),
+    ('data get entity @e[type=cow,tag=agetest,limit=1] ForcedAge', False),
+    ('kill @e[tag=agetest]', False),
     ('list', False),
 ]
 

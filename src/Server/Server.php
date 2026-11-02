@@ -63,6 +63,8 @@ final class Server
 
     use Explosions;
 
+    use Breeding;
+
     use Sleeping;
 
     use WeatherCycle;

@@ -165,6 +165,9 @@ trait Riding
         if ($distance >= (3.0 + 3.0) ** 2) {
             return;
         }
+        if (!$secondary && $this->feedAnimal($player, $id, $hand)) {
+            return;
+        }
         $held = $player->inventory[$hand === 0 ? 36 + $player->heldSlot : 45] ?? null;
         $heldName = $held === null ? null : $this->version->catalog->itemName($held['item']);
         $saddle = $mob['equipment'][7] ?? null;
