@@ -7,8 +7,8 @@ namespace PhpMinecraftJavaServer\Server\Commands;
 /** Preserves the existing argument syntax; full Brigadier parsing remains in #10. */
 final class CommandArguments
 {
-    // Whitespace separates arguments, except inside a selector's brackets or quotes.
-    private const TOKEN = '/(?:[^\s\[\]"\']|\[(?:[^\]"\']|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')*\]|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')+|[\[\]"\']/';
+    // Whitespace separates arguments, except inside (nested) brackets or quotes.
+    private const TOKEN = '/(?:[^\s\[\]"\']|(?<group>\[(?:[^\[\]"\']|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'|(?&group))*\])|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')+|[\[\]"\']/';
 
     /** @return array{string, list<string>} */
     public static function parse(string $text): array

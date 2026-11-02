@@ -270,7 +270,8 @@ def main():
         'ExportEquipmentStacks.java', 'VerifyEquipmentStacks.java',
         'ExportEntityPushing.java', 'ExportEntitySectionQueries.java', 'ExportPushEligibility.java',
         'ExportDisplayNames.java', 'ExportGameRules.java', 'ExportMobEffects.java', 'ExportConsumables.java',
-        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportMining.java', 'ExportExperience.java', 'ExportItemEntities.java', 'ExportMobDespawn.java',
+        'ExportBiomeParameters.java', 'ExportFeatureOrder.java', 'ExportStructureOrder.java', 'ExportWorldgenChunks.java', 'ExportAttributes.java', 'ExportMining.java', 'ExportExperience.java', 'ExportItemEntities.java', 'ExportMobDespawn.java', 'ExportNaturalSpawning.java',
+        'ExportRecipeBook.java',
     ]
     subprocess.run([javac, '-cp', cp, '-d', str(classes),
                     *(str(ROOT / 'tools' / name) for name in reference_tools)], check=True)
@@ -304,6 +305,8 @@ def main():
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportExperience', str(out / 'experience.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportItemEntities', str(out / 'item-entities.json')], check=True, cwd=cache)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportMobDespawn', str(out / 'mob-despawn.json'), str(ROOT / 'tools/mob-classes.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportNaturalSpawning', str(out / 'natural-spawning.json')], check=True, cwd=cache)
+    subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportRecipeBook', str(out / 'recipe-book.json')], check=True, cwd=cache)
     worldgen_resources(inner, out)
     structure_templates(inner, out)
     subprocess.run([java, logging_option, '-cp', str(classes) + os.pathsep + cp, 'ExportBiomeParameters', str(out / 'worldgen/biome-parameters.json')], check=True, cwd=cache)
@@ -340,8 +343,12 @@ def main():
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     # Sound events the server plays outside mob audio.
-    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed', 'block.respawn_anchor.charge', 'block.respawn_anchor.deplete', 'block.respawn_anchor.set_spawn', 'block.bell.use', 'entity.player.small_fall', 'entity.player.big_fall', 'entity.turtle.egg_break', 'entity.turtle.egg_crack', 'entity.turtle.egg_hatch', 'block.piston.contract', 'block.piston.extend', 'block.bamboo_wood_pressure_plate.click_off', 'block.bamboo_wood_pressure_plate.click_on', 'block.cherry_wood_pressure_plate.click_off', 'block.cherry_wood_pressure_plate.click_on', 'block.metal_pressure_plate.click_off', 'block.metal_pressure_plate.click_on', 'block.nether_wood_pressure_plate.click_off', 'block.nether_wood_pressure_plate.click_on', 'block.stone_pressure_plate.click_off', 'block.stone_pressure_plate.click_on', 'block.wooden_pressure_plate.click_off', 'block.wooden_pressure_plate.click_on', 'block.tripwire.attach', 'block.tripwire.click_off', 'block.tripwire.click_on', 'block.tripwire.detach', 'block.sponge.absorb', 'block.wet_sponge.dries']}
+    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed', 'block.respawn_anchor.charge', 'block.respawn_anchor.deplete', 'block.respawn_anchor.set_spawn', 'block.bell.use', 'entity.player.small_fall', 'entity.player.big_fall', 'entity.turtle.egg_break', 'entity.turtle.egg_crack', 'entity.turtle.egg_hatch', 'block.piston.contract', 'block.piston.extend', 'block.bamboo_wood_pressure_plate.click_off', 'block.bamboo_wood_pressure_plate.click_on', 'block.cherry_wood_pressure_plate.click_off', 'block.cherry_wood_pressure_plate.click_on', 'block.metal_pressure_plate.click_off', 'block.metal_pressure_plate.click_on', 'block.nether_wood_pressure_plate.click_off', 'block.nether_wood_pressure_plate.click_on', 'block.stone_pressure_plate.click_off', 'block.stone_pressure_plate.click_on', 'block.wooden_pressure_plate.click_off', 'block.wooden_pressure_plate.click_on', 'block.tripwire.attach', 'block.tripwire.click_off', 'block.tripwire.click_on', 'block.tripwire.detach', 'block.sponge.absorb', 'block.wet_sponge.dries', 'entity.snowball.throw', 'entity.egg.throw', 'entity.ender_pearl.throw', 'entity.player.teleport']}
     data['particle_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:particle_type']['entries'].items()}
+    # Statistics: their types, the custom ones, and the blocks the mined ones count.
+    data['stat_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:stat_type']['entries'].items()}
+    data['custom_stats'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:custom_stat']['entries'].items()}
+    data['block_ids'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block']['entries'].items()}
     write_json(out / 'damage-types.json', damage_types(inner))
     write_json(out / 'timelines.json', timelines(inner))
     write_json(out / 'loot.json', loot(inner))

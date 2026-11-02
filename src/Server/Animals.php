@@ -212,6 +212,9 @@ trait Animals
         if (isset($animal['soundVariant'])) {
             $c->send($this->version, 'set_entity_data', Packets::mobSoundVariant($this->version, $id, $animal['kind'], $animal['soundVariant']));
         }
+        if ($animal['onFire'] ?? false) {
+            $c->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . "\0" . Binary::writeVarInt(0) . "\1\xff");
+        }
         $c->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $id, $this->mobAttributeEntries($animal)));
         if (($animal['equipment'] ?? []) !== []) {
             $c->send($this->version, 'set_equipment', Packets::equipment($id, $animal['equipment'], $this->version->blocks['component_damage'], $this->version->catalog->itemStacks));
@@ -352,7 +355,11 @@ trait Animals
         }
         $attributes = $this->mobAttributes($animal);
         $applied = Combat::afterArmor($incoming, $attributes['armor'] ?? 0, $attributes['armor_toughness'] ?? 0);
+        $before = $animal['health'];
         $animal['health'] = max(0.0, Float32::round($animal['health'] - $applied));
+        // Player.damageStatsAndHearts: tenths of a heart dealt.
+        // Math.round of a float saturates at the int range.
+        $this->awardStat($c, 'custom', 'damage_dealt', (int) min(2147483647.0, round(($before - $animal['health']) * 10.0)));
         if ($newWindow) {
             $this->knockbackMob($animal, $c);
             $this->mobDamageSound($animal, $animal['health'] <= 0);
@@ -375,6 +382,8 @@ trait Animals
             if ($cost > 0 && $maximum > 0) {
                 $stack['damage'] = ($stack['damage'] ?? 0) + $cost;
                 if ($stack['damage'] >= $maximum) {
+                    // ServerPlayer.onEquippedItemBroken
+                    $this->awardStat($c, 'broken', $this->version->catalog->itemName($stack['item']));
                     unset($c->inventory[$slot]);
                 } else {
                     $c->inventory[$slot] = $stack;
@@ -385,7 +394,9 @@ trait Animals
         // LivingEntity.hurtServer: a player's hit is remembered for 100 ticks for experience.
         $animal['lastHurtByPlayerTick'] = $this->ticks;
         if ($animal['health'] <= 0) {
+            $this->awardStat($c, 'killed', $animal['kind']);
             $this->incrementCriteria('totalKillCount', $c->name);
+            $this->awardStat($c, 'custom', 'mob_kills');
             $this->animalDeathLoot($animal, $c);
         }
         return true;
@@ -395,7 +406,7 @@ trait Animals
      * LivingEntity.hurtServer for a mob hurt other than by a melee swing: the cooldown window,
      * armor, the damage event and knockback, then the hurt or death sound. Returns whether it was hurt.
      */
-    private function hurtMob(int $id, float $amount, string $type, ?Client $attacker = null): bool
+    private function hurtMob(int $id, float $amount, string $type, ?Client $attacker = null, ?array $projectile = null): bool
     {
         if (!isset($this->animals[$id])) {
             return false;
@@ -437,13 +448,17 @@ trait Animals
             if (isset($p->entities[$id])) {
                 $p->send($this->version, 'set_entity_data', Packets::mobHealth($this->version->catalog, $id, $mob['health']));
                 if ($full) {
-                    $p->send($this->version, 'damage_event', Packets::damageEvent($this->version, $id, $attacker?->entityId ?? -1, substr($type, 10)));
+                    $p->send($this->version, 'damage_event', Packets::damageEvent($this->version, $id, $attacker?->entityId ?? -1, substr($type, 10), $projectile['id'] ?? null));
                 }
             }
         }
-        // dealDefaultKnockback: away from the source's position, or a random way without one.
+        // dealDefaultKnockback: along a projectile's flight, away from the source's position, or a random way without one.
         if ($full && !$is('minecraft:no_knockback')) {
-            $this->knockbackMobFrom($mob, $attacker === null ? 0.0 : $attacker->x - $mob['x'], $attacker === null ? 0.0 : $attacker->z - $mob['z']);
+            if ($projectile !== null) {
+                $this->knockbackMobFrom($mob, -$projectile['velocity'][0], -$projectile['velocity'][2]);
+            } else {
+                $this->knockbackMobFrom($mob, $attacker === null ? 0.0 : $attacker->x - $mob['x'], $attacker === null ? 0.0 : $attacker->z - $mob['z']);
+            }
         }
         if ($mob['health'] > 0) {
             if ($full) {
@@ -455,7 +470,10 @@ trait Animals
             $this->mobDamageSound($mob, true);
         }
         if ($attacker !== null) {
+            // ServerPlayer.awardKillScore: the kind killed, the kill count, then mob kills.
+            $this->awardStat($attacker, 'killed', $mob['kind']);
             $this->incrementCriteria('totalKillCount', $attacker->name);
+            $this->awardStat($attacker, 'custom', 'mob_kills');
         }
         // LivingEntity.die: the loot and experience, then the death event.
         $this->animalDeathLoot($mob, $attacker, $type);
@@ -590,7 +608,7 @@ trait Animals
         $context = [
             'this' => [
                 'type' => 'minecraft:' . $animal['kind'],
-                'flags' => ['is_baby' => false, 'is_on_fire' => false],
+                'flags' => ['is_baby' => false, 'is_on_fire' => ($animal['fire'] ?? 0) > 0],
                 'components' => ['minecraft:sheep/color' => $animal['color'] ?? 'white'],
                 'type_specific' => ['sheep' => ['sheared' => $animal['sheared'] ?? false]],
             ],
@@ -675,6 +693,14 @@ trait Animals
                 continue;
             }
             $animal['tickCount'] = ($animal['tickCount'] ?? 0) + 1;
+            // Entity.baseTick: the fire countdown, for mobs in ticking chunks.
+            if ($this->mobIsTicking($animal)) {
+                $this->tickMobFire($id, $animal);
+                if (isset($animal['deadAt'])) {
+                    continue;
+                }
+                $this->burnAndExtinguishMob($animal);
+            }
             // Entity.checkBelowWorld: LivingEntity.onBelowWorld hurts a mob 64 blocks below the world.
             if ($animal['y'] < $this->world->minY - 64) {
                 $this->hurtMob($id, 4.0, 'minecraft:out_of_world');
