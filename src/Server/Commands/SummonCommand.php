@@ -52,11 +52,16 @@ trait SummonCommand
         if ($this->config->difficulty === 0 && !$info['peaceful']) {
             throw new CommandFailure(['translate' => 'commands.summon.failed.peaceful']);
         }
-        $id = $this->spawnAnimal($kind, ...$position);
+        // SummonCommand: with an nbt argument the mob loads it instead of finalizing its spawn, and
+        // trackers first see it once it is loaded.
+        $id = $this->spawnAnimal($kind, ...[...$position, [], count($arguments) <= 4, false]);
         if ($id === null) {
             throw new CommandFailure(['translate' => 'commands.summon.failed']);
         }
         $this->applyMobNbt($id, $nbt);
+        foreach ($this->localPlayers() as $player) {
+            $this->showAnimal($player, $this->animals[$id]);
+        }
         $animal = $this->animals[$id];
         $this->sendSuccess($sender, ['translate' => 'commands.summon.success', 'with' => [$this->entityComponent($kind, hex2bin($animal['uuid']), $animal['customName'] ?? null)]], true);
     }
@@ -126,11 +131,6 @@ trait SummonCommand
         if (isset($nbt['Age'])) {
             $animal['baby'] = (int) $nbt['Age']['value'] < 0;
             $animal['age'] = (int) $nbt['Age']['value'];
-        }
-        foreach ($this->localPlayers() as $player) {
-            if (isset($player->entities[$id])) {
-                $player->send($this->version, 'set_entity_data', $this->mobState($animal));
-            }
         }
     }
 }
