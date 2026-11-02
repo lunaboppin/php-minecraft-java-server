@@ -65,6 +65,8 @@ final class Server
 
     use Breeding;
 
+    use HostileMobs;
+
     use Projectiles;
 
     use Sleeping;

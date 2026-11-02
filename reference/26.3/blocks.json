@@ -3350,7 +3350,8 @@
     "entity.snowball.throw": 1571,
     "entity.egg.throw": 576,
     "entity.ender_pearl.throw": 608,
-    "entity.player.teleport": 1326
+    "entity.player.teleport": 1326,
+    "entity.creeper.primed": 481
   },
   "particle_types": {
     "angry_villager": 0,

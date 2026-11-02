@@ -64,9 +64,15 @@ trait MobMovement
         $mob['noActionTime'] = ($mob['noActionTime'] ?? 0) + 1;
         // Preserve the existing target chooser until native goal/navigation
         // stacks are implemented; feed its intent into actual travel physics.
-        // BreedGoal outranks wandering: an animal in love heads for its partner.
-        $partner = $this->breedingPartner($mob);
-        if ($partner !== null) {
+        // MeleeAttackGoal outranks wandering: a hunter walks straight for its prey, and a
+        // swelling creeper stands still. BreedGoal does too: an animal in love heads for its partner.
+        $prey = $this->huntPlayer($mob);
+        $partner = $prey === null ? $this->breedingPartner($mob) : null;
+        if ($prey !== null) {
+            [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$prey->x, $prey->z, $this->ticks + 20];
+        } elseif (($mob['swellDir'] ?? -1) > 0) {
+            [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$mob['x'], $mob['z'], $this->ticks + 20];
+        } elseif ($partner !== null) {
             [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$partner['x'], $partner['z'], $this->ticks + 20];
         } elseif ($this->ticks >= $mob['nextWander'] && $mob['noActionTime'] < 100) {
             $hash = $noise->hash($mob['id'], $this->ticks >> 5, 0, 121);
@@ -77,7 +83,8 @@ trait MobMovement
         $dx = $mob['targetX'] - $mob['x'];
         $dz = $mob['targetZ'] - $mob['z'];
         $moving = $mob['kind'] !== 'giant' && $dx * $dx + $dz * $dz > 0.04;
-        $speed = $moving ? Float32::round(min(0.5, ($definition['attributes']['movement_speed'] ?? 0.2) * 0.6)) : 0.0;
+        // MeleeAttackGoal's speed modifier of 1: the full movement speed while hunting.
+        $speed = $moving ? Float32::round($prey !== null ? ($definition['attributes']['movement_speed'] ?? 0.2) : min(0.5, ($definition['attributes']['movement_speed'] ?? 0.2) * 0.6)) : 0.0;
         if ($moving) {
             $mob['yaw'] = Float32::round(rad2deg(atan2(-$dx, $dz)));
         }
