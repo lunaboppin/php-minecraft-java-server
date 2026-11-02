@@ -1,7 +1,7 @@
 {
   "name": "shearing-milking",
   "normalizations": [
-    "Compare shearing a red sheep (once; a sheared sheep gives nothing more) with the shears' wear; the wool drops one item per wool, one to three at random, so it is not compared, milking a cow and a goat with buckets (a calf gives nothing), and milking in creative, which keeps the bucket and adds one milk bucket.",
+    "Compare shearing a red sheep (once; a sheared sheep gives nothing more) with the shears' wear; the wool drops one item per wool, one to three at random, so it is not compared, milking a cow and a goat with buckets (a calf gives nothing), stew from a mooshroom with a bowl, and milking in creative, which keeps the bucket and adds one milk bucket. Creative stew from a mooshroom keeps the bowl and adds a stew each time.",
     "Use matching flat terrain."
   ],
   "steps": [
@@ -106,6 +106,33 @@
     },
     {
       "action": "command",
+      "text": "summon mooshroom 8.5 64 1.5 {NoAI:1b}"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 7.5 64 -0.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bowl 2"
+    },
+    {
+      "action": "interact",
+      "entity": "mooshroom"
+    },
+    {
+      "action": "snapshot",
+      "name": "stew",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 3.5 64 -0.5 0 20"
+    },
+    {
+      "action": "command",
       "text": "gamemode creative @s"
     },
     {
@@ -129,6 +156,33 @@
     {
       "action": "snapshot",
       "name": "creative",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 7.5 64 -0.5 0 20"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s weapon.mainhand with minecraft:bowl"
+    },
+    {
+      "action": "interact",
+      "entity": "mooshroom"
+    },
+    {
+      "action": "interact",
+      "entity": "mooshroom"
+    },
+    {
+      "action": "snapshot",
+      "name": "creative-stew",
       "fields": [
         "inventory"
       ]

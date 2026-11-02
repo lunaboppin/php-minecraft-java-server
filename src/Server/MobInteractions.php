@@ -37,6 +37,18 @@ trait MobInteractions
             $this->shearSheep($player, $id, $slot);
             return true;
         }
+        if ($item === 'bowl' && $mob['kind'] === 'mooshroom' && !($mob['baby'] ?? false)) {
+            // MushroomCow.mobInteract: a bowl of mushroom stew, the mooshroom's own sound for everyone near.
+            $payload = Packets::sound($this->version->blocks['sounds']['entity.mooshroom.milk'], 6, $mob['x'], $mob['y'], $mob['z'], 1.0, 1.0, unpack('J', random_bytes(8))[1]);
+            foreach ($this->localPlayers() as $other) {
+                if (($other->x - $mob['x']) ** 2 + ($other->y - $mob['y']) ** 2 + ($other->z - $mob['z']) ** 2 < 256.0) {
+                    $other->send($this->version, 'sound', $payload);
+                }
+            }
+            $this->filledResult($player, $slot, ['item' => $this->version->blocks['items']['mushroom_stew'], 'count' => 1], false);
+            $this->useSwing($player, $hand);
+            return true;
+        }
         if ($item === 'bucket' && in_array($mob['kind'], ['cow', 'mooshroom', 'goat'], true) && !($mob['baby'] ?? false)) {
             // Player.playSound: everyone near but the player hears the milking.
             $sound = $mob['kind'] === 'goat' ? (($mob['screaming'] ?? false) ? 'entity.goat.screaming.milk' : 'entity.goat.milk') : 'entity.cow.milk';
@@ -107,10 +119,10 @@ trait MobInteractions
     }
 
     /** ItemUtils.createFilledResult: creative keeps the held item and adds the result unless it has one; else one is used for it. */
-    private function filledResult(Client $c, int $slot, array $result): void
+    private function filledResult(Client $c, int $slot, array $result, bool $limitCreative = true): void
     {
         $catalog = $this->version->catalog;
-        if ($c->gameMode === 1) {
+        if ($c->gameMode === 1 && $limitCreative) {
             $has = false;
             foreach (array_merge([36 + $c->heldSlot, 45], $this->storageSlots()) as $index) {
                 $has = $has || Inventory::same($c->inventory[$index] ?? null, $result, $catalog);
@@ -119,7 +131,9 @@ trait MobInteractions
                 $this->addCauldronResult($c, $result);
             }
         } else {
-            Inventory::consume($c->inventory, $slot);
+            if ($c->gameMode !== 1) {
+                Inventory::consume($c->inventory, $slot);
+            }
             if (!isset($c->inventory[$slot])) {
                 $c->inventory[$slot] = $result;
             } elseif (!$this->addCauldronResult($c, $result)) {
