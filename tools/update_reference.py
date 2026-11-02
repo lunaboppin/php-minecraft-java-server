@@ -171,6 +171,21 @@ def repairable(reports):
     return result
 
 
+def compostables(inner, reports):
+    """The layers each compostable item adds to a composter: the item's provider, and the providers themselves."""
+    items = {}
+    for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
+        component = json.loads(path.read_text())['components'].get('minecraft:compostable')
+        if component is not None:
+            items['minecraft:' + path.stem] = component['layers']
+    providers = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(set(items.values())):
+            namespace, key = name.split(':')
+            providers[name] = json.loads(archive.read('data/' + namespace + '/context_int_provider/' + key + '.json'))
+    return {'items': items, 'providers': providers}
+
+
 def english_names(inner):
     """The en_us names of items, blocks and entities, which some command errors print as plain text."""
     with zipfile.ZipFile(inner) as archive:
@@ -355,7 +370,7 @@ def main():
     data['block_entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:block_entity_type']['entries'].items()}
     data['entity_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:entity_type']['entries'].items()}
     # Sound events the server plays outside mob audio.
-    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed', 'block.respawn_anchor.charge', 'block.respawn_anchor.deplete', 'block.respawn_anchor.set_spawn', 'block.bell.use', 'entity.player.small_fall', 'entity.player.big_fall', 'entity.turtle.egg_break', 'entity.turtle.egg_crack', 'entity.turtle.egg_hatch', 'block.piston.contract', 'block.piston.extend', 'block.bamboo_wood_pressure_plate.click_off', 'block.bamboo_wood_pressure_plate.click_on', 'block.cherry_wood_pressure_plate.click_off', 'block.cherry_wood_pressure_plate.click_on', 'block.metal_pressure_plate.click_off', 'block.metal_pressure_plate.click_on', 'block.nether_wood_pressure_plate.click_off', 'block.nether_wood_pressure_plate.click_on', 'block.stone_pressure_plate.click_off', 'block.stone_pressure_plate.click_on', 'block.wooden_pressure_plate.click_off', 'block.wooden_pressure_plate.click_on', 'block.tripwire.attach', 'block.tripwire.click_off', 'block.tripwire.click_on', 'block.tripwire.detach', 'block.sponge.absorb', 'block.wet_sponge.dries', 'entity.snowball.throw', 'entity.egg.throw', 'entity.ender_pearl.throw', 'entity.player.teleport', 'entity.creeper.primed', 'entity.arrow.shoot', 'entity.arrow.hit', 'block.enchantment_table.use', 'item.bucket.empty', 'item.bucket.fill', 'item.bucket.empty_lava', 'item.bucket.fill_lava', 'item.bucket.empty_powder_snow', 'item.bucket.fill_powder_snow', 'item.bottle.empty', 'item.bottle.fill', 'entity.skeleton.shoot', 'entity.generic.burn']}
+    data['sounds'] = {name: registries['minecraft:sound_event']['entries']['minecraft:' + name]['protocol_id'] for name in ['block.chest.open', 'block.chest.close', 'block.ender_chest.open', 'block.ender_chest.close', 'block.barrel.open', 'block.barrel.close', 'entity.player.levelup', 'entity.player.hurt', 'entity.player.hurt_drown', 'entity.player.hurt_freeze', 'entity.player.hurt_on_fire', 'entity.player.hurt_sweet_berry_bush', 'entity.player.death', 'entity.tnt.primed', 'block.respawn_anchor.charge', 'block.respawn_anchor.deplete', 'block.respawn_anchor.set_spawn', 'block.bell.use', 'entity.player.small_fall', 'entity.player.big_fall', 'entity.turtle.egg_break', 'entity.turtle.egg_crack', 'entity.turtle.egg_hatch', 'block.piston.contract', 'block.piston.extend', 'block.bamboo_wood_pressure_plate.click_off', 'block.bamboo_wood_pressure_plate.click_on', 'block.cherry_wood_pressure_plate.click_off', 'block.cherry_wood_pressure_plate.click_on', 'block.metal_pressure_plate.click_off', 'block.metal_pressure_plate.click_on', 'block.nether_wood_pressure_plate.click_off', 'block.nether_wood_pressure_plate.click_on', 'block.stone_pressure_plate.click_off', 'block.stone_pressure_plate.click_on', 'block.wooden_pressure_plate.click_off', 'block.wooden_pressure_plate.click_on', 'block.tripwire.attach', 'block.tripwire.click_off', 'block.tripwire.click_on', 'block.tripwire.detach', 'block.sponge.absorb', 'block.wet_sponge.dries', 'entity.snowball.throw', 'entity.egg.throw', 'entity.ender_pearl.throw', 'entity.player.teleport', 'entity.creeper.primed', 'entity.arrow.shoot', 'entity.arrow.hit', 'block.enchantment_table.use', 'item.bucket.empty', 'item.bucket.fill', 'item.bucket.empty_lava', 'item.bucket.fill_lava', 'item.bucket.empty_powder_snow', 'item.bucket.fill_powder_snow', 'item.bottle.empty', 'item.bottle.fill', 'entity.skeleton.shoot', 'entity.generic.burn', 'block.composter.empty', 'block.composter.ready']}
     data['particle_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:particle_type']['entries'].items()}
     # Statistics: their types, the custom ones, and the blocks the mined ones count.
     data['stat_types'] = {name[10:]: entry['protocol_id'] for name, entry in registries['minecraft:stat_type']['entries'].items()}
@@ -366,6 +381,7 @@ def main():
     write_json(out / 'loot.json', loot(inner))
     write_json(out / 'enchantments.json', enchantments(inner))
     write_json(out / 'repairable.json', repairable(reports))
+    write_json(out / 'compostables.json', compostables(inner, reports))
     write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))

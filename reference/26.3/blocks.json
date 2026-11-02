@@ -3364,7 +3364,9 @@
     "item.bottle.empty": 195,
     "item.bottle.fill": 196,
     "entity.skeleton.shoot": 1495,
-    "entity.generic.burn": 699
+    "entity.generic.burn": 699,
+    "block.composter.empty": 384,
+    "block.composter.ready": 387
   },
   "particle_types": {
     "angry_villager": 0,
