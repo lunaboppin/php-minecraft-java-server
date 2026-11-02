@@ -147,6 +147,8 @@ final class Server
 
     use VehicleSteering;
 
+    use Campfires;
+
     use Scaffolding;
 
     use Hoppers;
@@ -1518,6 +1520,14 @@ final class Server
             $sneakSkips = $c->sneaking && ($stack !== null || isset($c->inventory[$hand === 0 ? 45 : 36 + $c->heldSlot]));
             if ($name === 'composter' && !$sneakSkips && $c->gameMode !== 3 && $this->useComposter($c, $x, $y, $z, $slot)) {
                 $this->useSwing($c, $hand);
+                $this->acknowledge($c, $sequence);
+                return;
+            }
+            if (($name === 'campfire' || $name === 'soul_campfire') && !$sneakSkips && $c->gameMode !== 3 && ($placed = $this->placeCampfireFood($c, $slot, $x, $y, $z)) !== null) {
+                // SUCCESS_SERVER when the food went on, CONSUME when the campfire was full.
+                if ($placed) {
+                    $this->useSwing($c, $hand, true);
+                }
                 $this->acknowledge($c, $sequence);
                 return;
             }

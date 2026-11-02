@@ -402,6 +402,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/enchanting.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-enchanting
           python3 tools/parity/verify.py tools/.cache/parity-enchanting/php-packets.json tools/.cache/parity-enchanting/reference-packets.json
+      - name: Compare campfire cooking with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/campfires.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-campfires
+          python3 tools/parity/verify.py tools/.cache/parity-campfires/php-packets.json tools/.cache/parity-campfires/reference-packets.json
       - name: Compare repairing and combining items at an anvil with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/anvils.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-anvils
@@ -448,6 +452,7 @@ jobs:
             tools/.cache/parity-projectiles/
             tools/.cache/parity-bows/
             tools/.cache/parity-enchanting/
+            tools/.cache/parity-campfires/
             tools/.cache/parity-anvils/
             tools/.cache/parity-consumables/
             tools/.cache/parity-grindstones/

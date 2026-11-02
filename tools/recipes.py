@@ -47,7 +47,7 @@ def compile_recipes(jar, item_ids):
                 recipe.update(width=len(pattern[0]), height=len(pattern), ingredients=[ingredient(source['key'][c]) if c != ' ' else [] for row in pattern for c in row])
             elif kind == 'crafting_shapeless':
                 recipe['ingredients'] = [ingredient(entry) for entry in source['ingredients']]
-            elif kind in ('smelting', 'blasting', 'smoking'):
+            elif kind in ('smelting', 'blasting', 'smoking', 'campfire_cooking'):
                 recipe.update(ingredients=[ingredient(source['ingredient'])], ticks=source.get('cookingtime', 200), experience=source.get('experience', 0))
             elif kind == 'smithing_transform':
                 recipe['ingredients'] = [ingredient(source[slot]) if slot in source else [] for slot in ('template', 'base', 'addition')]

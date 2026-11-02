@@ -73,6 +73,7 @@ trait Dimensions
                     $this->tickMovingPistons();
                     $this->tickDaylightDetectors();
                     $this->tickHoppers();
+                    $this->tickCampfires();
                     $this->tickPlateContacts();
                     $this->tickTripwireContacts();
                 }

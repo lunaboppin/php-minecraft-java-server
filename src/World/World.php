@@ -346,6 +346,12 @@ class World
             $data=$this->container([$x,$y,$z])+['name'=>'minecraft:empty','target'=>'minecraft:empty','pool'=>'minecraft:empty','final_state'=>'minecraft:air','joint'=>'rollable'];
             return Nbt::component(['name'=>(string)$data['name'],'target'=>(string)$data['target'],'pool'=>(string)$data['pool'],'final_state'=>(string)$data['final_state'],'joint'=>(string)$data['joint'],'placement_priority'=>(int)($data['placement_priority']??0),'selection_priority'=>(int)($data['selection_priority']??0)]);
         }
+        if($name==='campfire' || $name==='soul_campfire'){
+            // CampfireBlockEntity.getUpdateTag: the foods on it, by slot.
+            $items=[];
+            foreach($this->container([$x,$y,$z])['slots'] as $slot=>$stack){$items[]=['Slot'=>new \PhpMinecraftJavaServer\Protocol\NbtByte((int)$slot),'id'=>'minecraft:'.$this->version->catalog->itemName($stack['item']),'count'=>$stack['count']];}
+            return Nbt::component(['Items'=>$items]);
+        }
         return str_ends_with($name,'_sign')?Nbt::sign($this->container([$x,$y,$z])):"\x0a\0";
     }
     public function blockEntityType(int $state):?int {return $this->blockEntityMap[$state]??null;}
