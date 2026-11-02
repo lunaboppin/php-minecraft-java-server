@@ -73,7 +73,7 @@ jobs:
         run: python3 tests/panel_egg.py --container
   parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -133,7 +133,7 @@ jobs:
 
   world-parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -170,6 +170,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/pistons.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-pistons
           python3 tools/parity/run.py --scenario tests/parity/tnt-restart.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tnt-restart
           python3 tools/parity/run.py --scenario tests/parity/observers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-observers
+          python3 tools/parity/run.py --scenario tests/parity/redstone.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-redstone
           python3 tools/parity/run.py --scenario tests/parity/sleep.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-sleep
           python3 tools/parity/run.py --scenario tests/parity/pressure-plates.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-pressure-plates
           python3 tools/parity/run.py --scenario tests/parity/tripwires.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tripwires
@@ -205,6 +206,7 @@ jobs:
             tools/.cache/parity-pistons/
             tools/.cache/parity-tnt-restart/
             tools/.cache/parity-observers/
+            tools/.cache/parity-redstone/
             tools/.cache/parity-sleep/
             tools/.cache/parity-pressure-plates/
             tools/.cache/parity-tripwires/
@@ -226,7 +228,7 @@ jobs:
   multiplayer-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -326,7 +328,7 @@ jobs:
   mob-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -372,7 +374,7 @@ jobs:
   movement-parity:
     if: vars.MINECRAFT_EULA_ACCEPTED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

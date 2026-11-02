@@ -162,6 +162,18 @@ final class Client
 
     public bool $postEffectsDirty = true;
 
+    /** @var array<string, true> ServerRecipeBook.known, in the order learned */
+    public array $knownRecipes = [];
+
+    /** @var array<string, true> ServerRecipeBook.highlight: known recipes not yet seen in the book */
+    public array $highlightedRecipes = [];
+
+    /** @var array<string, true> advancements completed, of those this server grants */
+    public array $advancements = [];
+
+    /** @var list<bool> RecipeBookSettings: open and filtering for crafting, furnace, blast furnace and smoker */
+    public array $recipeBookSettings = [false, false, false, false, false, false, false, false];
+
     public string $state = 'handshake';
 
     public bool $bufferedWork = false;

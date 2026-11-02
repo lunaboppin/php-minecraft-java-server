@@ -77,6 +77,8 @@ trait Survival
         $c->personalSpawn = $data['personalSpawn'] ?? null;
         $c->tags = array_values(array_filter($data['tags'] ?? [], 'is_string'));
         $c->postEffects = $data['postEffects'] ?? [];
+        $this->loadRecipeBook($c, is_array($data['recipeBook'] ?? null) ? $data['recipeBook'] : []);
+        $c->advancements = array_fill_keys(array_filter($data['advancements'] ?? [], 'is_string'), true);
         // Persist a duration, since the process tick counter restarts from zero.
         $c->portalCooldown = $this->ticks + max(0, min(300, (int) ($data['portalCooldown'] ?? 0)));
         foreach ($data['enderItems'] ?? [] as $slot => $stack) {
@@ -108,7 +110,7 @@ trait Survival
         if ($c->uuid === '' || $c->entityId === 0) {
             return;
         }
-        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
+        $this->worlds['overworld']->savePlayer($c->uuid, ['dimension' => $c->dimension, 'gameMode' => $c->gameMode, 'x' => $c->x, 'y' => $c->y, 'z' => $c->z, 'yaw' => $c->yaw, 'pitch' => $c->pitch, 'health' => $c->health, 'food' => $c->food, 'saturation' => $c->saturation, 'experience' => $c->experience, 'experienceLevel' => $c->experienceLevel, 'experienceProgress' => $c->experienceProgress, 'score' => $c->score, 'effects' => $c->effects, 'attributes' => $this->savedAttributes($c), 'absorption' => $c->absorption, 'inventory' => $c->inventory, 'enderItems' => $c->enderItems, 'heldSlot' => $c->heldSlot, 'dead' => $c->dead, 'personalSpawn' => $c->personalSpawn, 'tags' => $c->tags, 'postEffects' => $c->postEffects, 'recipeBook' => $this->savedRecipeBook($c), 'advancements' => array_keys($c->advancements), 'portalCooldown' => max(0, $c->portalCooldown - $this->ticks)], $c->authenticated);
     }
 
     private function saveWorld(): void
@@ -135,6 +137,7 @@ trait Survival
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
+                $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });
@@ -798,6 +801,51 @@ trait Survival
         }
     }
 
+    /**
+     * Entity.baseTick's fire countdown for a player, hurting every 20 ticks out of lava, then
+     * applyEffectsFromBlocks: lava lights for 15 seconds and hurts, fire counts up to lighting for
+     * 8 seconds and hurts, water and rain put fire out, and a player neither burning nor just lit
+     * keeps Player's 20 ticks of fire immunity.
+     */
+    private function tickPlayerFire(Client $c): void
+    {
+        if ($c->gameMode === 3 || $c->dead) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        $feet = $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y), (int) floor($c->z)));
+        if ($c->fireTicks > 0) {
+            $burning = $c->fireTicks;
+            --$c->fireTicks;
+            if ($burning % 20 === 0 && $feet !== 'lava') {
+                $this->damage($c, 1, 'on_fire');
+            }
+        }
+        if ($c->dead) {
+            return;
+        }
+        $before = $c->fireTicks;
+        if ($feet === 'lava') {
+            // Entity.lavaIgnite and lavaHurt
+            $c->fireTicks = max($c->fireTicks, 300);
+            $this->damage($c, 4, 'lava');
+        } elseif ($feet === 'fire' || $feet === 'soul_fire') {
+            // BaseFireBlock.entityInside
+            if (++$c->fireTicks === 0) {
+                $c->fireTicks = 160;
+            }
+            $this->damage($c, $feet === 'soul_fire' ? 2 : 1, 'in_fire');
+        }
+        $head = $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y + 1.62), (int) floor($c->z)));
+        [$x, $z] = [(int) floor($c->x), (int) floor($c->z)];
+        if ($feet === 'water' || $head === 'water' || $this->rainingAt($x, (int) floor($c->y), $z) || $this->rainingAt($x, (int) floor($c->y + 1.8), $z)) {
+            $c->fireTicks = min(0, $c->fireTicks);
+        }
+        if ($c->fireTicks <= 0 && $c->fireTicks <= $before) {
+            $c->fireTicks = -20;
+        }
+    }
+
     private function tickSurvival(Client $c): void
     {
         // Player.tick: the delay before the next experience orb counts down.
@@ -848,7 +896,8 @@ trait Survival
             }
         }
         $this->tickFood($c);
-        if ($c->gameMode !== 0 || $this->ticks % 20 !== 0) {
+        $this->tickPlayerFire($c);
+        if ($c->dead || $c->gameMode !== 0 || $this->ticks % 20 !== 0) {
             return;
         }
         // Entity.checkBelowWorld: out_of_world damage starts 64 blocks below the world.
@@ -866,15 +915,6 @@ trait Survival
             }
         } else {
             $c->air = min(300, $c->air + 80);
-        }
-        if ($this->version->catalog->blockName($feet) === 'lava') {
-            $c->fireTicks = 160;
-            $this->damage($c, 4, 'lava');
-        } elseif ($this->version->catalog->blockName($feet) === 'water') {
-            $c->fireTicks = 0;
-        } elseif ($c->fireTicks > 0) {
-            $c->fireTicks -= 20;
-            $this->damage($c, 1, 'on_fire');
         }
     }
 

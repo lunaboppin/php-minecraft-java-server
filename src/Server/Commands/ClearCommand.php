@@ -75,8 +75,8 @@ trait ClearCommand
     }
 
     /**
-     * ItemPredicateArgument: an item, an item tag or "*", with component tests. Damage and
-     * enchantments are compared exactly, and any component can be tested for presence or, with
+     * ItemPredicateArgument: an item, an item tag or "*", with component tests. Damage,
+     * enchantments and potion contents are compared exactly, and any component can be tested for presence or, with
      * !, absence; other components and predicates are not compared.
      */
     private function itemPredicate(string $text): \Closure
@@ -115,6 +115,11 @@ trait ClearCommand
                     $value = Snbt::read($reader);
                     if ($operator === '=' && in_array($name, ['minecraft:damage', 'minecraft:enchantments', 'minecraft:stored_enchantments'], true)) {
                         $tests[$name] = [$value, $negated];
+                    } elseif ($operator === '=' && $name === 'minecraft:potion_contents') {
+                        $contents = ItemArgument::potionContents($value, ArgumentReader::registries($this->version, array_keys(self::CLOCKS)));
+                        if (is_array($contents)) {
+                            $tests[$name] = [$contents[0], $negated];
+                        }
                     }
                 }
                 $reader->skipWhitespace();
@@ -138,6 +143,8 @@ trait ClearCommand
                 $matched = $negated !== match ($name) {
                     'minecraft:damage' => ($stack['damage'] ?? 0) === (int) $value['value'],
                     'minecraft:enchantments' => ($stack['enchantments'] ?? []) == $levels($value),
+                    // The stack's contents, or the empty ones its item has by default.
+                    'minecraft:potion_contents' => ($stack['potion'] ?? ($codec->hasComponent($stack, $name) ? ['potion' => null, 'custom_color' => null, 'custom_effects' => [], 'custom_name' => null] : null)) == $value,
                     default => ($stack['storedEnchantments'] ?? []) == $levels($value),
                 };
                 if (!$matched) {

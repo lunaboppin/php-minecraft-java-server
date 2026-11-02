@@ -71,6 +71,8 @@ final class Server
 
     use Lightning;
 
+    use Redstone;
+
     use PoweredRails;
 
     use RespawnPoints;
@@ -133,6 +135,10 @@ final class Server
 
     use Waypoints;
 
+    use RecipeBook;
+
+    use MobFire;
+
     /** @var array<string, array<string, ShortOpenHashSet>> changed block positions per dimension and section */
     private array $changedBlocks = [];
     private const INVALID_MOVEMENT = ['translate' => 'multiplayer.disconnect.invalid_player_movement'];
@@ -185,6 +191,7 @@ final class Server
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreTnt();
+                $this->restoreRedstone();
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
@@ -719,9 +726,9 @@ final class Server
         $c->send($this->version, 'change_difficulty', Packets::difficulty($this->config->difficulty));
         $this->abilities($c);
         $c->send($this->version, 'set_held_slot', Binary::writeVarInt($c->heldSlot));
+        $this->sendUpdateRecipes($c);
         $this->sendPermissionLevel($c);
-        // The recipe book (all filters closed) has no recipes here yet (#24).
-        $c->send($this->version, 'recipe_book_settings', str_repeat("\0", 8));
+        $this->sendInitialRecipeBook($c);
         // PlayerList.updateEntireScoreboard: displayed objectives and their scores.
         $this->sendScoreboard($c);
         // The join message reaches players already online, not the one joining.
@@ -1095,6 +1102,18 @@ final class Server
                         $this->syncInventory($c);
                     }
                 }return;
+            case 'recipe_book_seen_recipe':
+                $display = $r->varInt();
+                $r->end();
+                $this->recipeSeen($c, $display);
+                return;
+            case 'recipe_book_change_settings':
+                $type = $r->varInt();
+                $open = $r->bool();
+                $filtering = $r->bool();
+                $r->end();
+                $this->changeRecipeBookSettings($c, $type, $open, $filtering);
+                return;
             case 'player_loaded':$r->end();
                 $c->playerLoaded = true;
                 return;
@@ -1580,7 +1599,9 @@ final class Server
                 $blocked = true;
             }
             if (!$blocked) {
-                $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
+                $placedState = $blockName === 'redstone_wire' ? $this->wirePlacement([$tx, $ty, $tz]) : $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz);
+                $this->setBlock($tx, $ty, $tz, $placedState);
+                $this->redstonePlaced([$tx, $ty, $tz]);
                 $this->updateNeighbourShapes($tx, $ty, $tz);
                 if ($blockName === 'tripwire_hook') {
                     // TripWireHookBlock.setPlacedBy.
@@ -1630,22 +1651,27 @@ final class Server
         }if ($slot < 1 || $slot > 45 || $count < 0 || $count > 99) {
             throw new ProtocolException('Invalid creative slot');
         }
-        $item = -1;
+        $stack = null;
         $accepted = true;
         if ($count > 0) {
-            $item = $r->varInt();
-            $added = $r->varInt();
-            $removed = $r->varInt();
-            $info = $this->version->catalog->item($item);
-            $accepted = $info !== null && $count <= $info['max_stack'] && $added === 0 && $removed === 0;
-            if ($added === 0 && $removed === 0) {
-                $r->end();
+            // The stack again from its count, through the codec for the components it can carry.
+            $input = new Binary(Binary::writeVarInt($count) . $r->bytes($r->remaining()));
+            try {
+                $stack = $this->version->catalog->itemStacks->read($input);
+                $input->end();
+            } catch (ProtocolException $e) {
+                if (!str_starts_with($e->getMessage(), 'Unsupported component addition')) {
+                    throw $e;
+                }
+                $accepted = false;
             }
+            $info = $stack === null ? null : $this->version->catalog->item($stack['item']);
+            $accepted = $accepted && $info !== null && $count <= $info['max_stack'];
         } else {
             $r->end();
         }
-        if ($accepted && $count > 0) {
-            $c->inventory[$slot] = ['item' => $item, 'count' => $count];
+        if ($accepted && $stack !== null) {
+            $c->inventory[$slot] = $stack;
         } else {
             unset($c->inventory[$slot]);
         }
@@ -1901,6 +1927,7 @@ final class Server
                         return;
                     }
                     $this->tickControlledVehicle($c);
+                    $this->tickRecipeAdvancements($c);
                     $this->tickSurvival($c);
                     $this->sendKnockbackMotion($c);
                     $this->tickCamera($c);
