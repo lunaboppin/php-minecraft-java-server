@@ -69,13 +69,37 @@ final class Server
 
     use Lightning;
 
+    use PoweredRails;
+
     use RespawnPoints;
 
+    use FallingBlocks;
+
+    use Speleothems;
+
+    use Bells;
+
+    use Tripwires;
+
     use Corals;
+
+    use Chorus;
+
+    use PressurePlates;
+
+    use DaylightDetectors;
+
+    use Observers;
+
+    use Pistons;
+
+    use TurtleEggs;
 
     use BlockPlacement;
 
     use Rails;
+
+    use Sponges;
 
     use Precipitation;
 
@@ -163,6 +187,9 @@ final class Server
                 $this->restoreExperienceOrbs();
                 $this->restoreItems();
                 $this->restoreTnt();
+                $this->restoreMovingPistons();
+                $this->restoreDaylightDetectors();
+                $this->restoreFallingBlocks();
                 $this->restoreBlockSimulation();
             });
         }
@@ -1368,11 +1395,22 @@ final class Server
         }
         if ($within && $name === 'end_portal_frame' && $stack !== null && $this->version->catalog->itemName($stack['item']) === 'ender_eye' && $this->insertEndEye($c, $x, $y, $z, $slot)) {
             $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        if ($within && !$c->sneaking && $name === 'bell' && $c->gameMode !== 3 && $this->useBell($x, $y, $z, $face, $cursor[1])) {
+            $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
             $this->acknowledge($c, $sequence);
             return;
         }
         if ($within && !$c->sneaking && $this->useSpecialBlock($c, $x, $y, $z, $slot)) {
             $this->useSwing($c, $hand);
+            // handleUseItemOn resends the used block and the one on its clicked face after any use.
+            $this->resendUsedBlocks($c, $x, $y, $z, $face);
             $this->acknowledge($c, $sequence);
             return;
         }
@@ -1565,6 +1603,10 @@ final class Server
             if (!$blocked) {
                 $this->setBlock($tx, $ty, $tz, $this->connectedState($this->version->catalog->state($blockName, $properties), $tx, $ty, $tz));
                 $this->updateNeighbourShapes($tx, $ty, $tz);
+                if ($blockName === 'tripwire_hook') {
+                    // TripWireHookBlock.setPlacedBy.
+                    $this->hookCalculate([$tx, $ty, $tz], $this->world->get($tx, $ty, $tz), false, false, -1, null);
+                }
                 if (($properties['type'] ?? 'single') !== 'single' && ($blockName === 'chest' || $blockName === 'trapped_chest')) {
                     $this->joinChest([$tx, $ty, $tz]);
                 }
@@ -1647,6 +1689,10 @@ final class Server
         $this->unjoinChest([$x, $y, $z], $previous, $state);
         $this->changedSimulation($x, $y, $z);
         $this->blockChanged($x, $y, $z);
+        // Block.onPlace and affectNeighborsAfterRemoval run only when the block itself changes.
+        if ($this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
+            $this->tripwireBlockSwapped($x, $y, $z, $previous, $state);
+        }
         // BaseRailBlock.onPlace: a rail set where it was not joins the rails beside it.
         if ($this->isRail($state) && $this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
             $this->placeRail($x, $y, $z);

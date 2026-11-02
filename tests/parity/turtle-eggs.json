@@ -1,0 +1,87 @@
+{
+  "name": "turtle-eggs",
+  "normalizations": [
+    "Compare turtle eggs on sand, red sand and stone at dawn under fast random ticks: those on sand crack and hatch into one baby turtle per egg, the others stay.",
+    "Time is held at 21100, where the hatch chance is 1.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule advance_time false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
+    {
+      "action": "command",
+      "text": "time set 21100"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 62 -6 20 63 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -2 64 -6 20 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 63 0 minecraft:sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:turtle_egg[eggs=3]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 63 0 minecraft:red_sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 0 minecraft:turtle_egg[eggs=1,hatch=1]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 64 0 minecraft:turtle_egg[eggs=2]"
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 4096"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "command",
+      "text": "gamerule random_tick_speed 0"
+    },
+    {
+      "action": "snapshot",
+      "name": "hatched",
+      "fields": [
+        "blocks",
+        "entities"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          4,
+          64,
+          0
+        ],
+        [
+          8,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,294 @@
+{
+  "name": "daylight-detectors",
+  "normalizations": [
+    "Compare daylight detectors' power, under open sky, under a stone roof and inverted, at fixed times of day.",
+    "Detectors update every 20 game ticks; time does not advance.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "gamerule advance_time false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 62 -6 24 63 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 64 -6 24 80 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 0 minecraft:daylight_detector"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 64 0 minecraft:daylight_detector[inverted=true]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 64 0 minecraft:daylight_detector"
+    },
+    {
+      "action": "command",
+      "text": "fill 4 66 -2 8 66 2 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "time set 1000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t1000",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 3000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t3000",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 6000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t6000",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 9000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t9000",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 11500"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t11500",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 12500"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t12500",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 13500"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t13500",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "time set 18000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "t18000",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          64,
+          0
+        ],
+        [
+          3,
+          64,
+          0
+        ],
+        [
+          6,
+          64,
+          0
+        ]
+      ]
+    }
+  ]
+}
