@@ -138,8 +138,9 @@ trait Survival
                     + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
                 $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 // PrimedTnt.addAdditionalSaveData: the fuse, motion and owner keep.
-                $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid'])]
-                    + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
+                // The UUIDs are binary, which JSON cannot hold, so they are saved as hex.
+                $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid']), 'owner' => $tnt['owner'] === null ? null : bin2hex($tnt['owner'])]
+                    + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse'])), $this->tntEntities)));
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
@@ -927,12 +928,30 @@ trait Survival
                 $this->awardStat($c, 'used', $this->version->catalog->itemName($stack['item']));
                 $this->simpleTrigger($c, 'minecraft:consume_item', ['item' => $this->version->catalog->itemName($stack['item'])]);
                 $food = $this->version->catalog->item($stack['item']);
-                $c->food = min(20, $c->food + $food['nutrition']);
-                $c->saturation = min($c->food, $c->saturation + $food['saturation']);
-                if ($c->gameMode === 0) {
+                if (isset($food['nutrition'])) {
+                    $c->food = min(20, $c->food + $food['nutrition']);
+                    $c->saturation = min($c->food, $c->saturation + $food['saturation']);
+                }
+                // PotionContents.onConsume: a drunk potion's effects.
+                if (isset($stack['potion'])) {
+                    $this->applyPotionContents($c, $stack['potion']);
+                }
+                $name = 'minecraft:' . $this->version->catalog->itemName($c->eating['item']);
+                // ItemStack.consume: players with infinite materials keep it.
+                if ($c->gameMode !== 1) {
                     Inventory::consume($c->inventory, $slot);
                 }$this->health($c);
-                $this->applyConsumeEffects($c, 'minecraft:' . $this->version->catalog->itemName($c->eating['item']));
+                $this->applyConsumeEffects($c, $name);
+                // UseRemainder.convertIntoRemainder: the bowl or bottle in its place, or alongside.
+                $remainder = $this->consumables()['use_remainders'][$name] ?? null;
+                if ($remainder !== null && $c->gameMode !== 1) {
+                    $left = ['item' => $this->version->blocks['items'][substr($remainder['id'], 10)], 'count' => $remainder['count']];
+                    if (!isset($c->inventory[$slot])) {
+                        $c->inventory[$slot] = $left;
+                    } elseif (($count = $this->giveStack($c, $left)) > 0) {
+                        $this->playerDrop($c, array_replace($left, ['count' => $count]), false);
+                    }
+                }
                 $this->syncInventory($c);
                 $c->send($this->version, 'entity_event', pack('N', $c->entityId) . "\x09");
             }$c->eating = null;
@@ -1067,9 +1086,10 @@ trait Survival
             return;
         }
         $info = $this->version->catalog->item($stack['item']);
-        // Foods with canAlwaysEat are eaten at full hunger; Consumable.consumeTicks sets the time.
+        // Consumable.canConsume: anything consumable, but food only for a player who can eat
+        // (Player.canEat: invulnerable in creative, canAlwaysEat, or hungry); consumeTicks sets the time.
         $name = 'minecraft:' . $this->version->catalog->itemName($stack['item']);
-        if (isset($info['nutrition']) && ($c->food < 20 || in_array($name, $this->consumables()['always_edible'], true))) {
+        if (isset($this->consumables()['items'][$name]) && (!isset($info['nutrition']) || $c->food < 20 || $c->gameMode === 1 || in_array($name, $this->consumables()['always_edible'], true))) {
             $ticks = (int) (($this->consumables()['items'][$name]['consume_seconds'] ?? 1.6) * 20);
             $c->eating = ['slot' => $slot, 'item' => $stack['item'], 'complete' => $this->ticks + $ticks];
             return;
