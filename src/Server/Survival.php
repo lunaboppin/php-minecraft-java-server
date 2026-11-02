@@ -138,8 +138,9 @@ trait Survival
                     + array_intersect_key($orb, array_flip(['x', 'y', 'z', 'yaw', 'velocity', 'value', 'count', 'age', 'health'])), $this->experienceOrbs)));
                 $this->world->setting('items', array_values(array_map($this->savedItem(...), $this->itemEntities)));
                 // PrimedTnt.addAdditionalSaveData: the fuse, motion and owner keep.
-                $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid'])]
-                    + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse', 'owner'])), $this->tntEntities)));
+                // The UUIDs are binary, which JSON cannot hold, so they are saved as hex.
+                $this->world->setting('tnt', array_values(array_map(static fn (array $tnt): array => ['uuid' => bin2hex($tnt['uuid']), 'owner' => $tnt['owner'] === null ? null : bin2hex($tnt['owner'])]
+                    + array_intersect_key($tnt, array_flip(['x', 'y', 'z', 'velocity', 'fuse'])), $this->tntEntities)));
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
