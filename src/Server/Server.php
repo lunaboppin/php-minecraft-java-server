@@ -137,6 +137,8 @@ final class Server
 
     use VehicleSteering;
 
+    use Scaffolding;
+
     use Waypoints;
 
     use Statistics;
