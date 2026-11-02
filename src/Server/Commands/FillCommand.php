@@ -53,7 +53,8 @@ trait FillCommand
                         }
                         $affected = false;
                         if ($mode === 'destroy' && !$this->version->catalog->air($current)) {
-                            $destroyed[] = [[$x, $y, $z], $current];
+                            $name = $this->version->catalog->blockName($current);
+                            $destroyed[] = [[$x, $y, $z], $current, $name, in_array($name, ['chest', 'barrel', 'furnace', 'blast_furnace', 'smoker'], true) ? $this->world->container([$x, $y, $z]) : null];
                             $this->world->set($x, $y, $z, 0);
                             $current = 0;
                             $affected = true;
@@ -76,9 +77,13 @@ trait FillCommand
                 }
             }
         });
-        foreach ($destroyed as [$position, $previous]) {
+        foreach ($destroyed as [$position, $previous, $name, $container]) {
             $this->levelEvent(2001, $position, $previous);
             $this->dropBlockLoot(...$position, state: $previous);
+            // Level.destroyBlock's setBlock after the loot: the removed block entity drops what it holds.
+            if ($container !== null) {
+                $this->removeContainer(...$position, name: $name, data: $container);
+            }
         }
         if ($changed === 0) {
             throw new CommandFailure(['translate' => 'commands.fill.failed']);

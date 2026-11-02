@@ -36,5 +36,6 @@ final class Crafting
         foreach($items as $i=>$item){if(in_array($item,$allowed,true)){$left=$items;unset($left[$i]);if($this->assign($ingredients,array_values($left))){return true;}}}
         return false;
     }
-    public function smelt(int $item):?array {foreach($this->recipes as $recipe){if($recipe['type']==='smelting' && in_array($item,$recipe['ingredients'][0],true)){return $recipe;}}return null;}
+    public function recipe(string $name):?array {foreach($this->recipes as $recipe){if($recipe['name']===$name){return $recipe;}}return null;}
+    public function smelt(int $item,string $type='smelting'):?array {foreach($this->recipes as $recipe){if($recipe['type']===$type && in_array($item,$recipe['ingredients'][0],true)){return $recipe;}}return null;}
 }
