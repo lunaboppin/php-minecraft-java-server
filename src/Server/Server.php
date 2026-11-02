@@ -75,6 +75,8 @@ final class Server
 
     use Anvils;
 
+    use Grindstones;
+
     use Sleeping;
 
     use WeatherCycle;
@@ -1470,7 +1472,7 @@ final class Server
         }
         if ($within && !$c->sneaking && $c->gameMode !== 3) {
             $type = match ($name) {
-                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','anvil','chipped_anvil','damaged_anvil' => 'anvil','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender','hopper' => 'hopper',default => null
+                'crafting_table' => 'crafting','enchanting_table' => 'enchanting','anvil','chipped_anvil','damaged_anvil' => 'anvil','grindstone' => 'grindstone','furnace','blast_furnace','smoker' => $name,'chest','trapped_chest','barrel' => 'chest','ender_chest' => 'ender','hopper' => 'hopper',default => null
             };
             // EnderChestBlock and ChestBlock.isChestBlockedAt: a redstone conductor above keeps it shut,
             // above either half of a double chest.
