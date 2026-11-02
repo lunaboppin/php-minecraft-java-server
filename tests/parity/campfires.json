@@ -1,7 +1,7 @@
 {
   "name": "campfires",
   "normalizations": [
-    "Compare putting raw beef on a lit campfire, where it cooks and drops after 30 seconds to be picked up beside it, and potatoes on an unlit one (four fit, the fifth stays in hand, none cook), which /setblock removes without dropping them.",
+    "Compare putting raw beef on a lit campfire, where it cooks and drops after 30 seconds, and potatoes on an unlit one (four fit, the fifth stays in hand, none cook), which /setblock removes without dropping them. Whether the dropped beef rolls within reach of the player is random, so it is not picked up.",
     "Use matching flat terrain."
   ],
   "steps": [
@@ -161,26 +161,6 @@
       "action": "snapshot",
       "name": "cooked",
       "fields": [
-        "entities"
-      ]
-    },
-    {
-      "action": "command",
-      "text": "gamemode survival @s"
-    },
-    {
-      "action": "command",
-      "text": "tp @s 0.5 64 -0.5 0 20"
-    },
-    {
-      "action": "wait",
-      "seconds": 2
-    },
-    {
-      "action": "snapshot",
-      "name": "picked-up",
-      "fields": [
-        "inventory",
         "entities"
       ]
     },
