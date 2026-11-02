@@ -25,6 +25,7 @@ trait GiveCommand
         // The stored components; others are shown in the reply but not kept on the stack.
         $patch = array_filter([
             'damage' => $parsed['components']['minecraft:damage'] ?? null,
+            'repairCost' => $parsed['components']['minecraft:repair_cost'] ?? null,
             'enchantments' => $parsed['components']['minecraft:enchantments'] ?? null,
             'storedEnchantments' => $parsed['components']['minecraft:stored_enchantments'] ?? null,
             'potion' => $parsed['components']['minecraft:potion_contents'] ?? null,

@@ -83,11 +83,12 @@ final class ItemArgument
             case 'minecraft:damage':
             case 'minecraft:max_damage':
             case 'minecraft:max_stack_size':
+            case 'minecraft:repair_cost':
                 if (!in_array($tag['type'], ['byte', 'short', 'int', 'long', 'float', 'double'], true)) {
                     return 'Not a number';
                 }
                 $value = (int) $tag['value'];
-                if ($component === 'minecraft:damage' && $value < 0) {
+                if (in_array($component, ['minecraft:damage', 'minecraft:repair_cost'], true) && $value < 0) {
                     return 'Value must be non-negative: ' . $value;
                 }
                 return [$value];
