@@ -62,6 +62,12 @@ trait BlockPlacement
     private function connectedState(int $state, int $x, int $y, int $z): int
     {
         $catalog = $this->version->catalog;
+        if ($catalog->blockName($state) === 'redstone_wire') {
+            // RedStoneWireBlock.updateShape from each side: its connections and strength there.
+            $p = $this->wireConnections([$x, $y, $z], $catalog->properties($state));
+            $p['power'] = (string) $this->wireStrength([$x, $y, $z]);
+            return $catalog->state('redstone_wire', $p);
+        }
         if ($catalog->blockName($state) === 'tripwire') {
             return $this->tripwireConnected($state, $x, $y, $z);
         }

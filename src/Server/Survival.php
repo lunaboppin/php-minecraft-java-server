@@ -135,6 +135,7 @@ trait Survival
                 $this->saveMovingPistons();
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
+                $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
             });

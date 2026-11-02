@@ -24,10 +24,6 @@ trait BlockSimulation
         $key=$kind.':'.$x.':'.$y.':'.$z;$due=$this->worldAge+$delay;
         if(!isset($this->blockTicks[$key]) || $this->blockTicks[$key][0]>$due){$this->blockTicks[$key]=[$due,$kind,[$x,$y,$z]];}
     }
-    private function circuit(string $name):bool {
-        return in_array($name,['redstone_wire','redstone_lamp','redstone_torch','redstone_wall_torch','repeater','comparator','note_block'],true)
-            || str_ends_with($name,'_door') || str_ends_with($name,'_trapdoor');
-    }
     private function changedSimulation(int $x,int $y,int $z):void {
         $this->fluidsChanged($x,$y,$z);
         $this->spongesChanged($x,$y,$z);
@@ -47,14 +43,7 @@ trait BlockSimulation
         $this->chorusChanged($x,$y,$z);
         $this->fallingChanged($x,$y,$z);
         $this->speleothemsChanged($x,$y,$z);
-        $catalog=$this->version->catalog;
-        foreach(array_merge([[0,0,0]],self::NEIGHBORS) as [$dx,$dy,$dz]){
-            $a=$x+$dx;$b=$y+$dy;$c=$z+$dz;$name=$catalog->blockName($this->world->get($a,$b,$c));
-            if($this->circuit($name)){$this->scheduleBlock('circuit',$a,$b,$c);}
-            // Power can pass through one opaque block to a device on its far side.
-            if(!$catalog->blocks[$name]['full_cube']){continue;}
-            foreach(self::SIDES as [$ex,$ey,$ez]){$other=$catalog->blockName($this->world->get($a+$ex,$b,$c+$ez));if($this->circuit($other)){$this->scheduleBlock('circuit',$a+$ex,$b,$c+$ez);}}
-        }
+        $this->redstoneChanged($x,$y,$z);
     }
     private function tickBlocks():void {
         // ServerLevel.tick: the due block ticks run, then the due fluid ticks, each in the order
@@ -77,11 +66,11 @@ trait BlockSimulation
             elseif($kind==='falling'){$this->tickFallingBlock($x,$y,$z);}
             elseif($kind==='speleothem'){$this->tickSpeleothem($x,$y,$z);}
             elseif($kind==='cauldron'){$this->tickCauldron($x,$y,$z);}
-            elseif($kind==='circuit'){$this->tickCircuit($x,$y,$z);}
+            elseif(in_array($kind,['circuit','torch','repeater','comparator','lamp'],true)){$this->tickRedstone($kind,$x,$y,$z);}
             elseif($kind==='button'){
                 $state=$this->world->get($x,$y,$z);$name=$this->version->catalog->blockName($state);
                 if(str_ends_with($name,'_button')){$p=$this->version->catalog->properties($state);$p['powered']='false';$this->setBlock($x,$y,$z,$this->version->catalog->state($name,$p));}
-            }elseif($kind==='repeater'){$this->tickCircuit($x,$y,$z,true);}
+            }
             elseif($kind==='lightning_rod'){$this->unpowerLightningRod($x,$y,$z);}
         }
         $this->handlingBlockTicks=false;
@@ -139,87 +128,17 @@ trait BlockSimulation
         $sound=Binary::writeVarInt($info['sound']+1).Binary::writeVarInt(2).pack('NNNGG',($x*8+4)&0xffffffff,($y*8+4)&0xffffffff,($z*8+4)&0xffffffff,3,$pitch).random_bytes(8);
         foreach($this->localPlayers() as $player){if(($player->x-$x)**2+($player->y-$y)**2+($player->z-$z)**2<=64**2){$player->send($this->version,'block_event',$event);$player->send($this->version,'sound',$sound);}}
     }
-    private function directSignal(int $x,int $y,int $z,array $target,bool $wires=true):int {
-        $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);
-        if($name==='redstone_block'){return 15;}
-        if($name==='observer'){return $this->observerSignal($state,$x,$y,$z,$target);}
-        if($name==='daylight_detector'){return (int)$p['power'];}
-        if($name==='tripwire_hook'){return $this->hookSignal($state);}
-        if($this->isPressurePlate($name)){return $this->plateSignal($state);}
-        if($name==='trapped_chest'){return $this->trappedChestSignal([$x,$y,$z]);}
-        if(($name==='lever' || str_ends_with($name,'_button') || $this->lightningRod($name)) && ($p['powered']??'false')==='true'){return 15;}
-        if($name==='redstone_wire'){return $wires?(int)$p['power']:0;}
-        if(in_array($name,['redstone_torch','redstone_wall_torch'],true) && $p['lit']==='true'){
-            $support=$name==='redstone_torch'?[$x,$y-1,$z]:[$x-$this->facing($p['facing'])[0],$y,$z-$this->facing($p['facing'])[2]];
-            return $target===$support?0:15;
-        }
-        if(in_array($name,['repeater','comparator'],true) && $p['powered']==='true'){
-            [$dx,,$dz]=$this->facing($p['facing']);if($target!==[$x-$dx,$y,$z-$dz]){return 0;}
-            if($name==='repeater'){return 15;}
-            return $this->comparatorOutput($x,$y,$z,$p);
-        }
-        return 0;
-    }
+    /** Level.getBestNeighborSignal at a position, without wires' own signal when asked, leaving out one side. */
     private function powerAt(int $x,int $y,int $z,bool $wires=true,?array $exclude=null):int {
-        $power=0;$c=$this->version->catalog;
-        foreach(self::NEIGHBORS as [$dx,$dy,$dz]){
-            if([$dx,$dy,$dz]===$exclude){continue;}
-            $a=$x+$dx;$b=$y+$dy;$d=$z+$dz;$power=max($power,$this->directSignal($a,$b,$d,[$x,$y,$z],$wires));
-            $state=$this->world->get($a,$b,$d);$name=$c->blockName($state);
-            if($c->blocks[$name]['full_cube'] && !$this->circuit($name)){
-                foreach(self::NEIGHBORS as [$ex,$ey,$ez]){
-                    if([$a+$ex,$b+$ey,$d+$ez]===[$x,$y,$z]){continue;}
-                    $source=$c->blockName($this->world->get($a+$ex,$b+$ey,$d+$ez));
-                    if(in_array($source,['redstone_block','lever','repeater','comparator','observer'],true) || str_ends_with($source,'_button')){$power=max($power,$this->directSignal($a+$ex,$b+$ey,$d+$ez,[$a,$b,$d],false));}
-                    // LightningRodBlock.getDirectSignal: a struck rod strongly powers the block it is on.
-                    // BasePressurePlateBlock.getDirectSignal: a pressed plate strongly powers the block it is on.
-                    elseif($this->isPressurePlate($source) && [$ex,$ey,$ez]===[0,1,0]){$power=max($power,$this->plateSignal($this->world->get($a,$b+1,$d)));}
-                    // TripWireHookBlock.getDirectSignal: a powered hook strongly powers the block it hangs on.
-                    elseif($source==='tripwire_hook' && $this->hookSignal($this->world->get($a+$ex,$b+$ey,$d+$ez))>0 && self::TRIPWIRE_SIDES[$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez))['facing']]===[$ex,$ey,$ez]){$power=15;}
-                    elseif($this->lightningRod($source)){$rod=$c->properties($this->world->get($a+$ex,$b+$ey,$d+$ez));if($rod['powered']==='true' && self::ROD_FACES[$rod['facing']]===[$ex,$ey,$ez]){$power=15;}}
-                }
-            }
-        }
-        return $power;
+        $skip=$exclude===null?null:array_search($exclude,self::RS_DIRECTIONS,true);
+        $previous=$this->wireSignals;$this->wireSignals=$previous && $wires;
+        try{return $this->bestNeighborSignal([$x,$y,$z],$skip===false?null:$skip);}finally{$this->wireSignals=$previous;}
     }
     private function facing(string $name):array {return ['north'=>[0,0,-1],'east'=>[1,0,0],'south'=>[0,0,1],'west'=>[-1,0,0]][$name];}
-    private function comparatorOutput(int $x,int $y,int $z,array $p):int {
-        [$dx,,$dz]=$this->facing($p['facing']);$rear=$this->directSignal($x+$dx,$y,$z+$dz,[$x,$y,$z]);
-        $c=$this->version->catalog;
-        if($c->blockName($this->world->get($x+$dx,$y,$z+$dz))==='jukebox'){
-            $stack=$this->world->container([$x+$dx,$y,$z+$dz])['slots'][0]??null;
-            $rear=$stack===null?0:($c->simulation['songs'][$c->itemName($stack['item'])]['comparator']??0);
-        }
-        $side=max($this->directSignal($x+$dz,$y,$z-$dx,[$x,$y,$z]),$this->directSignal($x-$dz,$y,$z+$dx,[$x,$y,$z]));
-        return $p['mode']==='subtract'?max(0,$rear-$side):($rear>=$side?$rear:0);
-    }
-    private function tickCircuit(int $x,int $y,int $z,bool $delayed=false):void {
+    /** Note blocks and doors follow their neighbours' power when told of a change. */
+    private function tickCircuit(int $x,int $y,int $z):void {
         $c=$this->version->catalog;$state=$this->world->get($x,$y,$z);$name=$c->blockName($state);$p=$c->properties($state);$old=$p;
-        if($name==='redstone_wire'){
-            $power=$this->powerAt($x,$y,$z,false);$connected=[];
-            foreach(array_combine(['north','east','south','west'],self::SIDES) as $direction=>[$dx,$dy,$dz]){
-                $other=$this->world->get($x+$dx,$y,$z+$dz);$kind=$c->blockName($other);
-                if($kind==='redstone_wire'){$power=max($power,(int)$c->properties($other)['power']-1);}
-                $connected[$direction]=$this->circuit($kind) || in_array($kind,['lever','redstone_block'],true) || str_ends_with($kind,'_button') || $this->lightningRod($kind) || $kind==='daylight_detector' || $this->isPressurePlate($kind) || $kind==='tripwire_hook';
-            }
-            if(!in_array(true,$connected,true)){$connected=array_fill_keys(array_keys($connected),true);}
-            if(!$connected['north'] && !$connected['south']){$connected['east']=$connected['west']=true;}
-            if(!$connected['east'] && !$connected['west']){$connected['north']=$connected['south']=true;}
-            foreach($connected as $direction=>$yes){$p[$direction]=$yes?'side':'none';}$p['power']=(string)max(0,$power);
-        }elseif(in_array($name,['redstone_torch','redstone_wall_torch'],true)){
-            $support=$name==='redstone_torch'?[$x,$y-1,$z]:[$x-$this->facing($p['facing'])[0],$y,$z-$this->facing($p['facing'])[2]];
-            $p['lit']=$this->powerAt(...$support)>0?'false':'true';
-        }elseif($name==='repeater' || $name==='comparator'){
-            [$dx,,$dz]=$this->facing($p['facing']);$power=$name==='repeater'?$this->directSignal($x+$dx,$y,$z+$dz,[$x,$y,$z]):$this->comparatorOutput($x,$y,$z,$p);
-            if($name==='repeater'){
-                $locked=max($this->directSignal($x+$dz,$y,$z-$dx,[$x,$y,$z]),$this->directSignal($x-$dz,$y,$z+$dx,[$x,$y,$z]))>0;
-                $p['locked']=$locked?'true':'false';if(!$locked){$p['powered']=$power>0?'true':'false';}
-            }else{$p['powered']=$power>0?'true':'false';}
-            if(!$delayed && $p['powered']!==$old['powered']){$this->scheduleBlock('repeater',$x,$y,$z,$name==='repeater'?2*(int)$p['delay']:2);$p['powered']=$old['powered'];}
-        }elseif($name==='redstone_lamp'){
-            $powered=$this->powerAt($x,$y,$z)>0;
-            if(!$powered && $p['lit']==='true' && !$delayed){$this->scheduleBlock('repeater',$x,$y,$z,4);return;}$p['lit']=$powered?'true':'false';
-        }elseif($name==='note_block'){
+        if($name==='note_block'){
             $p['instrument']=$this->noteInstrument($x,$y,$z);$p['powered']=$this->powerAt($x,$y,$z)>0?'true':'false';
             if($p['powered']==='true' && $old['powered']==='false'){$this->playNote($x,$y,$z);}
         }elseif(str_ends_with($name,'_door') || str_ends_with($name,'_trapdoor')){

@@ -288,10 +288,4 @@ trait Tripwires
             }
         }
     }
-
-    /** TripWireHookBlock signals: 15 to every side when powered, strongly into the block it hangs on. */
-    private function hookSignal(int $state): int
-    {
-        return $this->version->catalog->properties($state)['powered'] === 'true' ? 15 : 0;
-    }
 }

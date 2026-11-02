@@ -170,6 +170,7 @@ jobs:
           python3 tools/parity/run.py --scenario tests/parity/pistons.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-pistons
           python3 tools/parity/run.py --scenario tests/parity/tnt-restart.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tnt-restart
           python3 tools/parity/run.py --scenario tests/parity/observers.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-observers
+          python3 tools/parity/run.py --scenario tests/parity/redstone.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-redstone
           python3 tools/parity/run.py --scenario tests/parity/sleep.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-sleep
           python3 tools/parity/run.py --scenario tests/parity/pressure-plates.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-pressure-plates
           python3 tools/parity/run.py --scenario tests/parity/tripwires.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tripwires
@@ -205,6 +206,7 @@ jobs:
             tools/.cache/parity-pistons/
             tools/.cache/parity-tnt-restart/
             tools/.cache/parity-observers/
+            tools/.cache/parity-redstone/
             tools/.cache/parity-sleep/
             tools/.cache/parity-pressure-plates/
             tools/.cache/parity-tripwires/
