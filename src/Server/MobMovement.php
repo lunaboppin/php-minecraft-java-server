@@ -82,6 +82,18 @@ trait MobMovement
         }
         $dx = $mob['targetX'] - $mob['x'];
         $dz = $mob['targetZ'] - $mob['z'];
+        if ($prey !== null && isset($mob['strafe'])) {
+            // MoveControl.strafe: a quarter of the movement speed, forward and sideways while
+            // facing the target (Mob.lookAt).
+            [$forward, $right] = $mob['strafe'];
+            $speed = Float32::round(0.25 * ($definition['attributes']['movement_speed'] ?? 0.25));
+            $mob['yaw'] = Float32::round(rad2deg(atan2(-$dx, $dz)));
+            $before = $mob['y'];
+            $this->mobAirTravel->step($this->world, $mob, $definition, [$right, 0.0, $forward], $speed);
+            $this->mobFall($mob, $mob['y'] - $before);
+            $this->pushAfterMobTravel($mob);
+            return;
+        }
         $moving = $mob['kind'] !== 'giant' && $dx * $dx + $dz * $dz > 0.04;
         // MeleeAttackGoal's speed modifier of 1: the full movement speed while hunting.
         $speed = $moving ? Float32::round($prey !== null ? ($definition['attributes']['movement_speed'] ?? 0.2) : min(0.5, ($definition['attributes']['movement_speed'] ?? 0.2) * 0.6)) : 0.0;

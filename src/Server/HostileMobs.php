@@ -17,8 +17,11 @@ use PhpMinecraftJavaServer\World\Generation\Float32;
  */
 trait HostileMobs
 {
-    /** Mobs that hunt players this way: melee attackers, and creepers, which only swell. */
-    private const HUNTERS = ['zombie', 'husk', 'drowned', 'zombie_villager', 'spider', 'cave_spider', 'creeper'];
+    /** Mobs that hunt players this way: melee attackers, creepers, which only swell, and archers. */
+    private const HUNTERS = ['zombie', 'husk', 'drowned', 'zombie_villager', 'spider', 'cave_spider', 'creeper', 'skeleton', 'stray', 'bogged', 'parched'];
+
+    /** AbstractSkeleton.reassessWeaponGoal: the bow's attack interval on hard, and otherwise. */
+    private const ARCHERS = ['skeleton' => [20, 40], 'stray' => [20, 40], 'bogged' => [50, 70], 'parched' => [50, 70]];
 
     /** Mob.DEFAULT_ATTACK_REACH: sqrt(2.04F) - 0.6F, added to the attacker's box sideways. */
     private const ATTACK_REACH = 0.8282856857085699;
@@ -43,11 +46,16 @@ trait HostileMobs
         }
         $this->setHuntTarget($mob, $target);
         if ($target === null) {
+            $this->stopRangedBowAttack($mob);
             return null;
         }
         if ($mob['kind'] === 'creeper') {
             // SwellGoal holds a creeper still while it swells.
             return ($mob['swellDir'] ?? -1) > 0 || $this->mobDistanceSquared($mob, $target) < 9.0 ? null : $target;
+        }
+        if (isset(self::ARCHERS[$mob['kind']]) && $this->version->catalog->itemName($mob['equipment'][0]['item'] ?? -1) === 'bow') {
+            $this->rangedBowAttack($mob, $target);
+            return $target;
         }
         // MeleeAttackGoal.checkAndPerformAttack: within reach, cooled down and in sight.
         $mob['attackCooldown'] = max(($mob['attackCooldown'] ?? 0) - 1, 0);
@@ -57,6 +65,91 @@ trait HostileMobs
             $this->mobHurtsPlayer($mob, $target);
         }
         return $target;
+    }
+
+    /**
+     * RangedBowAttackGoal.tick: walk at the target until it has been in sight for a second within
+     * 15 blocks, then strafe around it, switching direction at random; draw the bow for 20 ticks
+     * while the target is in sight, shoot with the draw's power, and wait out the attack interval.
+     * The strafe, when there is one, is left in the mob's strafe for MobMovement.
+     */
+    private function rangedBowAttack(array &$mob, Client $target): void
+    {
+        $random = $this->mobRandom($mob['id']);
+        $distance = $this->mobDistanceSquared($mob, $target);
+        $sees = $this->mobSees($mob, $target);
+        $seeTime = $mob['seeTime'] ?? 0;
+        if ($sees !== $seeTime > 0) {
+            $seeTime = 0;
+        }
+        $mob['seeTime'] = $sees ? $seeTime + 1 : $seeTime - 1;
+        $strafing = $mob['strafingTime'] ?? -1;
+        if ($distance <= 225.0 && $mob['seeTime'] >= 20) {
+            ++$strafing;
+        } else {
+            $strafing = -1;
+        }
+        if ($strafing >= 20) {
+            if ($random->nextFloat() < 0.3) {
+                $mob['strafeClockwise'] = !($mob['strafeClockwise'] ?? false);
+            }
+            if ($random->nextFloat() < 0.3) {
+                $mob['strafeBackwards'] = !($mob['strafeBackwards'] ?? false);
+            }
+            $strafing = 0;
+        }
+        $mob['strafingTime'] = $strafing;
+        unset($mob['strafe']);
+        if ($strafing > -1) {
+            if ($distance > 225.0 * 0.75) {
+                $mob['strafeBackwards'] = false;
+            } elseif ($distance < 225.0 * 0.25) {
+                $mob['strafeBackwards'] = true;
+            }
+            $mob['strafe'] = [($mob['strafeBackwards'] ?? false) ? -0.5 : 0.5, ($mob['strafeClockwise'] ?? false) ? 0.5 : -0.5];
+        }
+        if (isset($mob['drawingSince'])) {
+            if (!$sees && $mob['seeTime'] < -60) {
+                $this->setMobUsingItem($mob, false);
+            } elseif ($sees && ($drawn = $this->ticks - $mob['drawingSince']) >= 20) {
+                $this->setMobUsingItem($mob, false);
+                $this->shootMobArrow($mob, $target, self::bowPower($drawn));
+                [$hard, $other] = self::ARCHERS[$mob['kind']];
+                $mob['attackTime'] = $this->config->difficulty === 3 ? $hard : $other;
+            }
+        } elseif (($mob['attackTime'] = ($mob['attackTime'] ?? -1) - 1) <= 0 && $mob['seeTime'] >= -60) {
+            $this->setMobUsingItem($mob, true);
+        }
+    }
+
+    /** RangedBowAttackGoal.stop: no more seeing, strafing or drawing. */
+    private function stopRangedBowAttack(array &$mob): void
+    {
+        if (!isset(self::ARCHERS[$mob['kind']])) {
+            return;
+        }
+        unset($mob['seeTime'], $mob['strafe']);
+        $mob['attackTime'] = -1;
+        $mob['strafingTime'] = -1;
+        if (isset($mob['drawingSince'])) {
+            $this->setMobUsingItem($mob, false);
+        }
+    }
+
+    /** LivingEntity.startUsingItem and stopUsingItem with the main hand: the living entity flags, index 8. */
+    private function setMobUsingItem(array &$mob, bool $using): void
+    {
+        if ($using) {
+            $mob['drawingSince'] = $this->ticks;
+        } else {
+            unset($mob['drawingSince']);
+        }
+        $packet = Binary::writeVarInt($mob['id']) . "\x08" . Binary::writeVarInt(0) . ($using ? "\1" : "\0") . "\xff";
+        foreach ($this->localPlayers() as $player) {
+            if (isset($player->entities[$mob['id']])) {
+                $player->send($this->version, 'set_entity_data', $packet);
+            }
+        }
     }
 
     /** Mob.doHurtTarget: its attack damage, scaled for difficulty by the player's hurt. */

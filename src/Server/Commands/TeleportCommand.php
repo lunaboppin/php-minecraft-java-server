@@ -100,6 +100,11 @@ trait TeleportCommand
         if (isset($target['item'])) {
             return;
         }
+        if (isset($target['projectile'])) {
+            [$this->projectiles[$target['projectile']]['yaw'], $this->projectiles[$target['projectile']]['pitch']] = [$yaw, $pitch];
+            $this->projectiles[$target['projectile']]['needsSync'] = true;
+            return;
+        }
         if (isset($target['client'])) {
             $target['client']->yaw = $yaw;
             $target['client']->pitch = $pitch;
@@ -117,7 +122,7 @@ trait TeleportCommand
     private function faceEntity(array $target, array $facing): void
     {
         [$x, $y, $z, $entity, $anchor] = $facing;
-        if (isset($target['item']) || isset($target['orb'])) {
+        if (isset($target['item']) || isset($target['orb']) || isset($target['projectile'])) {
             return;
         }
         [$fromX, $fromY, $fromZ] = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z] : [$this->animals[$target['mob']]['x'], $this->animals[$target['mob']]['y'], $this->animals[$target['mob']]['z']];
@@ -152,6 +157,13 @@ trait TeleportCommand
                     $player->send($this->version, 'teleport_entity', \PhpMinecraftJavaServer\Protocol\Packets::teleportEntity($target['item'], $position[0], $position[1], $position[2], 0, 0, false));
                 }
             }
+            return;
+        }
+        if (isset($target['projectile'])) {
+            // The projectile's tracker sends the new position with its next update.
+            $projectile = &$this->projectiles[$target['projectile']];
+            [$projectile['x'], $projectile['y'], $projectile['z']] = $position;
+            $projectile['needsSync'] = true;
             return;
         }
         if (!isset($target['client'])) {
