@@ -240,16 +240,20 @@ trait Scoreboards
         }
     }
 
-    /** Scoreboard.forAllObjectives(criteria, holder, ScoreAccess::increment) */
-    private function incrementCriteria(string $criteria, string $holder): void
+    /** Scoreboard.forAllObjectives(criteria, holder, score -> score.add(amount)), as ints wrap */
+    private function incrementCriteria(string $criteria, string $holder, int $amount = 1): void
     {
+        $changed = false;
         foreach ($this->scoreboard()->objectiveNames() as $objective) {
             if ($this->scoreboard()->objectives[$objective]['criteria'] === $criteria) {
-                $value = ($this->scoreboard()->scores[$holder][$objective]['value'] ?? 0) + 1;
-                $this->setScore($holder, $objective, $value > 2147483647 ? -2147483648 : $value);
+                $value = (($this->scoreboard()->scores[$holder][$objective]['value'] ?? 0) + $amount + 2147483648) % 4294967296;
+                $this->setScore($holder, $objective, ($value < 0 ? $value + 4294967296 : $value) - 2147483648);
+                $changed = true;
             }
         }
-        $this->saveScoreboard();
+        if ($changed) {
+            $this->saveScoreboard();
+        }
     }
 
     /** Player.getDisplayName, formatted for the player's team. */

@@ -352,7 +352,11 @@ trait Animals
         }
         $attributes = $this->mobAttributes($animal);
         $applied = Combat::afterArmor($incoming, $attributes['armor'] ?? 0, $attributes['armor_toughness'] ?? 0);
+        $before = $animal['health'];
         $animal['health'] = max(0.0, Float32::round($animal['health'] - $applied));
+        // Player.damageStatsAndHearts: tenths of a heart dealt.
+        // Math.round of a float saturates at the int range.
+        $this->awardStat($c, 'custom', 'damage_dealt', (int) min(2147483647.0, round(($before - $animal['health']) * 10.0)));
         if ($newWindow) {
             $this->knockbackMob($animal, $c);
             $this->mobDamageSound($animal, $animal['health'] <= 0);
@@ -375,6 +379,8 @@ trait Animals
             if ($cost > 0 && $maximum > 0) {
                 $stack['damage'] = ($stack['damage'] ?? 0) + $cost;
                 if ($stack['damage'] >= $maximum) {
+                    // ServerPlayer.onEquippedItemBroken
+                    $this->awardStat($c, 'broken', $this->version->catalog->itemName($stack['item']));
                     unset($c->inventory[$slot]);
                 } else {
                     $c->inventory[$slot] = $stack;
@@ -385,7 +391,9 @@ trait Animals
         // LivingEntity.hurtServer: a player's hit is remembered for 100 ticks for experience.
         $animal['lastHurtByPlayerTick'] = $this->ticks;
         if ($animal['health'] <= 0) {
+            $this->awardStat($c, 'killed', $animal['kind']);
             $this->incrementCriteria('totalKillCount', $c->name);
+            $this->awardStat($c, 'custom', 'mob_kills');
             $this->animalDeathLoot($animal, $c);
         }
         return true;
@@ -453,7 +461,10 @@ trait Animals
             $this->mobDamageSound($mob, true);
         }
         if ($attacker !== null) {
+            // ServerPlayer.awardKillScore: the kind killed, the kill count, then mob kills.
+            $this->awardStat($attacker, 'killed', $mob['kind']);
             $this->incrementCriteria('totalKillCount', $attacker->name);
+            $this->awardStat($attacker, 'custom', 'mob_kills');
         }
         // LivingEntity.die: the loot and experience, then the death event.
         $this->animalDeathLoot($mob, $attacker, $type);

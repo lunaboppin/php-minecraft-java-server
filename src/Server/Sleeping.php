@@ -119,6 +119,9 @@ trait Sleeping
         $state = $this->world->get($x, $y, $z);
         $this->setBedOccupied($x, $y, $z, true);
         $this->sendSleepData($c);
+        // ServerPlayer.startSleeping resets the time since rest; startSleepInBed counts the sleep.
+        $this->resetStat($c, 'custom', 'time_since_rest');
+        $this->awardStat($c, 'custom', 'sleep_in_bed');
         if ((int) $this->gameRule('players_sleeping_percentage') > 100) {
             $this->overlay($c, ['translate' => 'sleep.not_possible']);
         }
