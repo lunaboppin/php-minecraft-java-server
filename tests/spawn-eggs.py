@@ -25,6 +25,8 @@ def main():
             a=Probe(port,'egg-user').login();b=Probe(port,'egg-observer').login('Observer')
             try:
                 command(a,'gamerule minecraft:spawn_mobs false')
+                # At midnight, so the undead the eggs make do not burn in daylight before the checks.
+                command(a,'gamerule minecraft:advance_time false');command(a,'time set midnight')
                 for index,(egg,kind) in enumerate(MOBS['spawn_eggs'].items()):
                     edit(a,egg);use(a,[2,63,0],500+index)
                     assert MOBS['entities'][kind]['id'] in a.entities.values(),(egg,kind)
