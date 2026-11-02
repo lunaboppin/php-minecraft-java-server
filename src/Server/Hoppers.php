@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\World\Inventory;
 trait Hoppers
 {
     /** Each container block's slot count, per block (a double chest has two). */
-    private const HOPPER_CONTAINERS = ['chest' => 27, 'trapped_chest' => 27, 'barrel' => 27, 'furnace' => 3, 'blast_furnace' => 3, 'smoker' => 3, 'hopper' => 5];
+    private const HOPPER_CONTAINERS = ['chest' => 27, 'trapped_chest' => 27, 'barrel' => 27, 'furnace' => 3, 'blast_furnace' => 3, 'smoker' => 3, 'hopper' => 5, 'dispenser' => 9, 'dropper' => 9];
 
     private const HOPPER_FACING = ['down' => [0, -1, 0], 'north' => [0, 0, -1], 'south' => [0, 0, 1], 'west' => [-1, 0, 0], 'east' => [1, 0, 0]];
 
