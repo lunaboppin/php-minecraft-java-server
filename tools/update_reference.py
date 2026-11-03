@@ -186,6 +186,27 @@ def compostables(inner, reports):
     return {'items': items, 'providers': providers}
 
 
+def block_transformers(inner, reports):
+    """The block transformers (axe, hoe and shovel uses on blocks) and the items that carry each."""
+    items = {}
+    for path in sorted((reports / 'minecraft/components/item').glob('*.json')):
+        component = json.loads(path.read_text())['components'].get('minecraft:block_transformer')
+        if component is not None:
+            items['minecraft:' + path.stem] = component
+    transformers = {}
+    with zipfile.ZipFile(inner) as archive:
+        for name in sorted(set(items.values())):
+            namespace, key = name.split(':')
+            transformers[name] = json.loads(archive.read('data/' + namespace + '/block_transformer/' + key + '.json'))
+        loot = {}
+        for name in sorted({transform['loot'] for transforms in transformers.values() for transform in transforms if 'loot' in transform}):
+            namespace, key = name.split(':')
+            loot[name] = json.loads(archive.read('data/' + namespace + '/loot_table/' + key + '.json'))
+    sounds = json.loads((reports / 'registries.json').read_text())['minecraft:sound_event']['entries']
+    used = sorted({transform['sound'] for transforms in transformers.values() for transform in transforms if 'sound' in transform})
+    return {'items': items, 'transformers': transformers, 'loot': loot, 'sounds': {name: sounds[name]['protocol_id'] for name in used}}
+
+
 def english_names(inner):
     """The en_us names of items, blocks and entities, which some command errors print as plain text."""
     with zipfile.ZipFile(inner) as archive:
@@ -382,6 +403,7 @@ def main():
     write_json(out / 'enchantments.json', enchantments(inner))
     write_json(out / 'repairable.json', repairable(reports))
     write_json(out / 'compostables.json', compostables(inner, reports))
+    write_json(out / 'block-transformers.json', block_transformers(inner, reports))
     write_json(out / 'en-us-names.json', english_names(inner))
     from recipes import compile_recipes
     write_json(out / 'recipes.json', compile_recipes(inner, item_ids))
