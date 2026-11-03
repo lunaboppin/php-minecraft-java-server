@@ -212,6 +212,9 @@ trait Animals
         if (($animal['baby'] ?? false) && in_array($animal['kind'], self::BABY_INDEX_TYPES, true)) {
             $entries .= "\x10" . Binary::writeVarInt(8) . "\1";
         }
+        if ($animal['kind'] === 'sheep' && self::woolByte($animal) !== 0) {
+            $entries .= "\x11" . Binary::writeVarInt(0) . chr(self::woolByte($animal));
+        }
         return Binary::writeVarInt($animal['id']) . $entries . "\xff";
     }
 

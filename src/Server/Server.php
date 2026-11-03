@@ -147,6 +147,8 @@ final class Server
 
     use VehicleSteering;
 
+    use MobInteractions;
+
     use Scaffolding;
 
     use Hoppers;
