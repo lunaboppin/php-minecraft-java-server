@@ -26,11 +26,12 @@ trait SummonCommand
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
             if ($kind === 'experience_orb') {
                 // ExperienceOrb.readAdditionalSaveData: the value, count, age and health from the tag.
-                $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5)]]);
+                $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5),
+                    'velocity' => self::summonMotion($nbt), 'yaw' => (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0)]]);
                 $uuid = $this->experienceOrbs[$id]['uuid'];
             } elseif ($kind === 'tnt') {
                 // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
-                $id = $this->addTnt(...[...$position, [0.0, 0.0, 0.0], $tag('fuse', 80)]);
+                $id = $this->addTnt(...[...$position, self::summonMotion($nbt), $tag('fuse', 80)]);
                 foreach ($this->localPlayers() as $player) {
                     $this->showTnt($player, $id);
                 }
@@ -80,10 +81,7 @@ trait SummonCommand
         $count = (int) ($tag['count']['value'] ?? 1);
         $item = $this->version->blocks['items'][$name] ?? null;
         // Entity.load: Motion, each part over 10 dropped to 0, and Rotation; ItemEntity's Age and PickupDelay.
-        $motion = [0.0, 0.0, 0.0];
-        foreach (array_slice($nbt['Motion']['value'] ?? [], 0, 3) as $axis => $part) {
-            $motion[$axis] = abs((float) $part['value']) > 10.0 ? 0.0 : (float) $part['value'];
-        }
+        $motion = self::summonMotion($nbt);
         $yaw = (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0);
         $age = (int) ($nbt['Age']['value'] ?? 0);
         $delay = (int) ($nbt['PickupDelay']['value'] ?? 0);
@@ -141,5 +139,15 @@ trait SummonCommand
             $animal['baby'] = (int) $nbt['Age']['value'] < 0;
             $animal['age'] = (int) $nbt['Age']['value'];
         }
+    }
+
+    /** Entity.load: Motion from the tag, each part over 10 dropped to 0. */
+    private static function summonMotion(array $nbt): array
+    {
+        $motion = [0.0, 0.0, 0.0];
+        foreach (array_slice($nbt['Motion']['value'] ?? [], 0, 3) as $axis => $part) {
+            $motion[$axis] = abs((float) $part['value']) > 10.0 ? 0.0 : (float) $part['value'];
+        }
+        return $motion;
     }
 }

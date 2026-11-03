@@ -884,6 +884,7 @@ trait Survival
             }
             $this->damage($c, $feet === 'soul_fire' ? 2 : 1, 'in_fire');
         }
+        $this->blockContactDamage($c);
         $head = $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y + 1.62), (int) floor($c->z)));
         [$x, $z] = [(int) floor($c->x), (int) floor($c->z)];
         if ($feet === 'water' || $head === 'water' || $this->rainingAt($x, (int) floor($c->y), $z) || $this->rainingAt($x, (int) floor($c->y + 1.8), $z)) {
@@ -891,6 +892,42 @@ trait Survival
         }
         if ($c->fireTicks <= 0 && $c->fireTicks <= $before) {
             $c->fireTicks = -20;
+        }
+    }
+
+    /**
+     * The block contact damage players take: MagmaBlock.stepOn under a player on the ground who
+     * is not sneaking, CampfireBlock.entityInside for a lit campfire, and, only as the player
+     * moves into them, CactusBlock's and SweetBerryBushBlock's entityInside.
+     */
+    private function blockContactDamage(Client $c): void
+    {
+        if ($c->dead || $c->gameMode === 1 || $c->gameMode === 3) {
+            return;
+        }
+        $catalog = $this->version->catalog;
+        if ($c->ground && !$c->sneaking && $catalog->blockName($this->world->get((int) floor($c->x), (int) floor($c->y - 0.5000001), (int) floor($c->z))) === 'magma_block') {
+            $this->damage($c, 1.0, 'hot_floor');
+        }
+        [$mx, , $mz] = $c->knownMovement;
+        $moving = $mx * $mx + $mz * $mz > 0.0;
+        for ($x = (int) floor($c->x - 0.3 + 1.0E-5); $x <= (int) floor($c->x + 0.3 - 1.0E-5); ++$x) {
+            for ($y = (int) floor($c->y + 1.0E-5); $y <= (int) floor($c->y + 1.8 - 1.0E-5); ++$y) {
+                for ($z = (int) floor($c->z - 0.3 + 1.0E-5); $z <= (int) floor($c->z + 0.3 - 1.0E-5); ++$z) {
+                    if ($c->dead) {
+                        return;
+                    }
+                    $state = $this->world->get($x, $y, $z);
+                    $name = $catalog->blockName($state);
+                    if (($name === 'campfire' || $name === 'soul_campfire') && $catalog->properties($state)['lit'] === 'true') {
+                        $this->damage($c, $name === 'soul_campfire' ? 2.0 : 1.0, 'campfire');
+                    } elseif ($name === 'cactus' && $moving) {
+                        $this->damage($c, 1.0, 'cactus');
+                    } elseif ($name === 'sweet_berry_bush' && $moving && $catalog->properties($state)['age'] !== '0' && (abs($mx) >= 0.003 || abs($mz) >= 0.003)) {
+                        $this->damage($c, 1.0, 'sweet_berry_bush');
+                    }
+                }
+            }
         }
     }
 
