@@ -92,6 +92,7 @@ final class Server
     use RespawnPoints;
 
     use FallingBlocks;
+    use Minecarts;
 
     use Speleothems;
 
@@ -231,6 +232,7 @@ final class Server
                 $this->restoreMovingPistons();
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
+                $this->restoreMinecarts();
                 $this->restoreBlockSimulation();
             });
         }

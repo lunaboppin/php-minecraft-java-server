@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpMinecraftJavaServer\Server;
 
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
+
 /**
  * BaseRailBlock.onPlace and RailState: a new rail turns toward the rails beside it, which in turn
  * bend toward it. Powered, detector and activator rails stay straight.
@@ -179,5 +181,42 @@ trait Rails
                 }
             }
         }
+        // updateState: a straight rail then checks its own support, as neighborChanged.
+        if ($rail['straight']) {
+            $this->dropUnsupportedRail($x, $y, $z);
+        }
+    }
+
+    /** Block.canSupportRigidBlock: the top face is sturdy as SupportType.RIGID, as a hopper's is. */
+    private function supportsRigidBlock(int $state): bool
+    {
+        return $this->fireBlocks()->flag($state, Blocks::RIGID_TOP);
+    }
+
+    /** BaseRailBlock.shouldBeRemoved: nothing rigid under the rail, or beside the high end of a slope. */
+    private function railUnsupported(int $x, int $y, int $z, string $shape): bool
+    {
+        $side = ['ascending_east' => [1, 0], 'ascending_west' => [-1, 0], 'ascending_north' => [0, -1], 'ascending_south' => [0, 1]][$shape] ?? null;
+        return !$this->supportsRigidBlock($this->world->get($x, $y - 1, $z))
+            || ($side !== null && !$this->supportsRigidBlock($this->world->get($x + $side[0], $y, $z + $side[1])));
+    }
+
+    /** BaseRailBlock.neighborChanged for the rails beside a changed block: one left unsupported drops. */
+    private function railsChanged(int $x, int $y, int $z): void
+    {
+        foreach ([[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]] as [$dx, $dy, $dz]) {
+            $this->dropUnsupportedRail($x + $dx, $y + $dy, $z + $dz);
+        }
+    }
+
+    private function dropUnsupportedRail(int $x, int $y, int $z): void
+    {
+        $state = $this->world->get($x, $y, $z);
+        if (!$this->isRail($state) || !$this->railUnsupported($x, $y, $z, $this->railShape($state))) {
+            return;
+        }
+        $this->dropBlockLoot($x, $y, $z, $state);
+        $this->setBlock($x, $y, $z, $this->version->catalog->state($this->fireBlocks()->isWater($state) ? 'water' : 'air'));
+        $this->changedSimulation($x, $y, $z);
     }
 }

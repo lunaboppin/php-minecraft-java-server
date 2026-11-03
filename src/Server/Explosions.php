@@ -107,7 +107,7 @@ trait Explosions
             }
             $tnt = &$this->tntEntities[$id];
             $tnt['velocity'][1] -= 0.04;
-            $box = static fn (array $t): array => [$t['x'] - 0.49, $t['y'], $t['z'] - 0.49, $t['x'] + 0.49, $t['y'] + 0.98, $t['z'] + 0.49];
+            $box = static fn (array $t): array => [$t['x'] - 0.49000000953674316, $t['y'], $t['z'] - 0.49000000953674316, $t['x'] + 0.49000000953674316, $t['y'] + 0.9800000190734863, $t['z'] + 0.49000000953674316];
             $from = $box($tnt);
             $this->moveSimpleEntity($tnt, $from, $collision, 0.04);
             // applyEffectsFromBlocks: primed TNT takes no damage, so fire and lava only set it alight.
@@ -440,7 +440,7 @@ trait Explosions
         }
         foreach (array_keys($this->tntEntities) as $id) {
             $tnt = $this->tntEntities[$id];
-            $box = [$tnt['x'] - 0.49, $tnt['y'], $tnt['z'] - 0.49, $tnt['x'] + 0.49, $tnt['y'] + 0.98, $tnt['z'] + 0.49];
+            $box = [$tnt['x'] - 0.49000000953674316, $tnt['y'], $tnt['z'] - 0.49000000953674316, $tnt['x'] + 0.49000000953674316, $tnt['y'] + 0.9800000190734863, $tnt['z'] + 0.49000000953674316];
             // Primed TNT is pushed from its feet rather than its eyes.
             $result = $effect($box, $tnt['y'], $tnt['x'], $tnt['z']);
             if ($result === null) {

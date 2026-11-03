@@ -172,7 +172,7 @@ trait FallingBlocks
             $block = &$this->fallingBlocks[$id];
             ++$block['time'];
             $block['velocity'][1] -= 0.04;
-            $box = static fn (array $b): array => [$b['x'] - 0.49, $b['y'], $b['z'] - 0.49, $b['x'] + 0.49, $b['y'] + 0.98, $b['z'] + 0.49];
+            $box = static fn (array $b): array => [$b['x'] - 0.49000000953674316, $b['y'], $b['z'] - 0.49000000953674316, $b['x'] + 0.49000000953674316, $b['y'] + 0.9800000190734863, $b['z'] + 0.49000000953674316];
             $from = $box($block);
             [$moved] = $this->moveSimpleEntity($block, $from, $collision, 0.04);
             // applyEffectsFromBlocks: a falling block takes no damage.
@@ -323,7 +323,7 @@ trait FallingBlocks
         $amount = (float) min((int) floor($distance * $perDistance), $max);
         $name = $this->version->catalog->blockName($block['state']);
         $type = str_ends_with($name, 'anvil') ? 'minecraft:falling_anvil' : (isset(self::SPELEOTHEMS[$name]) ? 'minecraft:falling_stalactite' : 'minecraft:falling_block');
-        $box = [$block['x'] - 0.49, $block['y'], $block['z'] - 0.49, $block['x'] + 0.49, $block['y'] + 0.98, $block['z'] + 0.49];
+        $box = [$block['x'] - 0.49000000953674316, $block['y'], $block['z'] - 0.49000000953674316, $block['x'] + 0.49000000953674316, $block['y'] + 0.9800000190734863, $block['z'] + 0.49000000953674316];
         $overlaps = static fn (array $other): bool => $other[0] < $box[3] && $other[3] > $box[0] && $other[1] < $box[4] && $other[4] > $box[1] && $other[2] < $box[5] && $other[5] > $box[2];
         foreach ($this->localPlayers() as $player) {
             if (!$player->dead && $player->gameMode !== 1 && $player->gameMode !== 3

@@ -569,7 +569,7 @@ trait Pistons
     }
 
     /** Entities a moving block pushes: the property holding them, and their half width and height. */
-    private const PISTON_PUSHED = ['itemEntities' => [0.125, 0.25], 'experienceOrbs' => [0.25, 0.5], 'tntEntities' => [0.49, 0.98], 'fallingBlocks' => [0.49, 0.98], 'animals' => null];
+    private const PISTON_PUSHED = ['itemEntities' => [0.125, 0.25], 'experienceOrbs' => [0.25, 0.5], 'tntEntities' => [0.49000000953674316, 0.9800000190734863], 'fallingBlocks' => [0.49000000953674316, 0.9800000190734863], 'animals' => null];
 
     /** An entity's half width and height; mobs take theirs from their kind and age. */
     private function pistonSize(string $property, array $entity): array

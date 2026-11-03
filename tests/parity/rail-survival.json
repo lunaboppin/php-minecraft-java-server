@@ -1,0 +1,209 @@
+{
+  "name": "rail-survival",
+  "normalizations": [
+    "Compare which rails stay and which drop when what holds them up goes: rails on a hopper, slabs, glass and soul sand, a slope losing its high side, rails filled over air and then touched, and straight rails placed in the air; a block set beside each rail on a support makes it check that support.",
+    "block_drops is off, as the dropped rails land at random; only the blocks are compared.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "gamerule block_drops false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -4 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -4 12 66 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:hopper"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 61 0 minecraft:oak_slab"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 62 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 61 0 minecraft:oak_slab[type=top]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 62 0 minecraft:powered_rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 0 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 62 0 minecraft:detector_rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 62 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 61 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 4 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 2 63 6 6 63 6 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 64 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 63 6 minecraft:activator_rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 61 0 minecraft:soul_sand"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 62 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 62 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 62 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 62 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 62 1 minecraft:stone"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "after",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          62,
+          0
+        ],
+        [
+          2,
+          62,
+          0
+        ],
+        [
+          4,
+          62,
+          0
+        ],
+        [
+          6,
+          62,
+          0
+        ],
+        [
+          8,
+          62,
+          0
+        ],
+        [
+          1,
+          61,
+          4
+        ],
+        [
+          0,
+          62,
+          4
+        ],
+        [
+          2,
+          63,
+          6
+        ],
+        [
+          3,
+          63,
+          6
+        ],
+        [
+          4,
+          63,
+          6
+        ],
+        [
+          5,
+          63,
+          6
+        ],
+        [
+          6,
+          63,
+          6
+        ],
+        [
+          8,
+          63,
+          6
+        ],
+        [
+          10,
+          62,
+          0
+        ]
+      ]
+    }
+  ]
+}
