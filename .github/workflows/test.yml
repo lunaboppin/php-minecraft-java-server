@@ -438,6 +438,10 @@ jobs:
         run: |
           python3 tools/parity/run.py --scenario tests/parity/dispenser-projectiles.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-dispenser-projectiles
           python3 tools/parity/verify.py tools/.cache/parity-dispenser-projectiles/php-packets.json tools/.cache/parity-dispenser-projectiles/reference-packets.json
+      - name: Compare axes, hoes and shovels used on blocks with vanilla
+        run: |
+          python3 tools/parity/run.py --scenario tests/parity/tool-actions.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-tool-actions
+          python3 tools/parity/verify.py tools/.cache/parity-tool-actions/php-packets.json tools/.cache/parity-tool-actions/reference-packets.json
       - name: Compare brewing stands with vanilla
         run: |
           python3 tools/parity/run.py --scenario tests/parity/brewing.json --eula-file tools/.cache/parity-consent/eula.txt --output tools/.cache/parity-brewing
@@ -465,6 +469,7 @@ jobs:
             tools/.cache/parity-dispensers/
             tools/.cache/parity-composters/
             tools/.cache/parity-dispenser-projectiles/
+            tools/.cache/parity-tool-actions/
             tools/.cache/parity-brewing/
           retention-days: 7
 

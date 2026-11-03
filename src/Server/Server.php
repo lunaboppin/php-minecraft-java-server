@@ -147,6 +147,8 @@ final class Server
 
     use VehicleSteering;
 
+    use ToolActions;
+
     use Scaffolding;
 
     use Hoppers;
@@ -1571,6 +1573,17 @@ final class Server
             return;
         }
         $itemName = $stack === null ? null : $this->version->catalog->itemName($stack['item']);
+        if ($within && !$c->sneaking && $this->editable($c, $x, $y, $z) && $this->douseCampfire($c, $slot, $x, $y, $z)) {
+            $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        // Item.useOn for a block_transformer: axes, hoes and shovels change the block.
+        if ($within && $this->editable($c, $x, $y, $z) && $this->transformBlock($c, $hand, $slot, $x, $y, $z, $face)) {
+            $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         // BoneMealItem.useOn: a valid target grows, and the bone meal is used.
         if ($within && $itemName === 'bone_meal' && $this->editable($c, $x, $y, $z) && $this->useBoneMeal($c, $x, $y, $z, $slot)) {
             $this->useSwing($c, $hand);
