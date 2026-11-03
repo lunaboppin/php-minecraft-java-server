@@ -15,7 +15,7 @@ use PhpMinecraftJavaServer\Server\Client;
 trait DataAccessors
 {
     /** BlockEntity types with data here, by block. */
-    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker', 'hopper' => 'hopper', 'dispenser' => 'dispenser', 'dropper' => 'dropper'];
+    private const DATA_BLOCK_ENTITIES = ['chest' => 'chest', 'trapped_chest' => 'trapped_chest', 'barrel' => 'barrel', 'furnace' => 'furnace', 'blast_furnace' => 'blast_furnace', 'smoker' => 'smoker', 'hopper' => 'hopper', 'dispenser' => 'dispenser', 'dropper' => 'dropper', 'brewing_stand' => 'brewing_stand'];
 
     private static function nbtList(string $type, array $values): NbtTag
     {
@@ -389,6 +389,10 @@ trait DataAccessors
         if (isset($data['customName'])) {
             $pairs[] = ['CustomName', self::componentNbt($data['customName'])];
         }
+        if ($type === 'brewing_stand') {
+            $pairs[] = ['BrewTime', new NbtTag('int', $data['brewTime'] ?? 0)];
+            $pairs[] = ['total_brew_time', new NbtTag('int', $data['totalBrewTime'] ?? 400)];
+        }
         $items = [];
         $slots = $data['slots'] ?? [];
         ksort($slots);
@@ -398,6 +402,11 @@ trait DataAccessors
             }
         }
         $pairs[] = ['Items', new NbtTag('list', $items)];
+        if ($type === 'brewing_stand') {
+            $pairs[] = ['Fuel', new NbtTag('int', $data['fuel'] ?? 0)];
+            $pairs[] = ['total_fuel', new NbtTag('int', $data['totalFuel'] ?? 20)];
+            $pairs[] = ['speed_multiplier', new NbtTag('float', (float) ($data['speed'] ?? 1.0))];
+        }
         if ($type === 'hopper') {
             $pairs[] = ['TransferCooldown', new NbtTag('int', $this->hoppers[$dimension][implode(':', $position)]['cooldown'] ?? $data['cooldown'] ?? -1)];
         }
