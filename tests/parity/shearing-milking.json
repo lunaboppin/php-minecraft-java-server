@@ -47,7 +47,7 @@
     },
     {
       "action": "command",
-      "text": "tp @s 3.5 64 -0.5 0 20"
+      "text": "tp @s 4.5 64 -2.5 0 20"
     },
     {
       "action": "command",
