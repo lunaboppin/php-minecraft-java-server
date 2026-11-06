@@ -31,6 +31,10 @@
     },
     {
       "action": "command",
+      "text": "spawnpoint @s 2 64 2"
+    },
+    {
+      "action": "command",
       "text": "setblock 0 64 0 minecraft:cactus"
     },
     {
