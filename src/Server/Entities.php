@@ -353,9 +353,9 @@ trait Entities
      *
      * @return array{0: array{float, float, float}, 1: array{float, float, float}}
      */
-    private function moveSimpleEntity(array &$entity, array $box, Collision $collision, float $gravity): array
+    private function moveSimpleEntity(array &$entity, array $box, Collision $collision, float $gravity, ?array $delta = null, bool $railSpeed = false): array
     {
-        $delta = $entity['velocity'];
+        $delta ??= $entity['velocity'];
         $stuck = $entity['stuck'] ?? [0.0, 0.0, 0.0];
         if ($stuck[0] ** 2 + $stuck[1] ** 2 + $stuck[2] ** 2 > 1.0E-7) {
             $delta = [$delta[0] * $stuck[0], $delta[1] * $stuck[1], $delta[2] * $stuck[2]];
@@ -381,7 +381,9 @@ trait Entities
             $entity['velocity'][1] = $bounce;
             $entity['syncPosition'] = true;
         }
-        $speed = $this->blockSpeedFactor($entity['x'], $entity['y'], $entity['z']);
+        // AbstractMinecart.getBlockSpeedFactor: full speed on rails.
+        $onRail = $railSpeed && $this->isRail($this->world->get((int) floor($entity['x']), (int) floor($entity['y']), (int) floor($entity['z'])));
+        $speed = $onRail ? 1.0 : $this->blockSpeedFactor($entity['x'], $entity['y'], $entity['z']);
         $entity['velocity'] = [$entity['velocity'][0] * $speed, $entity['velocity'][1], $entity['velocity'][2] * $speed];
         return [$moved, $delta];
     }

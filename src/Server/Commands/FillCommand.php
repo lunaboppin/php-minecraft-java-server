@@ -69,6 +69,10 @@ trait FillCommand
                         if ($target !== null && $current !== $target) {
                             $this->world->set($x, $y, $z, $target);
                             $affected = true;
+                            // BaseRailBlock.onPlace runs as each rail is set, joining the rails set before it.
+                            if ($this->isRail($target) && $this->version->catalog->blockName($current) !== $this->version->catalog->blockName($target)) {
+                                $this->placeRail($x, $y, $z);
+                            }
                         }
                         if ($affected) {
                             ++$changed;

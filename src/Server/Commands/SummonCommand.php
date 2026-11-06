@@ -20,7 +20,7 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb') {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || $kind === 'minecart') {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
             $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
@@ -29,6 +29,14 @@ trait SummonCommand
                 $id = $this->spawnOrb(...[...$position, $tag('Value', 0), ['value' => $tag('Value', 0), 'count' => max(1, $tag('Count', 1)), 'age' => $tag('Age', 0), 'health' => $tag('Health', 5),
                     'velocity' => self::summonMotion($nbt), 'yaw' => (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0)]]);
                 $uuid = $this->experienceOrbs[$id]['uuid'];
+            } elseif ($kind === 'minecart') {
+                // AbstractMinecart: the motion and yaw every entity loads, and FlippedRotation.
+                $id = $this->addMinecart(...[...$position, self::summonMotion($nbt), (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0),
+                    ['flipped' => (bool) ($nbt['FlippedRotation']['value'] ?? false)]]);
+                foreach ($this->localPlayers() as $player) {
+                    $this->showMinecart($player, $id);
+                }
+                $uuid = $this->minecarts[$id]['uuid'];
             } elseif ($kind === 'tnt') {
                 // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
                 $id = $this->addTnt(...[...$position, self::summonMotion($nbt), $tag('fuse', 80)]);

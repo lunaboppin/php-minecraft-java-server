@@ -1,0 +1,209 @@
+{
+  "name": "minecart-motion",
+  "normalizations": [
+    "Compare the packets sent about minecarts: pushed along straight rails, down a slope, round a curve, launched from a block by powered rails, braked by unpowered ones, rolling and falling off the rails, and hurt by a powered activator rail.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 30 60 30 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 30 75 30 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 10.5 61 -14.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 20 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 4 2 63 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 3 61 4 4 62 4 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 64 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 64 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 64 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 63 4 minecraft:rail[shape=ascending_west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 62 4 minecraft:rail[shape=ascending_west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 5 61 4 minecraft:rail[shape=ascending_west]"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 61 4 20 61 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 8 6 61 8 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 6 61 9 6 61 14 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 18 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 1 60 18 3 60 18 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "fill 1 61 18 3 61 18 minecraft:powered_rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 4 61 18 20 61 18 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 22 6 61 22 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 7 61 22 9 61 22 minecraft:powered_rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 10 61 22 14 61 22 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 24 60 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 24 61 0 minecraft:activator_rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 22 61 0 23 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 25 61 0 27 61 0 minecraft:rail"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 0.5 61.0625 0.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 0.5 64.0625 4.5 {Motion:[0.1d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 0.5 61.0625 8.5 {Motion:[0.3d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 1.5 61.0625 18.5"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 0.5 61.0625 22.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 2.5 61.0 26.5 {Motion:[0.6d,0.0d,0.1d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 6.5 66.0 26.5 {Motion:[0.0d,0.0d,0.2d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon minecraft:minecart 22.5 61.0625 0.5 {Motion:[0.2d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_1s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_2s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_3s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_4s",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "entities_5s",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

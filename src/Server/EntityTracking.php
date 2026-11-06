@@ -45,6 +45,9 @@ trait EntityTracking
         foreach(array_keys($this->fallingBlocks) as $id){
             if($this->showFallingBlock($viewer,$id)){$wanted[$id]=true;}
         }
+        foreach(array_keys($this->minecarts) as $id){
+            if($this->showMinecart($viewer,$id)){$wanted[$id]=true;}
+        }
         foreach(array_keys($this->projectiles) as $id){
             if($this->showProjectile($viewer,$id)){$wanted[$id]=true;}
         }

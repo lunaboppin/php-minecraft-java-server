@@ -67,7 +67,7 @@ trait PressurePlates
                 $found[] = [$own, true];
             }
         }
-        foreach ([[$this->itemEntities, 0.125, 0.25], [$this->experienceOrbs, 0.25, 0.5], [$this->tntEntities, 0.49, 0.98], [$this->fallingBlocks ?? [], 0.49, 0.98]] as [$entities, $half, $height]) {
+        foreach ([[$this->itemEntities, 0.125, 0.25], [$this->experienceOrbs, 0.25, 0.5], [$this->tntEntities, 0.49000000953674316, 0.9800000190734863], [$this->fallingBlocks ?? [], 0.49000000953674316, 0.9800000190734863]] as [$entities, $half, $height]) {
             foreach ($entities as $entity) {
                 $own = [$entity['x'] - $half, $entity['y'], $entity['z'] - $half, $entity['x'] + $half, $entity['y'] + $height, $entity['z'] + $half];
                 if ($meets($own)) {
