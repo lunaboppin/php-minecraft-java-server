@@ -1197,6 +1197,7 @@ final class Server
                 $r->end();
                 if ($c->playerLoaded) {
                     $c->sneaking = ($flags & 32) !== 0;
+                    $c->movementInput = $flags;
                 }return;
             case 'player_command':
                 $r->varInt();

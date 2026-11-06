@@ -55,6 +55,9 @@ final class Client
 
     public bool $sneaking = false;
 
+    /** The last player_input flags: forward, backward, left, right, jump, shift and sprint. */
+    public int $movementInput = 0;
+
     /** @var array|null the selected entity a spectator views through (ServerPlayer.camera), or null */
     public ?array $camera = null;
 

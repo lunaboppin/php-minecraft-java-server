@@ -40,7 +40,7 @@ trait Minecarts
     private function addMinecart(float $x, float $y, float $z, array $velocity, float $yaw = 0.0, array $saved = []): int
     {
         $id = $this->nextEntity++;
-        $this->minecarts[$id] = $saved + ['uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'velocity' => $velocity, 'yaw' => $yaw,
+        $this->minecarts[$id] = $saved + ['kind' => 'minecart', 'uuid' => random_bytes(16), 'x' => $x, 'y' => $y, 'z' => $z, 'velocity' => $velocity, 'yaw' => $yaw,
             'flipped' => false, 'hurtTime' => 0, 'hurtDir' => 1, 'damage' => 0.0, 'ground' => false, 'inWater' => false, 'dataDirty' => []];
         $this->minecarts[$id]['id'] = $id;
         return $id;
@@ -66,8 +66,17 @@ trait Minecarts
             + array_intersect_key($cart, array_flip(['x', 'y', 'z', 'velocity', 'yaw', 'flipped'])), $this->minecarts));
     }
 
+    /** The selector-shaped reference a command names a minecart by. */
+    private function minecartReference(int $id): array
+    {
+        $cart = $this->minecarts[$id];
+        return ['minecart' => $id, 'x' => $cart['x'], 'y' => $cart['y'], 'z' => $cart['z'], 'yaw' => (float) $cart['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:minecart',
+            'width' => 0.9800000190734863, 'height' => 0.699999988079071, 'id' => $id, 'uuid' => $cart['uuid']];
+    }
+
     private function removeMinecart(int $id): void
     {
+        $this->ejectPassengers($id);
         unset($this->minecarts[$id], $this->minecartTrackers[$id]);
         foreach ($this->localPlayers() as $player) {
             $this->forgetEntity($player, $id);
@@ -108,6 +117,15 @@ trait Minecarts
                 $properties = $this->version->catalog->properties($state);
                 if ($this->version->catalog->blockName($state) === 'activator_rail' && ($properties['powered'] ?? 'false') === 'true') {
                     $this->activateMinecart($cart);
+                    // Minecart.activateMinecart: the rider is put off.
+                    foreach ($cart['passengers'] ?? [] as $passenger) {
+                        $reference = $this->riderReference($passenger);
+                        if ($reference !== null) {
+                            unset($cart);
+                            $this->stopRiding($reference);
+                            $cart = &$this->minecarts[$id];
+                        }
+                    }
                 }
             } else {
                 $this->minecartComeOffTrack($cart, $collision);
@@ -129,7 +147,17 @@ trait Minecarts
             // Entity.updateFluidInteraction: water pushes the minecart and slows it next tick.
             $fluids = $this->entityFluidCurrent($this->minecartBox($cart), $cart['velocity']);
             $cart['inWater'] = $fluids['water'] > 0.0;
+            $passengers = $cart['passengers'] ?? [];
             unset($cart);
+            // ServerLevel.tickPassenger: Player.rideTick lets a sneaking player off, then the seat moves the rider.
+            foreach ($passengers as $passenger) {
+                $reference = $this->riderReference($passenger);
+                if (isset($reference['client']) && $reference['client']->sneaking) {
+                    $this->stopRiding($reference);
+                } elseif ($reference !== null) {
+                    $this->positionRider($id, $passenger);
+                }
+            }
         }
     }
 
@@ -192,6 +220,13 @@ trait Minecarts
         }
         $pow = min(2.0, sqrt($cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2));
         $cart['velocity'] = [$pow * $xD / $length, $cart['velocity'][1], $pow * $zD / $length];
+        // A riding player's movement keys nudge a cart that is all but still.
+        $intent = $this->minecartMoveIntent($cart);
+        if ($intent !== null && $cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2 < 0.01) {
+            $cart['velocity'][0] += $intent[0] * 0.001;
+            $cart['velocity'][2] += $intent[1] * 0.001;
+            $haltTrack = false;
+        }
         if ($haltTrack) {
             $speed = sqrt($cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2);
             $cart['velocity'] = $speed < 0.03 ? [0.0, 0.0, 0.0] : [$cart['velocity'][0] * 0.5, 0.0, $cart['velocity'][2] * 0.5];
@@ -211,7 +246,9 @@ trait Minecarts
         }
         [$cart['x'], $cart['y'], $cart['z']] = [$x0 + $xD * $progress, $y, $z0 + $zD * $progress];
         $max = $cart['inWater'] ? 0.2 : 0.4;
-        $clamp = static fn (float $v): float => max(-$max, min($max, $v));
+        // A ridden minecart covers three quarters of its speed each tick.
+        $scale = ($cart['passengers'] ?? []) === [] ? 1.0 : 0.75;
+        $clamp = static fn (float $v): float => max(-$max, min($max, $scale * $v));
         $this->moveSimpleEntity($cart, $this->minecartBox($cart), $collision, $cart['inWater'] ? 0.005 : 0.04, [$clamp($cart['velocity'][0]), 0.0, $clamp($cart['velocity'][2])], true);
         foreach ([$exit0, $exit1] as $exit) {
             if ($exit[1] !== 0 && (int) floor($cart['x']) - $pos[0] === $exit[0] && (int) floor($cart['z']) - $pos[2] === $exit[2]) {
@@ -219,8 +256,9 @@ trait Minecarts
                 break;
             }
         }
-        // AbstractMinecart.applyNaturalSlowdown: 0.96 without a passenger, and the float 0.95 in water.
-        $cart['velocity'] = [$cart['velocity'][0] * 0.96, 0.0, $cart['velocity'][2] * 0.96];
+        // AbstractMinecart.applyNaturalSlowdown: 0.96, or 0.997 with a passenger, and the float 0.95 in water.
+        $slowdown = ($cart['passengers'] ?? []) === [] ? 0.96 : 0.997;
+        $cart['velocity'] = [$cart['velocity'][0] * $slowdown, 0.0, $cart['velocity'][2] * $slowdown];
         if ($cart['inWater']) {
             $cart['velocity'] = array_map(static fn (float $v): float => $v * 0.949999988079071, $cart['velocity']);
         }
@@ -388,6 +426,99 @@ trait Minecarts
         return true;
     }
 
+    /**
+     * Minecart.interact: without the secondary action, a player gets into an empty minecart
+     * within reach.
+     */
+    private function interactMinecart(Client $player, int $id, int $hand, bool $secondary): void
+    {
+        $cart = $this->minecarts[$id];
+        if ($player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1 || $secondary || ($cart['passengers'] ?? []) !== []) {
+            return;
+        }
+        $box = $this->minecartBox($cart);
+        $eye = [$player->x, $player->y + ($player->sneaking ? 1.27 : 1.62), $player->z];
+        $distance = 0.0;
+        foreach ([0, 1, 2] as $axis) {
+            $distance += max($box[$axis] - $eye[$axis], 0.0, $eye[$axis] - $box[$axis + 3]) ** 2;
+        }
+        // Player.isWithinEntityInteractionRange with the server's 3-block allowance.
+        if ($distance >= (3.0 + 3.0) ** 2) {
+            return;
+        }
+        if ($this->startRiding(['client' => $player, 'id' => $player->entityId], $id)) {
+            $this->useSwing($player, $hand);
+        }
+    }
+
+    /**
+     * ServerPlayer.getLastClientMoveIntent for the minecart's rider: the movement keys held, as
+     * Entity.getInputVector turns them by the player's yaw.
+     *
+     * @return array{float, float}|null
+     */
+    private function minecartMoveIntent(array $cart): ?array
+    {
+        $reference = isset($cart['passengers'][0]) ? $this->riderReference($cart['passengers'][0]) : null;
+        if (!isset($reference['client'])) {
+            return null;
+        }
+        $input = $reference['client']->movementInput;
+        $left = (($input & 4) !== 0) === (($input & 8) !== 0) ? 0.0 : (($input & 4) !== 0 ? 1.0 : -1.0);
+        $forward = (($input & 1) !== 0) === (($input & 2) !== 0) ? 0.0 : (($input & 1) !== 0 ? 1.0 : -1.0);
+        $length = $left * $left + $forward * $forward;
+        if ($length < 1.0E-7) {
+            return null;
+        }
+        if ($length > 1.0) {
+            [$left, $forward] = [$left / sqrt($length), $forward / sqrt($length)];
+        }
+        $radians = Float32::round($reference['client']->yaw * Float32::round(M_PI / 180.0));
+        $sin = $this->mthSin($radians);
+        $cos = $this->mthCos($radians);
+        return [$left * $cos - $forward * $sin, $forward * $cos + $left * $sin];
+    }
+
+    /**
+     * AbstractMinecart.getDismountLocationForPassenger: beside the cart, across the way it moves
+     * (DismountHelper.offsetsForDirection), on the cart's level, a block up or a block down, in
+     * the first pose that fits; otherwise on top of the cart.
+     */
+    private function minecartDismountLocation(array $entity, int $vehicle): array
+    {
+        $cart = $this->minecarts[$vehicle];
+        $top = [$cart['x'], $this->minecartBox($cart)[4], $cart['z']];
+        // OldMinecartBehavior.getMotionDirection: clockwise of the way the cart faces (turned round when flipped).
+        $steps = [[0, 1], [-1, 0], [0, -1], [1, 0]];
+        $facing = ((int) floor((float) $cart['yaw'] / 90.0 + 0.5)) & 3;
+        $forward = $steps[($facing + ($cart['flipped'] ? 3 : 1)) & 3];
+        $right = [-$forward[1], $forward[0]];
+        $left = [-$right[0], -$right[1]];
+        $back = [-$forward[0], -$forward[1]];
+        $offsets = [$right, $left, [$back[0] + $right[0], $back[1] + $right[1]], [$back[0] + $left[0], $back[1] + $left[1]],
+            [$forward[0] + $right[0], $forward[1] + $right[1]], [$forward[0] + $left[0], $forward[1] + $left[1]], $back, $forward];
+        $collision = new Collision($this->version->catalog);
+        [$baseX, $baseY, $baseZ] = [(int) floor($cart['x']), (int) floor($cart['y']), (int) floor($cart['z'])];
+        $heights = [[0, 1, -1], [0, 1, -1], [0, 1]];
+        foreach ($this->dismountBounds($entity) as $pose => [$width, $height]) {
+            $reach = min($width, 1.0) / 2.0;
+            foreach ($heights[$pose] ?? [0] as $dy) {
+                foreach ($offsets as [$dx, $dz]) {
+                    [$x, $y, $z] = [$baseX + $dx, $baseY + $dy, $baseZ + $dz];
+                    $floor = $this->blockFloorHeight($collision, $x, $y, $z);
+                    if (is_infinite($floor) || $floor >= 1.0) {
+                        continue;
+                    }
+                    $location = [$x + 0.5, $y + $floor, $z + 0.5];
+                    if ($this->canDismountTo($collision, [$location[0] - $reach, $location[1], $location[2] - $reach, $location[0] + $reach, $location[1] + $height, $location[2] + $reach])) {
+                        return $location;
+                    }
+                }
+            }
+        }
+        return $top;
+    }
+
     /** Minecart.activateMinecart on a powered activator rail: it shakes as if hit. */
     private function activateMinecart(array &$cart): void
     {
@@ -435,6 +566,7 @@ trait Minecarts
                 $this->forgetEntity($player, $id);
             }
         }
+        $this->synchronizePassengers($cart);
         $state = $this->minecartState($cart);
         $tracker = $this->minecartTrackers[$id] ??= new EntityMovementTracker($id, 3, true, $state, false);
         $packets = $tracker->update($state);
@@ -467,6 +599,7 @@ trait Minecarts
         if ($changed !== []) {
             $player->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . $this->minecartData($cart, $changed) . "\xff");
         }
+        $this->pairPassengers($player, $cart);
         $player->send($this->version, 'bundle_delimiter', '');
         $player->entities[$id] = true;
         return true;
