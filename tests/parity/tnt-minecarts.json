@@ -1,7 +1,7 @@
 {
   "name": "tnt-minecarts",
   "normalizations": [
-    "Compare a TNT minecart primed by a powered activator rail and its explosion, which leaves the rails and the blocks under them.",
+    "Compare a TNT minecart primed by a powered activator rail and its explosion, which leaves the rails and the blocks under them, and minecarts caught by a TNT explosion.",
     "Entity IDs and UUIDs are left out, and blocks drop nothing, as their scatter is random; only blocks every ray is certain to destroy or spare are compared.",
     "Use matching flat terrain."
   ],
@@ -203,6 +203,33 @@
           60,
           -1
         ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 4 14 61 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 3.5 61 4.5"
+    },
+    {
+      "action": "command",
+      "text": "summon chest_minecart 11.5 61 4.5"
+    },
+    {
+      "action": "command",
+      "text": "summon tnt 7.5 61 4.5 {fuse:20}"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "carts_caught_in_an_explosion",
+      "fields": [
+        "entities"
       ]
     }
   ]

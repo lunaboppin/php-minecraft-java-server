@@ -491,36 +491,60 @@ trait Minecarts
         if (in_array($c->gameMode, [0, 2], true)) {
             $c->exhaustion += 0.1;
         }
-        if ($damage <= 0.0) {
-            return true;
+        if ($damage > 0.0) {
+            unset($cart);
+            $this->hurtMinecart($id, $damage, false, $c->gameMode === 1);
         }
+        return true;
+    }
+
+    /**
+     * VehicleEntity.hurtServer: the hurt direction flips, the cart shakes for 10 ticks and its
+     * damage grows by ten times the hit. A creative player's hit discards it; past 40 damage, or
+     * from fire or an explosion for a TNT minecart, it is destroyed: a TNT minecart hit so, or
+     * moving, is primed with a short fuse; any other leaves its item (with entity drops on).
+     */
+    private function hurtMinecart(int $id, float $damage, bool $ignites, bool $creative = false): void
+    {
+        $cart = &$this->minecarts[$id];
         $cart['hurtDir'] = -$cart['hurtDir'];
         $cart['hurtTime'] = 10;
         $cart['syncVelocity'] = true;
         $cart['damage'] = Float32::round($cart['damage'] + Float32::round($damage * 10.0));
         $cart['dataDirty'] += [8 => true, 9 => true, 10 => true];
-        if ($c->gameMode !== 1 && $cart['damage'] > 40.0 && $cart['kind'] === 'tnt_minecart' && $cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2 >= Float32::round(0.01)) {
-            // MinecartTNT.destroy: a moving TNT minecart is primed with a short fuse instead.
+        if ($creative) {
+            unset($cart);
+            $this->discardMinecart($id);
+            return;
+        }
+        if (!($cart['damage'] > 40.0 || ($ignites && $cart['kind'] === 'tnt_minecart'))) {
+            return;
+        }
+        if ($cart['kind'] === 'tnt_minecart' && ($ignites || $cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2 >= Float32::round(0.01))) {
+            // MinecartTNT.destroy: primed with a short fuse instead.
             if (($cart['fuse'] ?? -1) < 0) {
                 $this->primeMinecartTnt($cart);
                 $cart['fuse'] = random_int(0, 19) + random_int(0, 19);
             }
-            return true;
+            return;
         }
-        if ($c->gameMode === 1 || $cart['damage'] > 40.0) {
-            [$x, $y, $z, $kind, $items] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind'], $cart['items'] ?? []];
-            unset($cart);
-            $this->removeMinecart($id);
-            // VehicleEntity.destroy: the drop, unless the hit was a creative player's; then
-            // AbstractMinecartContainer.destroy drops what it held.
-            if ($c->gameMode !== 1 && $this->gameRule('entity_drops') === 'true') {
-                $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items'][self::MINECART_DROPS[$kind]], 'count' => 1]);
-                foreach ($items as $stack) {
-                    $this->dropContainerStack((int) floor($x), (int) floor($y), (int) floor($z), $stack);
-                }
-            }
+        [$x, $y, $z, $kind] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind']];
+        unset($cart);
+        // VehicleEntity.destroy: the cart is killed (spilling a container's contents), then its item drops.
+        $this->discardMinecart($id);
+        if ($this->gameRule('entity_drops') === 'true') {
+            $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items'][self::MINECART_DROPS[$kind]], 'count' => 1]);
         }
-        return true;
+    }
+
+    /** AbstractMinecartContainer.remove: a container minecart killed or discarded spills what it held. */
+    private function discardMinecart(int $id): void
+    {
+        $cart = $this->minecarts[$id];
+        foreach ($cart['items'] ?? [] as $stack) {
+            $this->dropContainerStack((int) floor($cart['x']), (int) floor($cart['y']), (int) floor($cart['z']), $stack);
+        }
+        $this->removeMinecart($id);
     }
 
     /**
@@ -894,6 +918,8 @@ trait Minecarts
         if ($this->gameRule('tnt_explodes') === 'true') {
             $speed = min(sqrt($speedSqr), 5.0);
             $power = Float32::round(4.0 + 1.0 * self::randomUnit() * 1.5 * $speed);
+            // The explosion passes over the entity it comes from.
+            $this->minecarts[$id]['exploding'] = true;
             $this->explode($cart['x'], $cart['y'], $cart['z'], $power, $id, null, false, null, false, ($cart['fuse'] ?? -1) > -1);
             $this->removeMinecart($id);
         } elseif (($cart['fuse'] ?? -1) > -1) {

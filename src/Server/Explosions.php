@@ -261,7 +261,7 @@ trait Explosions
                 }
             }
         }
-        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType);
+        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType, $mob);
         // Level.getDestroyType: TNT and block explosions keep every drop unless their decay rule is on.
         $decay = $this->gameRule($sourceTnt !== null ? 'tnt_explosion_drop_decay' : ($mob ? 'mob_explosion_drop_decay' : 'block_explosion_drop_decay')) === 'true';
         // ServerExplosion.interactWithBlocks: in shuffled order, each block drops its loot (merged
@@ -363,7 +363,7 @@ trait Explosions
      *
      * @return array<string, array{0: float, 1: float, 2: float}>
      */
-    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner, ?string $damageType = null): array
+    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner, ?string $damageType = null, bool $mob = false): array
     {
         $double = $radius * 2.0;
         $knockbacks = [];
@@ -438,6 +438,24 @@ trait Explosions
                 $velocity = $this->itemEntities[$id]['velocity'];
                 $this->itemEntities[$id]['velocity'] = [$velocity[0] + $direction[0] * $power, $velocity[1] + $direction[1] * $power, $velocity[2] + $direction[2] * $power];
                 $this->itemEntities[$id]['needsSync'] = true;
+            }
+        }
+        // VehicleEntity.ignoreExplosion: a mob's explosion spares minecarts without mob griefing.
+        foreach ($mob && $this->gameRule('mob_griefing') !== 'true' ? [] : array_keys($this->minecarts) as $id) {
+            $cart = $this->minecarts[$id] ?? null;
+            if ($cart === null || ($cart['exploding'] ?? false)) {
+                continue;
+            }
+            $result = $effect($this->minecartBox($cart), $cart['y'] + 0.5950000286102295, $cart['x'], $cart['z']);
+            if ($result === null) {
+                continue;
+            }
+            [$dist, $exposure, $direction, $damage] = $result;
+            $this->hurtMinecart($id, $damage, true);
+            if (isset($this->minecarts[$id])) {
+                $power = (1.0 - $dist) * $exposure;
+                $velocity = $this->minecarts[$id]['velocity'];
+                $this->minecarts[$id]['velocity'] = [$velocity[0] + $direction[0] * $power, $velocity[1] + $direction[1] * $power, $velocity[2] + $direction[2] * $power];
             }
         }
         foreach (array_keys($this->tntEntities) as $id) {
