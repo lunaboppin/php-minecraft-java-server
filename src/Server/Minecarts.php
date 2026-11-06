@@ -829,6 +829,38 @@ trait Minecarts
     }
 
     /**
+     * MinecartDispenseItemBehavior: a minecart set 1.125 out from the dispenser's centre, on the
+     * rail in front of it (0.1 up, or 0.6 on a slope) or on one a block lower (0.9 down, or 0.4
+     * on a slope unless dispensing downward). Anything else in front, or no rail, dispenses the
+     * item as any other, and the dispense sound and smoke then come a second time.
+     */
+    private function dispenseMinecart(int $x, int $y, int $z, string $facing, array $container, int $slot, string $kind): void
+    {
+        [$dx, $dy, $dz] = self::DISPENSE_FACING[$facing];
+        $catalog = $this->version->catalog;
+        $front = $this->world->get($x + $dx, $y + $dy, $z + $dz);
+        $below = $this->world->get($x + $dx, $y + $dy - 1, $z + $dz);
+        if ($this->isRail($front)) {
+            $offset = str_starts_with($this->railShape($front), 'ascending') ? 0.6 : 0.1;
+        } elseif ($catalog->air($front) && $this->isRail($below)) {
+            $offset = $facing !== 'down' && str_starts_with($this->railShape($below), 'ascending') ? -0.4 : -0.9;
+        } else {
+            $this->dispenseItem($x, $y, $z, $facing, $this->containerStacks($container)[$slot]);
+            $this->takeFromContainer($container, $slot);
+            $this->levelEvent(1000, [$x, $y, $z], 0);
+            $this->levelEvent(2000, [$x, $y, $z], self::DISPENSE_DATA[$facing]);
+            return;
+        }
+        $id = $this->addMinecart($x + 0.5 + $dx * 1.125, $y + $dy + $offset, $z + 0.5 + $dz * 1.125, [0.0, 0.0, 0.0], 0.0, ['kind' => $kind, 'firstTick' => true]);
+        foreach ($this->localPlayers() as $player) {
+            $this->showMinecart($player, $id);
+        }
+        $this->takeFromContainer($container, $slot);
+        $this->levelEvent(1000, [$x, $y, $z], 0);
+        $this->levelEvent(2000, [$x, $y, $z], self::DISPENSE_DATA[$facing]);
+    }
+
+    /**
      * MinecartTNT.primeFuse: an 80-tick fuse (unless TNT may not explode), the client told with
      * entity event 70, and the primed sound.
      */

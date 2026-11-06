@@ -1,0 +1,93 @@
+{
+  "name": "minecart-dispensing",
+  "normalizations": [
+    "Compare dispensers setting a minecart on the rail in front and a chest minecart on the rail below the space in front.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 20 60 10 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 20 70 10 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 61 -4.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:dispenser[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "fill 1 61 0 8 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 3 minecraft:dispenser[facing=east]"
+    },
+    {
+      "action": "command",
+      "text": "fill 1 61 3 8 61 3 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 0 61 0 container.0 with minecraft:minecart"
+    },
+    {
+      "action": "command",
+      "text": "item replace block 0 62 3 container.0 with minecraft:chest_minecart"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "ready",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 61 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock -1 62 3 minecraft:redstone_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "dispensed",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          61,
+          0
+        ],
+        [
+          0,
+          62,
+          3
+        ]
+      ]
+    }
+  ]
+}

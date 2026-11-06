@@ -27,8 +27,7 @@ trait Dispensers
         'experience_bottle', 'splash_potion', 'lingering_potion',
         'firework_rocket', 'fire_charge', 'wind_charge', 'armor_stand', 'chest', 'lava_bucket', 'water_bucket', 'powder_snow_bucket', 'salmon_bucket', 'cod_bucket',
         'pufferfish_bucket', 'tropical_fish_bucket', 'axolotl_bucket', 'sulfur_cube_bucket', 'tadpole_bucket', 'bucket', 'flint_and_steel', 'bone_meal',
-        'wither_skeleton_skull', 'carved_pumpkin', 'glass_bottle', 'glowstone', 'shears', 'brush', 'honeycomb', 'potion', 'minecart', 'chest_minecart',
-        'furnace_minecart', 'tnt_minecart', 'hopper_minecart', 'command_block_minecart',
+        'wither_skeleton_skull', 'carved_pumpkin', 'glass_bottle', 'glowstone', 'shears', 'brush', 'honeycomb', 'potion',
     ];
 
     /** DispenserBlock.neighborChanged: power at the block or above it triggers a dispense in four ticks. */
@@ -107,6 +106,10 @@ trait Dispensers
         if (in_array($item, ['arrow', 'tipped_arrow', 'spectral_arrow', 'snowball', 'egg', 'blue_egg', 'brown_egg'], true)) {
             $this->dispenseProjectile($x, $y, $z, $facing, $stack);
             $this->takeFromContainer($container, $slot);
+            return;
+        }
+        if (in_array($item, self::MINECART_ITEMS, true)) {
+            $this->dispenseMinecart($x, $y, $z, $facing, $container, $slot, $item);
             return;
         }
         if (in_array($item, self::SPECIAL_DISPENSES, true)) {
