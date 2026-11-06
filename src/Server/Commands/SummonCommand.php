@@ -33,7 +33,7 @@ trait SummonCommand
                 // AbstractMinecart: the motion and yaw every entity loads, and FlippedRotation;
                 // MinecartFurnace: its Fuel and PushX and PushZ.
                 $id = $this->addMinecart(...[...$position, self::summonMotion($nbt), (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0),
-                    ['kind' => $kind, 'flipped' => (bool) ($nbt['FlippedRotation']['value'] ?? false), 'fuel' => max(0, $tag('Fuel', 0)),
+                    ['kind' => $kind, 'flipped' => (bool) ($nbt['FlippedRotation']['value'] ?? false), 'fuel' => max(0, $tag('Fuel', 0)), 'fuse' => $tag('fuse', -1),
                         'push' => [(float) ($nbt['PushX']['value'] ?? 0.0), 0.0, (float) ($nbt['PushZ']['value'] ?? 0.0)]]]);
                 foreach ($this->localPlayers() as $player) {
                     $this->showMinecart($player, $id);

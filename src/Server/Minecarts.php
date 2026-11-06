@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\Protocol\Binary;
+use PhpMinecraftJavaServer\Protocol\Packets;
 use PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker;
 use PhpMinecraftJavaServer\World\Collision;
 use PhpMinecraftJavaServer\World\Combat;
@@ -76,7 +77,7 @@ trait Minecarts
     private function savedMinecarts(): array
     {
         return array_values(array_map(static fn (array $cart): array => ['uuid' => bin2hex($cart['uuid'])]
-            + array_intersect_key($cart, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw', 'flipped', 'fuel', 'push', 'enabled'])), $this->minecarts));
+            + array_intersect_key($cart, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw', 'flipped', 'fuel', 'push', 'enabled', 'fuse'])), $this->minecarts));
     }
 
     /** The selector-shaped reference a command names a minecart by. */
@@ -104,6 +105,9 @@ trait Minecarts
         }
         $collision = new Collision($this->version->catalog);
         foreach (array_keys($this->minecarts) as $id) {
+            if (!isset($this->minecarts[$id])) {
+                continue;
+            }
             $cart = &$this->minecarts[$id];
             [$xo, , $zo] = [$cart['x'], $cart['y'], $cart['z']];
             $yawO = $cart['yaw'];
@@ -129,7 +133,12 @@ trait Minecarts
             if ($this->isRail($state)) {
                 $this->moveMinecartAlongTrack($cart, $pos, $state, $collision);
                 $properties = $this->version->catalog->properties($state);
-                if ($this->version->catalog->blockName($state) === 'activator_rail' && $cart['kind'] === 'hopper_minecart') {
+                if ($this->version->catalog->blockName($state) === 'activator_rail' && $cart['kind'] === 'tnt_minecart') {
+                    // MinecartTNT.activateMinecart: a powered rail primes it.
+                    if (($properties['powered'] ?? 'false') === 'true' && ($cart['fuse'] ?? -1) < 0) {
+                        $this->primeMinecartTnt($cart);
+                    }
+                } elseif ($this->version->catalog->blockName($state) === 'activator_rail' && $cart['kind'] === 'hopper_minecart') {
                     // MinecartHopper.activateMinecart: a powered rail turns it off, an unpowered one on.
                     $cart['enabled'] = ($properties['powered'] ?? 'false') !== 'true';
                 } elseif ($this->version->catalog->blockName($state) === 'activator_rail' && ($properties['powered'] ?? 'false') === 'true' && $cart['kind'] === 'minecart') {
@@ -187,6 +196,22 @@ trait Minecarts
                 if (($cart['lit'] ?? false) !== $cart['fuel'] > 0) {
                     $cart['lit'] = $cart['fuel'] > 0;
                     $cart['dataDirty'][13] = true;
+                }
+            }
+            if ($cart['kind'] === 'tnt_minecart') {
+                // MinecartTNT.tick: the fuse burns down and goes off at nought, and a hard knock sets it off too.
+                $speed = $cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2;
+                if (($cart['fuse'] ?? -1) > 0) {
+                    --$cart['fuse'];
+                } elseif (($cart['fuse'] ?? -1) === 0) {
+                    unset($cart);
+                    $this->explodeMinecartTnt($id, $speed);
+                    continue;
+                }
+                if (($cart['horizontalCollision'] ?? false) && $speed >= Float32::round(0.01)) {
+                    unset($cart);
+                    $this->explodeMinecartTnt($id, $speed);
+                    continue;
                 }
             }
             $passengers = $cart['passengers'] ?? [];
@@ -470,6 +495,14 @@ trait Minecarts
         $cart['syncVelocity'] = true;
         $cart['damage'] = Float32::round($cart['damage'] + Float32::round($damage * 10.0));
         $cart['dataDirty'] += [8 => true, 9 => true, 10 => true];
+        if ($c->gameMode !== 1 && $cart['damage'] > 40.0 && $cart['kind'] === 'tnt_minecart' && $cart['velocity'][0] ** 2 + $cart['velocity'][2] ** 2 >= Float32::round(0.01)) {
+            // MinecartTNT.destroy: a moving TNT minecart is primed with a short fuse instead.
+            if (($cart['fuse'] ?? -1) < 0) {
+                $this->primeMinecartTnt($cart);
+                $cart['fuse'] = random_int(0, 19) + random_int(0, 19);
+            }
+            return true;
+        }
         if ($c->gameMode === 1 || $cart['damage'] > 40.0) {
             [$x, $y, $z, $kind] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind']];
             unset($cart);
@@ -694,6 +727,47 @@ trait Minecarts
         $state = $this->world->get($x, $y, $z);
         if ($this->version->catalog->blockName($state) === 'detector_rail' && ($this->version->catalog->properties($state)['powered'] ?? 'false') === 'true') {
             $this->checkDetectorRail($x, $y, $z);
+        }
+    }
+
+    /**
+     * MinecartTNT.primeFuse: an 80-tick fuse (unless TNT may not explode), the client told with
+     * entity event 70, and the primed sound.
+     */
+    private function primeMinecartTnt(array &$cart): void
+    {
+        if ($this->gameRule('tnt_explodes') !== 'true') {
+            return;
+        }
+        $cart['fuse'] = 80;
+        foreach ($this->localPlayers() as $player) {
+            if (isset($player->entities[$cart['id']])) {
+                $player->send($this->version, 'entity_event', pack('N', $cart['id']) . "\x46");
+            }
+        }
+        $payload = Packets::sound($this->version->blocks['sounds']['entity.tnt.primed'], 4, $cart['x'], $cart['y'], $cart['z'], 1.0, 1.0, unpack('J', random_bytes(8))[1]);
+        foreach ($this->localPlayers() as $player) {
+            if (($player->x - $cart['x']) ** 2 + ($player->y - $cart['y']) ** 2 + ($player->z - $cart['z']) ** 2 < 256.0) {
+                $player->send($this->version, 'sound', $payload);
+            }
+        }
+    }
+
+    /**
+     * MinecartTNT.explode: with TNT allowed to explode, a TNT explosion of 4 and up to 1.5 more
+     * for each unit of speed (up to 5) at the cart, which a primed cart's rails survive; the cart
+     * is then gone. A primed cart that may not explode just goes.
+     */
+    private function explodeMinecartTnt(int $id, float $speedSqr): void
+    {
+        $cart = $this->minecarts[$id];
+        if ($this->gameRule('tnt_explodes') === 'true') {
+            $speed = min(sqrt($speedSqr), 5.0);
+            $power = Float32::round(4.0 + 1.0 * self::randomUnit() * 1.5 * $speed);
+            $this->explode($cart['x'], $cart['y'], $cart['z'], $power, $id, null, false, null, false, ($cart['fuse'] ?? -1) > -1);
+            $this->removeMinecart($id);
+        } elseif (($cart['fuse'] ?? -1) > -1) {
+            $this->removeMinecart($id);
         }
     }
 

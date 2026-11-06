@@ -314,6 +314,9 @@ trait DataAccessors
         if ($cart['kind'] === 'hopper_minecart') {
             $pairs[] = ['Enabled', new NbtTag('byte', (int) ($cart['enabled'] ?? true))];
         }
+        if ($cart['kind'] === 'tnt_minecart') {
+            $pairs[] = ['fuse', new NbtTag('int', (int) ($cart['fuse'] ?? -1))];
+        }
         return self::nbtCompound($pairs);
     }
 
