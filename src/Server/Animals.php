@@ -212,6 +212,10 @@ trait Animals
         if (($animal['baby'] ?? false) && in_array($animal['kind'], self::BABY_INDEX_TYPES, true)) {
             $entries .= "\x10" . Binary::writeVarInt(8) . "\1";
         }
+        // IronGolem.DATA_FLAGS_ID: bit 1 for a golem players built.
+        if ($animal['kind'] === 'iron_golem' && ($animal['playerCreated'] ?? false)) {
+            $entries .= "\x10" . Binary::writeVarInt(0) . "\1";
+        }
         return Binary::writeVarInt($animal['id']) . $entries . "\xff";
     }
 
@@ -742,6 +746,7 @@ trait Animals
                 if ($this->tickCreeper($animal, !($animal['noAi'] ?? false))) {
                     continue;
                 }
+                $this->tickSnowGolem($animal);
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {

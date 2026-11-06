@@ -19,6 +19,8 @@ final class Server
 {
     use BossBars;
 
+    use GolemBuilding;
+
     use Mining;
 
     use ExperienceOrbs;
@@ -1802,6 +1804,7 @@ final class Server
         if ($this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
             $this->tripwireBlockSwapped($x, $y, $z, $previous, $state);
         }
+        $this->golemHeadPlaced($x, $y, $z, $previous, $state);
         // BaseRailBlock.onPlace: a rail set where it was not joins the rails beside it.
         if ($this->isRail($state) && $this->version->catalog->blockName($previous) !== $this->version->catalog->blockName($state)) {
             $this->placeRail($x, $y, $z);
