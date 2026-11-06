@@ -75,17 +75,24 @@ trait Riding
     /** Mobs and minecarts carry riders. */
     private function isVehicle(int $id): bool
     {
-        return isset($this->animals[$id]) || isset($this->minecarts[$id]);
+        return isset($this->animals[$id]) || isset($this->minecarts[$id]) || isset($this->boats[$id]);
     }
 
     /** @return list<int> the vehicle's passengers, first the one in control */
     private function vehiclePassengers(int $vehicle): array
     {
-        return ($this->minecarts[$vehicle] ?? $this->animals[$vehicle] ?? [])['passengers'] ?? [];
+        return ($this->minecarts[$vehicle] ?? $this->boats[$vehicle] ?? $this->animals[$vehicle] ?? [])['passengers'] ?? [];
     }
 
     private function setVehiclePassengers(int $vehicle, array $passengers): void
     {
+        if (isset($this->boats[$vehicle])) {
+            $this->boats[$vehicle]['passengers'] = $passengers;
+            if ($passengers === []) {
+                unset($this->boats[$vehicle]['passengers']);
+            }
+            return;
+        }
         if (isset($this->minecarts[$vehicle])) {
             $this->minecarts[$vehicle]['passengers'] = $passengers;
             if ($passengers === []) {
@@ -102,8 +109,10 @@ trait Riding
     /** Entity.startRiding(vehicle, force: true) followed by ServerPlayer's teleport into the seat. */
     private function startRiding(array $entity, int $vehicle): bool
     {
-        // AbstractMinecart.canAddPassenger: a minecart takes one rider.
-        if ($this->vehicleOf($entity) === $vehicle || !$this->isVehicle($vehicle) || (isset($this->minecarts[$vehicle]) && $this->vehiclePassengers($vehicle) !== [])) {
+        // AbstractMinecart.canAddPassenger: a minecart takes one rider; AbstractBoat.canAddPassenger:
+        // a boat two, and one with a chest one.
+        if ($this->vehicleOf($entity) === $vehicle || !$this->isVehicle($vehicle) || (isset($this->minecarts[$vehicle]) && $this->vehiclePassengers($vehicle) !== [])
+            || (isset($this->boats[$vehicle]) && count($this->vehiclePassengers($vehicle)) >= $this->boatSeats($this->boats[$vehicle]))) {
             return false;
         }
         $id = $this->riderId($entity);
@@ -161,7 +170,8 @@ trait Riding
             unset($this->animals[$entity['mob']]['vehicle']);
         }
         if ($this->isVehicle($vehicle)) {
-            $target = isset($this->minecarts[$vehicle]) ? $this->minecartDismountLocation($entity, $vehicle) : $this->dismountLocation($entity, $vehicle);
+            $target = isset($this->minecarts[$vehicle]) ? $this->minecartDismountLocation($entity, $vehicle)
+                : (isset($this->boats[$vehicle]) ? $this->boatDismountLocation($entity, $vehicle) : $this->dismountLocation($entity, $vehicle));
             if (isset($entity['client'])) {
                 $this->sendPosition($entity['client'], $target, self::RELATIVE_DELTA_ROTATION);
                 $this->broadcastPlayerPosition($entity['client']);
@@ -180,6 +190,10 @@ trait Riding
      */
     private function interactEntity(Client $player, int $id, int $hand, bool $secondary): void
     {
+        if (isset($this->boats[$id])) {
+            $this->interactBoat($player, $id, $hand, $secondary);
+            return;
+        }
         if (isset($this->minecarts[$id])) {
             $this->interactMinecart($player, $id, $hand, $secondary);
             return;
@@ -302,10 +316,11 @@ trait Riding
     /** Entity.positionRider: the vehicle's passenger point less the rider's own vehicle point. */
     private function positionRider(int $vehicle, int $passenger): void
     {
-        $carrier = $this->minecarts[$vehicle] ?? $this->animals[$vehicle];
+        $carrier = $this->minecarts[$vehicle] ?? $this->boats[$vehicle] ?? $this->animals[$vehicle];
         $points = $this->version->catalog->mobs['entities'][$carrier['kind'] ?? 'minecart']['passenger_attachments'];
         $index = array_search($passenger, $carrier['passengers'] ?? [], true);
-        $seat = self::attachmentPoint($points[max(0, min((int) $index, count($points) - 1))], $this->attachmentScale($carrier), (float) $carrier['yaw']);
+        $seat = isset($this->boats[$vehicle]) ? self::attachmentPoint($this->boatSeat($carrier, $passenger), 1.0, (float) $carrier['yaw'])
+            : self::attachmentPoint($points[max(0, min((int) $index, count($points) - 1))], $this->attachmentScale($carrier), (float) $carrier['yaw']);
         if (isset($this->animals[$passenger])) {
             $rider = $this->animals[$passenger];
             $offset = self::attachmentPoint($this->version->catalog->mobs['entities'][$rider['kind']]['vehicle_attachment'], $this->attachmentScale($rider), (float) $rider['yaw']);

@@ -58,6 +58,124 @@ trait Boats
             + array_intersect_key($boat, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw'])), $this->boats));
     }
 
+    /** ServerGamePacketListenerImpl.handlePaddleBoat: the steering rider's paddles (data 11 and 12). */
+    private function paddleBoat(Client $player, bool $left, bool $right): void
+    {
+        $vehicle = $player->vehicle;
+        if ($vehicle === null || !isset($this->boats[$vehicle]) || $this->controllingPlayer($vehicle) !== $player) {
+            return;
+        }
+        $boat = &$this->boats[$vehicle];
+        if (($boat['paddles'] ?? [false, false]) !== [$left, $right]) {
+            $boat['paddles'] = [$left, $right];
+            $boat['dataDirty'] += [11 => true, 12 => true];
+        }
+    }
+
+    /** AbstractBoat.getMaxPassengers: two, or one beside a chest. */
+    private function boatSeats(array $boat): int
+    {
+        return str_contains($boat['kind'], '_chest_') ? 1 : 2;
+    }
+
+    /**
+     * AbstractBoat.getPassengerAttachmentPoint, before the boat's turn: the ride height (a third
+     * of the boat's height, or 8/9 of it on a raft) and a seat along it, 0.2 in front and 0.6
+     * behind for two riders (0.2 further for an animal), or 0.15 forward of a chest for one.
+     */
+    private function boatSeat(array $boat, int $passenger): array
+    {
+        $height = str_ends_with($boat['kind'], '_raft') ? Float32::round(0.5625 * Float32::round(0.8888889)) : Float32::round(0.5625 / 3.0);
+        $offset = str_contains($boat['kind'], '_chest_') ? Float32::round(0.15) : 0.0;
+        $passengers = $boat['passengers'] ?? [];
+        if (count($passengers) > 1) {
+            $offset = array_search($passenger, $passengers, true) === 0 ? Float32::round(0.2) : Float32::round(-0.6);
+            if (isset($this->animals[$passenger])) {
+                $offset = Float32::round($offset + Float32::round(0.2));
+            }
+        }
+        return [0.0, $height, $offset];
+    }
+
+    /**
+     * AbstractBoat.interact: without the secondary action, a player gets into a boat with room,
+     * unless it has been under water too long.
+     */
+    private function interactBoat(Client $player, int $id, int $hand, bool $secondary): void
+    {
+        $boat = $this->boats[$id];
+        if ($secondary || $player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1) {
+            return;
+        }
+        $box = $this->boatBox($boat);
+        $eye = [$player->x, $player->y + ($player->sneaking ? 1.27 : 1.62), $player->z];
+        $distance = 0.0;
+        foreach ([0, 1, 2] as $axis) {
+            $distance += max($box[$axis] - $eye[$axis], 0.0, $eye[$axis] - $box[$axis + 3]) ** 2;
+        }
+        // Player.isWithinEntityInteractionRange with the server's 3-block allowance.
+        if ($distance >= (3.0 + 3.0) ** 2) {
+            return;
+        }
+        if ($this->startRiding(['client' => $player, 'id' => $player->entityId], $id)) {
+            $this->useSwing($player, $hand);
+        }
+    }
+
+    /** ServerLevel.tickPassenger for a boat's riders: a sneaking player gets off, the rest take their seats. */
+    private function boatRiders(int $id, array $passengers): void
+    {
+        foreach ($passengers as $passenger) {
+            $reference = $this->riderReference($passenger);
+            if (isset($reference['client']) && $reference['client']->sneaking) {
+                $this->stopRiding($reference);
+            } elseif ($reference !== null && isset($this->boats[$id])) {
+                $this->positionRider($id, $passenger);
+            }
+        }
+    }
+
+    /**
+     * AbstractBoat.getDismountLocationForPassenger: out past the boat's side the way the rider
+     * faces (Entity.getCollisionHorizontalEscapeVector), on the floor there or a block down
+     * unless water is under it, in the first pose that fits; otherwise on top of the boat.
+     */
+    private function boatDismountLocation(array $entity, int $vehicle): array
+    {
+        $boat = $this->boats[$vehicle];
+        $box = $this->boatBox($boat);
+        $top = [$boat['x'], $box[4], $boat['z']];
+        $yaw = isset($entity['client']) ? $entity['client']->yaw : (float) ($this->animals[$entity['mob']]['yaw'] ?? 0.0);
+        // Entity.getBbWidth: the rider's float width.
+        $width = Float32::round($this->dismountBounds($entity)[0][0]);
+        $distance = (Float32::round(1.375 * Float32::round(M_SQRT2)) + $width + Float32::round(1.0E-5)) / 2.0;
+        $radians = Float32::round(Float32::round($yaw) * Float32::round(M_PI / 180.0));
+        $sin = -$this->mthSin($radians);
+        $cos = $this->mthCos($radians);
+        $max = max(abs($sin), abs($cos));
+        [$x, $z] = [$boat['x'] + $sin * $distance / $max, $boat['z'] + $cos * $distance / $max];
+        [$bx, $by, $bz] = [(int) floor($x), (int) floor($box[4]), (int) floor($z)];
+        if (($this->fluids()->fluid($this->world->get($bx, $by - 1, $bz))[0] ?? null) === 'water') {
+            return $top;
+        }
+        $collision = new Collision($this->version->catalog);
+        $targets = [];
+        foreach ([$by, $by - 1] as $y) {
+            $floor = $this->blockFloorHeight($collision, $bx, $y, $bz);
+            if (!is_infinite($floor) && $floor < 1.0) {
+                $targets[] = [$x, $y + $floor, $z];
+            }
+        }
+        foreach ($this->dismountBounds($entity) as [$poseWidth, $poseHeight]) {
+            foreach ($targets as $target) {
+                if ($this->canDismountTo($collision, Collision::bounds($target[0], $target[1], $target[2], $poseWidth, $poseHeight))) {
+                    return $target;
+                }
+            }
+        }
+        return $top;
+    }
+
     /** The selector-shaped reference a command names a boat by. */
     private function boatReference(int $id): array
     {
@@ -68,6 +186,7 @@ trait Boats
 
     private function removeBoat(int $id): void
     {
+        $this->ejectPassengers($id);
         unset($this->boats[$id], $this->boatTrackers[$id]);
         foreach ($this->localPlayers() as $player) {
             $this->forgetEntity($player, $id);
@@ -93,6 +212,7 @@ trait Boats
             }
             $boat = &$this->boats[$id];
             $old = $boat['status'];
+            $steered = isset($boat['passengers'][0], $this->riderReference($boat['passengers'][0])['client']);
             $boat['status'] = $this->boatStatus($boat);
             if ($boat['hurtTime'] > 0) {
                 --$boat['hurtTime'];
@@ -108,6 +228,19 @@ trait Boats
                 $this->removeBoat($id);
                 continue;
             }
+            if ($steered) {
+                // AbstractBoat.tick: a player steers the boat on their own client, which says where it is.
+                $boat['velocity'] = [0.0, 0.0, 0.0];
+                $passengers = $boat['passengers'];
+                unset($boat);
+                $this->boatRiders($id, $passengers);
+                continue;
+            }
+            // AbstractBoat.tick: without a player in front the paddles rest.
+            if (($boat['paddles'] ?? [false, false]) !== [false, false]) {
+                $boat['paddles'] = [false, false];
+                $boat['dataDirty'] += [11 => true, 12 => true];
+            }
             // Entity.baseTick: flowing water pushes the boat.
             $this->entityFluidCurrent($this->boatBox($boat), $boat['velocity']);
             $this->floatBoat($boat, $old, $collision);
@@ -120,7 +253,9 @@ trait Boats
             } elseif ($boat['y'] < $before && ($this->fluids()->fluid($this->world->get((int) floor($boat['x']), (int) floor($boat['y']) - 1, (int) floor($boat['z'])))[0] ?? null) !== 'water') {
                 $boat['fallDistance'] += $before - $boat['y'];
             }
+            $passengers = $boat['passengers'] ?? [];
             unset($boat);
+            $this->boatRiders($id, $passengers);
         }
     }
 
@@ -481,6 +616,8 @@ trait Boats
                 8 => "\x08\x01" . Binary::writeVarInt($boat['hurtTime']),
                 9 => "\x09\x01" . Binary::writeVarInt($boat['hurtDir']),
                 10 => "\x0a\x03" . pack('G', $boat['damage']),
+                11 => "\x0b\x08" . (($boat['paddles'][0] ?? false) ? "\1" : "\0"),
+                12 => "\x0c\x08" . (($boat['paddles'][1] ?? false) ? "\1" : "\0"),
             };
         }
         return $data;
@@ -497,6 +634,7 @@ trait Boats
                 $this->forgetEntity($player, $id);
             }
         }
+        $this->synchronizePassengers($boat);
         $state = $this->boatState($boat);
         $tracker = $this->boatTrackers[$id] ??= new EntityMovementTracker($id, 3, true, $state, false);
         $packets = $tracker->update($state);
@@ -528,6 +666,7 @@ trait Boats
         if ($changed !== []) {
             $player->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . $this->boatData($boat, $changed) . "\xff");
         }
+        $this->pairPassengers($player, $boat);
         $player->send($this->version, 'bundle_delimiter', '');
         $player->entities[$id] = true;
         return true;
