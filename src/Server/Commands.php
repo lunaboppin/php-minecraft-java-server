@@ -299,6 +299,9 @@ trait Commands
             foreach (array_keys($this->minecarts) as $id) {
                 $items[] = $this->minecartReference($id);
             }
+            foreach (array_keys($this->boats) as $id) {
+                $items[] = $this->boatReference($id);
+            }
             // A dying mob stays in the level, and selectable, until its death animation ends.
             foreach ($this->animals as $id => $animal) {
                 $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -463,7 +466,7 @@ trait Commands
         if (isset($entity['orb'])) {
             return $this->entityComponent('experience_orb', $entity['uuid'], null);
         }
-        if (isset($entity['projectile']) || isset($entity['minecart'])) {
+        if (isset($entity['projectile']) || isset($entity['minecart']) || isset($entity['boat'])) {
             return $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], null);
         }
         if (isset($entity['item'])) {

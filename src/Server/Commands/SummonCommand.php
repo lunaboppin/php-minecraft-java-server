@@ -20,7 +20,7 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind])) {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || $this->isBoatType($kind)) {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
             $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
@@ -39,6 +39,13 @@ trait SummonCommand
                     $this->showMinecart($player, $id);
                 }
                 $uuid = $this->minecarts[$id]['uuid'];
+            } elseif ($this->isBoatType($kind)) {
+                // AbstractBoat: the motion and yaw every entity loads.
+                $id = $this->addBoat($kind, ...[...$position, self::summonMotion($nbt), (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0)]);
+                foreach ($this->localPlayers() as $player) {
+                    $this->showBoat($player, $id);
+                }
+                $uuid = $this->boats[$id]['uuid'];
             } elseif ($kind === 'tnt') {
                 // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
                 $id = $this->addTnt(...[...$position, self::summonMotion($nbt), $tag('fuse', 80)]);

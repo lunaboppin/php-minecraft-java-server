@@ -353,7 +353,7 @@ trait Entities
      *
      * @return array{0: array{float, float, float}, 1: array{float, float, float}}
      */
-    private function moveSimpleEntity(array &$entity, array $box, Collision $collision, float $gravity, ?array $delta = null, bool $railSpeed = false): array
+    private function moveSimpleEntity(array &$entity, array $box, Collision $collision, float $gravity, ?array $delta = null, bool $railSpeed = false, bool $touchingShapes = false): array
     {
         $delta ??= $entity['velocity'];
         $stuck = $entity['stuck'] ?? [0.0, 0.0, 0.0];
@@ -362,7 +362,8 @@ trait Entities
             $entity['stuck'] = [0.0, 0.0, 0.0];
             $entity['velocity'] = [0.0, 0.0, 0.0];
         }
-        $moved = $collision->move($this->world, $box, $delta);
+        // As vanilla gathers them, only the shapes overlapping the sweep count for some entities.
+        $moved = $touchingShapes ? $collision->moveAmongTouching($this->world, $box, $delta) : $collision->move($this->world, $box, $delta);
         $length = $moved[0] ** 2 + $moved[1] ** 2 + $moved[2] ** 2;
         if ($length > 1.0E-7 || $delta[0] ** 2 + $delta[1] ** 2 + $delta[2] ** 2 - $length < 1.0E-7) {
             [$entity['x'], $entity['y'], $entity['z']] = [$entity['x'] + $moved[0], $entity['y'] + $moved[1], $entity['z'] + $moved[2]];

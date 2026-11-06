@@ -94,6 +94,18 @@ final class Collision
         return self::moveWithBoxes($box, $delta, $this->boxes($world, self::expand($box, $delta)));
     }
 
+    /**
+     * Entity.collideWithShapes as vanilla gathers them: only the shapes that overlap the box
+     * stretched along the movement count, and with none the movement stands, however small.
+     */
+    public function moveAmongTouching(World $world, array $box, array $delta): array
+    {
+        $swept = self::expand($box, $delta);
+        $touching = array_values(array_filter($this->boxes($world, $swept), static fn (array $o): bool => $o[0] < $swept[3] && $o[3] > $swept[0]
+            && $o[1] < $swept[4] && $o[4] > $swept[1] && $o[2] < $swept[5] && $o[5] > $swept[2]));
+        return $touching === [] ? $delta : self::moveWithBoxes($box, $delta, $touching);
+    }
+
     /** Native candidate-height stepping for static block collisions. */
     public function moveWithStep(World $world, array $box, array $delta, float $stepHeight, bool $onGround): array
     {

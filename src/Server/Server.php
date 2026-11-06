@@ -95,6 +95,8 @@ final class Server
 
     use Minecarts;
 
+    use Boats;
+
     use Speleothems;
 
     use Bells;
@@ -234,6 +236,7 @@ final class Server
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
                 $this->restoreMinecarts();
+                $this->restoreBoats();
                 $this->restoreBlockSimulation();
             });
         }
