@@ -145,6 +145,7 @@ trait Survival
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
                 $this->world->setting('minecarts', $this->savedMinecarts());
+                $this->world->setting('itemFrames', $this->savedItemFrames());
                 $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
@@ -1167,6 +1168,9 @@ trait Survival
             return;
         }
         if ($this->attackMinecart($attacker, $id)) {
+            return;
+        }
+        if ($this->attackItemFrame($attacker, $id)) {
             return;
         }
         if ($this->ticks - $attacker->lastAttackTick < 10) {

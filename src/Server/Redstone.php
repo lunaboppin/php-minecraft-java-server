@@ -398,8 +398,11 @@ trait Redstone
         if ($input < 15 && $this->rsConductor($state)) {
             $further = self::rsStep($back, $p['facing']);
             $other = $this->world->get(...$further);
-            if ($this->fireBlocks()->flag($other, Blocks::ANALOG_OUTPUT)) {
-                return $this->analogOutput($further, $other);
+            // ComparatorBlock.getItemFrame: a frame facing the comparator's way in the block beyond counts too.
+            $frame = $this->itemFrameSignal($further, $p['facing']);
+            $analog = $this->fireBlocks()->flag($other, Blocks::ANALOG_OUTPUT) ? $this->analogOutput($further, $other) : null;
+            if ($frame !== null || $analog !== null) {
+                return max($frame ?? PHP_INT_MIN, $analog ?? PHP_INT_MIN);
             }
         }
         return $input;

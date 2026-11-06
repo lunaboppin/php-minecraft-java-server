@@ -3366,7 +3366,17 @@
     "entity.skeleton.shoot": 1495,
     "entity.generic.burn": 699,
     "block.composter.empty": 384,
-    "block.composter.ready": 387
+    "block.composter.ready": 387,
+    "entity.item_frame.place": 911,
+    "entity.item_frame.add_item": 909,
+    "entity.item_frame.rotate_item": 913,
+    "entity.item_frame.remove_item": 912,
+    "entity.item_frame.break": 910,
+    "entity.glow_item_frame.place": 732,
+    "entity.glow_item_frame.add_item": 730,
+    "entity.glow_item_frame.rotate_item": 734,
+    "entity.glow_item_frame.remove_item": 733,
+    "entity.glow_item_frame.break": 731
   },
   "particle_types": {
     "angry_villager": 0,

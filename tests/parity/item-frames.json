@@ -1,0 +1,281 @@
+{
+  "name": "item-frames",
+  "normalizations": [
+    "Compare item frames hung on a wall and on the floor, a diamond put in one and turned twice, knocked out by a hit, and the empty frame broken by another, their drops picked up, and a comparator reading a frame beyond the block behind it.",
+    "Entity IDs and UUIDs are left out; dropped items' random motion is not compared, only the inventory after their pickup.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 55 -6 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 61 -6 12 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 4 63 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 3.5 180 20"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:item_frame 3"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:diamond 2"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "ready",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        1,
+        61,
+        0
+      ],
+      "face": 3,
+      "cursor": [
+        0.5,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        3,
+        60,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "frames_hung",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0001"
+    },
+    {
+      "action": "interact",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "diamond_framed_and_turned",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "diamond_knocked_out",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 3.5 180 20"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "attack",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "frame_broken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item_frame]"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 1 minecraft:comparator[facing=north]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 2 minecraft:redstone_lamp"
+    },
+    {
+      "action": "command",
+      "text": "summon item_frame 8 61 -1 {Facing:2b}"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 8.5 61 -3.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:diamond 1"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "comparator_reads_empty_frame",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          8,
+          61,
+          1
+        ],
+        [
+          8,
+          61,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "interact",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "item_frame",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "comparator_reads_turned_diamond",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          8,
+          61,
+          1
+        ],
+        [
+          8,
+          61,
+          2
+        ]
+      ]
+    }
+  ]
+}

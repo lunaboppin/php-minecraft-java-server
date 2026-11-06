@@ -95,6 +95,8 @@ final class Server
 
     use Minecarts;
 
+    use ItemFrames;
+
     use Speleothems;
 
     use Bells;
@@ -234,6 +236,7 @@ final class Server
                 $this->restoreDaylightDetectors();
                 $this->restoreFallingBlocks();
                 $this->restoreMinecarts();
+                $this->restoreItemFrames();
                 $this->restoreBlockSimulation();
             });
         }
@@ -1598,6 +1601,13 @@ final class Server
         }
         // MinecartItem.useOn: a minecart is set on the rail clicked, and the item used up.
         if ($within && in_array($itemName, self::MINECART_ITEMS, true) && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z, $itemName)) {
+            $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        // HangingEntityItem.useOn: a frame hangs beside the face clicked.
+        if ($within && isset(self::FRAME_KINDS[$itemName ?? '']) && $this->editable($c, $x + $dx, $y + $dy, $z + $dz)
+            && $this->placeItemFrame($c, $slot, $x, $y, $z, ['down', 'up', 'north', 'south', 'west', 'east'][$face], $itemName)) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;

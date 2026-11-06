@@ -20,7 +20,7 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind])) {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || isset(self::FRAME_KINDS[$kind])) {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
             $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
@@ -39,6 +39,19 @@ trait SummonCommand
                     $this->showMinecart($player, $id);
                 }
                 $uuid = $this->minecarts[$id]['uuid'];
+            } elseif (isset(self::FRAME_KINDS[$kind])) {
+                // ItemFrame.readAdditionalSaveData: Facing (down without one), ItemRotation, Fixed and Invisible.
+                $faces = ['down', 'up', 'north', 'south', 'west', 'east'];
+                $id = $this->addItemFrame(
+                    $kind,
+                    array_map(static fn (float $v): int => (int) floor($v), $position),
+                    $faces[$tag('Facing', 0)] ?? 'down',
+                    ['rotation' => $tag('ItemRotation', 0) % 8, 'fixed' => $tag('Fixed', 0) !== 0, 'invisible' => $tag('Invisible', 0) !== 0]
+                );
+                foreach ($this->localPlayers() as $player) {
+                    $this->showItemFrame($player, $id);
+                }
+                $uuid = $this->itemFrames[$id]['uuid'];
             } elseif ($kind === 'tnt') {
                 // PrimedTnt.readAdditionalSaveData: the fuse from its tag, 80 without one.
                 $id = $this->addTnt(...[...$position, self::summonMotion($nbt), $tag('fuse', 80)]);
