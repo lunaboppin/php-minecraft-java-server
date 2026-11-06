@@ -25,12 +25,33 @@ trait ArmorStands
     /** EquipmentSlot ordinals by the names an item's equippable component gives. */
     private const ARMOR_STAND_SLOTS = ['mainhand' => 0, 'offhand' => 1, 'feet' => 2, 'legs' => 3, 'chest' => 4, 'head' => 5, 'body' => 6, 'saddle' => 7];
 
+    /** ArmorStand's default pose: head, body, left and right arm, left and right leg (data 16-21). */
+    private const ARMOR_STAND_POSE = ['Head' => [0.0, 0.0, 0.0], 'Body' => [0.0, 0.0, 0.0], 'LeftArm' => [-10.0, 0.0, -10.0],
+        'RightArm' => [-15.0, 0.0, 10.0], 'LeftLeg' => [-1.0, 0.0, -1.0], 'RightLeg' => [1.0, 0.0, 1.0]];
+
+    /** ArmorStandPose.CODEC: each part given as three floats, wrapped as Rotations does. */
+    private static function armorStandPose(array $tag): array
+    {
+        $pose = self::ARMOR_STAND_POSE;
+        foreach (array_keys($pose) as $part) {
+            $angles = $tag[$part]['value'] ?? null;
+            if (is_array($angles) && count($angles) === 3) {
+                $pose[$part] = array_map(static function ($angle): float {
+                    $angle = Float32::round((float) (is_array($angle) ? $angle['value'] : $angle));
+                    return is_finite($angle) ? Float32::round(fmod($angle, 360.0)) : 0.0;
+                }, array_values($angles));
+            }
+        }
+        return $pose;
+    }
+
     private function addArmorStand(float $x, float $y, float $z, float $yaw, array $state = []): int
     {
         $id = $this->nextEntity++;
         $this->armorStands[$id] = $state + ['id' => $id, 'uuid' => random_bytes(16), 'kind' => 'armor_stand', 'x' => $x, 'y' => $y, 'z' => $z, 'yaw' => $yaw,
             'velocity' => [0.0, 0.0, 0.0], 'ground' => false, 'health' => 20.0, 'equipment' => [], 'lastHit' => 0,
-            'small' => false, 'showArms' => false, 'noBasePlate' => false, 'marker' => false, 'invisible' => false, 'noGravity' => false, 'disabledSlots' => 0];
+            'small' => false, 'showArms' => false, 'noBasePlate' => false, 'marker' => false, 'invisible' => false, 'noGravity' => false, 'disabledSlots' => 0,
+            'pose' => self::ARMOR_STAND_POSE];
         $this->armorStands[$id]['id'] = $id;
         return $id;
     }
@@ -51,7 +72,7 @@ trait ArmorStands
     private function savedArmorStands(): array
     {
         return array_values(array_map(static fn (array $stand): array => ['uuid' => bin2hex($stand['uuid'])]
-            + array_intersect_key($stand, array_flip(['x', 'y', 'z', 'yaw', 'head', 'velocity', 'health', 'equipment', 'small', 'showArms', 'noBasePlate', 'marker', 'invisible', 'noGravity', 'disabledSlots', 'customName'])), $this->armorStands));
+            + array_intersect_key($stand, array_flip(['x', 'y', 'z', 'yaw', 'head', 'velocity', 'health', 'equipment', 'small', 'showArms', 'noBasePlate', 'marker', 'invisible', 'noGravity', 'disabledSlots', 'customName', 'pose'])), $this->armorStands));
     }
 
     private function removeArmorStand(int $id): void
@@ -416,6 +437,14 @@ trait ArmorStands
         $data .= substr(Packets::mobHealth($this->version->catalog, $id, $stand['health']), strlen(Binary::writeVarInt($id)), -1);
         if ($this->armorStandFlags($stand) !== 0) {
             $data .= "\x0f" . Binary::writeVarInt(0) . chr($this->armorStandFlags($stand));
+        }
+        $index = 16;
+        foreach (self::ARMOR_STAND_POSE as $part => $default) {
+            $angles = $stand['pose'][$part] ?? $default;
+            if ($angles !== $default) {
+                $data .= chr($index) . Binary::writeVarInt(9) . pack('G3', ...$angles);
+            }
+            ++$index;
         }
         $player->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . $data . "\xff");
         $player->send($this->version, 'update_attributes', Packets::attributeModifiers($this->version->catalog, $id, $this->mobAttributeEntries($stand)));

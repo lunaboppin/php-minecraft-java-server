@@ -43,7 +43,8 @@ trait SummonCommand
                 // ArmorStand.readAdditionalSaveData: its flags, with the rotation every entity loads.
                 $id = $this->addArmorStand(...[...$position, (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0), ['velocity' => self::summonMotion($nbt),
                     'small' => $tag('Small', 0) !== 0, 'showArms' => $tag('ShowArms', 0) !== 0, 'noBasePlate' => $tag('NoBasePlate', 0) !== 0,
-                    'marker' => $tag('Marker', 0) !== 0, 'invisible' => $tag('Invisible', 0) !== 0, 'noGravity' => $tag('NoGravity', 0) !== 0, 'disabledSlots' => $tag('DisabledSlots', 0)]]);
+                    'marker' => $tag('Marker', 0) !== 0, 'invisible' => $tag('Invisible', 0) !== 0, 'noGravity' => $tag('NoGravity', 0) !== 0, 'disabledSlots' => $tag('DisabledSlots', 0),
+                    'pose' => self::armorStandPose($nbt['Pose']['value'] ?? [])]]);
                 foreach ($this->localPlayers() as $player) {
                     $this->showArmorStand($player, $id);
                 }

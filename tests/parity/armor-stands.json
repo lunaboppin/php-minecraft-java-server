@@ -162,7 +162,7 @@
     },
     {
       "action": "command",
-      "text": "summon armor_stand 6.5 61 2.5 {ShowArms:1b,Small:1b,NoBasePlate:1b,Rotation:[90f,0f]}"
+      "text": "summon armor_stand 6.5 61 2.5 {ShowArms:1b,Small:1b,NoBasePlate:1b,Rotation:[90f,0f],Pose:{Head:[20f,0f,0f],RightArm:[-90f,400f,0f],LeftLeg:[-1f,0f,-1f]}}"
     },
     {
       "action": "command",
