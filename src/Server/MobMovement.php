@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace PhpMinecraftJavaServer\Server;
 
 use PhpMinecraftJavaServer\World\AirTravel;
+use PhpMinecraftJavaServer\World\Collision;
 use PhpMinecraftJavaServer\World\EntityPhysics;
 use PhpMinecraftJavaServer\World\Generation\Float32;
 use PhpMinecraftJavaServer\World\Noise;
+use PhpMinecraftJavaServer\World\Vanilla\Decoration\Blocks;
 
 /** Ordinary travel runs once per server tick; navigation goals remain in #35. */
 trait MobMovement
@@ -19,6 +21,8 @@ trait MobMovement
     use MobPushing;
 
     private ?AirTravel $mobAirTravel = null;
+
+    private ?Collision $strollCollision = null;
 
     private function ordinaryMobTravel(array $mob): bool
     {
@@ -74,11 +78,21 @@ trait MobMovement
             [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$mob['x'], $mob['z'], $this->ticks + 20];
         } elseif ($partner !== null) {
             [$mob['targetX'], $mob['targetZ'], $mob['nextWander']] = [$partner['x'], $partner['z'], $this->ticks + 20];
-        } elseif ($this->ticks >= $mob['nextWander'] && $mob['noActionTime'] < 100) {
-            $hash = $noise->hash($mob['id'], $this->ticks >> 5, 0, 121);
-            $mob['targetX'] = $mob['x'] + $hash % 17 - 8;
-            $mob['targetZ'] = $mob['z'] + intdiv($hash, 19) % 17 - 8;
-            $mob['nextWander'] = $this->ticks + 80 + $hash % 160;
+        } elseif ($this->ticks >= $mob['nextWander']) {
+            // A stroll that has not reached its target by now is stuck, as PathNavigation finds.
+            [$mob['targetX'], $mob['targetZ']] = [$mob['x'], $mob['z']];
+            $mob['nextWander'] = PHP_INT_MAX;
+        }
+        $dx = $mob['targetX'] - $mob['x'];
+        $dz = $mob['targetZ'] - $mob['z'];
+        // RandomStrollGoal.canUse, once the last stroll is done: one chance in 120 each tick.
+        if ($prey === null && $partner === null && ($mob['swellDir'] ?? -1) <= 0 && $dx * $dx + $dz * $dz <= 0.04
+            && $mob['noActionTime'] < 100 && $noise->hash($mob['id'], $this->ticks, 0, 121) % 120 === 0) {
+            $target = $this->strollTarget($mob, $noise);
+            if ($target !== null) {
+                [$mob['targetX'], $mob['targetZ']] = $target;
+                $mob['nextWander'] = $this->ticks + 200;
+            }
         }
         $dx = $mob['targetX'] - $mob['x'];
         $dz = $mob['targetZ'] - $mob['z'];
@@ -104,5 +118,53 @@ trait MobMovement
         $this->mobAirTravel->step($this->world, $mob, $definition, [0.0, 0.0, $speed], $speed);
         $this->mobFall($mob, $mob['y'] - $before);
         $this->pushAfterMobTravel($mob);
+    }
+
+    /**
+     * WaterAvoidingRandomStrollGoal's LandRandomPos.getPos(mob, 10, 7): ten offsets of up to 10
+     * blocks across and 7 up or down, each kept only if it stands on a solid-render block (the
+     * ground navigation's stable destination), then raised out of solid blocks and left neither
+     * in water nor in a block the mob cannot walk into. The one the mob values most is the
+     * target: an animal favours grass and light, a monster darkness.
+     *
+     * @return array{float, float}|null the bottom centre of the chosen block
+     */
+    private function strollTarget(array $mob, Noise $noise): ?array
+    {
+        $blocks = $this->fireBlocks();
+        $catalog = $this->version->catalog;
+        $this->strollCollision ??= new Collision($catalog);
+        $category = $catalog->mobs['entities'][$mob['kind']]['category'] ?? '';
+        $maxY = $this->world->minY + $this->world->height - 1;
+        $best = null;
+        $bestWeight = -INF;
+        for ($attempt = 0; $attempt < 10; ++$attempt) {
+            $hash = $noise->hash($mob['id'], $this->ticks, $attempt, 122);
+            $x = (int) floor($mob['x'] + $hash % 21 - 10);
+            $y = (int) floor($mob['y'] + intdiv($hash, 21) % 15 - 7);
+            $z = (int) floor($mob['z'] + intdiv($hash, 315) % 21 - 10);
+            if ($y < $this->world->minY || $y > $maxY || !$blocks->flag($this->world->get($x, $y - 1, $z), Blocks::SOLID_RENDER)) {
+                continue;
+            }
+            while ($y <= $maxY && $blocks->flag($this->world->get($x, $y, $z), Blocks::SOLID)) {
+                ++$y;
+            }
+            $state = $this->world->get($x, $y, $z);
+            if ($blocks->flag($state, Blocks::WATER | Blocks::LAVA) || $this->strollCollision->shape($state) !== [] || in_array($catalog->blockName($state), ['fire', 'soul_fire', 'powder_snow', 'cactus', 'sweet_berry_bush', 'magma_block'], true)) {
+                continue;
+            }
+            $light = $this->world->rawBrightness($x, $y, $z, false, $this->skyDarken()) / 15.0;
+            // LevelReader.getPathfindingCostFromLightLevels: the overworld's brightness curve, less a half.
+            $cost = $light / (4.0 - 3.0 * $light) - 0.5;
+            $weight = match ($category) {
+                'creature' => $catalog->blockName($this->world->get($x, $y - 1, $z)) === 'grass_block' ? 10.0 : $cost,
+                'monster' => -$cost,
+                default => 0.0,
+            };
+            if ($weight > $bestWeight) {
+                [$best, $bestWeight] = [[$x + 0.5, $z + 0.5], $weight];
+            }
+        }
+        return $best;
     }
 }
