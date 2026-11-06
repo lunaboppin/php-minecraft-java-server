@@ -309,7 +309,13 @@ final class Fluids
         if ($neighbour <= 0) {
             return;
         }
-        foreach ($this->spreads($level, $family, $x, $y, $z, $state) as $index => $new) {
+        $spreads = $this->spreads($level, $family, $x, $y, $z, $state);
+        // getSpread's EnumMap runs in Direction order: north, south, west, east.
+        foreach ([0, 2, 3, 1] as $index) {
+            if (!isset($spreads[$index])) {
+                continue;
+            }
+            $new = $spreads[$index];
             [$dx, , $dz] = self::HORIZONTAL[$index];
             $this->spreadTo($level, $family, $x + $dx, $y, $z + $dz, $level->block($x + $dx, $y, $z + $dz), self::HORIZONTAL[$index], $new);
         }
