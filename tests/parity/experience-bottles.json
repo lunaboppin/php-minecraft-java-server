@@ -1,0 +1,58 @@
+{
+  "name": "experience-bottles",
+  "normalizations": [
+    "Compare a bottle o' enchanting thrown by a player: one fewer in hand.",
+    "Its flight and the orbs it leaves are random, so only the inventory is compared.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 55 -6 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 61 -6 12 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 2.5 0 -30"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:experience_bottle 2"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "000100000000c1f00000"
+    },
+    {
+      "action": "wait",
+      "seconds": 4
+    },
+    {
+      "action": "snapshot",
+      "name": "thrown",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}
