@@ -185,6 +185,10 @@ trait Rails
         if ($rail['straight']) {
             $this->dropUnsupportedRail($x, $y, $z);
         }
+        // DetectorRailBlock.onPlace: then whether a minecart already presses it.
+        if ($catalog->blockName($this->world->get($x, $y, $z)) === 'detector_rail') {
+            $this->checkDetectorRail($x, $y, $z);
+        }
     }
 
     /** Block.canSupportRigidBlock: the top face is sturdy as SupportType.RIGID, as a hopper's is. */

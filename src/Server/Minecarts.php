@@ -130,6 +130,20 @@ trait Minecarts
             } else {
                 $this->minecartComeOffTrack($cart, $collision);
             }
+            // AbstractMinecart.applyEffectsFromBlocks: an unpowered detector rail the cart is in looks for it.
+            $box = $this->minecartBox($cart);
+            unset($cart);
+            for ($bx = (int) floor($box[0] + 1.0E-5); $bx <= (int) floor($box[3] - 1.0E-5); ++$bx) {
+                for ($by = (int) floor($box[1] + 1.0E-5); $by <= (int) floor($box[4] - 1.0E-5); ++$by) {
+                    for ($bz = (int) floor($box[2] + 1.0E-5); $bz <= (int) floor($box[5] - 1.0E-5); ++$bz) {
+                        $state = $this->world->get($bx, $by, $bz);
+                        if ($this->version->catalog->blockName($state) === 'detector_rail' && ($this->version->catalog->properties($state)['powered'] ?? 'false') === 'false') {
+                            $this->checkDetectorRail($bx, $by, $bz);
+                        }
+                    }
+                }
+            }
+            $cart = &$this->minecarts[$id];
             $xDiff = $xo - $cart['x'];
             $zDiff = $zo - $cart['z'];
             if ($xDiff * $xDiff + $zDiff * $zDiff > 0.001) {
@@ -517,6 +531,55 @@ trait Minecarts
             }
         }
         return $top;
+    }
+
+    /**
+     * DetectorRailBlock.checkPressed: a rail that can stay is powered while a minecart's box
+     * meets the middle of its block (0.2 in from each side, and 0.2 down from the top). A change
+     * tells the rails it connects to, its neighbours and the block below; a pressed rail looks
+     * again 20 ticks later; comparators read it again either way.
+     */
+    private function checkDetectorRail(int $x, int $y, int $z): void
+    {
+        $catalog = $this->version->catalog;
+        $state = $this->world->get($x, $y, $z);
+        if ($catalog->blockName($state) !== 'detector_rail') {
+            return;
+        }
+        $p = $catalog->properties($state);
+        if ($this->railUnsupported($x, $y, $z, $p['shape'])) {
+            return;
+        }
+        $search = [$x + 0.2, $y, $z + 0.2, $x + 0.8, $y + 0.8, $z + 0.8];
+        $pressed = false;
+        foreach ($this->minecarts as $cart) {
+            $box = $this->minecartBox($cart);
+            if ($box[0] < $search[3] && $box[3] > $search[0] && $box[1] < $search[4] && $box[4] > $search[1] && $box[2] < $search[5] && $box[5] > $search[2]) {
+                $pressed = true;
+                break;
+            }
+        }
+        if ($pressed !== ($p['powered'] === 'true')) {
+            $this->setBlock($x, $y, $z, $catalog->state('detector_rail', ['powered' => $pressed ? 'true' : 'false'] + $p));
+            // updatePowerToConnected: the rails it joins hear of the change.
+            foreach ($this->railConnections([$x, $y, $z], $p['shape']) as $pos) {
+                $this->poweredRailsChanged(...$pos);
+            }
+            $this->changedSimulation($x, $y - 1, $z);
+        }
+        if ($pressed) {
+            $this->scheduleBlock('detector_rail', $x, $y, $z, 20);
+        }
+        $this->containerContentsChanged([$x, $y, $z]);
+    }
+
+    /** DetectorRailBlock.tick: a powered rail looks again. */
+    private function tickDetectorRail(int $x, int $y, int $z): void
+    {
+        $state = $this->world->get($x, $y, $z);
+        if ($this->version->catalog->blockName($state) === 'detector_rail' && ($this->version->catalog->properties($state)['powered'] ?? 'false') === 'true') {
+            $this->checkDetectorRail($x, $y, $z);
+        }
     }
 
     /** Minecart.activateMinecart on a powered activator rail: it shakes as if hit. */

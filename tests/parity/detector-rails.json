@@ -1,0 +1,253 @@
+{
+  "name": "detector-rails",
+  "normalizations": [
+    "Compare a detector rail as a minecart rolls over it and as one rests on it, with a lamp beside it and powered rails it powers beyond it.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 30 60 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 30 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -3.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 5 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 0 minecraft:detector_rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 7 61 0 9 61 0 minecraft:powered_rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 10 61 0 20 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 1 minecraft:redstone_lamp"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "built",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 2.5 61 0.5 {Motion:[0.3d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1.0
+    },
+    {
+      "action": "snapshot",
+      "name": "passing",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "released",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 6.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "resting_on_detector",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=minecart]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "removed",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          1
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ]
+      ]
+    }
+  ]
+}
