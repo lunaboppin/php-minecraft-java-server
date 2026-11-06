@@ -1,0 +1,256 @@
+{
+  "name": "minecart-types",
+  "normalizations": [
+    "Compare every minecart type rolling along rails, a furnace minecart fuelled with coal (with ticks frozen) and one pushing itself until its fuel runs out, and chest and command block minecarts broken by a sword with their drops picked up.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent. Dropped items' random motion is not compared, only the inventory after their pickup.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -8 40 60 20 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -8 40 70 20 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 10.5 61 -6.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 30 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 2 30 61 2 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 4 30 61 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 6 30 61 6 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 8 30 61 8 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 10 30 61 10 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 12 30 61 12 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 1.5 61 0.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon chest_minecart 1.5 61 2.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon furnace_minecart 1.5 61 4.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon tnt_minecart 1.5 61 6.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon hopper_minecart 1.5 61 8.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon command_block_minecart 1.5 61 10.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon spawner_minecart 1.5 61 12.5 {Motion:[0.4d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "rolled",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=!player]"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "killed",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 16 30 61 16 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "tick freeze"
+    },
+    {
+      "action": "command",
+      "text": "summon furnace_minecart 10.5 61 16.5"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 10.5 61 18.0 180 0"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:coal 2"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "furnace_placed",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "interact",
+      "entity": "furnace_minecart",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "furnace_fuelled_while_frozen",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=furnace_minecart]"
+    },
+    {
+      "action": "command",
+      "text": "tick unfreeze"
+    },
+    {
+      "action": "command",
+      "text": "summon furnace_minecart 2.5 61 16.5 {Fuel:200s,PushX:0.6d,PushZ:0.0d}"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "furnace_pushing",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=furnace_minecart]"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:diamond_sword"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 61 -1.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "summon chest_minecart 4.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "attack",
+      "entity": "chest_minecart",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "chest_minecart_broken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 61 -1.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "summon command_block_minecart 4.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "attack",
+      "entity": "command_block_minecart",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "command_block_minecart_broken",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}
