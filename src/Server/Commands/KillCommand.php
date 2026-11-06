@@ -25,6 +25,8 @@ trait KillCommand
                 $this->removeOrb($target['orb']);
             } elseif (isset($target['projectile'])) {
                 $this->removeProjectile($target['projectile']);
+            } elseif (isset($target['frame'])) {
+                $this->removeItemFrame($target['frame']);
             } elseif (isset($target['minecart'])) {
                 $this->removeMinecart($target['minecart']);
             } else {

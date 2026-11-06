@@ -180,6 +180,10 @@ trait Riding
      */
     private function interactEntity(Client $player, int $id, int $hand, bool $secondary): void
     {
+        if (isset($this->itemFrames[$id])) {
+            $this->interactItemFrame($player, $id, $hand);
+            return;
+        }
         if (isset($this->minecarts[$id])) {
             $this->interactMinecart($player, $id, $hand, $secondary);
             return;
