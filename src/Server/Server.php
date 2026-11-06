@@ -1595,6 +1595,12 @@ final class Server
             $this->acknowledge($c, $sequence);
             return;
         }
+        // MinecartItem.useOn: a minecart is set on the rail clicked, and the item used up.
+        if ($within && $itemName === 'minecart' && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z)) {
+            $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
         // TntBlock.useItemOn: flint and steel or a fire charge primes TNT, wearing or using up the item.
         if ($within && in_array($itemName, ['flint_and_steel', 'fire_charge'], true) && $name === 'tnt' && $this->editable($c, $x, $y, $z) && $this->gameRule('tnt_explodes') === 'true') {
             $this->primeTnt($x, $y, $z, $c);

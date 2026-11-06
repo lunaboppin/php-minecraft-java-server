@@ -1,0 +1,244 @@
+{
+  "name": "minecart-items",
+  "normalizations": [
+    "Compare a minecart item set on a straight rail, on a slope and refused by stone, a minecart hit once by a fist, one removed by a creative player's hit and one broken by a sword, its dropped minecart picked up.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent. The dropped minecart's random motion is not compared, only the inventory after its pickup.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "gamerule spawn_mobs false"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 12 60 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 12 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 61 -1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 61 0 minecraft:rail[shape=ascending_north]"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 -2.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:minecart"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:minecart"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.2 with minecraft:minecart"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "setup",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        0,
+        61,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.125,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "placed_flat",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0001"
+    },
+    {
+      "action": "place",
+      "position": [
+        4,
+        61,
+        0
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        0.125,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "placed_slope",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0002"
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        60,
+        0
+      ],
+      "face": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stone_refused",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "minecart",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "hit_by_fist",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "attack",
+      "entity": "minecart",
+      "index": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "removed_in_creative",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 0.5 61 -0.6 0 30"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:diamond_sword"
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0000"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "armed",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "minecart",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "broken_and_picked_up",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

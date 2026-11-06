@@ -122,6 +122,11 @@ def observe(controller,scenario,output):
                 kind=json.loads((ROOT/'reference/26.3/blocks.json').read_text())['entity_types'][step['entity']]
                 ids=sorted(entity for entity,seen in probe.entities.items() if seen==kind)
                 probe.send('interact',wire.vi(ids[step.get('index',0)])+wire.vi(step.get('hand',0))+b'\0\0');probe.tick_barrier()
+            elif action=='attack':
+                # The entity of a type the probe tracks, the index-th by entity ID: hit.
+                kind=json.loads((ROOT/'reference/26.3/blocks.json').read_text())['entity_types'][step['entity']]
+                ids=sorted(entity for entity,seen in probe.entities.items() if seen==kind)
+                probe.send('attack',wire.vi(ids[step.get('index',0)]));probe.tick_barrier()
             elif action=='click':
                 probe.send('container_click',wire.vi(probe.window)+wire.vi(probe.revision)+struct.pack('>hB',step['slot'],step.get('button',0))+wire.vi(step.get('mode',0))+b'\0\0');probe.tick_barrier()
             elif action=='dig':

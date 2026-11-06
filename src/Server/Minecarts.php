@@ -7,6 +7,7 @@ namespace PhpMinecraftJavaServer\Server;
 use PhpMinecraftJavaServer\Protocol\Binary;
 use PhpMinecraftJavaServer\Server\Tracking\EntityMovementTracker;
 use PhpMinecraftJavaServer\World\Collision;
+use PhpMinecraftJavaServer\World\Combat;
 use PhpMinecraftJavaServer\World\Generation\Float32;
 
 /**
@@ -316,6 +317,75 @@ trait Minecarts
         if (!$cart['ground']) {
             $cart['velocity'] = array_map(static fn (float $v): float => $v * 0.949999988079071, $cart['velocity']);
         }
+    }
+
+    /**
+     * MinecartItem.useOn: on a rail, a minecart at the block's centre, a sixteenth up (and half a
+     * block more on a slope), facing the default way. The stack shrinks unless the player has
+     * infinite materials.
+     */
+    private function placeMinecart(Client $c, int $slot, int $x, int $y, int $z): bool
+    {
+        $state = $this->world->get($x, $y, $z);
+        if (!$this->isRail($state)) {
+            return false;
+        }
+        $slope = str_starts_with($this->railShape($state), 'ascending');
+        $id = $this->addMinecart($x + 0.5, $y + 0.0625 + ($slope ? 0.5 : 0.0), $z + 0.5, [0.0, 0.0, 0.0]);
+        foreach ($this->localPlayers() as $player) {
+            $this->showMinecart($player, $id);
+        }
+        if ($c->gameMode !== 1) {
+            \PhpMinecraftJavaServer\World\Inventory::consume($c->inventory, $slot);
+            $this->syncInventory($c);
+        }
+        return true;
+    }
+
+    /**
+     * Player.attack on a minecart, then VehicleEntity.hurtServer: the hurt direction flips, it
+     * shakes for 10 ticks and its damage grows by ten times the hit. A creative player's hit
+     * removes it; otherwise, past 40 damage, it breaks and drops a minecart when entity drops
+     * are on.
+     */
+    private function attackMinecart(Client $c, int $id): bool
+    {
+        if (!isset($this->minecarts[$id])) {
+            return false;
+        }
+        $cart = &$this->minecarts[$id];
+        if (($c->x - $cart['x']) ** 2 + ($c->y - $cart['y']) ** 2 + ($c->z - $cart['z']) ** 2 > 4.5 ** 2) {
+            return true;
+        }
+        $tool = $this->version->catalog->itemName($c->inventory[36 + $c->heldSlot]['item'] ?? -1) ?? '';
+        $weapon = $this->version->catalog->combat['items'][$tool] ?? $this->version->catalog->combat['default_item'];
+        $elapsed = $this->ticks - $c->lastAttackTick;
+        if (Combat::strength($weapon['speed'], $elapsed, 1.0) < $weapon['minimum_charge']) {
+            return true;
+        }
+        $damage = Combat::attack($this->effectAttackDamage($c, (float) $weapon['damage']), $weapon['speed'], $elapsed);
+        $c->lastAttackTick = $this->ticks;
+        if (in_array($c->gameMode, [0, 2], true)) {
+            $c->exhaustion += 0.1;
+        }
+        if ($damage <= 0.0) {
+            return true;
+        }
+        $cart['hurtDir'] = -$cart['hurtDir'];
+        $cart['hurtTime'] = 10;
+        $cart['syncVelocity'] = true;
+        $cart['damage'] = Float32::round($cart['damage'] + Float32::round($damage * 10.0));
+        $cart['dataDirty'] += [8 => true, 9 => true, 10 => true];
+        if ($c->gameMode === 1 || $cart['damage'] > 40.0) {
+            [$x, $y, $z] = [$cart['x'], $cart['y'], $cart['z']];
+            unset($cart);
+            $this->removeMinecart($id);
+            // VehicleEntity.destroy: the drop, unless the hit was a creative player's.
+            if ($c->gameMode !== 1 && $this->gameRule('entity_drops') === 'true') {
+                $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items']['minecart'], 'count' => 1]);
+            }
+        }
+        return true;
     }
 
     /** Minecart.activateMinecart on a powered activator rail: it shakes as if hit. */

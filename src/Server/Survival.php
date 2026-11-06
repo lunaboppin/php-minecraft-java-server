@@ -1166,6 +1166,9 @@ trait Survival
         if ($this->attackAnimal($attacker, $id)) {
             return;
         }
+        if ($this->attackMinecart($attacker, $id)) {
+            return;
+        }
         if ($this->ticks - $attacker->lastAttackTick < 10) {
             return;
         }
