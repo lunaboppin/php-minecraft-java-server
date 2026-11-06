@@ -147,6 +147,7 @@ trait Survival
                 $this->world->setting('minecarts', $this->savedMinecarts());
                 $this->world->setting('itemFrames', $this->savedItemFrames());
                 $this->world->setting('paintings', $this->savedPaintings());
+                $this->world->setting('armorStands', $this->savedArmorStands());
                 $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
@@ -1175,6 +1176,9 @@ trait Survival
             return;
         }
         if ($this->attackPainting($attacker, $id)) {
+            return;
+        }
+        if ($this->attackArmorStand($attacker, $id)) {
             return;
         }
         if ($this->ticks - $attacker->lastAttackTick < 10) {

@@ -25,6 +25,9 @@ trait KillCommand
                 $this->removeOrb($target['orb']);
             } elseif (isset($target['projectile'])) {
                 $this->removeProjectile($target['projectile']);
+            } elseif (isset($target['armorStand'])) {
+                // ArmorStand.kill: removed without drops.
+                $this->removeArmorStand($target['armorStand']);
             } elseif (isset($target['painting'])) {
                 $this->removePainting($target['painting']);
             } elseif (isset($target['frame'])) {

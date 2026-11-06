@@ -99,6 +99,8 @@ final class Server
 
     use Paintings;
 
+    use ArmorStands;
+
     use Speleothems;
 
     use Bells;
@@ -240,6 +242,7 @@ final class Server
                 $this->restoreMinecarts();
                 $this->restoreItemFrames();
                 $this->restorePaintings();
+                $this->restoreArmorStands();
                 $this->restoreBlockSimulation();
             });
         }
@@ -1228,12 +1231,12 @@ final class Server
             case 'interact':
                 $id = $r->varInt();
                 $hand = $r->varInt();
-                LowPrecisionVector::decode($r);
+                $location = LowPrecisionVector::decode($r);
                 $secondary = $r->bool();
                 $r->end();
                 if ($c->playerLoaded) {
                     $c->lastActionTime = self::now();
-                    $this->interactEntity($c, $id, $hand, $secondary);
+                    $this->interactEntity($c, $id, $hand, $secondary, $location);
                 }
                 return;
             default:
@@ -1605,6 +1608,14 @@ final class Server
         // MinecartItem.useOn: a minecart is set on the rail clicked, and the item used up.
         if ($within && in_array($itemName, self::MINECART_ITEMS, true) && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z, $itemName)) {
             $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        // ArmorStandItem.useOn: a stand at the block being placed against, except from below.
+        if ($within && $itemName === 'armor_stand' && $face !== 0 && $this->editable($c, $tx, $ty, $tz)) {
+            if ($this->placeArmorStand($c, $slot, $tx, $ty, $tz)) {
+                $this->useSwing($c, $hand);
+            }
             $this->acknowledge($c, $sequence);
             return;
         }

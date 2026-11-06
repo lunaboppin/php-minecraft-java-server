@@ -11,6 +11,7 @@ import integration as wire
 SIMULATION=json.loads((ROOT/'reference/26.3/simulation.json').read_text())
 METADATA=json.loads((ROOT/'reference/26.3/gameplay.json').read_text())['entity_metadata']
 TRACKING=json.loads((ROOT/'reference/26.3/tracking.json').read_text())
+ARMOR_STAND=json.loads((ROOT/'reference/26.3/blocks.json').read_text())['entity_types']['armor_stand']
 
 
 def palette(data, off, count, local_max):
@@ -139,7 +140,11 @@ class Probe(wire.Client):
             return
         entity,off=wire.read_vi(payload)
         if entity==getattr(self,'entity_id',None):return
-        if name=='add_entity':kind,_=wire.read_vi(payload,off+16);rest=payload[off+16:]
+        if name=='add_entity':
+            kind,_=wire.read_vi(payload,off+16);rest=payload[off+16:]
+            # LivingEntity's constructor turns a new entity a random 0-2pi degrees and its head
+            # with it; an armor stand placed from its item keeps that head angle, so it is left out.
+            if kind==ARMOR_STAND:rest=rest[:-2]+b'\0'+rest[-1:]
         else:kind=self.entities.get(entity);rest=payload[off:]
         self.entity_packets.add(f'{name} {kind} {rest.hex()}')
 

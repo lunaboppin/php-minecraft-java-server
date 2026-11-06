@@ -20,7 +20,7 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || isset(self::FRAME_KINDS[$kind]) || $kind === 'painting') {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || isset(self::FRAME_KINDS[$kind]) || $kind === 'painting' || $kind === 'armor_stand') {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
             $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
@@ -39,6 +39,16 @@ trait SummonCommand
                     $this->showMinecart($player, $id);
                 }
                 $uuid = $this->minecarts[$id]['uuid'];
+            } elseif ($kind === 'armor_stand') {
+                // ArmorStand.readAdditionalSaveData: its flags, with the rotation every entity loads.
+                $id = $this->addArmorStand(...[...$position, (float) ($nbt['Rotation']['value'][0]['value'] ?? 0.0), ['velocity' => self::summonMotion($nbt),
+                    'small' => $tag('Small', 0) !== 0, 'showArms' => $tag('ShowArms', 0) !== 0, 'noBasePlate' => $tag('NoBasePlate', 0) !== 0,
+                    'marker' => $tag('Marker', 0) !== 0, 'invisible' => $tag('Invisible', 0) !== 0, 'noGravity' => $tag('NoGravity', 0) !== 0, 'disabledSlots' => $tag('DisabledSlots', 0),
+                    'pose' => self::armorStandPose($nbt['Pose']['value'] ?? [])]]);
+                foreach ($this->localPlayers() as $player) {
+                    $this->showArmorStand($player, $id);
+                }
+                $uuid = $this->armorStands[$id]['uuid'];
             } elseif ($kind === 'painting') {
                 // Painting.readAdditionalSaveData: facing (south without one), the block_pos it
                 // hangs from when within 16 blocks, and variant (the registry's first without one).
