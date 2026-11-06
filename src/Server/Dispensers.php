@@ -24,7 +24,7 @@ trait Dispensers
      * not dispense yet: they stay in the dispenser.
      */
     private const SPECIAL_DISPENSES = [
-        'experience_bottle', 'splash_potion', 'lingering_potion',
+        'splash_potion', 'lingering_potion',
         'firework_rocket', 'fire_charge', 'wind_charge', 'armor_stand', 'chest', 'lava_bucket', 'water_bucket', 'powder_snow_bucket', 'salmon_bucket', 'cod_bucket',
         'pufferfish_bucket', 'tropical_fish_bucket', 'axolotl_bucket', 'sulfur_cube_bucket', 'tadpole_bucket', 'bucket', 'flint_and_steel', 'bone_meal',
         'wither_skeleton_skull', 'carved_pumpkin', 'glass_bottle', 'glowstone', 'shears', 'brush', 'honeycomb', 'potion', 'minecart', 'chest_minecart',
@@ -104,7 +104,7 @@ trait Dispensers
             $this->levelEvent(2000, [$x, $y, $z], self::DISPENSE_DATA[$facing]);
             return;
         }
-        if (in_array($item, ['arrow', 'tipped_arrow', 'spectral_arrow', 'snowball', 'egg', 'blue_egg', 'brown_egg'], true)) {
+        if (in_array($item, ['arrow', 'tipped_arrow', 'spectral_arrow', 'snowball', 'egg', 'blue_egg', 'brown_egg', 'experience_bottle'], true)) {
             $this->dispenseProjectile($x, $y, $z, $facing, $stack);
             $this->takeFromContainer($container, $slot);
             return;
@@ -124,11 +124,13 @@ trait Dispensers
     private function dispenseProjectile(int $x, int $y, int $z, string $facing, array $stack): void
     {
         [$dx, $dy, $dz] = self::DISPENSE_FACING[$facing];
+        $item = $this->version->catalog->itemName($stack['item']);
+        // ExperienceBottleItem.createDispenseConfig: half the uncertainty and a quarter more power.
+        [$uncertainty, $power] = $item === 'experience_bottle' ? [Float32::round(6.0 * 0.5), Float32::round(1.100000023841858 * 1.25)] : [6.0, 1.100000023841858];
         $velocity = [];
         foreach ([$dx, $dy, $dz] as $axis => $step) {
-            $velocity[$axis] = ($step + 0.0172275 * 6.0 * (self::randomUnit() - self::randomUnit())) * 1.100000023841858;
+            $velocity[$axis] = ($step + 0.0172275 * $uncertainty * (self::randomUnit() - self::randomUnit())) * $power;
         }
-        $item = $this->version->catalog->itemName($stack['item']);
         $id = $this->nextEntity++;
         $projectile = ['id' => $id, 'uuid' => random_bytes(16), 'type' => $item === 'spectral_arrow' ? 'spectral_arrow' : (str_ends_with($item, 'arrow') ? 'arrow' : self::THROWN[$item]),
             'stack' => array_replace($stack, ['count' => 1]), 'owner' => null, 'x' => $x + 0.5 + 0.7 * $dx, 'y' => $y + 0.5 + 0.7 * $dy, 'z' => $z + 0.5 + 0.7 * $dz,
