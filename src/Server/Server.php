@@ -1196,6 +1196,11 @@ final class Server
                 return;
             case 'move_vehicle': $this->moveVehicle($c, $r);
                 return;
+            case 'paddle_boat': $left = $r->byte();
+                $right = $r->byte();
+                $r->end();
+                $this->paddleBoat($c, $left !== 0, $right !== 0);
+                return;
             case 'player_input': $flags = $r->byte();
                 $r->end();
                 if ($c->playerLoaded) {

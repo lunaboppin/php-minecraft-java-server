@@ -19,6 +19,11 @@ trait VehicleSteering
     /** Pig.getControllingPassenger: the first passenger of a saddled pig, holding a carrot on a stick. */
     private function controllingPlayer(int $vehicle): ?Client
     {
+        // AbstractBoat.getControllingPassenger: a player in its first seat.
+        if (isset($this->boats[$vehicle])) {
+            $first = $this->boats[$vehicle]['passengers'][0] ?? null;
+            return $first === null ? null : ($this->riderReference($first)['client'] ?? null);
+        }
         $mob = $this->animals[$vehicle] ?? null;
         $first = $mob['passengers'][0] ?? null;
         if ($mob === null || $mob['kind'] !== 'pig' || !isset($mob['equipment'][7]) || $first === null || isset($this->animals[$first])) {
@@ -44,7 +49,7 @@ trait VehicleSteering
         while ($vehicle !== null && isset($this->animals[$vehicle]['vehicle'])) {
             $vehicle = $this->animals[$vehicle]['vehicle'];
         }
-        return $vehicle !== null && isset($this->animals[$vehicle]) ? $vehicle : null;
+        return $vehicle !== null && (isset($this->animals[$vehicle]) || isset($this->boats[$vehicle])) ? $vehicle : null;
     }
 
     /**
@@ -114,7 +119,7 @@ trait VehicleSteering
     {
         $vehicle = $this->rootVehicle($player);
         if ($vehicle !== null && $this->controllingPlayer($vehicle) === $player) {
-            $mob = $this->animals[$vehicle];
+            $mob = $this->boats[$vehicle] ?? $this->animals[$vehicle];
             $player->lastVehicle = $vehicle;
             $player->vehicleFirstGood = $player->vehicleLastGood = [$mob['x'], $mob['y'], $mob['z']];
         } else {
@@ -159,13 +164,17 @@ trait VehicleSteering
         if ($this->controllingPlayer($vehicle) !== $player || $vehicle !== $player->lastVehicle) {
             // The client moved a vehicle it does not control: it is told where the vehicle is, at
             // most once a second unless it strayed more than a block.
-            $mob = $this->animals[$vehicle];
+            $mob = $this->boats[$vehicle] ?? $this->animals[$vehicle];
             if ($this->controllingPlayer($vehicle) !== $player
                 && ($this->ticks - $player->vehiclePositionLastResetAt > 20 || ($mob['x'] - $x) ** 2 + ($mob['y'] - $y) ** 2 + ($mob['z'] - $z) ** 2 > 1.0)) {
                 $this->log($player->name . ' was expected to be controlling vehicle Pig but was not. Resetting vehicle position.');
                 $this->sendVehiclePosition($player, $mob);
                 $player->vehiclePositionLastResetAt = $this->ticks;
             }
+            return;
+        }
+        if (isset($this->boats[$vehicle])) {
+            $this->moveSteeredBoat($player, $vehicle, [$x, $y, $z], self::wrapDegrees($yaw), $ground === 1);
             return;
         }
         $mob = &$this->animals[$vehicle];
@@ -214,6 +223,29 @@ trait VehicleSteering
         if (($x - $oldX) ** 2 + ($y - $oldY) ** 2 + ($z - $oldZ) ** 2 > 1.0E-5) {
             $player->lastActionTime = self::now();
         }
+        $player->vehicleLastGood = [$x, $y, $z];
+    }
+
+    /**
+     * ServerGamePacketListenerImpl.handleMoveVehicle for a boat its rider steers: the client's
+     * position stands unless it moved too far or into a block it was not already in.
+     */
+    private function moveSteeredBoat(Client $player, int $vehicle, array $position, float $yaw, bool $ground): void
+    {
+        $boat = &$this->boats[$vehicle];
+        [$x, $y, $z] = [max(-3.0E7, min(3.0E7, $position[0])), max(-2.0E7, min(2.0E7, $position[1])), max(-3.0E7, min(3.0E7, $position[2]))];
+        [$firstX, $firstY, $firstZ] = $player->vehicleFirstGood;
+        $collision = new Collision($this->version->catalog);
+        $oldBox = $this->boatBox($boat);
+        $newBox = $this->boatBox(['x' => $x, 'y' => $y, 'z' => $z]);
+        if (($x - $firstX) ** 2 + ($y - $firstY) ** 2 + ($z - $firstZ) ** 2 > 100.0 || $this->collidesWithAnythingNew($collision, $oldBox, $newBox)) {
+            $boat['yaw'] = $yaw;
+            $this->sendVehiclePosition($player, $boat);
+            unset($boat);
+            return;
+        }
+        [$boat['x'], $boat['y'], $boat['z'], $boat['yaw'], $boat['ground']] = [$x, $y, $z, $yaw, $ground];
+        unset($boat);
         $player->vehicleLastGood = [$x, $y, $z];
     }
 
