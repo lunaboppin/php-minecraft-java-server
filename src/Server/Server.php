@@ -92,6 +92,7 @@ final class Server
     use RespawnPoints;
 
     use FallingBlocks;
+
     use Minecarts;
 
     use Speleothems;
