@@ -449,11 +449,12 @@ trait Advancements
 
     /**
      * PlayerAdvancements.reload: the progress saved, as if read back, and nothing shown, so the
-     * next flush resets the client with every tree's visible nodes.
+     * next flush resets the client with every tree's visible nodes. Without the vanilla pack no
+     * advancement exists, so none of the progress is kept.
      */
-    private function reloadAdvancements(Client $c): void
+    private function reloadAdvancements(Client $c, bool $vanilla = true): void
     {
-        $saved = $this->savedAdvancements($c);
+        $saved = $vanilla ? $this->savedAdvancements($c) : [];
         $c->visibleAdvancements = $c->advancementsChanged = $c->advancementRootsToUpdate = [];
         $c->advancementsFirstPacket = true;
         $c->selectedAdvancementTab = null;
