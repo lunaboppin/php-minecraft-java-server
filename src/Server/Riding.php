@@ -178,8 +178,12 @@ trait Riding
      * ServerGamePacketListenerImpl.handleInteract on a mob within reach: Pig.mobInteract mounts a
      * saddled pig unless the player holds its food or uses the secondary action.
      */
-    private function interactEntity(Client $player, int $id, int $hand, bool $secondary): void
+    private function interactEntity(Client $player, int $id, int $hand, bool $secondary, array $location = [0.0, 0.0, 0.0]): void
     {
+        if (isset($this->armorStands[$id])) {
+            $this->interactArmorStand($player, $id, $hand, $location);
+            return;
+        }
         if (isset($this->itemFrames[$id])) {
             $this->interactItemFrame($player, $id, $hand);
             return;

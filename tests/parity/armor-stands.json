@@ -1,0 +1,207 @@
+{
+  "name": "armor-stands",
+  "normalizations": [
+    "Compare an armor stand placed, dressed with a chestplate and a pumpkin, wobbled by a hit and broken by two quick ones, its drops picked up; stands summoned small with arms and in the air; and one broken by a creative player.",
+    "Entity IDs and UUIDs are left out; dropped items' random motion is not compared, only the inventory after their pickup.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 55 -6 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 61 -6 12 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 4.5 180 20"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:armor_stand 2"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:iron_chestplate"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.2 with minecraft:carved_pumpkin"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "ready",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "place",
+      "position": [
+        2,
+        60,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stand_placed",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0001"
+    },
+    {
+      "action": "interact",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0002"
+    },
+    {
+      "action": "interact",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stand_dressed",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "stand_wobbled",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "attack",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "tp @e[type=item] @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "stand_broken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "summon armor_stand 6.5 61 2.5 {ShowArms:1b,Small:1b,NoBasePlate:1b,Rotation:[90f,0f]}"
+    },
+    {
+      "action": "command",
+      "text": "summon armor_stand 8.5 64 2.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "stands_summoned",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamemode creative"
+    },
+    {
+      "action": "attack",
+      "entity": "armor_stand",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "execute if entity @e[type=item]"
+    },
+    {
+      "action": "snapshot",
+      "name": "stand_broken_creatively",
+      "fields": [
+        "entity_packets"
+      ]
+    }
+  ]
+}

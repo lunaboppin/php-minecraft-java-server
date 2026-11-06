@@ -3378,7 +3378,11 @@
     "entity.glow_item_frame.remove_item": 733,
     "entity.glow_item_frame.break": 731,
     "entity.painting.place": 1196,
-    "entity.painting.break": 1195
+    "entity.painting.break": 1195,
+    "entity.armor_stand.place": 84,
+    "entity.armor_stand.hit": 83,
+    "entity.armor_stand.break": 81,
+    "entity.armor_stand.fall": 82
   },
   "particle_types": {
     "angry_villager": 0,
