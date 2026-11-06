@@ -3376,7 +3376,9 @@
     "entity.glow_item_frame.add_item": 730,
     "entity.glow_item_frame.rotate_item": 734,
     "entity.glow_item_frame.remove_item": 733,
-    "entity.glow_item_frame.break": 731
+    "entity.glow_item_frame.break": 731,
+    "entity.painting.place": 1196,
+    "entity.painting.break": 1195
   },
   "particle_types": {
     "angry_villager": 0,

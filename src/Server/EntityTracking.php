@@ -51,6 +51,9 @@ trait EntityTracking
         foreach(array_keys($this->itemFrames) as $id){
             if($this->showItemFrame($viewer,$id)){$wanted[$id]=true;}
         }
+        foreach(array_keys($this->paintings) as $id){
+            if($this->showPainting($viewer,$id)){$wanted[$id]=true;}
+        }
         foreach(array_keys($this->projectiles) as $id){
             if($this->showProjectile($viewer,$id)){$wanted[$id]=true;}
         }

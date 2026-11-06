@@ -97,6 +97,8 @@ final class Server
 
     use ItemFrames;
 
+    use Paintings;
+
     use Speleothems;
 
     use Bells;
@@ -237,6 +239,7 @@ final class Server
                 $this->restoreFallingBlocks();
                 $this->restoreMinecarts();
                 $this->restoreItemFrames();
+                $this->restorePaintings();
                 $this->restoreBlockSimulation();
             });
         }
@@ -1601,6 +1604,13 @@ final class Server
         }
         // MinecartItem.useOn: a minecart is set on the rail clicked, and the item used up.
         if ($within && in_array($itemName, self::MINECART_ITEMS, true) && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z, $itemName)) {
+            $this->useSwing($c, $hand);
+            $this->acknowledge($c, $sequence);
+            return;
+        }
+        // HangingEntityItem.useOn: a painting hangs on the wall clicked.
+        if ($within && $itemName === 'painting' && $this->editable($c, $x + $dx, $y + $dy, $z + $dz)
+            && $this->placePainting($c, $slot, $x, $y, $z, ['down', 'up', 'north', 'south', 'west', 'east'][$face])) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;

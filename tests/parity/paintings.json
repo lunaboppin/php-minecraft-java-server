@@ -1,0 +1,169 @@
+{
+  "name": "paintings",
+  "normalizations": [
+    "Compare paintings summoned on a wall with and without a variant, one broken by a hit and picked up, one placed from the item on a single block, and paintings dropping once their wall goes.",
+    "Entity IDs and UUIDs are left out; a placed painting's random variant and dropped items' random motion are not compared.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 55 -6 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 61 -6 12 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 4 63 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 8 61 0 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 3.5 180 20"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon painting 2 62 1 {block_pos:[I;2,62,1],facing:0b,variant:\"minecraft:kebab\"}"
+    },
+    {
+      "action": "command",
+      "text": "summon painting 0 61 1 {block_pos:[I;0,61,1],facing:0b,variant:\"minecraft:pool\"}"
+    },
+    {
+      "action": "command",
+      "text": "summon painting 4 62 1 {block_pos:[I;4,62,1],facing:0b}"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "paintings_hung",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "attack",
+      "entity": "painting",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "painting_broken",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "tp @s 8.5 61 3.5 180 20"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        8,
+        61,
+        0
+      ],
+      "face": 3,
+      "cursor": [
+        0.5,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "painting_placed",
+      "fields": [
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "execute if entity @e[type=painting,x=8,y=61,z=1,distance=..1]"
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=item]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 62 0 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 3.5 180 20"
+    },
+    {
+      "action": "wait",
+      "seconds": 7
+    },
+    {
+      "action": "command",
+      "text": "execute if entity @e[type=painting]"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "tp @e[type=item] @s"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "unsupported_paintings_dropped",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

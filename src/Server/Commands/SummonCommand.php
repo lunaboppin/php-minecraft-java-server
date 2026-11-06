@@ -20,7 +20,7 @@ trait SummonCommand
             $this->summonItem($sender, $arguments, $text);
             return;
         }
-        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || isset(self::FRAME_KINDS[$kind])) {
+        if ($kind === 'lightning_bolt' || $kind === 'tnt' || $kind === 'experience_orb' || isset(self::MINECART_DROPS[$kind]) || isset(self::FRAME_KINDS[$kind]) || $kind === 'painting') {
             $position = count($arguments) < 4 ? array_slice($this->sourcePosition($sender), 0, 3) : $this->positionArguments(array_slice($arguments, 1, 3), $sender);
             $nbt = count($arguments) > 4 ? $this->summonNbt($text) : [];
             $tag = static fn (string $name, int $default): int => (int) ($nbt[$name]['value'] ?? $default);
@@ -39,6 +39,24 @@ trait SummonCommand
                     $this->showMinecart($player, $id);
                 }
                 $uuid = $this->minecarts[$id]['uuid'];
+            } elseif ($kind === 'painting') {
+                // Painting.readAdditionalSaveData: facing (south without one), the block_pos it
+                // hangs from when within 16 blocks, and variant (the registry's first without one).
+                $variant = preg_replace('/^minecraft:/', '', (string) ($nbt['variant']['value'] ?? ''));
+                $variant = isset($this->paintingVariants()[$variant]) ? $variant : (string) array_key_first($this->paintingVariants());
+                $block = array_map(static fn (float $v): int => (int) floor($v), $position);
+                $stored = $nbt['block_pos']['value'] ?? null;
+                if (is_array($stored) && count($stored) === 3) {
+                    $stored = array_map(static fn ($v): int => (int) (is_array($v) ? $v['value'] : $v), array_values($stored));
+                    if (($stored[0] - $block[0]) ** 2 + ($stored[1] - $block[1]) ** 2 + ($stored[2] - $block[2]) ** 2 < 256) {
+                        $block = $stored;
+                    }
+                }
+                $id = $this->addPainting($block, self::PAINTING_FACINGS[$tag('facing', 0) & 3], $variant);
+                foreach ($this->localPlayers() as $player) {
+                    $this->showPainting($player, $id);
+                }
+                $uuid = $this->paintings[$id]['uuid'];
             } elseif (isset(self::FRAME_KINDS[$kind])) {
                 // ItemFrame.readAdditionalSaveData: Facing (down without one), ItemRotation, Fixed and Invisible.
                 $faces = ['down', 'up', 'north', 'south', 'west', 'east'];
