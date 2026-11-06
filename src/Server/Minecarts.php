@@ -37,6 +37,13 @@ trait Minecarts
         'north_east' => [[0, 0, -1], [1, 0, 0]],
     ];
 
+    /** Every minecart type, and the item its getDropItem leaves when it breaks. */
+    private const MINECART_DROPS = ['minecart' => 'minecart', 'chest_minecart' => 'chest_minecart', 'furnace_minecart' => 'furnace_minecart',
+        'tnt_minecart' => 'tnt_minecart', 'hopper_minecart' => 'hopper_minecart', 'command_block_minecart' => 'minecart', 'spawner_minecart' => 'minecart'];
+
+    /** The minecart items MinecartItem places, each as its own type. */
+    private const MINECART_ITEMS = ['minecart', 'chest_minecart', 'furnace_minecart', 'tnt_minecart', 'hopper_minecart', 'command_block_minecart'];
+
     private function addMinecart(float $x, float $y, float $z, array $velocity, float $yaw = 0.0, array $saved = []): int
     {
         $id = $this->nextEntity++;
@@ -55,6 +62,12 @@ trait Minecarts
             }
             $saved['uuid'] = hex2bin($saved['uuid']);
             $saved['velocity'] = array_map('floatval', $saved['velocity'] ?? [0.0, 0.0, 0.0]);
+            if (!isset(self::MINECART_DROPS[$saved['kind'] ?? 'minecart'])) {
+                $saved['kind'] = 'minecart';
+            }
+            if (isset($saved['push'])) {
+                $saved['push'] = array_map('floatval', $saved['push']);
+            }
             $this->addMinecart((float) $saved['x'], (float) $saved['y'], (float) $saved['z'], $saved['velocity'], (float) ($saved['yaw'] ?? 0.0), $saved);
         }
     }
@@ -63,14 +76,14 @@ trait Minecarts
     private function savedMinecarts(): array
     {
         return array_values(array_map(static fn (array $cart): array => ['uuid' => bin2hex($cart['uuid'])]
-            + array_intersect_key($cart, array_flip(['x', 'y', 'z', 'velocity', 'yaw', 'flipped'])), $this->minecarts));
+            + array_intersect_key($cart, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw', 'flipped', 'fuel', 'push', 'enabled'])), $this->minecarts));
     }
 
     /** The selector-shaped reference a command names a minecart by. */
     private function minecartReference(int $id): array
     {
         $cart = $this->minecarts[$id];
-        return ['minecart' => $id, 'x' => $cart['x'], 'y' => $cart['y'], 'z' => $cart['z'], 'yaw' => (float) $cart['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:minecart',
+        return ['minecart' => $id, 'x' => $cart['x'], 'y' => $cart['y'], 'z' => $cart['z'], 'yaw' => (float) $cart['yaw'], 'pitch' => 0.0, 'type' => 'minecraft:' . $cart['kind'],
             'width' => 0.9800000190734863, 'height' => 0.699999988079071, 'id' => $id, 'uuid' => $cart['uuid']];
     }
 
@@ -94,6 +107,7 @@ trait Minecarts
             $cart = &$this->minecarts[$id];
             [$xo, , $zo] = [$cart['x'], $cart['y'], $cart['z']];
             $yawO = $cart['yaw'];
+            $cart['firstTick'] = false;
             if ($cart['hurtTime'] > 0) {
                 --$cart['hurtTime'];
                 $cart['dataDirty'][8] = true;
@@ -115,7 +129,10 @@ trait Minecarts
             if ($this->isRail($state)) {
                 $this->moveMinecartAlongTrack($cart, $pos, $state, $collision);
                 $properties = $this->version->catalog->properties($state);
-                if ($this->version->catalog->blockName($state) === 'activator_rail' && ($properties['powered'] ?? 'false') === 'true') {
+                if ($this->version->catalog->blockName($state) === 'activator_rail' && $cart['kind'] === 'hopper_minecart') {
+                    // MinecartHopper.activateMinecart: a powered rail turns it off, an unpowered one on.
+                    $cart['enabled'] = ($properties['powered'] ?? 'false') !== 'true';
+                } elseif ($this->version->catalog->blockName($state) === 'activator_rail' && ($properties['powered'] ?? 'false') === 'true' && $cart['kind'] === 'minecart') {
                     $this->activateMinecart($cart);
                     // Minecart.activateMinecart: the rider is put off.
                     foreach ($cart['passengers'] ?? [] as $passenger) {
@@ -161,6 +178,17 @@ trait Minecarts
             // Entity.updateFluidInteraction: water pushes the minecart and slows it next tick.
             $fluids = $this->entityFluidCurrent($this->minecartBox($cart), $cart['velocity']);
             $cart['inWater'] = $fluids['water'] > 0.0;
+            if ($cart['kind'] === 'furnace_minecart') {
+                // MinecartFurnace.tick: the fuel burns down, the push stops with it, and the lit flag follows.
+                $cart['fuel'] = max(0, ($cart['fuel'] ?? 0) - 1);
+                if ($cart['fuel'] <= 0) {
+                    $cart['push'] = [0.0, 0.0, 0.0];
+                }
+                if (($cart['lit'] ?? false) !== $cart['fuel'] > 0) {
+                    $cart['lit'] = $cart['fuel'] > 0;
+                    $cart['dataDirty'][13] = true;
+                }
+            }
             $passengers = $cart['passengers'] ?? [];
             unset($cart);
             // ServerLevel.tickPassenger: Player.rideTick lets a sneaking player off, then the seat moves the rider.
@@ -259,7 +287,7 @@ trait Minecarts
             $progress = (($x - $x0) * $xD + ($z - $z0) * $zD) * 2.0;
         }
         [$cart['x'], $cart['y'], $cart['z']] = [$x0 + $xD * $progress, $y, $z0 + $zD * $progress];
-        $max = $cart['inWater'] ? 0.2 : 0.4;
+        $max = $this->minecartMaxSpeed($cart);
         // A ridden minecart covers three quarters of its speed each tick.
         $scale = ($cart['passengers'] ?? []) === [] ? 1.0 : 0.75;
         $clamp = static fn (float $v): float => max(-$max, min($max, $scale * $v));
@@ -270,11 +298,24 @@ trait Minecarts
                 break;
             }
         }
-        // AbstractMinecart.applyNaturalSlowdown: 0.96, or 0.997 with a passenger, and the float 0.95 in water.
-        $slowdown = ($cart['passengers'] ?? []) === [] ? 0.96 : 0.997;
-        $cart['velocity'] = [$cart['velocity'][0] * $slowdown, 0.0, $cart['velocity'][2] * $slowdown];
-        if ($cart['inWater']) {
-            $cart['velocity'] = array_map(static fn (float $v): float => $v * 0.949999988079071, $cart['velocity']);
+        if ($cart['kind'] === 'chest_minecart' || $cart['kind'] === 'hopper_minecart') {
+            // AbstractMinecartContainer.applyNaturalSlowdown: the float 0.98 and a thousandth for
+            // each step of emptiness (an empty one keeps 0.995), times 0.95 in water.
+            $keep = Float32::round(Float32::round(0.98) + Float32::round(15 * Float32::round(0.001)));
+            if ($cart['inWater']) {
+                $keep = Float32::round($keep * Float32::round(0.95));
+            }
+            $cart['velocity'] = [$cart['velocity'][0] * $keep, 0.0, $cart['velocity'][2] * $keep];
+        } else {
+            if ($cart['kind'] === 'furnace_minecart') {
+                $this->furnaceMinecartSlowdown($cart);
+            }
+            // AbstractMinecart.applyNaturalSlowdown: 0.96, or 0.997 with a passenger, and the float 0.95 in water.
+            $slowdown = ($cart['passengers'] ?? []) === [] ? 0.96 : 0.997;
+            $cart['velocity'] = [$cart['velocity'][0] * $slowdown, 0.0, $cart['velocity'][2] * $slowdown];
+            if ($cart['inWater']) {
+                $cart['velocity'] = array_map(static fn (float $v): float => $v * 0.949999988079071, $cart['velocity']);
+            }
         }
         $newPos = $this->minecartTrackPos($cart['x'], $cart['y'], $cart['z']);
         if ($newPos !== null && $oldPos !== null) {
@@ -359,7 +400,7 @@ trait Minecarts
     /** AbstractMinecart.comeOffTrack: capped speed, halved on the ground, and the float 0.95 air drag in the air. */
     private function minecartComeOffTrack(array &$cart, Collision $collision): void
     {
-        $max = $cart['inWater'] ? 0.2 : 0.4;
+        $max = $this->minecartMaxSpeed($cart);
         $cart['velocity'][0] = max(-$max, min($max, $cart['velocity'][0]));
         $cart['velocity'][2] = max(-$max, min($max, $cart['velocity'][2]));
         if ($cart['ground']) {
@@ -376,14 +417,15 @@ trait Minecarts
      * block more on a slope), facing the default way. The stack shrinks unless the player has
      * infinite materials.
      */
-    private function placeMinecart(Client $c, int $slot, int $x, int $y, int $z): bool
+    private function placeMinecart(Client $c, int $slot, int $x, int $y, int $z, string $kind): bool
     {
         $state = $this->world->get($x, $y, $z);
         if (!$this->isRail($state)) {
             return false;
         }
         $slope = str_starts_with($this->railShape($state), 'ascending');
-        $id = $this->addMinecart($x + 0.5, $y + 0.0625 + ($slope ? 0.5 : 0.0), $z + 0.5, [0.0, 0.0, 0.0]);
+        // A minecart made from an item, not loaded from data, has yet to tick.
+        $id = $this->addMinecart($x + 0.5, $y + 0.0625 + ($slope ? 0.5 : 0.0), $z + 0.5, [0.0, 0.0, 0.0], 0.0, ['kind' => $kind, 'firstTick' => true]);
         foreach ($this->localPlayers() as $player) {
             $this->showMinecart($player, $id);
         }
@@ -429,12 +471,12 @@ trait Minecarts
         $cart['damage'] = Float32::round($cart['damage'] + Float32::round($damage * 10.0));
         $cart['dataDirty'] += [8 => true, 9 => true, 10 => true];
         if ($c->gameMode === 1 || $cart['damage'] > 40.0) {
-            [$x, $y, $z] = [$cart['x'], $cart['y'], $cart['z']];
+            [$x, $y, $z, $kind] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind']];
             unset($cart);
             $this->removeMinecart($id);
             // VehicleEntity.destroy: the drop, unless the hit was a creative player's.
             if ($c->gameMode !== 1 && $this->gameRule('entity_drops') === 'true') {
-                $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items']['minecart'], 'count' => 1]);
+                $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items'][self::MINECART_DROPS[$kind]], 'count' => 1]);
             }
         }
         return true;
@@ -447,22 +489,95 @@ trait Minecarts
     private function interactMinecart(Client $player, int $id, int $hand, bool $secondary): void
     {
         $cart = $this->minecarts[$id];
-        if ($player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1 || $secondary || ($cart['passengers'] ?? []) !== []) {
+        if ($player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1) {
             return;
         }
+        if ($cart['kind'] === 'furnace_minecart') {
+            if ($this->withinMinecartReach($player, $cart)) {
+                $this->fuelFurnaceMinecart($player, $id, $hand);
+                $this->useSwing($player, $hand);
+            }
+            return;
+        }
+        if ($cart['kind'] !== 'minecart' || $secondary || ($cart['passengers'] ?? []) !== [] || !$this->withinMinecartReach($player, $cart)) {
+            return;
+        }
+        if ($this->startRiding(['client' => $player, 'id' => $player->entityId], $id)) {
+            $this->useSwing($player, $hand);
+        }
+    }
+
+    /** Player.isWithinEntityInteractionRange with the server's 3-block allowance. */
+    private function withinMinecartReach(Client $player, array $cart): bool
+    {
         $box = $this->minecartBox($cart);
         $eye = [$player->x, $player->y + ($player->sneaking ? 1.27 : 1.62), $player->z];
         $distance = 0.0;
         foreach ([0, 1, 2] as $axis) {
             $distance += max($box[$axis] - $eye[$axis], 0.0, $eye[$axis] - $box[$axis + 3]) ** 2;
         }
-        // Player.isWithinEntityInteractionRange with the server's 3-block allowance.
-        if ($distance >= (3.0 + 3.0) ** 2) {
+        return $distance < (3.0 + 3.0) ** 2;
+    }
+
+    /** AbstractMinecart.getMaxSpeed: 0.4, 0.2 in water; a furnace minecart's is half that, three quarters in water. */
+    private function minecartMaxSpeed(array $cart): float
+    {
+        $max = $cart['inWater'] ? 0.2 : 0.4;
+        if ($cart['kind'] === 'furnace_minecart') {
+            return $cart['inWater'] ? $max * 0.75 : $max * 0.5;
+        }
+        return $max;
+    }
+
+    /**
+     * MinecartFurnace.interact and addFuel: coal or charcoal adds 3600 ticks of fuel up to 32000,
+     * and pushes the cart away from the player, by however far apart they stand. The item is
+     * used up unless the player has infinite materials.
+     */
+    private function fuelFurnaceMinecart(Client $player, int $id, int $hand): void
+    {
+        $slot = $hand === 0 ? 36 + $player->heldSlot : 45;
+        $item = $this->version->catalog->itemName($player->inventory[$slot]['item'] ?? -1) ?? '';
+        $cart = &$this->minecarts[$id];
+        if (!in_array($item, $this->version->registryTags('minecraft:item')['minecraft:furnace_minecart_fuel'] ?? [], true)) {
             return;
         }
-        if ($this->startRiding(['client' => $player, 'id' => $player->entityId], $id)) {
-            $this->useSwing($player, $hand);
+        if (($cart['fuel'] ?? 0) + 3600 > 32000) {
+            return;
         }
+        $cart['fuel'] = ($cart['fuel'] ?? 0) + 3600;
+        $cart['push'] = [$cart['x'] - $player->x, 0.0, $cart['z'] - $player->z];
+        if ($player->gameMode !== 1) {
+            \PhpMinecraftJavaServer\World\Inventory::consume($player->inventory, $slot);
+            $this->syncInventory($player);
+        }
+    }
+
+    /**
+     * MinecartFurnace.applyNaturalSlowdown: while pushing, the push turns along the way the cart
+     * moves and is added to four fifths of its motion (a tenth of that in water); otherwise the
+     * motion keeps 0.98 of itself.
+     */
+    private function furnaceMinecartSlowdown(array &$cart): void
+    {
+        $push = $cart['push'] ?? [0.0, 0.0, 0.0];
+        $v = $cart['velocity'];
+        if ($push[0] ** 2 + $push[1] ** 2 + $push[2] ** 2 <= 1.0E-7) {
+            $cart['velocity'] = [$v[0] * 0.98, 0.0, $v[2] * 0.98];
+            return;
+        }
+        if ($push[0] ** 2 + $push[2] ** 2 > 1.0E-4 && $v[0] ** 2 + $v[2] ** 2 > 0.001) {
+            // Vec3.projectedOn, normalized and scaled back to the push's length.
+            $dot = ($push[0] * $v[0] + $push[1] * $v[1] + $push[2] * $v[2]) / ($v[0] * $v[0] + $v[1] * $v[1] + $v[2] * $v[2]);
+            $projected = [$v[0] * $dot, $v[1] * $dot, $v[2] * $dot];
+            $length = sqrt($projected[0] * $projected[0] + $projected[1] * $projected[1] + $projected[2] * $projected[2]);
+            $pushLength = sqrt($push[0] * $push[0] + $push[1] * $push[1] + $push[2] * $push[2]);
+            $push = $length < 9.999999747378752E-6 ? [0.0, 0.0, 0.0]
+                : [$projected[0] / $length * $pushLength, $projected[1] / $length * $pushLength, $projected[2] / $length * $pushLength];
+            $cart['push'] = $push;
+        }
+        $next = [$v[0] * 0.8 + $push[0], $push[1], $v[2] * 0.8 + $push[2]];
+        $cart['velocity'] = $cart['inWater'] ? [$next[0] * 0.1, $next[1] * 0.1, $next[2] * 0.1] : $next;
     }
 
     /**
@@ -613,6 +728,7 @@ trait Minecarts
                 8 => "\x08\x01" . Binary::writeVarInt($cart['hurtTime']),
                 9 => "\x09\x01" . Binary::writeVarInt($cart['hurtDir']),
                 10 => "\x0a\x03" . pack('G', $cart['damage']),
+                13 => "\x0d\x08" . (($cart['lit'] ?? false) ? "\1" : "\0"),
             };
         }
         return $data;
@@ -656,9 +772,9 @@ trait Minecarts
             return isset($player->entities[$id]);
         }
         $tracker = $this->minecartTrackers[$id] ??= new EntityMovementTracker($id, 3, true, $this->minecartState($cart), false);
-        $changed = array_filter([8 => $cart['hurtTime'] !== 0, 9 => $cart['hurtDir'] !== 1, 10 => $cart['damage'] !== 0.0]);
+        $changed = array_filter([8 => $cart['hurtTime'] !== 0, 9 => $cart['hurtDir'] !== 1, 10 => $cart['damage'] !== 0.0, 13 => $cart['lit'] ?? false]);
         $player->send($this->version, 'bundle_delimiter', '');
-        $player->send($this->version, 'add_entity', $tracker->spawnPacket($cart['uuid'], $this->version->blocks['entity_types']['minecart'], 0));
+        $player->send($this->version, 'add_entity', $tracker->spawnPacket($cart['uuid'], $this->version->blocks['entity_types'][$cart['kind']], 0));
         if ($changed !== []) {
             $player->send($this->version, 'set_entity_data', Binary::writeVarInt($id) . $this->minecartData($cart, $changed) . "\xff");
         }

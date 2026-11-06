@@ -295,6 +295,28 @@ trait DataAccessors
         return self::nbtCompound($pairs);
     }
 
+    /**
+     * Entity.saveWithoutId for a minecart: AbstractMinecart's FlippedRotation and HasTicked (its
+     * firstTick flag), a container minecart's Items, MinecartFurnace's PushX, PushZ and Fuel, and
+     * MinecartHopper's Enabled.
+     */
+    private function minecartNbt(array $cart): NbtTag
+    {
+        $pairs = $this->entityBaseNbt([$cart['x'], $cart['y'], $cart['z']], $cart['velocity'], [(float) $cart['yaw'], 0.0], 0.0, 0, 300, (bool) $cart['ground'], false, 0, $cart['uuid']);
+        $pairs[] = ['FlippedRotation', new NbtTag('byte', (int) $cart['flipped'])];
+        $pairs[] = ['HasTicked', new NbtTag('byte', (int) ($cart['firstTick'] ?? false))];
+        if ($cart['kind'] === 'chest_minecart' || $cart['kind'] === 'hopper_minecart') {
+            $pairs[] = ['Items', new NbtTag('list', [])];
+        }
+        if ($cart['kind'] === 'furnace_minecart') {
+            array_push($pairs, ['PushX', new NbtTag('double', (float) ($cart['push'][0] ?? 0.0))], ['PushZ', new NbtTag('double', (float) ($cart['push'][2] ?? 0.0))], ['Fuel', new NbtTag('short', (int) ($cart['fuel'] ?? 0))]);
+        }
+        if ($cart['kind'] === 'hopper_minecart') {
+            $pairs[] = ['Enabled', new NbtTag('byte', (int) ($cart['enabled'] ?? true))];
+        }
+        return self::nbtCompound($pairs);
+    }
+
     /** A text component as ComponentSerialization's NBT: plain text as a string. */
     private static function componentNbt(array|string $component): NbtTag
     {

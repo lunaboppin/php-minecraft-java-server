@@ -77,6 +77,11 @@ trait Dimensions
                     $this->tickBrewingStands();
                     $this->tickPlateContacts();
                     $this->tickTripwireContacts();
+                } else {
+                    // ChunkMap.tick still tells trackers about minecarts while they stand frozen.
+                    foreach (array_keys($this->minecarts) as $id) {
+                        $this->synchronizeMinecart($id);
+                    }
                 }
                 foreach (array_slice($this->pendingLight, 0, 9, true) as $key => [$cx,$cz]) {
                     // ChunkHolder.broadcastChanges sends light only to players for whom the chunk is on

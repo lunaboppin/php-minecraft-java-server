@@ -1597,7 +1597,7 @@ final class Server
             return;
         }
         // MinecartItem.useOn: a minecart is set on the rail clicked, and the item used up.
-        if ($within && $itemName === 'minecart' && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z)) {
+        if ($within && in_array($itemName, self::MINECART_ITEMS, true) && $this->editable($c, $x, $y, $z) && $this->placeMinecart($c, $slot, $x, $y, $z, $itemName)) {
             $this->useSwing($c, $hand);
             $this->acknowledge($c, $sequence);
             return;

@@ -114,6 +114,7 @@ trait DataCommand
                 isset($target[1]['mob']) => $this->mobNbt($this->animals[$target[1]['mob']]),
                 isset($target[1]['item']) => $this->itemEntityNbt($this->itemEntities[$target[1]['item']]),
                 isset($target[1]['orb']) => $this->orbNbt($this->experienceOrbs[$target[1]['orb']]),
+                isset($target[1]['minecart']) => $this->minecartNbt($this->minecarts[$target[1]['minecart']]),
                 default => throw new \InvalidArgumentException('Only players, mobs, items and experience orbs have entity data here'),
             },
             default => $this->blockNbt($target[1], $target[2]) ?? throw new CommandFailure(['translate' => 'commands.data.block.invalid']),
