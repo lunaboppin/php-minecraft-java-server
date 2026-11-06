@@ -48,19 +48,19 @@ trait SetBlockCommand
     }
 
     /**
-     * BlockStateArgument with the block's data: the block (with its properties) after the three
-     * coordinates, an SNBT compound straight after it, and the words that follow.
+     * BlockStateArgument with the block's data: the block (with its properties) at argument $at,
+     * an SNBT compound straight after it, and the words that follow.
      *
      * @return array{string, ?NbtTag, list<string>}
      */
-    private function blockInputArgument(string $text, array $arguments): array
+    private function blockInputArgument(string $text, array $arguments, int $at = 3): array
     {
-        $brace = strpos($arguments[3] ?? '', '{');
+        $brace = strpos($arguments[$at] ?? '', '{');
         if ($text === '' || $brace === false) {
-            return [$arguments[3] ?? '', null, array_slice($arguments, 4)];
+            return [$arguments[$at] ?? '', null, array_slice($arguments, $at + 1)];
         }
         $reader = new StringReader($text);
-        for ($word = 0; $word < 4; ++$word) {
+        for ($word = 0; $word <= $at; ++$word) {
             while ($reader->canRead() && $reader->peek() !== ' ') {
                 $reader->skip();
             }
