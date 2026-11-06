@@ -119,4 +119,24 @@ trait GolemBuilding
         [$x, $y, $z] = $this->golemPatternBlock($match, ...$pattern['spawn']);
         $this->spawnAnimal($kind, $x + 0.5, $y + 0.05, $z + 0.5, $kind === 'iron_golem' ? ['yaw' => 0.0, 'playerCreated' => true] : ['yaw' => 0.0]);
     }
+
+    /**
+     * SnowGolem.aiStep, NoAI or not: with mob griefing on, a snow layer goes into each air block
+     * a quarter block from the golem's centre at its feet' height that can hold one.
+     */
+    private function tickSnowGolem(array $mob): void
+    {
+        if ($mob['kind'] !== 'snow_golem' || $this->gameRule('mob_griefing') !== 'true') {
+            return;
+        }
+        $snow = $this->version->catalog->state('snow');
+        for ($i = 0; $i < 4; ++$i) {
+            $x = (int) floor($mob['x'] + ($i % 2 * 2 - 1) * 0.25);
+            $y = (int) floor($mob['y']);
+            $z = (int) floor($mob['z'] + (intdiv($i, 2) % 2 * 2 - 1) * 0.25);
+            if (in_array($this->version->catalog->blockName($this->world->get($x, $y, $z)), ['air', 'cave_air', 'void_air'], true) && $this->snowSurvives($x, $y, $z)) {
+                $this->setBlock($x, $y, $z, $snow);
+            }
+        }
+    }
 }

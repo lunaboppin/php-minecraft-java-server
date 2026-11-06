@@ -746,6 +746,7 @@ trait Animals
                 if ($this->tickCreeper($animal, !($animal['noAi'] ?? false))) {
                     continue;
                 }
+                $this->tickSnowGolem($animal);
             }
             $near = false;
             foreach ($this->localPlayers() as $p) {

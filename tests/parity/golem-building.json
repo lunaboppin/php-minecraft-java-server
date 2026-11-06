@@ -1,7 +1,7 @@
 {
   "name": "golem-building",
   "normalizations": [
-    "Compare snow golems built upright and on their side, an iron golem built by placing its pumpkin, a pumpkin replacing a snow block, and an iron golem blocked by a block beside its legs: the pattern blocks cleared and where each golem appears.",
+    "Compare snow golems built upright and on their side, an iron golem built by placing its pumpkin, a pumpkin replacing a snow block, and an iron golem blocked by a block beside its legs: the pattern blocks cleared and where each golem appears. Then snow golems without AI leave snow at their feet with mob griefing on, except over ice.",
     "Mob griefing is off so snow golems leave no snow; their wandering is not compared.",
     "Use matching flat terrain."
   ],
@@ -281,6 +281,77 @@
           2,
           62,
           6
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "gamerule mob_griefing true"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 -4 4 61 -4 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "setblock 4 61 -4 minecraft:glass"
+    },
+    {
+      "action": "command",
+      "text": "setblock 3 61 -4 minecraft:ice"
+    },
+    {
+      "action": "command",
+      "text": "summon snow_golem 1.5 61 -3.5 {NoAI:1b}"
+    },
+    {
+      "action": "command",
+      "text": "summon snow_golem 3.5 62 -3.5 {NoAI:1b}"
+    },
+    {
+      "action": "command",
+      "text": "summon snow_golem 2.0 61 -5.0 {NoAI:1b}"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "snow_trails",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          1,
+          61,
+          -4
+        ],
+        [
+          3,
+          62,
+          -4
+        ],
+        [
+          1,
+          61,
+          -6
+        ],
+        [
+          2,
+          61,
+          -6
+        ],
+        [
+          1,
+          61,
+          -5
+        ],
+        [
+          2,
+          61,
+          -5
         ]
       ]
     }
