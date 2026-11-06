@@ -411,6 +411,19 @@ trait Redstone
         $catalog = $this->version->catalog;
         $name = $catalog->blockName($state);
         $p = $catalog->properties($state);
+        if ($name === 'detector_rail') {
+            // DetectorRailBlock.getAnalogOutputSignal: how full the first container minecart pressing it is.
+            if (($p['powered'] ?? 'false') === 'true') {
+                $search = [$pos[0] + 0.2, $pos[1], $pos[2] + 0.2, $pos[0] + 0.8, $pos[1] + 0.8, $pos[2] + 0.8];
+                foreach ($this->minecarts as $cart) {
+                    $box = $this->minecartBox($cart);
+                    if (($cart['kind'] === 'chest_minecart' || $cart['kind'] === 'hopper_minecart') && $box[0] < $search[3] && $box[3] > $search[0] && $box[1] < $search[4] && $box[4] > $search[1] && $box[2] < $search[5] && $box[5] > $search[2]) {
+                        return $this->minecartSignal($cart);
+                    }
+                }
+            }
+            return 0;
+        }
         if ($name === 'jukebox') {
             $stack = $this->world->container($pos)['slots'][0] ?? null;
             return $stack === null ? 0 : ($catalog->simulation['songs'][$catalog->itemName($stack['item'])]['comparator'] ?? 0);

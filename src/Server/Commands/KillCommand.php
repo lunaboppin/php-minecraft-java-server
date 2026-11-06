@@ -26,6 +26,11 @@ trait KillCommand
             } elseif (isset($target['projectile'])) {
                 $this->removeProjectile($target['projectile']);
             } elseif (isset($target['minecart'])) {
+                // AbstractMinecartContainer.remove: a killed container minecart spills what it held.
+                $cart = $this->minecarts[$target['minecart']];
+                foreach ($cart['items'] ?? [] as $stack) {
+                    $this->dropContainerStack((int) floor($cart['x']), (int) floor($cart['y']), (int) floor($cart['z']), $stack);
+                }
                 $this->removeMinecart($target['minecart']);
             } else {
                 $this->killAnimal($target['mob']);

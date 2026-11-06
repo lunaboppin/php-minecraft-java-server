@@ -77,7 +77,7 @@ trait Minecarts
     private function savedMinecarts(): array
     {
         return array_values(array_map(static fn (array $cart): array => ['uuid' => bin2hex($cart['uuid'])]
-            + array_intersect_key($cart, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw', 'flipped', 'fuel', 'push', 'enabled', 'fuse'])), $this->minecarts));
+            + array_intersect_key($cart, array_flip(['kind', 'x', 'y', 'z', 'velocity', 'yaw', 'flipped', 'fuel', 'push', 'enabled', 'fuse', 'items'])), $this->minecarts));
     }
 
     /** The selector-shaped reference a command names a minecart by. */
@@ -215,7 +215,11 @@ trait Minecarts
                 }
             }
             $passengers = $cart['passengers'] ?? [];
+            $sucks = $cart['kind'] === 'hopper_minecart' && ($cart['enabled'] ?? true);
             unset($cart);
+            if ($sucks) {
+                $this->hopperMinecartSuck($id);
+            }
             // ServerLevel.tickPassenger: Player.rideTick lets a sneaking player off, then the seat moves the rider.
             foreach ($passengers as $passenger) {
                 $reference = $this->riderReference($passenger);
@@ -326,7 +330,7 @@ trait Minecarts
         if ($cart['kind'] === 'chest_minecart' || $cart['kind'] === 'hopper_minecart') {
             // AbstractMinecartContainer.applyNaturalSlowdown: the float 0.98 and a thousandth for
             // each step of emptiness (an empty one keeps 0.995), times 0.95 in water.
-            $keep = Float32::round(Float32::round(0.98) + Float32::round(15 * Float32::round(0.001)));
+            $keep = Float32::round(Float32::round(0.98) + Float32::round((15 - $this->minecartSignal($cart)) * Float32::round(0.001)));
             if ($cart['inWater']) {
                 $keep = Float32::round($keep * Float32::round(0.95));
             }
@@ -504,12 +508,16 @@ trait Minecarts
             return true;
         }
         if ($c->gameMode === 1 || $cart['damage'] > 40.0) {
-            [$x, $y, $z, $kind] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind']];
+            [$x, $y, $z, $kind, $items] = [$cart['x'], $cart['y'], $cart['z'], $cart['kind'], $cart['items'] ?? []];
             unset($cart);
             $this->removeMinecart($id);
-            // VehicleEntity.destroy: the drop, unless the hit was a creative player's.
+            // VehicleEntity.destroy: the drop, unless the hit was a creative player's; then
+            // AbstractMinecartContainer.destroy drops what it held.
             if ($c->gameMode !== 1 && $this->gameRule('entity_drops') === 'true') {
                 $this->spawnAtLocation($x, $y, $z, ['item' => $this->version->blocks['items'][self::MINECART_DROPS[$kind]], 'count' => 1]);
+                foreach ($items as $stack) {
+                    $this->dropContainerStack((int) floor($x), (int) floor($y), (int) floor($z), $stack);
+                }
             }
         }
         return true;
@@ -532,6 +540,12 @@ trait Minecarts
             }
             return;
         }
+        if (($cart['kind'] === 'chest_minecart' || $cart['kind'] === 'hopper_minecart') && $this->withinMinecartReach($player, $cart)) {
+            // AbstractMinecartContainer.interact: its menu opens.
+            $this->openWindow($player, $cart['kind'], ['minecart', $id]);
+            $this->useSwing($player, $hand);
+            return;
+        }
         if ($cart['kind'] !== 'minecart' || $secondary || ($cart['passengers'] ?? []) !== [] || !$this->withinMinecartReach($player, $cart)) {
             return;
         }
@@ -540,8 +554,8 @@ trait Minecarts
         }
     }
 
-    /** Player.isWithinEntityInteractionRange with the server's 3-block allowance. */
-    private function withinMinecartReach(Client $player, array $cart): bool
+    /** Player.isWithinEntityInteractionRange with the server's 3-block allowance, or another. */
+    private function withinMinecartReach(Client $player, array $cart, float $allowance = 3.0): bool
     {
         $box = $this->minecartBox($cart);
         $eye = [$player->x, $player->y + ($player->sneaking ? 1.27 : 1.62), $player->z];
@@ -549,7 +563,91 @@ trait Minecarts
         foreach ([0, 1, 2] as $axis) {
             $distance += max($box[$axis] - $eye[$axis], 0.0, $eye[$axis] - $box[$axis + 3]) ** 2;
         }
-        return $distance < (3.0 + 3.0) ** 2;
+        return $distance < (3.0 + $allowance) ** 2;
+    }
+
+    /**
+     * MinecartHopper.suckInItems: one item from the container whose block is above its bowl,
+     * through that container's bottom; otherwise, unless a full block covers it, a dropped item
+     * in the column above the bowl, or one touching the cart's box grown by a quarter sideways.
+     */
+    private function hopperMinecartSuck(int $id): void
+    {
+        $cart = $this->minecarts[$id];
+        $above = [(int) floor($cart['x']), (int) floor($cart['y'] + 0.5 + 1.0), (int) floor($cart['z'])];
+        $source = $this->hopperContainer($above);
+        if ($source !== null) {
+            $stacks = $this->containerStacks($source);
+            foreach ($this->containerFaceSlots($source, 'down') as $slot) {
+                $stack = $stacks[$slot] ?? null;
+                if ($stack === null || !$this->canTakeFromContainer($source, $slot, $stack, 'down')) {
+                    continue;
+                }
+                $left = $this->addToMinecart($id, array_replace($stack, ['count' => 1]));
+                if ($left === null) {
+                    $this->takeFromContainer($source, $slot);
+                    return;
+                }
+            }
+        }
+        $catalog = $this->version->catalog;
+        $over = $this->world->get(...$above);
+        $covered = $source !== null || $catalog->collision['shapes'][$catalog->collision['states'][$over]] === [[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]];
+        $boxes = $covered ? [] : [[$cart['x'] - 0.5, $cart['y'] + 0.6875, $cart['z'] - 0.5, $cart['x'] + 0.5, $cart['y'] + 2.0, $cart['z'] + 0.5]];
+        $own = $this->minecartBox($cart);
+        $boxes[] = [$own[0] - 0.25, $own[1], $own[2] - 0.25, $own[3] + 0.25, $own[4], $own[5] + 0.25];
+        foreach ($boxes as $box) {
+            foreach (array_keys($this->itemEntities) as $item) {
+                $entity = $this->itemEntities[$item] ?? null;
+                if ($entity === null || ($entity['discard'] ?? false) || !self::itemInBox($entity, $box)) {
+                    continue;
+                }
+                $left = $this->addToMinecart($id, $entity['stack']);
+                if ($left === null) {
+                    $this->removeItem($item);
+                    return;
+                }
+                $this->itemEntities[$item]['stack'] = $left;
+                $this->itemEntities[$item]['dirty'] = true;
+            }
+        }
+    }
+
+    /**
+     * HopperBlockEntity.addItem into a minecart's slots in order: an empty slot takes the stack,
+     * a slot holding the same item takes what fits. Returns what is left, or null.
+     */
+    private function addToMinecart(int $id, array $stack): ?array
+    {
+        $items = $this->minecarts[$id]['items'] ?? [];
+        $size = $this->minecarts[$id]['kind'] === 'hopper_minecart' ? 5 : 27;
+        for ($slot = 0; $slot < $size && $stack['count'] > 0; ++$slot) {
+            $current = $items[$slot] ?? null;
+            if ($current === null) {
+                $items[$slot] = $stack;
+                $stack['count'] = 0;
+            } elseif (array_diff_key($current, ['count' => 0]) == array_diff_key($stack, ['count' => 0])) {
+                $moved = min($stack['count'], ($this->version->catalog->item($stack['item'])['max_stack'] ?? 64) - $current['count']);
+                if ($moved > 0) {
+                    $items[$slot]['count'] += $moved;
+                    $stack['count'] -= $moved;
+                }
+            }
+        }
+        $this->minecarts[$id]['items'] = $items;
+        $this->syncContainer(['minecart', $id]);
+        return $stack['count'] > 0 ? $stack : null;
+    }
+
+    /** AbstractContainerMenu.getRedstoneSignalFromContainer for a chest or hopper minecart. */
+    private function minecartSignal(array $cart): int
+    {
+        $share = 0.0;
+        foreach ($cart['items'] ?? [] as $stack) {
+            $share = Float32::round($share + Float32::round($stack['count'] / min(64, $this->version->catalog->item($stack['item'])['max_stack'] ?? 64)));
+        }
+        $share = Float32::round($share / ($cart['kind'] === 'hopper_minecart' ? 5 : 27));
+        return (int) floor($share * 14) + ($share > 0.0 ? 1 : 0);
     }
 
     /** AbstractMinecart.getMaxSpeed: 0.4, 0.2 in water; a furnace minecart's is half that, three quarters in water. */
