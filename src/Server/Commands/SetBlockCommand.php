@@ -9,14 +9,15 @@ use PhpMinecraftJavaServer\Server\Client;
 trait SetBlockCommand
 {
     /** SetBlockCommand: replace (the default), keep, destroy or strict. */
-    private function executeSetBlock(Client $sender, array $arguments): void
+    private function executeSetBlock(Client $sender, array $arguments, string $text = ''): void
     {
-        if (count($arguments) < 4 || count($arguments) > 5) {
-            throw new \InvalidArgumentException('Usage: /setblock x y z block[properties] [replace|keep|destroy|strict]');
+        [$block, $nbt, $rest] = $this->blockInputArgument($text, $arguments);
+        if (count($arguments) < 4 || count($rest) > 1) {
+            throw new \InvalidArgumentException('Usage: /setblock x y z block[properties]{data} [replace|keep|destroy|strict]');
         }
         [$x, $y, $z] = $this->loadedBlockPosition(array_slice($arguments, 0, 3), $sender);
-        $state = $this->blockArgument($arguments[3]);
-        $mode = $arguments[4] ?? 'replace';
+        $state = $this->blockArgument($block);
+        $mode = $rest[0] ?? 'replace';
         if ($mode === 'keep' && !$this->version->catalog->air($this->world->get($x, $y, $z))) {
             throw new CommandFailure(['translate' => 'commands.setblock.failed']);
         }
@@ -35,11 +36,46 @@ trait SetBlockCommand
                 $state = $this->connectedState($state, $x, $y, $z);
             }
             $this->setBlock($x, $y, $z, $state);
+            // BlockInput.place: the block entity loads the data given with the block.
+            if ($nbt !== null) {
+                $this->setBlockNbt($this->world->dimension, [$x, $y, $z], $nbt);
+            }
             if ($mode !== 'strict') {
                 $this->observerSetByCommand($x, $y, $z);
             }
         }
         $this->sendSuccess($sender, ['translate' => 'commands.setblock.success', 'with' => [$x, $y, $z]], true);
+    }
+
+    /**
+     * BlockStateArgument with the block's data: the block (with its properties) at argument $at,
+     * an SNBT compound straight after it, and the words that follow.
+     *
+     * @return array{string, ?NbtTag, list<string>}
+     */
+    private function blockInputArgument(string $text, array $arguments, int $at = 3): array
+    {
+        $brace = strpos($arguments[$at] ?? '', '{');
+        if ($text === '' || $brace === false) {
+            return [$arguments[$at] ?? '', null, array_slice($arguments, $at + 1)];
+        }
+        $reader = new StringReader($text);
+        for ($word = 0; $word <= $at; ++$word) {
+            while ($reader->canRead() && $reader->peek() !== ' ') {
+                $reader->skip();
+            }
+            while ($reader->canRead() && $reader->peek() === ' ') {
+                $reader->skip();
+            }
+        }
+        $block = '';
+        while ($reader->canRead() && $reader->peek() !== '{') {
+            $block .= $reader->peek();
+            $reader->skip();
+        }
+        $nbt = NbtTag::fromSnbt(Snbt::read($reader));
+        $rest = trim($reader->remaining());
+        return [$block, $nbt, $rest === '' ? [] : preg_split('/\s+/', $rest)];
     }
 
     /** Level.destroyBlock: the break event, air, then the block's loot without a tool or entity. */

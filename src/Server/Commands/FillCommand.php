@@ -12,8 +12,9 @@ trait FillCommand
      * FillCommand: replace (optionally only blocks matching a filter), outline, hollow, destroy,
      * keep or strict. Only positions that change are counted.
      */
-    private function executeFill(Client $sender, array $arguments): void
+    private function executeFill(Client $sender, array $arguments, string $text = ''): void
     {
+        [$block, $nbt, $rest] = $this->blockInputArgument($text, $arguments, 6);
         if (count($arguments) < 7) {
             throw new \InvalidArgumentException('Usage: /fill x1 y1 z1 x2 y2 z2 block [mode]');
         }
@@ -24,8 +25,7 @@ trait FillCommand
         if ($volume > $limit) {
             throw new CommandFailure(['translate' => 'commands.fill.toobig', 'with' => [$limit, $volume]]);
         }
-        $state = $this->blockArgument($arguments[6]);
-        $rest = array_slice($arguments, 7);
+        $state = $this->blockArgument($block);
         $filter = null;
         $mode = array_shift($rest) ?? 'replace';
         if ($mode === 'replace' && $rest !== []) {
@@ -76,7 +76,7 @@ trait FillCommand
                         }
                         if ($affected) {
                             ++$changed;
-                            $placed[] = [$x, $y, $z];
+                            $placed[] = [$x, $y, $z, $target];
                             $this->blockChanged($x, $y, $z);
                         }
                     }
@@ -93,8 +93,12 @@ trait FillCommand
         }
         // Block.onPlace for each block set, then Level.updateNeighborsAt for each: fluids flow,
         // falling blocks fall and other blocks react as they would to any change.
-        foreach ($placed as $position) {
-            $this->changedSimulation(...$position);
+        foreach ($placed as [$x, $y, $z, $target]) {
+            // BlockInput.place: each block set loads the data given with it.
+            if ($nbt !== null && $target === $state) {
+                $this->setBlockNbt($this->world->dimension, [$x, $y, $z], $nbt);
+            }
+            $this->changedSimulation($x, $y, $z);
         }
         if ($changed === 0) {
             throw new CommandFailure(['translate' => 'commands.fill.failed']);

@@ -110,6 +110,12 @@ SCRIPT = [
     ('spawnpoint Witness 3 64 4', False), ('spawnpoint @a 3 64 4 45 0', False),
     # Above the terrain, so both seeds give the same replies.
     ('setblock 5 200 5 minecraft:stone', False), ('setblock 5 200 5 minecraft:stone', False), ('setblock 5 200 5 minecraft:air', False),
+    # BlockInput: the block entity loads the data given with the block, spaces and all.
+    ('setblock 6 200 5 chest{Items:[{Slot:0b,id:"minecraft:dirt",count:3}]}', False), ('data get block 6 200 5 Items', False),
+    ('setblock 7 200 5 minecraft:barrel{Items:[{Slot:2b, id:"minecraft:stone", count:64}]} replace', False), ('data get block 7 200 5 Items', False),
+    ('setblock 8 200 5 chest[facing=east]{CustomName:"Box"}', False), ('data get block 8 200 5 CustomName', False),
+    ('setblock 8 200 5 hopper{Items:[]} keep', False), ('setblock 9 200 5 stone{foo:1b}', False),
+    ('!quiet fill 6 200 5 9 200 5 minecraft:air', False),
     ('fill 6 200 6 7 200 7 minecraft:dirt', False), ('fill 6 200 6 7 200 7 minecraft:dirt', False), ('fill 6 200 6 7 201 7 minecraft:air', False),
     ('give Witness minecraft:dirt 3', False), ('give @a minecraft:dirt 2', False), ('give Witness minecraft:diamond_sword 2', False),
     ('summon minecraft:pig 0 70 0', False), ('summon minecraft:cow 1.5 70 1.5', False),
