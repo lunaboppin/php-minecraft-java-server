@@ -26,7 +26,7 @@ trait KillCommand
             } elseif (isset($target['projectile'])) {
                 $this->removeProjectile($target['projectile']);
             } elseif (isset($target['minecart'])) {
-                $this->removeMinecart($target['minecart']);
+                $this->discardMinecart($target['minecart']);
             } else {
                 $this->killAnimal($target['mob']);
             }

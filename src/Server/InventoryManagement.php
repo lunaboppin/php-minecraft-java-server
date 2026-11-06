@@ -67,7 +67,7 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper','brewing_stand' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper','brewing_stand','hopper_minecart' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
             };
             $items = array_fill(0, $count + 36, null);
             $slots = match ($c->windowType) {
@@ -105,7 +105,7 @@ trait InventoryManagement
             }
         } else {
             $count = match ($c->windowType) {
-                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper','brewing_stand' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
+                'crafting' => 10,'enchanting' => 2,'smithing' => 4,'anvil','grindstone','furnace','blast_furnace','smoker' => 3,'hopper','brewing_stand','hopper_minecart' => 5,'dispenser','dropper' => 9,default => $c->windowPartner === null ? 27 : 54
             };
             $slots = [];
             for ($i = 0; $i < $count; ++$i) {
@@ -152,6 +152,9 @@ trait InventoryManagement
     /** The open container's slots; a double chest's right half fills 0-26 and its left half 27-53. */
     private function windowContainerSlots(Client $c): array
     {
+        if ($c->windowPosition[0] === 'minecart') {
+            return $this->minecarts[$c->windowPosition[1]]['items'] ?? [];
+        }
         $slots = $this->world->container($c->windowPosition)['slots'];
         if ($c->windowPartner !== null) {
             foreach ($this->world->container($c->windowPartner)['slots'] as $slot => $stack) {
@@ -163,6 +166,12 @@ trait InventoryManagement
 
     private function storeWindowContainerSlots(Client $c, array $slots): void
     {
+        if ($c->windowPosition[0] === 'minecart') {
+            if (isset($this->minecarts[$c->windowPosition[1]])) {
+                $this->minecarts[$c->windowPosition[1]]['items'] = array_filter($slots);
+            }
+            return;
+        }
         $halves = $c->windowPartner === null ? [[$c->windowPosition, 0]] : [[$c->windowPosition, 0], [$c->windowPartner, 27]];
         foreach ($halves as [$position, $offset]) {
             $data = $this->world->container($position);
@@ -258,10 +267,12 @@ trait InventoryManagement
         $c->menuRevision = 0;
         $c->containerMenuSeen = [];
         $menu = match ($type) {
+            'chest_minecart' => 'generic_9x3', 'hopper_minecart' => 'hopper',
             'crafting' => 'crafting','enchanting' => 'enchantment','anvil' => 'anvil','grindstone' => 'grindstone','smithing' => 'smithing','furnace','blast_furnace','smoker','hopper','brewing_stand' => $type,'dispenser','dropper' => 'generic_3x3',default => $partner === null ? 'generic_9x3' : 'generic_9x6'
         };
         // The block entity's default name, or the crafting table's.
         $title = match ($type) {
+            'chest_minecart', 'hopper_minecart' => 'entity.minecraft.' . $type,
             'crafting' => 'container.crafting','enchanting' => 'container.enchant','anvil' => 'container.repair','grindstone' => 'container.grindstone_title','smithing' => 'container.upgrade','furnace','blast_furnace','smoker','hopper','dispenser','dropper' => 'container.' . $type,'brewing_stand' => 'container.brewing','ender' => 'container.enderchest',
             default => $partner !== null ? 'container.chestDouble' : ($this->version->catalog->blockName($this->world->get(...$position)) === 'barrel' ? 'container.barrel' : 'container.chest')
         };
@@ -275,7 +286,7 @@ trait InventoryManagement
         $c->send($this->version, 'open_screen', Binary::writeVarInt($c->windowId) . Binary::writeVarInt($this->version->blocks['menus'][$menu]) . \PhpMinecraftJavaServer\Protocol\Nbt::component(['translate' => $title]));
         // The block's use: chests, barrels and ender chests count as opened, tables and furnaces as used.
         $stat = match ($type) {
-            'enchanting' => null,
+            'enchanting', 'chest_minecart', 'hopper_minecart' => null,
             'anvil' => 'interact_with_anvil',
             'grindstone' => 'interact_with_grindstone',
             'smithing' => 'interact_with_smithing_table',
@@ -318,7 +329,13 @@ trait InventoryManagement
     {
         if ($c->windowPosition === null) {
             return true;
-        }[$x, $y, $z] = $c->windowPosition;
+        }
+        if ($c->windowPosition[0] === 'minecart') {
+            // ContainerEntity.isChestVehicleStillValid: the cart is there and within 4 blocks more than reach.
+            $cart = $this->minecarts[$c->windowPosition[1]] ?? null;
+            return $cart !== null && $this->withinMinecartReach($c, $cart, 4.0);
+        }
+        [$x, $y, $z] = $c->windowPosition;
         if (($c->x - $x) ** 2 + ($c->y - $y) ** 2 + ($c->z - $z) ** 2 > 64) {
             return false;
         }

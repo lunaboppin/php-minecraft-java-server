@@ -1,0 +1,236 @@
+{
+  "name": "tnt-minecarts",
+  "normalizations": [
+    "Compare a TNT minecart primed by a powered activator rail and its explosion, which leaves the rails and the blocks under them, and minecarts caught by a TNT explosion.",
+    "Entity IDs and UUIDs are left out, and blocks drop nothing, as their scatter is random; only blocks every ray is certain to destroy or spare are compared.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "gamerule block_drops false"
+    },
+    {
+      "action": "command",
+      "text": "gamerule tnt_explosion_drop_decay false"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 55 -8 24 60 8 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 61 -8 24 70 8 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 7.5 61 -7.5 0 0"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 14 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 61 0 minecraft:activator_rail[powered=true,shape=east_west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 7 60 0 minecraft:redstone_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "command",
+      "text": "summon tnt_minecart 7.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "primed_on_activator",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 5
+    },
+    {
+      "action": "snapshot",
+      "name": "exploded",
+      "fields": [
+        "entity_packets",
+        "blocks"
+      ],
+      "positions": [
+        [
+          3,
+          61,
+          0
+        ],
+        [
+          4,
+          61,
+          0
+        ],
+        [
+          5,
+          61,
+          0
+        ],
+        [
+          6,
+          61,
+          0
+        ],
+        [
+          7,
+          61,
+          0
+        ],
+        [
+          8,
+          61,
+          0
+        ],
+        [
+          9,
+          61,
+          0
+        ],
+        [
+          10,
+          61,
+          0
+        ],
+        [
+          11,
+          61,
+          0
+        ],
+        [
+          3,
+          60,
+          0
+        ],
+        [
+          4,
+          60,
+          0
+        ],
+        [
+          5,
+          60,
+          0
+        ],
+        [
+          6,
+          60,
+          0
+        ],
+        [
+          7,
+          60,
+          0
+        ],
+        [
+          8,
+          60,
+          0
+        ],
+        [
+          9,
+          60,
+          0
+        ],
+        [
+          10,
+          60,
+          0
+        ],
+        [
+          11,
+          60,
+          0
+        ],
+        [
+          7,
+          61,
+          2
+        ],
+        [
+          7,
+          60,
+          2
+        ],
+        [
+          7,
+          61,
+          -2
+        ],
+        [
+          5,
+          62,
+          0
+        ],
+        [
+          7,
+          60,
+          1
+        ],
+        [
+          7,
+          60,
+          -1
+        ],
+        [
+          6,
+          60,
+          1
+        ],
+        [
+          8,
+          60,
+          -1
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 4 14 61 4 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 3.5 61 4.5"
+    },
+    {
+      "action": "command",
+      "text": "summon chest_minecart 11.5 61 4.5"
+    },
+    {
+      "action": "command",
+      "text": "summon tnt 7.5 61 4.5 {fuse:20}"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "carts_caught_in_an_explosion",
+      "fields": [
+        "entities"
+      ]
+    }
+  ]
+}

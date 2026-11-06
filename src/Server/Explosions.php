@@ -221,7 +221,7 @@ trait Explosions
      * ServerLevel.explode for TNT: ServerExplosion.explode, then the explode packet to players
      * within 64 blocks, carrying the knockback of a player it pushed.
      */
-    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null, bool $fire = false, ?string $damageType = null, bool $mob = false): void
+    private function explode(float $cx, float $cy, float $cz, float $radius, ?int $sourceTnt = null, ?string $owner = null, bool $fire = false, ?string $damageType = null, bool $mob = false, bool $keepRails = false): void
     {
         $catalog = $this->version->catalog;
         $f = Float32::round(...);
@@ -245,11 +245,13 @@ trait Explosions
                         if ($by < $this->world->minY || $by >= $this->world->minY + $this->world->height || abs($bx) >= 30000000 || abs($bz) >= 30000000) {
                             break;
                         }
-                        $resistance = $this->explosionResistance($this->world->get($bx, $by, $bz));
+                        // MinecartTNT, primed: a rail, or the block under one, offers no resistance and stays.
+                        $rail = $keepRails && ($this->isRail($this->world->get($bx, $by, $bz)) || $this->isRail($this->world->get($bx, $by + 1, $bz)));
+                        $resistance = $rail ? 0.0 : $this->explosionResistance($this->world->get($bx, $by, $bz));
                         if ($resistance !== null) {
                             $power = $f($power - $f($f($resistance + 0.3) * 0.3));
                         }
-                        if ($power > 0.0) {
+                        if ($power > 0.0 && !$rail) {
                             $blown["$bx:$by:$bz"] = [$bx, $by, $bz];
                         }
                         $x += $xd * 0.3;
@@ -259,7 +261,7 @@ trait Explosions
                 }
             }
         }
-        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType);
+        $knockbacks = $this->hurtByExplosion($cx, $cy, $cz, $radius, $owner, $damageType, $mob);
         // Level.getDestroyType: TNT and block explosions keep every drop unless their decay rule is on.
         $decay = $this->gameRule($sourceTnt !== null ? 'tnt_explosion_drop_decay' : ($mob ? 'mob_explosion_drop_decay' : 'block_explosion_drop_decay')) === 'true';
         // ServerExplosion.interactWithBlocks: in shuffled order, each block drops its loot (merged
@@ -361,7 +363,7 @@ trait Explosions
      *
      * @return array<string, array{0: float, 1: float, 2: float}>
      */
-    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner, ?string $damageType = null): array
+    private function hurtByExplosion(float $cx, float $cy, float $cz, float $radius, ?string $owner, ?string $damageType = null, bool $mob = false): array
     {
         $double = $radius * 2.0;
         $knockbacks = [];
@@ -436,6 +438,24 @@ trait Explosions
                 $velocity = $this->itemEntities[$id]['velocity'];
                 $this->itemEntities[$id]['velocity'] = [$velocity[0] + $direction[0] * $power, $velocity[1] + $direction[1] * $power, $velocity[2] + $direction[2] * $power];
                 $this->itemEntities[$id]['needsSync'] = true;
+            }
+        }
+        // VehicleEntity.ignoreExplosion: a mob's explosion spares minecarts without mob griefing.
+        foreach ($mob && $this->gameRule('mob_griefing') !== 'true' ? [] : array_keys($this->minecarts) as $id) {
+            $cart = $this->minecarts[$id] ?? null;
+            if ($cart === null || ($cart['exploding'] ?? false)) {
+                continue;
+            }
+            $result = $effect($this->minecartBox($cart), $cart['y'] + 0.5950000286102295, $cart['x'], $cart['z']);
+            if ($result === null) {
+                continue;
+            }
+            [$dist, $exposure, $direction, $damage] = $result;
+            $this->hurtMinecart($id, $damage, true);
+            if (isset($this->minecarts[$id])) {
+                $power = (1.0 - $dist) * $exposure;
+                $velocity = $this->minecarts[$id]['velocity'];
+                $this->minecarts[$id]['velocity'] = [$velocity[0] + $direction[0] * $power, $velocity[1] + $direction[1] * $power, $velocity[2] + $direction[2] * $power];
             }
         }
         foreach (array_keys($this->tntEntities) as $id) {

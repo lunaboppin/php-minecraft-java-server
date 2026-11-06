@@ -94,6 +94,12 @@ final class Collision
         return self::moveWithBoxes($box, $delta, $this->boxes($world, self::expand($box, $delta)));
     }
 
+    /** As move, with other solid boxes (entities' bounding boxes) besides the blocks'. */
+    public function moveAmong(World $world, array $box, array $delta, array $obstacles): array
+    {
+        return self::moveWithBoxes($box, $delta, [...$this->boxes($world, self::expand($box, $delta)), ...$obstacles]);
+    }
+
     /** Native candidate-height stepping for static block collisions. */
     public function moveWithStep(World $world, array $box, array $delta, float $stepHeight, bool $onGround): array
     {
