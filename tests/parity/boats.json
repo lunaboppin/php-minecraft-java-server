@@ -1,0 +1,159 @@
+{
+  "name": "boats",
+  "normalizations": [
+    "Compare boats floating up, dropping into water, rising from under it, and a raft and a chest boat sliding on stone and ice, then a boat placed on water from the item and one broken by a sword.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 55 -8 24 59 20 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -8 60 -8 24 70 20 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill -1 60 -1 13 60 13 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 60 0 12 60 12 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "fill 9 57 9 11 59 11 minecraft:water"
+    },
+    {
+      "action": "command",
+      "text": "fill 14 59 0 22 59 4 minecraft:ice"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -0.5 0 30"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "command",
+      "text": "summon oak_boat 2.5 60.4 2.5"
+    },
+    {
+      "action": "command",
+      "text": "summon spruce_boat 6.5 66 6.5"
+    },
+    {
+      "action": "command",
+      "text": "summon birch_boat 10.5 57.2 10.5"
+    },
+    {
+      "action": "command",
+      "text": "summon bamboo_raft -4.5 60 4.5 {Motion:[0.6d,0.0d,0.0d]}"
+    },
+    {
+      "action": "command",
+      "text": "summon oak_chest_boat 14.5 60 2.5 {Motion:[0.6d,0.0d,0.0d]}"
+    },
+    {
+      "action": "wait",
+      "seconds": 6
+    },
+    {
+      "action": "snapshot",
+      "name": "boats_settled",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=!player]"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:oak_boat"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -0.5 0 45"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "use_item",
+      "hex": "00010000000042340000"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "snapshot",
+      "name": "boat_placed_on_water",
+      "fields": [
+        "entity_packets",
+        "inventory"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "kill @e[type=oak_boat]"
+    },
+    {
+      "action": "command",
+      "text": "summon oak_boat 6.5 60.6 2.5"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.1 with minecraft:diamond_sword"
+    },
+    {
+      "action": "packet",
+      "name": "set_carried_item",
+      "hex": "0001"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 6.5 61 -0.5 0 0"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "attack",
+      "entity": "oak_boat",
+      "index": 0
+    },
+    {
+      "action": "command",
+      "text": "tp @s @e[type=item,limit=1]"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "boat_broken_and_picked_up",
+      "fields": [
+        "inventory"
+      ]
+    }
+  ]
+}

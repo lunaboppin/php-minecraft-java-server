@@ -145,6 +145,7 @@ trait Survival
                 $this->saveDaylightDetectors();
                 $this->world->setting('fallingBlocks', $this->savedFallingBlocks());
                 $this->world->setting('minecarts', $this->savedMinecarts());
+                $this->world->setting('boats', $this->savedBoats());
                 $this->saveRedstone();
                 $this->world->setting('naturalSpawns', $this->naturalSpawns);
                 $this->world->checkpoint();
@@ -1113,6 +1114,10 @@ trait Survival
         if ($this->throwItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
             return;
         }
+        if ($this->useBoatItem($c, $slot, $this->version->catalog->itemName($stack['item']))) {
+            $this->useSwing($c, $hand);
+            return;
+        }
         if ($this->drawBow($c, $hand, $slot)) {
             return;
         }
@@ -1167,6 +1172,9 @@ trait Survival
             return;
         }
         if ($this->attackMinecart($attacker, $id)) {
+            return;
+        }
+        if ($this->attackBoat($attacker, $id)) {
             return;
         }
         if ($this->ticks - $attacker->lastAttackTick < 10) {

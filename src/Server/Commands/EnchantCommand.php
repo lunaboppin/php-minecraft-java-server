@@ -26,7 +26,7 @@ trait EnchantCommand
         $single = count($targets) === 1;
         $enchanted = [];
         foreach ($targets as $target) {
-            if (isset($target['item']) || isset($target['orb']) || isset($target['projectile']) || isset($target['minecart'])) {
+            if (isset($target['item']) || isset($target['orb']) || isset($target['projectile']) || isset($target['minecart']) || isset($target['boat'])) {
                 // Only living entities hold items to enchant.
                 if ($single) {
                     throw new CommandFailure(['translate' => 'commands.enchant.failed.entity', 'with' => [['text' => self::plainText($this->entityName($target)) ?: $this->englishName($this->entityName($target)['translate'] ?? '')]]]);

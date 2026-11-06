@@ -317,6 +317,12 @@ trait DataAccessors
         return self::nbtCompound($pairs);
     }
 
+    /** Entity.saveWithoutId for a boat: what every entity saves. */
+    private function boatNbt(array $boat): NbtTag
+    {
+        return self::nbtCompound($this->entityBaseNbt([$boat['x'], $boat['y'], $boat['z']], $boat['velocity'], [(float) $boat['yaw'], 0.0], (float) $boat['fallDistance'], 0, 300, (bool) $boat['ground'], false, 0, $boat['uuid']));
+    }
+
     /** A text component as ComponentSerialization's NBT: plain text as a string. */
     private static function componentNbt(array|string $component): NbtTag
     {
