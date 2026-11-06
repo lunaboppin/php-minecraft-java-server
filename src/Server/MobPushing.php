@@ -151,6 +151,10 @@ trait MobPushing
         if (SharedPushDispatch::supportsSource($this->version->catalog->pushing[$mob['kind']]['doPush'])) {
             $this->applyPushingContacts($mob['id']);
         }
+        if (!isset($mob['deadAt'])) {
+            $info = $this->version->catalog->mobs['entities'][$mob['kind']];
+            $this->pushMinecartsBy(Collision::bounds($mob['x'], $mob['y'], $mob['z'], $info['width'], $info['height']), $mob['x'], $mob['z'], $mob['vehicle'] ?? null);
+        }
     }
 
     private function tickPlayerPushing(Client $player): void
@@ -160,6 +164,10 @@ trait MobPushing
             $this->damage($player, 6.0, 'minecraft:cramming');
         }
         $this->applyPushingContacts($player->entityId);
+        if (!$player->dead && $player->gameMode !== 3) {
+            $height = $player->sneaking && !$player->flying ? 1.5 : 1.8;
+            $this->pushMinecartsBy([$player->x - 0.3, $player->y, $player->z - 0.3, $player->x + 0.3, $player->y + $height, $player->z + 0.3], $player->x, $player->z, $player->vehicle);
+        }
     }
 
     private function crammingDamage(array $mob): void

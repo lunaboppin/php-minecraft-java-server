@@ -765,6 +765,10 @@ trait Animals
                 if ($near) {
                     $this->trackPushingMob($animal);
                     $this->crammingDamage($animal);
+                    if (!isset($animal['vehicle'])) {
+                        $info = $this->version->catalog->mobs['entities'][$animal['kind']];
+                        $this->pushMinecartsBy(Collision::bounds($animal['x'], $animal['y'], $animal['z'], $info['width'], $info['height']), $animal['x'], $animal['z'], null);
+                    }
                 }
                 continue;
             }
