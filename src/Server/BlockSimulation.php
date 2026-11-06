@@ -66,6 +66,7 @@ trait BlockSimulation
             elseif($kind==='coral'){$this->tickCoral($x,$y,$z);}
             elseif($kind==='observer'){$this->tickObserver($x,$y,$z);}
             elseif($kind==='plate'){$this->tickPressurePlate($x,$y,$z);}
+            elseif($kind==='detector_rail'){$this->tickDetectorRail($x,$y,$z);}
             elseif($kind==='chorus'){$this->tickChorus($x,$y,$z);}
             elseif($kind==='falling'){$this->tickFallingBlock($x,$y,$z);}
             elseif($kind==='speleothem'){$this->tickSpeleothem($x,$y,$z);}
