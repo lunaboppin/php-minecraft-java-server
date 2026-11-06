@@ -3366,7 +3366,8 @@
     "entity.skeleton.shoot": 1495,
     "entity.generic.burn": 699,
     "block.composter.empty": 384,
-    "block.composter.ready": 387
+    "block.composter.ready": 387,
+    "entity.experience_bottle.throw": 621
   },
   "particle_types": {
     "angry_villager": 0,

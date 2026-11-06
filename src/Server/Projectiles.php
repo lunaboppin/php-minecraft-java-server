@@ -19,7 +19,7 @@ use PhpMinecraftJavaServer\World\Generation\Float32;
 trait Projectiles
 {
     /** The items thrown, by the entity type each throws. */
-    private const THROWN = ['snowball' => 'snowball', 'egg' => 'egg', 'blue_egg' => 'egg', 'brown_egg' => 'egg', 'ender_pearl' => 'ender_pearl'];
+    private const THROWN = ['snowball' => 'snowball', 'egg' => 'egg', 'blue_egg' => 'egg', 'brown_egg' => 'egg', 'ender_pearl' => 'ender_pearl', 'experience_bottle' => 'experience_bottle'];
 
     /** Arrows, which AbstractArrow ticks, and their tracking interval of a second. */
     private const ARROW_TYPES = ['arrow' => true, 'spectral_arrow' => true];
@@ -42,7 +42,7 @@ trait Projectiles
             $this->syncInventory($c);
             return true;
         }
-        $sound = ['snowball' => 'entity.snowball.throw', 'egg' => 'entity.egg.throw', 'ender_pearl' => 'entity.ender_pearl.throw'][$type];
+        $sound = ['snowball' => 'entity.snowball.throw', 'egg' => 'entity.egg.throw', 'ender_pearl' => 'entity.ender_pearl.throw', 'experience_bottle' => 'entity.experience_bottle.throw'][$type];
         $pitch = Float32::round(0.4 / Float32::round(Float32::round(self::randomUnit() * 0.4) + 0.8));
         $payload = Packets::sound($this->version->blocks['sounds'][$sound], 6, $c->x, $c->y, $c->z, 0.5, $pitch, unpack('J', random_bytes(8))[1]);
         foreach ($this->localPlayers() as $player) {
@@ -51,7 +51,8 @@ trait Projectiles
             }
         }
         $stack = $c->inventory[$slot];
-        $this->spawnProjectile($c, $type, ['count' => 1] + $stack);
+        // ExperienceBottleItem.use: lobbed 20 degrees higher, at 0.7.
+        $this->spawnProjectile($c, $type, ['count' => 1] + $stack, ...($type === 'experience_bottle' ? [-20.0, 0.7] : []));
         if ($c->gameMode !== 1) {
             if (--$c->inventory[$slot]['count'] <= 0) {
                 unset($c->inventory[$slot]);
@@ -70,7 +71,7 @@ trait Projectiles
      * Projectile.spawnProjectileFromRotation: the projectile at the thrower's eyes less 0.1, shot
      * along its look at 1.5 with a spread of 1, plus the thrower's own movement.
      */
-    private function spawnProjectile(Client $owner, string $type, array $stack): int
+    private function spawnProjectile(Client $owner, string $type, array $stack, float $pitchOffset = 0.0, float $power = 1.5): int
     {
         $id = $this->nextEntity++;
         $eye = $owner->sneaking && !$owner->flying ? 1.27 : 1.62;
@@ -83,16 +84,17 @@ trait Projectiles
         $radians = Float32::round(M_PI / 180.0);
         $yaw = Float32::round(Float32::round($owner->yaw) * $radians);
         $pitch = Float32::round(Float32::round($owner->pitch) * $radians);
+        $lift = Float32::round(Float32::round(Float32::round($owner->pitch) + Float32::round($pitchOffset)) * $radians);
         $direction = [
             Float32::round(-$this->mthSin($yaw) * $this->mthCos($pitch)),
-            Float32::round(-$this->mthSin($pitch)),
+            Float32::round(-$this->mthSin($lift)),
             Float32::round($this->mthCos($yaw) * $this->mthCos($pitch)),
         ];
         $length = sqrt($direction[0] ** 2 + $direction[1] ** 2 + $direction[2] ** 2);
         $spread = 0.0172275 * 1.0;
         $velocity = [];
         foreach ($direction as $axis => $value) {
-            $velocity[$axis] = (($length < 1.0E-5 ? 0.0 : $value / $length) + $spread * (self::randomUnit() - self::randomUnit())) * 1.5;
+            $velocity[$axis] = (($length < 1.0E-5 ? 0.0 : $value / $length) + $spread * (self::randomUnit() - self::randomUnit())) * Float32::round($power);
         }
         $projectile['yaw'] = Float32::round(self::mthAtan2($velocity[0], $velocity[2]) * 180.0 / Float32::round(M_PI));
         $projectile['pitch'] = Float32::round(self::mthAtan2($velocity[1], sqrt($velocity[0] ** 2 + $velocity[2] ** 2)) * 180.0 / Float32::round(M_PI));
@@ -134,7 +136,8 @@ trait Projectiles
                 continue;
             }
             $start = [$projectile['x'], $projectile['y'], $projectile['z']];
-            $projectile['velocity'][1] -= 0.03;
+            // ThrownExperienceBottle.getDefaultGravity: 0.07; other thrown items 0.03.
+            $projectile['velocity'][1] -= $projectile['type'] === 'experience_bottle' ? 0.07 : 0.03;
             $drag = $projectile['water'] ? Float32::round(0.8) : Float32::round(0.99);
             $projectile['velocity'] = [$projectile['velocity'][0] * $drag, $projectile['velocity'][1] * $drag, $projectile['velocity'][2] * $drag];
             $hit = $this->projectileHit($collision, $projectile, $owner);
@@ -254,6 +257,13 @@ trait Projectiles
         }
         if ($projectile['type'] === 'ender_pearl') {
             $this->teleportPearlOwner($owner, $start);
+            $this->removeProjectile($id);
+            return;
+        }
+        if ($projectile['type'] === 'experience_bottle') {
+            // ThrownExperienceBottle.onHit: the splash in water's colour, 3 to 11 experience, and gone.
+            $this->levelEvent(2002, [(int) floor($projectile['x']), (int) floor($projectile['y']), (int) floor($projectile['z'])], -13083194);
+            $this->awardExperience($projectile['x'], $projectile['y'], $projectile['z'], 3 + random_int(0, 4) + random_int(0, 4));
             $this->removeProjectile($id);
             return;
         }
