@@ -59,7 +59,7 @@
     },
     {
       "action": "wait",
-      "seconds": 20
+      "seconds": 40
     },
     {
       "action": "snapshot",
@@ -81,7 +81,7 @@
     },
     {
       "action": "wait",
-      "seconds": 20
+      "seconds": 40
     },
     {
       "action": "snapshot",
