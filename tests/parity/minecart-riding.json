@@ -1,0 +1,201 @@
+{
+  "name": "minecart-riding",
+  "normalizations": [
+    "Compare a player getting into a minecart, pushing it with the forward key, getting out by sneaking (in the open and beside a wall), and being put off by a powered activator rail.",
+    "Entity IDs and UUIDs are left out; motion is compared as sent. The rider's position shows where it sits and where it gets off.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 59 -6 30 60 6 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -4 61 -6 30 70 6 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "fill 0 61 0 24 61 0 minecraft:rail"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 2.5 61 1.5 -90 0"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "summon minecart 2.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "summoned",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "interact",
+      "entity": "minecart",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "mounted",
+      "fields": [
+        "entity_packets",
+        "position"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "01"
+    },
+    {
+      "action": "wait",
+      "seconds": 3
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "00"
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "pushed_forward",
+      "fields": [
+        "entity_packets"
+      ]
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "20"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "00"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "dismounted",
+      "fields": [
+        "entity_packets",
+        "position"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 10 61 1 12 62 1 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "tp @e[type=minecart] 11.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "minecart",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "20"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "packet",
+      "name": "player_input",
+      "hex": "00"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "dismounted_beside_wall",
+      "fields": [
+        "entity_packets",
+        "position"
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 16 61 0 minecraft:activator_rail[powered=true,shape=east_west]"
+    },
+    {
+      "action": "command",
+      "text": "setblock 16 60 0 minecraft:redstone_block"
+    },
+    {
+      "action": "command",
+      "text": "tp @e[type=minecart] 16.5 61 0.5"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "interact",
+      "entity": "minecart",
+      "index": 0
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "wait",
+      "seconds": 2
+    },
+    {
+      "action": "snapshot",
+      "name": "ejected_by_activator_rail",
+      "fields": [
+        "entity_packets",
+        "position"
+      ]
+    }
+  ]
+}

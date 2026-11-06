@@ -66,10 +66,44 @@ trait Riding
         return $result;
     }
 
+    /** The selector-shaped reference a command names a vehicle by. */
+    private function vehicleReference(int $id): array
+    {
+        return isset($this->minecarts[$id]) ? $this->minecartReference($id) : $this->mobReference($id);
+    }
+
+    /** Mobs and minecarts carry riders. */
+    private function isVehicle(int $id): bool
+    {
+        return isset($this->animals[$id]) || isset($this->minecarts[$id]);
+    }
+
+    /** @return list<int> the vehicle's passengers, first the one in control */
+    private function vehiclePassengers(int $vehicle): array
+    {
+        return ($this->minecarts[$vehicle] ?? $this->animals[$vehicle] ?? [])['passengers'] ?? [];
+    }
+
+    private function setVehiclePassengers(int $vehicle, array $passengers): void
+    {
+        if (isset($this->minecarts[$vehicle])) {
+            $this->minecarts[$vehicle]['passengers'] = $passengers;
+            if ($passengers === []) {
+                unset($this->minecarts[$vehicle]['passengers']);
+            }
+            return;
+        }
+        $this->animals[$vehicle]['passengers'] = $passengers;
+        if ($passengers === []) {
+            unset($this->animals[$vehicle]['passengers']);
+        }
+    }
+
     /** Entity.startRiding(vehicle, force: true) followed by ServerPlayer's teleport into the seat. */
     private function startRiding(array $entity, int $vehicle): bool
     {
-        if ($this->vehicleOf($entity) === $vehicle || !isset($this->animals[$vehicle])) {
+        // AbstractMinecart.canAddPassenger: a minecart takes one rider.
+        if ($this->vehicleOf($entity) === $vehicle || !$this->isVehicle($vehicle) || (isset($this->minecarts[$vehicle]) && $this->vehiclePassengers($vehicle) !== [])) {
             return false;
         }
         $id = $this->riderId($entity);
@@ -81,7 +115,7 @@ trait Riding
         if ($this->vehicleOf($entity) !== null) {
             $this->stopRiding($entity);
         }
-        $passengers = $this->animals[$vehicle]['passengers'] ?? [];
+        $passengers = $this->vehiclePassengers($vehicle);
         // Entity.addPassenger: a player goes first unless a player already leads.
         $first = $passengers[0] ?? null;
         if (isset($entity['client']) && $passengers !== [] && ($first === null || isset($this->animals[$first]))) {
@@ -89,7 +123,7 @@ trait Riding
         } else {
             $passengers[] = $id;
         }
-        $this->animals[$vehicle]['passengers'] = $passengers;
+        $this->setVehiclePassengers($vehicle, $passengers);
         if (isset($entity['client'])) {
             $player = $entity['client'];
             $player->vehicle = $vehicle;
@@ -112,25 +146,22 @@ trait Riding
             return;
         }
         $id = $this->riderId($entity);
-        if (isset($this->animals[$vehicle])) {
-            $this->animals[$vehicle]['passengers'] = array_values(array_diff($this->animals[$vehicle]['passengers'] ?? [], [$id]));
-            if ($this->animals[$vehicle]['passengers'] === []) {
-                unset($this->animals[$vehicle]['passengers']);
-            }
+        if ($this->isVehicle($vehicle)) {
+            $this->setVehiclePassengers($vehicle, array_values(array_diff($this->vehiclePassengers($vehicle), [$id])));
         }
         if (isset($entity['client'])) {
             $player = $entity['client'];
             $player->vehicle = null;
             // ServerPlayer.removeVehicle tells the rider at once.
-            if (isset($this->animals[$vehicle])) {
+            if ($this->isVehicle($vehicle)) {
                 $player->send($this->version, 'set_passengers', $this->passengersPacket($vehicle));
             }
             $player->sneaking = false;
         } else {
             unset($this->animals[$entity['mob']]['vehicle']);
         }
-        if (isset($this->animals[$vehicle])) {
-            $target = $this->dismountLocation($entity, $vehicle);
+        if ($this->isVehicle($vehicle)) {
+            $target = isset($this->minecarts[$vehicle]) ? $this->minecartDismountLocation($entity, $vehicle) : $this->dismountLocation($entity, $vehicle);
             if (isset($entity['client'])) {
                 $this->sendPosition($entity['client'], $target, self::RELATIVE_DELTA_ROTATION);
                 $this->broadcastPlayerPosition($entity['client']);
@@ -149,6 +180,10 @@ trait Riding
      */
     private function interactEntity(Client $player, int $id, int $hand, bool $secondary): void
     {
+        if (isset($this->minecarts[$id])) {
+            $this->interactMinecart($player, $id, $hand, $secondary);
+            return;
+        }
         $mob = $this->animals[$id] ?? null;
         if ($mob === null || isset($mob['deadAt']) || $player->dead || $player->gameMode === 3 || $hand < 0 || $hand > 1) {
             return;
@@ -188,18 +223,15 @@ trait Riding
             return;
         }
         $player->vehicle = null;
-        if (isset($this->animals[$vehicle])) {
-            $this->animals[$vehicle]['passengers'] = array_values(array_diff($this->animals[$vehicle]['passengers'] ?? [], [$player->entityId]));
-            if ($this->animals[$vehicle]['passengers'] === []) {
-                unset($this->animals[$vehicle]['passengers']);
-            }
+        if ($this->isVehicle($vehicle)) {
+            $this->setVehiclePassengers($vehicle, array_values(array_diff($this->vehiclePassengers($vehicle), [$player->entityId])));
         }
     }
 
     /** Entity.ejectPassengers when a vehicle is removed: its riders stay where they are. */
     private function ejectPassengers(int $vehicle): void
     {
-        foreach (array_reverse($this->animals[$vehicle]['passengers'] ?? []) as $passenger) {
+        foreach (array_reverse($this->vehiclePassengers($vehicle)) as $passenger) {
             $reference = $this->riderReference($passenger);
             if ($reference === null) {
                 continue;
@@ -211,12 +243,15 @@ trait Riding
                 unset($this->animals[$passenger]['vehicle']);
             }
         }
-        unset($this->animals[$vehicle]['passengers'], $this->sentPassengers[$vehicle]);
+        if ($this->isVehicle($vehicle)) {
+            $this->setVehiclePassengers($vehicle, []);
+        }
+        unset($this->sentPassengers[$vehicle]);
     }
 
     private function passengersPacket(int $vehicle): string
     {
-        $passengers = $this->animals[$vehicle]['passengers'] ?? [];
+        $passengers = $this->vehiclePassengers($vehicle);
         return Binary::writeVarInt($vehicle) . Binary::writeVarInt(count($passengers)) . implode('', array_map(Binary::writeVarInt(...), $passengers));
     }
 
@@ -267,8 +302,8 @@ trait Riding
     /** Entity.positionRider: the vehicle's passenger point less the rider's own vehicle point. */
     private function positionRider(int $vehicle, int $passenger): void
     {
-        $carrier = $this->animals[$vehicle];
-        $points = $this->version->catalog->mobs['entities'][$carrier['kind']]['passenger_attachments'];
+        $carrier = $this->minecarts[$vehicle] ?? $this->animals[$vehicle];
+        $points = $this->version->catalog->mobs['entities'][$carrier['kind'] ?? 'minecart']['passenger_attachments'];
         $index = array_search($passenger, $carrier['passengers'] ?? [], true);
         $seat = self::attachmentPoint($points[max(0, min((int) $index, count($points) - 1))], $this->attachmentScale($carrier), (float) $carrier['yaw']);
         if (isset($this->animals[$passenger])) {

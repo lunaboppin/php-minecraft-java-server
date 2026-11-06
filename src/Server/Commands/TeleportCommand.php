@@ -110,6 +110,10 @@ trait TeleportCommand
             $target['client']->pitch = $pitch;
             return;
         }
+        if (isset($target['minecart'])) {
+            $this->minecarts[$target['minecart']]['yaw'] = $yaw;
+            return;
+        }
         $this->animals[$target['mob']]['yaw'] = $yaw;
     }
 
@@ -122,7 +126,7 @@ trait TeleportCommand
     private function faceEntity(array $target, array $facing): void
     {
         [$x, $y, $z, $entity, $anchor] = $facing;
-        if (isset($target['item']) || isset($target['orb']) || isset($target['projectile'])) {
+        if (isset($target['item']) || isset($target['orb']) || isset($target['projectile']) || isset($target['minecart'])) {
             return;
         }
         [$fromX, $fromY, $fromZ] = isset($target['client']) ? [$target['client']->x, $target['client']->y, $target['client']->z] : [$this->animals[$target['mob']]['x'], $this->animals[$target['mob']]['y'], $this->animals[$target['mob']]['z']];
@@ -164,6 +168,13 @@ trait TeleportCommand
             $projectile = &$this->projectiles[$target['projectile']];
             [$projectile['x'], $projectile['y'], $projectile['z']] = $position;
             $projectile['needsSync'] = true;
+            return;
+        }
+        if (isset($target['minecart'])) {
+            // Entity.teleportTo: the new position, at rest; its tracker sends both with its next update.
+            $cart = &$this->minecarts[$target['minecart']];
+            [$cart['x'], $cart['y'], $cart['z']] = $position;
+            $cart['velocity'] = [0.0, 0.0, 0.0];
             return;
         }
         if (!isset($target['client'])) {

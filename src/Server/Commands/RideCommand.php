@@ -18,12 +18,12 @@ trait RideCommand
                 throw new CommandFailure(['translate' => 'commands.ride.not_riding', 'with' => [$this->entityName($target)]]);
             }
             $this->stopRiding($target);
-            $this->sendSuccess($sender, ['translate' => 'commands.ride.dismount.success', 'with' => [$this->entityName($target), $this->entityName($this->mobReference($vehicle))]], true);
+            $this->sendSuccess($sender, ['translate' => 'commands.ride.dismount.success', 'with' => [$this->entityName($target), $this->entityName($this->vehicleReference($vehicle))]], true);
             return;
         }
         $mount = $this->selectEntities($arguments[2], $sender, single: true)[0];
         if ($vehicle !== null) {
-            throw new CommandFailure(['translate' => 'commands.ride.already_riding', 'with' => [$this->entityName($target), $this->entityName($this->mobReference($vehicle))]]);
+            throw new CommandFailure(['translate' => 'commands.ride.already_riding', 'with' => [$this->entityName($target), $this->entityName($this->vehicleReference($vehicle))]]);
         }
         if (isset($mount['client'])) {
             throw new CommandFailure(['translate' => 'commands.ride.mount.failure.cant_ride_players']);
@@ -34,8 +34,8 @@ trait RideCommand
         if (isset($target['client']) && $target['client']->dimension !== $this->world->dimension) {
             throw new CommandFailure(['translate' => 'commands.ride.mount.failure.wrong_dimension']);
         }
-        // Only players and mobs ride here, and only mobs carry riders.
-        if (!isset($mount['mob']) || !(isset($target['client']) || isset($target['mob'])) || !$this->startRiding($target, $mount['mob'])) {
+        // Only players and mobs ride here, and only mobs and minecarts carry riders.
+        if (!(isset($mount['mob']) || isset($mount['minecart'])) || !(isset($target['client']) || isset($target['mob'])) || !$this->startRiding($target, $mount['mob'] ?? $mount['minecart'])) {
             throw new CommandFailure(['translate' => 'commands.ride.mount.failure.generic', 'with' => [$this->entityName($target), $this->entityName($mount)]]);
         }
         $this->sendSuccess($sender, ['translate' => 'commands.ride.mount.success', 'with' => [$this->entityName($target), $this->entityName($mount)]], true);

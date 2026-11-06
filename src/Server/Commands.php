@@ -296,6 +296,9 @@ trait Commands
                 $size = isset(self::ARROW_TYPES[$projectile['type']]) ? 0.5 : 0.25;
                 $items[] = ['projectile' => $id, 'x' => $projectile['x'], 'y' => $projectile['y'], 'z' => $projectile['z'], 'yaw' => $projectile['yaw'], 'pitch' => $projectile['pitch'], 'type' => 'minecraft:' . $projectile['type'], 'width' => $size, 'height' => $size, 'id' => $id, 'uuid' => $projectile['uuid']];
             }
+            foreach (array_keys($this->minecarts) as $id) {
+                $items[] = $this->minecartReference($id);
+            }
             // A dying mob stays in the level, and selectable, until its death animation ends.
             foreach ($this->animals as $id => $animal) {
                 $info = $this->version->catalog->mobs['entities'][$animal['kind']];
@@ -436,6 +439,7 @@ trait Commands
             isset($entity['client']) => $entity['client']->tags,
             isset($entity['mob']) => $this->animals[$entity['mob']]['tags'] ?? [],
             isset($entity['item']) => $this->itemEntities[$entity['item']]['tags'] ?? [],
+            isset($entity['minecart']) => $this->minecarts[$entity['minecart']]['tags'] ?? [],
             default => [],
         };
     }
@@ -448,6 +452,8 @@ trait Commands
             $this->animals[$entity['mob']]['tags'] = $tags;
         } elseif (isset($entity['item'])) {
             $this->itemEntities[$entity['item']]['tags'] = $tags;
+        } elseif (isset($entity['minecart'])) {
+            $this->minecarts[$entity['minecart']]['tags'] = $tags;
         }
     }
 
@@ -457,7 +463,7 @@ trait Commands
         if (isset($entity['orb'])) {
             return $this->entityComponent('experience_orb', $entity['uuid'], null);
         }
-        if (isset($entity['projectile'])) {
+        if (isset($entity['projectile']) || isset($entity['minecart'])) {
             return $this->entityComponent(substr($entity['type'], 10), $entity['uuid'], null);
         }
         if (isset($entity['item'])) {
