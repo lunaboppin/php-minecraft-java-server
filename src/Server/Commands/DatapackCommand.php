@@ -13,8 +13,8 @@ trait DatapackCommand
 
     /**
      * DataPackCommand: list, enable and disable packs, and create empty ones in the world's
-     * datapacks folder. Selections are kept with the world; the packs' contents are not loaded,
-     * so only the built-in vanilla data applies.
+     * datapacks folder. Selections are kept with the world, and each change reloads resources as
+     * /reload does; the packs' contents are not loaded, so only the built-in vanilla data applies.
      */
     private function executeDatapack(Client $sender, array $arguments, string $text): void
     {
@@ -41,6 +41,7 @@ trait DatapackCommand
                 $selected = array_values(array_diff($this->selectedPacks(), [$id]));
                 $this->sendSuccess($sender, ['translate' => 'commands.datapack.modify.disable', 'with' => [$this->packLink($id, true)]], true);
                 $this->worlds['overworld']->setting('dataPacks', $selected);
+                $this->reloadResources();
                 return;
             default:
                 $id = $this->packArgument($reader->readString(), true);
@@ -59,6 +60,7 @@ trait DatapackCommand
                 }
                 $this->sendSuccess($sender, ['translate' => 'commands.datapack.modify.enable', 'with' => [$this->packLink($id, true)]], true);
                 $this->worlds['overworld']->setting('dataPacks', $selected);
+                $this->reloadResources();
         }
     }
 
