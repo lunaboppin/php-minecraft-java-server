@@ -1,0 +1,288 @@
+{
+  "name": "golem-building",
+  "normalizations": [
+    "Compare snow golems built upright and on their side, an iron golem built by placing its pumpkin, a pumpkin replacing a snow block, and an iron golem blocked by a block beside its legs: the pattern blocks cleared and where each golem appears.",
+    "Mob griefing is off so snow golems leave no snow; their wandering is not compared.",
+    "Use matching flat terrain."
+  ],
+  "steps": [
+    {
+      "action": "command",
+      "text": "weather clear"
+    },
+    {
+      "action": "command",
+      "text": "gamerule mob_griefing false"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 55 -6 12 60 12 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "fill -6 61 -6 12 70 12 minecraft:air"
+    },
+    {
+      "action": "command",
+      "text": "tp @s 4.5 61 7.5 180 20"
+    },
+    {
+      "action": "command",
+      "text": "gamemode survival"
+    },
+    {
+      "action": "command",
+      "text": "clear @s"
+    },
+    {
+      "action": "command",
+      "text": "item replace entity @s hotbar.0 with minecraft:carved_pumpkin 2"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 61 2 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 62 2 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 63 2 minecraft:carved_pumpkin"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "snow_golem_built",
+      "fields": [
+        "blocks",
+        "entity_spawns"
+      ],
+      "positions": [
+        [
+          2,
+          61,
+          2
+        ],
+        [
+          2,
+          62,
+          2
+        ],
+        [
+          2,
+          63,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "fill 5 62 2 7 62 2 minecraft:iron_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 6 61 2 minecraft:iron_block"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "place",
+      "position": [
+        6,
+        62,
+        2
+      ],
+      "face": 1,
+      "cursor": [
+        0.5,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "iron_golem_built",
+      "fields": [
+        "blocks",
+        "entity_spawns",
+        "inventory"
+      ],
+      "positions": [
+        [
+          6,
+          61,
+          2
+        ],
+        [
+          5,
+          62,
+          2
+        ],
+        [
+          6,
+          62,
+          2
+        ],
+        [
+          7,
+          62,
+          2
+        ],
+        [
+          6,
+          63,
+          2
+        ],
+        [
+          5,
+          61,
+          2
+        ],
+        [
+          7,
+          61,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 61 -2 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 -2 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 -2 minecraft:carved_pumpkin"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "pumpkin_replacing_body",
+      "fields": [
+        "blocks"
+      ],
+      "positions": [
+        [
+          0,
+          61,
+          -2
+        ],
+        [
+          0,
+          62,
+          -2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 61 2 minecraft:iron_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 62 2 minecraft:iron_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 9 62 2 minecraft:iron_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 11 62 2 minecraft:iron_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 9 61 2 minecraft:stone"
+    },
+    {
+      "action": "command",
+      "text": "setblock 10 63 2 minecraft:jack_o_lantern"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "iron_golem_blocked",
+      "fields": [
+        "blocks",
+        "entity_spawns"
+      ],
+      "positions": [
+        [
+          10,
+          61,
+          2
+        ],
+        [
+          10,
+          62,
+          2
+        ],
+        [
+          10,
+          63,
+          2
+        ]
+      ]
+    },
+    {
+      "action": "command",
+      "text": "setblock 1 62 6 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 2 62 6 minecraft:snow_block"
+    },
+    {
+      "action": "command",
+      "text": "setblock 0 62 6 minecraft:jack_o_lantern"
+    },
+    {
+      "action": "wait",
+      "seconds": 1
+    },
+    {
+      "action": "snapshot",
+      "name": "snow_golem_sideways",
+      "fields": [
+        "blocks",
+        "entity_spawns"
+      ],
+      "positions": [
+        [
+          0,
+          62,
+          6
+        ],
+        [
+          1,
+          62,
+          6
+        ],
+        [
+          2,
+          62,
+          6
+        ]
+      ]
+    }
+  ]
+}
